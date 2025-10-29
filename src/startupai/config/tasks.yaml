@@ -1,0 +1,98 @@
+# StartupAI CrewAI Task Configurations - Pure AMP Implementation
+# Standalone automation with no external dependencies
+# Pure LLM-based strategic analysis workflow
+
+research_task:
+  description: |
+    Research and analyze the following strategic question: {strategic_question}
+    
+    Project Context: {project_context}
+    
+    Your task is to:
+    1. Break down the strategic question into key components
+    2. Leverage your knowledge base to gather relevant information
+    3. Identify key trends, market dynamics, and competitive factors
+    4. Consider multiple perspectives and potential scenarios
+    5. Synthesize findings into a comprehensive research summary
+    
+    Focus on providing thorough, evidence-based analysis that addresses all aspects
+    of the strategic question. Your research will form the foundation for subsequent
+    analysis and reporting.
+  expected_output: |
+    A comprehensive research summary including:
+    - Breakdown of the strategic question into key components
+    - Relevant market trends and competitive dynamics
+    - Key findings and observations
+    - Multiple perspectives and scenarios considered
+    - Supporting rationale for all conclusions
+    - Identification of knowledge gaps or assumptions
+  agent: research_agent
+
+analysis_task:
+  description: |
+    Analyze the research findings for the strategic question: {strategic_question}
+    
+    Based on the research summary from the previous task, your task is to:
+    1. Identify key patterns and trends in the research findings
+    2. Extract actionable strategic insights
+    3. Identify opportunities, threats, strengths, and weaknesses (SWOT analysis)
+    4. Evaluate strategic options and alternatives
+    5. Develop specific, actionable recommendations
+    
+    Your analysis should go beyond surface-level observations to provide deep,
+    business-focused insights that can drive strategic decision-making.
+  expected_output: |
+    A strategic insights analysis including:
+    - Key patterns and trends identified
+    - SWOT analysis (Strengths, Weaknesses, Opportunities, Threats)
+    - Strategic implications and risks
+    - Evaluation of strategic options
+    - Specific, prioritized recommendations
+    - Clear rationale for each recommendation
+  agent: analysis_agent
+
+report_task:
+  description: |
+    Generate a comprehensive strategic analysis report for: {strategic_question}
+    
+    Based on the research and analysis from previous tasks, create a professional
+    executive-level strategic report that includes:
+    
+    1. Executive Summary (1-2 pages)
+       - Overview of the strategic question
+       - Key findings and recommendations
+       - Critical next steps
+    
+    2. Detailed Analysis
+       - Research findings and evidence
+       - Strategic insights and implications
+       - SWOT analysis
+       - Options evaluation
+    
+    3. Recommendations
+       - Prioritized action items
+       - Implementation considerations
+       - Success metrics
+       - Risk mitigation strategies
+    
+    4. Conclusion
+       - Summary of key points
+       - Strategic direction
+       - Next steps
+    
+    Format the report in clear, professional markdown with proper headings,
+    bullet points, and structure. Write for an executive audience.
+  expected_output: |
+    A professional strategic analysis report in markdown format containing:
+    - Executive Summary (concise overview)
+    - Research Findings (comprehensive analysis)
+    - Strategic Insights (key takeaways)
+    - SWOT Analysis (structured assessment)
+    - Recommendations (prioritized action items)
+    - Implementation Plan (next steps)
+    - Conclusion (strategic direction)
+    
+    The report should be well-structured, professionally written, and
+    immediately actionable for business decision-makers.
+  agent: reporting_agent
+  output_file: output/strategic_analysis.md
