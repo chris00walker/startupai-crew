@@ -1,98 +1,126 @@
-# StartupAI CrewAI Task Configurations - Pure AMP Implementation
-# Standalone automation with no external dependencies
-# Pure LLM-based strategic analysis workflow
+# StartupAI CrewAI Task Configurations
+# Evidence-Led Strategy Platform - 6 Core Tasks
+# Reference: /home/chris/startupai.site/docs/technical/two-site-implementation-plan.md
 
-research_task:
+evidence_collection:
   description: |
-    Research and analyze the following strategic question: {strategic_question}
+    Collect and organize evidence related to the strategic question: {strategic_question}
     
-    Project Context: {project_context}
+    Focus on:
+    1. Identifying relevant sources (market reports, competitor analysis, customer feedback)
+    2. Extracting key data points and insights
+    3. Organizing evidence by theme and relevance
+    4. Ensuring comprehensive coverage of the question
     
-    Your task is to:
-    1. Break down the strategic question into key components
-    2. Leverage your knowledge base to gather relevant information
-    3. Identify key trends, market dynamics, and competitive factors
-    4. Consider multiple perspectives and potential scenarios
-    5. Synthesize findings into a comprehensive research summary
-    
-    Focus on providing thorough, evidence-based analysis that addresses all aspects
-    of the strategic question. Your research will form the foundation for subsequent
-    analysis and reporting.
+    Project context: {project_context}
+    Target sources: {target_sources}
   expected_output: |
-    A comprehensive research summary including:
-    - Breakdown of the strategic question into key components
-    - Relevant market trends and competitive dynamics
-    - Key findings and observations
-    - Multiple perspectives and scenarios considered
-    - Supporting rationale for all conclusions
-    - Identification of knowledge gaps or assumptions
+    A structured collection of evidence items including:
+    - Source URLs and citations
+    - Key excerpts and data points
+    - Relevance scores and tags
+    - Initial quality assessment
   agent: research_agent
 
-analysis_task:
+evidence_analysis:
   description: |
-    Analyze the research findings for the strategic question: {strategic_question}
+    Analyze collected evidence to identify patterns, trends, and strategic insights
+    for: {strategic_question}
     
-    Based on the research summary from the previous task, your task is to:
-    1. Identify key patterns and trends in the research findings
-    2. Extract actionable strategic insights
-    3. Identify opportunities, threats, strengths, and weaknesses (SWOT analysis)
-    4. Evaluate strategic options and alternatives
-    5. Develop specific, actionable recommendations
+    Focus on:
+    1. Pattern recognition across evidence items
+    2. Trend identification and trajectory analysis
+    3. Gap analysis and missing evidence
+    4. Confidence levels for each insight
     
-    Your analysis should go beyond surface-level observations to provide deep,
-    business-focused insights that can drive strategic decision-making.
+    Use the evidence collected in the previous task as your input.
   expected_output: |
-    A strategic insights analysis including:
+    A comprehensive analysis report including:
     - Key patterns and trends identified
-    - SWOT analysis (Strengths, Weaknesses, Opportunities, Threats)
-    - Strategic implications and risks
-    - Evaluation of strategic options
-    - Specific, prioritized recommendations
-    - Clear rationale for each recommendation
+    - Strategic insights and implications
+    - Evidence strength assessment
+    - Recommended follow-up research
   agent: analysis_agent
 
-report_task:
+evidence_validation:
   description: |
-    Generate a comprehensive strategic analysis report for: {strategic_question}
+    Validate the quality, credibility, and relevance of collected evidence
+    for: {strategic_question}
     
-    Based on the research and analysis from previous tasks, create a professional
-    executive-level strategic report that includes:
+    Focus on:
+    1. Source credibility assessment
+    2. Bias detection and correction
+    3. Cross-reference verification
+    4. Relevance scoring
     
-    1. Executive Summary (1-2 pages)
-       - Overview of the strategic question
-       - Key findings and recommendations
-       - Critical next steps
-    
-    2. Detailed Analysis
-       - Research findings and evidence
-       - Strategic insights and implications
-       - SWOT analysis
-       - Options evaluation
-    
-    3. Recommendations
-       - Prioritized action items
-       - Implementation considerations
-       - Success metrics
-       - Risk mitigation strategies
-    
-    4. Conclusion
-       - Summary of key points
-       - Strategic direction
-       - Next steps
-    
-    Format the report in clear, professional markdown with proper headings,
-    bullet points, and structure. Write for an executive audience.
+    Use the evidence collected in the previous task for validation.
   expected_output: |
-    A professional strategic analysis report in markdown format containing:
-    - Executive Summary (concise overview)
-    - Research Findings (comprehensive analysis)
-    - Strategic Insights (key takeaways)
-    - SWOT Analysis (structured assessment)
-    - Recommendations (prioritized action items)
-    - Implementation Plan (next steps)
-    - Conclusion (strategic direction)
+    A validation report including:
+    - Quality scores for each evidence item
+    - Credibility assessment of sources
+    - Identified biases or concerns
+    - Recommendations for evidence improvement
+  agent: validation_agent
+
+insight_synthesis:
+  description: |
+    Synthesize analysis and validation results into coherent strategic insights
+    for: {strategic_question}
     
-    The report should be well-structured, professionally written, and
-    immediately actionable for business decision-makers.
+    Focus on:
+    1. Integration of analyzed patterns and validated evidence
+    2. Building evidence-based arguments
+    3. Addressing counter-evidence
+    4. Formulating actionable recommendations
+    
+    Use the analysis and validation results from previous tasks to synthesize insights.
+  expected_output: |
+    A synthesis document including:
+    - Key strategic insights with evidence links
+    - Confidence levels and supporting evidence
+    - Recommended strategic actions
+
+report_generation:
+  description: |
+    Generate a professional strategic report based on synthesized insights
+    for: {strategic_question}
+    
+    Format: {report_format}
+    
+    Include:
+    1. Executive summary
+    2. Key findings and insights
+    3. Evidence-based recommendations
+    4. Supporting data and sources
+    5. Next steps and action items
+    
+    Use the synthesized insights from the previous task to generate the report.
+    Report format: {report_format}
+  expected_output: |
+    A professional strategic report including:
+    - Executive summary (1-2 pages)
+    - Detailed findings with evidence citations
+    - Supporting data visualizations
+    - Appendix with full evidence inventory
   agent: reporting_agent
-  output_file: output/strategic_analysis.md
+
+workflow_orchestration:
+  description: |
+    Orchestrate the entire strategic analysis workflow for: {strategic_question}
+    
+    Focus on:
+    1. Task sequencing and dependency management
+    2. Agent coordination and communication
+    3. Quality control checkpoints
+    4. Timeline management and progress tracking
+    
+    Project deadline: {project_deadline}
+    Priority level: {priority_level}
+  expected_output: |
+    A workflow execution report including:
+    - Task completion status
+    - Agent performance metrics
+    - Timeline adherence
+    - Quality gate results
+    - Final deliverable status
+  agent: orchestration_agent
