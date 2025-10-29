@@ -1,6 +1,6 @@
 """
-StartupAI CrewAI Crew - Pure AMP Implementation
-Standalone CrewAI automation with no external dependencies
+StartupAI Value Proposition Design Crew - Pure AMP Implementation
+Transforms startup ideas into validated, evidence-based value propositions
 Designed to run exclusively on CrewAI AMP platform
 """
 
@@ -11,125 +11,123 @@ from crewai.project import CrewBase, agent, crew, task
 @CrewBase
 class StartupAICrew:
     """
-    StartupAI Evidence-Led Strategy Crew - Pure Implementation
+    StartupAI Value Proposition Design Crew - Pure Implementation
     
     Standalone CrewAI automation for AMP deployment.
     No external dependencies (Supabase, frontend, custom tools).
     
     6 Specialized Agents:
-    - Research Agent: Evidence discovery and coordination
-    - Analysis Agent: Pattern recognition and insights
-    - Validation Agent: Evidence quality verification
-    - Synthesis Agent: Insight combination and narratives
-    - Reporting Agent: Professional report generation
-    - Orchestration Agent: Workflow coordination
+    - Onboarding Agent: Entrepreneur interview and brief creation
+    - Customer Researcher: Customer Jobs, Pains, Gains discovery
+    - Competitor Analyst: Market positioning and differentiation
+    - Value Designer: Value Proposition Canvas creation
+    - Validation Agent: 3-tier validation roadmap design
+    - QA Agent: Quality assurance and framework compliance
     
     Inputs:
-    - strategic_question: The business question to analyze
-    - project_context: Background information about the project
+    - entrepreneur_input: Founder's startup idea and context
     
     Output:
-    - Comprehensive strategic analysis report in markdown format
+    - Complete Value Proposition Design package with validation roadmap
     """
     
     agents_config = "config/agents.yaml"
     tasks_config = "config/tasks.yaml"
     
     @agent
-    def research_agent(self) -> Agent:
-        """Research Agent - Evidence discovery and coordination."""
+    def onboarding_agent(self) -> Agent:
+        """Onboarding Agent - Entrepreneur interview and brief creation."""
         return Agent(
-            config=self.agents_config['research_agent'], # type: ignore[index]
+            config=self.agents_config['onboarding_agent'], # type: ignore[index]
             verbose=True,
         )
     
     @agent
-    def analysis_agent(self) -> Agent:
-        """Analysis Agent - Pattern recognition and insights."""
+    def customer_researcher(self) -> Agent:
+        """Customer Researcher - Customer profile development."""
         return Agent(
-            config=self.agents_config['analysis_agent'], # type: ignore[index]
+            config=self.agents_config['customer_researcher'], # type: ignore[index]
+            verbose=True,
+        )
+    
+    @agent
+    def competitor_analyst(self) -> Agent:
+        """Competitor Analyst - Market positioning analysis."""
+        return Agent(
+            config=self.agents_config['competitor_analyst'], # type: ignore[index]
+            verbose=True,
+        )
+    
+    @agent
+    def value_designer(self) -> Agent:
+        """Value Designer - Value Proposition Canvas creation."""
+        return Agent(
+            config=self.agents_config['value_designer'], # type: ignore[index]
             verbose=True,
         )
     
     @agent
     def validation_agent(self) -> Agent:
-        """Validation Agent - Evidence quality verification."""
+        """Validation Agent - 3-tier validation roadmap design."""
         return Agent(
             config=self.agents_config['validation_agent'], # type: ignore[index]
             verbose=True,
         )
     
     @agent
-    def synthesis_agent(self) -> Agent:
-        """Synthesis Agent - Insight combination."""
+    def qa_agent(self) -> Agent:
+        """QA Agent - Quality assurance and framework compliance."""
         return Agent(
-            config=self.agents_config['synthesis_agent'], # type: ignore[index]
-            verbose=True,
-        )
-    
-    @agent
-    def reporting_agent(self) -> Agent:
-        """Reporting Agent - Professional report generation."""
-        return Agent(
-            config=self.agents_config['reporting_agent'], # type: ignore[index]
-            verbose=True,
-        )
-    
-    @agent
-    def orchestration_agent(self) -> Agent:
-        """Orchestration Agent - Workflow coordination."""
-        return Agent(
-            config=self.agents_config['orchestration_agent'], # type: ignore[index]
+            config=self.agents_config['qa_agent'], # type: ignore[index]
             verbose=True,
         )
     
     @task
-    def evidence_collection_task(self) -> Task:
-        """Task for evidence discovery and collection."""
+    def onboarding_task(self) -> Task:
+        """Task for conducting entrepreneur onboarding."""
         return Task(
-            config=self.tasks_config['evidence_collection'], # type: ignore[index]
-            agent=self.research_agent(),
+            config=self.tasks_config['onboarding_task'], # type: ignore[index]
+            agent=self.onboarding_agent(),
         )
     
     @task
-    def evidence_analysis_task(self) -> Task:
-        """Task for analyzing collected evidence."""
+    def customer_research_task(self) -> Task:
+        """Task for researching customer profile."""
         return Task(
-            config=self.tasks_config['evidence_analysis'], # type: ignore[index]
-            agent=self.analysis_agent(),
+            config=self.tasks_config['customer_research_task'], # type: ignore[index]
+            agent=self.customer_researcher(),
         )
     
     @task
-    def evidence_validation_task(self) -> Task:
-        """Task for validating evidence quality."""
+    def competitor_analysis_task(self) -> Task:
+        """Task for analyzing competitive landscape."""
         return Task(
-            config=self.tasks_config['evidence_validation'], # type: ignore[index]
+            config=self.tasks_config['competitor_analysis_task'], # type: ignore[index]
+            agent=self.competitor_analyst(),
+        )
+    
+    @task
+    def value_design_task(self) -> Task:
+        """Task for designing value proposition."""
+        return Task(
+            config=self.tasks_config['value_design_task'], # type: ignore[index]
+            agent=self.value_designer(),
+        )
+    
+    @task
+    def validation_task(self) -> Task:
+        """Task for creating validation roadmap."""
+        return Task(
+            config=self.tasks_config['validation_task'], # type: ignore[index]
             agent=self.validation_agent(),
         )
     
     @task
-    def insight_synthesis_task(self) -> Task:
-        """Task for synthesizing insights."""
+    def qa_task(self) -> Task:
+        """Task for quality assurance review."""
         return Task(
-            config=self.tasks_config['insight_synthesis'], # type: ignore[index]
-            agent=self.synthesis_agent(),
-        )
-    
-    @task
-    def report_generation_task(self) -> Task:
-        """Task for generating the final report."""
-        return Task(
-            config=self.tasks_config['report_generation'], # type: ignore[index]
-            agent=self.reporting_agent(),
-            output_file='output/strategic_analysis.md',
-        )
-    
-    @task
-    def workflow_orchestration_task(self) -> Task:
-        """Task for orchestrating the workflow."""
-        return Task(
-            config=self.tasks_config['workflow_orchestration'], # type: ignore[index]
-            agent=self.orchestration_agent(),
+            config=self.tasks_config['qa_task'], # type: ignore[index]
+            agent=self.qa_agent(),
         )
     
     @crew
