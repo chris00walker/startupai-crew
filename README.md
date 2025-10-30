@@ -8,13 +8,13 @@ This is a pure, standalone CrewAI automation designed exclusively for deployment
 
 ## 🏗️ Architecture
 
-**6-Agent Strategic Analysis Workflow:**
-1. **Research Coordinator** - Evidence discovery and data collection
-2. **Strategic Analyst** - Pattern recognition and insights
-3. **Evidence Validator** - Quality verification and credibility assessment
-4. **Strategic Synthesizer** - Insight combination into narratives
-5. **Report Generator** - Professional report creation
-6. **Workflow Orchestrator** - Coordination and quality control
+**6-Agent Value Proposition Design Workflow:**
+1. **Onboarding Agent** - Startup Consultant & Interviewer - Guides entrepreneurs through structured onboarding
+2. **Customer Researcher** - Customer Insight Analyst - Identifies target customer Jobs, Pains, and Gains
+3. **Competitor Analyst** - Market & Competitor Strategist - Maps competitive landscape and differentiation
+4. **Value Designer** - Value Proposition Architect - Synthesizes insights into Value Proposition Canvas
+5. **Validation Agent** - Experiment Designer & Validation Strategist - Develops 3-tier Validation Roadmap
+6. **QA Agent** - Quality Assurance & Model Validation Specialist - Verifies framework compliance
 
 **Pure LLM-Based:**
 - No external tools or API dependencies
@@ -58,10 +58,10 @@ crewai login
 ### 5. Connect to Existing Deployment
 ```bash
 # Check deployment status
-crewai deploy status --uuid 4e368758-a5e9-4b5d-9379-cb7621e044bc
+crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 
 # Deploy updates
-crewai deploy push --uuid 4e368758-a5e9-4b5d-9379-cb7621e044bc
+crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 ```
 
 ---
@@ -69,12 +69,16 @@ crewai deploy push --uuid 4e368758-a5e9-4b5d-9379-cb7621e044bc
 ## 📦 Deployment Information
 
 **Current Deployment:**
-- **UUID:** `4e368758-a5e9-4b5d-9379-cb7621e044bc`
-- **Token:** `d2cb5ab382b5`
-- **Public URL:** `https://startupai-4e368758-a5e9-4b5d-9379-cb7621e04-7f34a57c.crewai.com`
+- **UUID:** `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
+- **Token:** `f4cc39d92520`
+- **Public URL:** `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
 - **Organization:** StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
 - **GitHub Repo:** `chris00walker/startupai-crew`
 - **Branch:** `main`
+- **Status:** ✅ Online
+
+**Previous Deployment (Deprecated):**
+- **UUID:** `4e368758-a5e9-4b5d-9379-cb7621e044bc` (linked to wrong repository)
 
 **Dashboard:** https://app.crewai.com/deployments
 
@@ -142,33 +146,32 @@ startupai-crew/
 ## 🎯 Inputs & Outputs
 
 ### Inputs
-The crew accepts two input parameters:
+The crew accepts entrepreneur input describing their startup idea:
 
-```json
+```python
 {
-  "strategic_question": "The business question to analyze",
-  "project_context": "Background information about the project/company"
+  "entrepreneur_input": "Detailed description of the startup idea, target customers, and business context"
 }
 ```
 
 **Example:**
-```json
+```python
 {
-  "strategic_question": "Should we expand into the European market?",
-  "project_context": "B2B SaaS, $5M ARR, US-based, 50 employees"
+  "entrepreneur_input": "I want to build a B2B SaaS platform that helps small manufacturing companies track their equipment maintenance. My target customers are facilities managers at companies with 50-200 employees who currently use spreadsheets and struggle with unexpected equipment failures."
 }
 ```
 
 ### Output
-Professional strategic analysis report saved to `output/strategic_analysis.md`:
+The crew returns structured task outputs (not a file):
 
-- Executive Summary
-- Research Findings
-- Strategic Insights
-- SWOT Analysis
-- Recommendations
-- Implementation Plan
-- Conclusion
+1. **Entrepreneur Brief** (JSON) - Structured onboarding data
+2. **Customer Profile** - Jobs, Pains, and Gains analysis
+3. **Competitor Analysis Report** - Competitive landscape with positioning map
+4. **Value Proposition Canvas** - Complete canvas with value statement
+5. **3-Tier Validation Roadmap** - Prioritized experiments and metrics
+6. **QA Report** - Quality assessment with pass/fail recommendation
+
+**Format:** Task outputs returned as structured data, not markdown files
 
 ---
 
@@ -176,25 +179,24 @@ Professional strategic analysis report saved to `output/strategic_analysis.md`:
 
 ### Get Inputs Schema
 ```bash
-curl https://startupai-4e368758-a5e9-4b5d-9379-cb7621e04-7f34a57c.crewai.com/inputs \
-  -H "Authorization: Bearer d2cb5ab382b5"
+curl https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/inputs \
+  -H "Authorization: Bearer f4cc39d92520"
 ```
 
 ### Kickoff Crew Execution
 ```bash
-curl -X POST https://startupai-4e368758-a5e9-4b5d-9379-cb7621e04-7f34a57c.crewai.com/kickoff \
-  -H "Authorization: Bearer d2cb5ab382b5" \
+curl -X POST https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/kickoff \
+  -H "Authorization: Bearer f4cc39d92520" \
   -H "Content-Type: application/json" \
   -d '{
-    "strategic_question": "Should we expand into the European market?",
-    "project_context": "B2B SaaS, $5M ARR, US-based"
+    "entrepreneur_input": "I want to build a B2B SaaS platform that helps small manufacturing companies track their equipment maintenance. Target customers are facilities managers at 50-200 employee companies."
   }'
 ```
 
 ### Check Execution Status
 ```bash
-curl https://startupai-4e368758-a5e9-4b5d-9379-cb7621e04-7f34a57c.crewai.com/status/{kickoff_id} \
-  -H "Authorization: Bearer d2cb5ab382b5"
+curl https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/status/{kickoff_id} \
+  -H "Authorization: Bearer f4cc39d92520"
 ```
 
 ---
@@ -215,17 +217,17 @@ git commit -m "your changes"
 git push origin main
 
 # Deploy to CrewAI AMP
-crewai deploy push --uuid 4e368758-a5e9-4b5d-9379-cb7621e044bc
+crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 ```
 
 ### View Logs
 ```bash
-crewai deploy logs --uuid 4e368758-a5e9-4b5d-9379-cb7621e044bc
+crewai deploy logs --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 ```
 
 ### Check Status
 ```bash
-crewai deploy status --uuid 4e368758-a5e9-4b5d-9379-cb7621e044bc
+crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 ```
 
 ---

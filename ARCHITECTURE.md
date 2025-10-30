@@ -2,9 +2,9 @@
 
 ## Overview
 
-**Pure, standalone CrewAI automation for strategic business analysis**
+**Pure, standalone CrewAI automation for Value Proposition Design**
 
-This repository contains a completely decoupled CrewAI automation designed exclusively for deployment on CrewAI AMP. It has zero external dependencies and operates independently of any frontend, backend, or database systems.
+This repository contains a completely decoupled CrewAI automation designed exclusively for deployment on CrewAI AMP. It implements a 6-agent workflow for helping entrepreneurs design and validate value propositions. It has zero external dependencies and operates independently of any frontend, backend, or database systems.
 
 ## Design Principles
 
@@ -52,90 +52,133 @@ startupai-crew/
 │       ├── __init__.py
 │       ├── crew.py              # Main crew definition (@CrewBase)
 │       └── config/
-│           ├── agents.yaml      # 3 agent configurations
-│           └── tasks.yaml       # 3 task definitions
-├── pyproject.toml               # Minimal dependencies
+│           ├── agents.yaml      # 6 agent configurations
+│           └── tasks.yaml       # 6 task definitions
+├── pyproject.toml               # Minimal dependencies (crewai>=0.80.0)
 ├── uv.lock                      # Reproducible builds
 ├── README.md                    # User documentation
 ├── ARCHITECTURE.md              # This file
+├── CLAUDE.md                    # AI assistant instructions
+├── ENVIRONMENTS.md              # Deployment environment guide
 └── .gitignore
 ```
 
-## Agents (3 Total)
+## Agents (6 Total)
 
-### 1. Research Agent
-- **Role:** Strategic Research Analyst
-- **Goal:** Research and synthesize information to answer strategic questions
+**Purpose:** Guides entrepreneurs through Value Proposition Design using proven frameworks (Value Proposition Canvas, Jobs-to-be-Done, Strategyzer methodology)
+
+### 1. Onboarding Agent
+- **Role:** Startup Consultant & Interviewer
+- **Goal:** Guide entrepreneurs through structured onboarding to extract essential business context
 - **Tools:** None (pure LLM reasoning)
-- **Max Iterations:** 15
+- **Max Iterations:** 10
+- **Focus:** Collect startup idea, target customers, problem understanding, and business context
 
-### 2. Analysis Agent
-- **Role:** Strategic Insights Analyst  
-- **Goal:** Analyze research findings and extract actionable insights
+### 2. Customer Researcher
+- **Role:** Customer Insight Analyst
+- **Goal:** Identify target customer Jobs, Pains, and Gains following JTBD framework
 - **Tools:** None (pure LLM reasoning)
-- **Max Iterations:** 15
+- **Max Iterations:** 10
+- **Focus:** Customer profile with Jobs (functional, social, emotional), Pains (obstacles, risks, undesired outcomes), Gains (required, expected, desired)
 
-### 3. Reporting Agent
-- **Role:** Strategic Report Writer
-- **Goal:** Generate comprehensive professional reports
+### 3. Competitor Analyst
+- **Role:** Market & Competitor Strategist
+- **Goal:** Map competitive landscape and identify differentiation opportunities
+- **Tools:** None (pure LLM reasoning)
+- **Max Iterations:** 8
+- **Focus:** Competitor analysis report, positioning map, white space identification
+
+### 4. Value Designer
+- **Role:** Value Proposition Architect
+- **Goal:** Synthesize insights into complete Value Proposition Canvas
+- **Tools:** None (pure LLM reasoning)
+- **Max Iterations:** 10
+- **Focus:** Products & Services, Pain Relievers, Gain Creators, Value Proposition Statement
+
+### 5. Validation Agent
+- **Role:** Experiment Designer & Validation Strategist
+- **Goal:** Develop 3-tier Validation Roadmap with prioritized experiments
+- **Tools:** None (pure LLM reasoning)
+- **Max Iterations:** 8
+- **Focus:**
+  - **Tier 1:** Smoke tests (landing pages, prototypes, pre-orders)
+  - **Tier 2:** Problem interviews, solution interviews
+  - **Tier 3:** MVPs, pilot programs, concierge tests
+  - Includes success metrics and validation criteria
+
+### 6. QA Agent
+- **Role:** Quality Assurance & Model Validation Specialist
+- **Goal:** Verify framework compliance and logical consistency
+- **Tools:** None (pure LLM reasoning)
+- **Max Iterations:** 5
+- **Focus:** Quality assessment, completeness check, pass/fail recommendation with improvement suggestions
 - **Tools:** None (pure LLM reasoning)
 - **Max Iterations:** 10
 
 ## Tasks (Sequential Workflow)
 
 ```
-┌──────────────┐
-│ research_task│  Comprehensive strategic research
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│ analysis_task│  SWOT analysis and insights
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│  report_task │  Professional markdown report
-└──────────────┘
+┌────────────────────┐
+│ onboarding_task    │  Structured interview with entrepreneur
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ customer_research  │  Jobs, Pains, Gains analysis
+│ _task              │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ competitor_        │  Competitive landscape mapping
+│ analysis_task      │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ value_design_task  │  Value Proposition Canvas creation
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ validation_task    │  3-tier experiment roadmap
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ qa_task            │  Quality assurance check
+└────────────────────┘
 ```
 
 ## Inputs
 
-The crew accepts two input parameters:
+The crew accepts entrepreneur input describing their startup idea:
 
-```json
+```python
 {
-  "strategic_question": "The business question to analyze",
-  "project_context": "Background information about the project"
+  "entrepreneur_input": "Detailed description of the startup idea, target customers, and business context"
+}
+```
+
+**Example:**
+```python
+{
+  "entrepreneur_input": "I want to build a B2B SaaS platform that helps small manufacturing companies track their equipment maintenance. My target customers are facilities managers at companies with 50-200 employees who currently use spreadsheets and struggle with unexpected equipment failures."
 }
 ```
 
 ## Output
 
-Professional strategic analysis report saved to `output/strategic_analysis.md`:
+The crew returns structured task outputs (not a file):
 
-```markdown
-# Executive Summary
-...
+1. **Entrepreneur Brief** (JSON) - Structured onboarding data
+2. **Customer Profile** - Jobs, Pains, and Gains analysis
+3. **Competitor Analysis Report** - Competitive landscape with positioning map
+4. **Value Proposition Canvas** - Complete canvas with value statement
+5. **3-Tier Validation Roadmap** - Prioritized experiments and metrics
+6. **QA Report** - Quality assessment with pass/fail recommendation
 
-# Research Findings
-...
-
-# Strategic Insights
-...
-
-# SWOT Analysis
-...
-
-# Recommendations
-...
-
-# Implementation Plan
-...
-
-# Conclusion
-...
-```
+**Format:** Task outputs returned as structured data via CrewAI API
 
 ## Deployment
 
