@@ -150,8 +150,9 @@ startupai-crew/
 ├── .env                                # Local environment (gitignored)
 ├── .gitignore                          # Python + IDE patterns
 ├── README.md                           # User documentation (285 lines)
-├── ARCHITECTURE.md                     # Architecture docs (312 lines)
-├── ENVIRONMENTS.md                     # Environment setup guide (451 lines)
+├── docs/
+│   ├── architecture.md                 # Architecture docs (312 lines)
+│   └── environments.md                 # Environment setup guide (451 lines)
 └── CLAUDE.md                           # This file
 ```
 
@@ -297,7 +298,7 @@ curl -X GET \
 - **Never force push to main** without explicit permission
 - **Follow existing commit message style:** Check `git log` for patterns
 - **Test locally before deploying:** Always run `crewai run` first
-- **Document breaking changes:** Update ARCHITECTURE.md and README.md
+- **Document breaking changes:** Update docs/architecture.md and README.md
 
 ### Python Code Style
 
@@ -310,8 +311,8 @@ curl -X GET \
 
 ### Repository Documentation
 - **README.md** (285 lines) - Complete user guide with quick start, deployment, API integration
-- **ARCHITECTURE.md** (312 lines) - Detailed architecture documentation with agent definitions
-- **ENVIRONMENTS.md** (451 lines) - Multi-environment setup guide (local/production)
+- **docs/architecture.md** (312 lines) - Detailed architecture documentation with agent definitions
+- **docs/environments.md** (451 lines) - Multi-environment setup guide (local/production)
 
 ### External References
 - **Product Platform:** `../app.startupai.site` - Next.js frontend that calls this crew
@@ -344,7 +345,7 @@ curl -X GET \
 - ⚠️ Testing: 0% (No test files yet)
 
 **Recent Updates:**
-- Added comprehensive environment setup guide (ENVIRONMENTS.md)
+- Added comprehensive environment setup guide (docs/environments.md)
 - Deployed to CrewAI AMP with public API
 - Transformed from strategic analysis to Value Proposition Design focus
 - Simplified to pure CrewAI automation (no external tools)

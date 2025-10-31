@@ -126,6 +126,11 @@ echo "OPENAI_API_KEY=sk-your-key-here" >> .env
 
 ```
 startupai-crew/
+├── .claude/
+│   └── project.md               # AI assistant instructions
+├── docs/
+│   ├── architecture.md          # Detailed architecture docs
+│   └── environments.md          # Environment setup guide
 ├── src/
 │   └── startupai/
 │       ├── __init__.py
@@ -135,7 +140,6 @@ startupai-crew/
 │           └── tasks.yaml       # 6 task definitions
 ├── .env.example                 # Environment template
 ├── .gitignore
-├── ARCHITECTURE.md              # Detailed architecture docs
 ├── README.md                    # This file
 ├── pyproject.toml               # Project metadata (pure crewai)
 └── uv.lock                      # Dependency lock file

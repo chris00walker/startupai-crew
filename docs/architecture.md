@@ -47,6 +47,11 @@ dependencies = [
 
 ```
 startupai-crew/
+├── .claude/
+│   └── project.md               # AI assistant instructions
+├── docs/
+│   ├── architecture.md          # This file
+│   └── environments.md          # Deployment environment guide
 ├── src/
 │   └── startupai/
 │       ├── __init__.py
@@ -54,13 +59,10 @@ startupai-crew/
 │       └── config/
 │           ├── agents.yaml      # 6 agent configurations
 │           └── tasks.yaml       # 6 task definitions
+├── .gitignore
 ├── pyproject.toml               # Minimal dependencies (crewai>=0.80.0)
-├── uv.lock                      # Reproducible builds
 ├── README.md                    # User documentation
-├── ARCHITECTURE.md              # This file
-├── CLAUDE.md                    # AI assistant instructions
-├── ENVIRONMENTS.md              # Deployment environment guide
-└── .gitignore
+└── uv.lock                      # Reproducible builds
 ```
 
 ## Agents (6 Total)
