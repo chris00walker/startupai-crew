@@ -1,4 +1,4 @@
-# CLAUDE.md
+# .claude/project.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -153,7 +153,8 @@ startupai-crew/
 ├── docs/
 │   ├── architecture.md                 # Architecture docs (312 lines)
 │   └── environments.md                 # Environment setup guide (451 lines)
-└── CLAUDE.md                           # This file
+└── .claude/
+    └── project.md                      # This file
 ```
 
 ### Key Configuration Files
