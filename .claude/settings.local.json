@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read(//home/chris/**)",
+      "WebSearch",
+      "WebFetch(domain:docs.crewai.com)",
+      "WebFetch(domain:supabase.com)",
+      "WebFetch(domain:netlify.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:ai-sdk.dev)",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Bash(rm -r:*)",
+      "Bash(rm -f:*)"
+    ],
+    "ask": []
+  },
+  "enabledMcpjsonServers": [
+    "netlify",
+    "supabase",
+    "shadcn"
+  ]
+}
