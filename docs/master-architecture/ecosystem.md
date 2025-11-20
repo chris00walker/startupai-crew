@@ -197,6 +197,6 @@ See `validation-backlog.md` for the current hypothesis queue.
 
 ## Related Documents
 
-- `organizational-structure.md` - C-suite → Agent hierarchy
+- `organizational-structure.md` - Flat founder team & workflow agents
 - `current-state.md` - Detailed status of each service
 - `validation-backlog.md` - Hypothesis-driven feature backlog

@@ -241,7 +241,7 @@ export async function POST(req: Request) {
 ### Master Architecture (Cross-Service)
 This repository is the **single source of truth** for ecosystem architecture:
 - `docs/master-architecture/ecosystem.md` - Three-service reality diagram
-- `docs/master-architecture/organizational-structure.md` - C-suite → Agent hierarchy
+- `docs/master-architecture/organizational-structure.md` - Flat founder team & workflow agents
 - `docs/master-architecture/current-state.md` - Honest status assessment
 - `docs/master-architecture/validation-backlog.md` - Hypothesis-driven feature queue
 

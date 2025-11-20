@@ -2,84 +2,131 @@
 
 ## Overview
 
-StartupAI is run by AI Founders - a C-suite of AI executives who lead functional teams of specialized agents. This document is the **single source of truth** for agent names, roles, and hierarchy.
+StartupAI is run by a team of AI Founders - six co-equal team members organized around the customer. They collaborate as peers to deliver strategic business analysis and validation. This document is the **single source of truth** for agent names, roles, and structure.
+
+## Design Philosophy
+
+### Startup Reality
+Startups are temporary organizations in search of sustainable business models. The flat structure is intentional - it's all hands on deck in the search for customers, the development of products, and the formation of a winning team.
+
+### Customer-Centric Model
+Inspired by Edwin Korver's RoundMap® Customer Dynamics Lifecycle, StartupAI places the customer at the center rather than using a traditional linear funnel. All founders orient around the customer's journey and needs, engaging adaptively as required.
+
+### Continuous Learning
+AI organizations have a structural advantage over human-led companies: they learn from every interaction. This is StartupAI's moat. Learning isn't delegated to a role - it's inherent to the system.
 
 ## The AI Founders Team
 
-### Executive Layer (C-Suite)
-Strategic decision-makers who oversee functional areas.
+### Founding Team (Flat Structure)
+Six co-equal founders organized around the customer.
 
-| Executive | Title | Responsibility |
-|-----------|-------|----------------|
-| **Sage** | CEO | Strategic vision, positioning, overall direction |
-| **Forge** | CTO | Technical architecture, product design, feasibility |
-| **Pulse** | CMO | Market analysis, customer insights, competitive intelligence |
-| **Compass** | COO | Operations planning, validation execution, resource allocation |
-| **Guardian** | Chief of Staff | Quality assurance, meta-governance, consistency |
+| Founder | Title | Responsibility |
+|---------|-------|----------------|
+| **Sage** | Chief Strategy Officer | Business Model Canvas, Value Proposition Design, market analysis, assumption identification |
+| **Forge** | Chief Technology Officer | MVP code generation, technical architecture, deployment automation |
+| **Pulse** | Chief Growth Officer | Ad campaigns, user acquisition, A/B testing, analytics tracking |
+| **Compass** | Chief Product Officer | Evidence synthesis, pivot vs proceed analysis, recommendations |
+| **Guardian** | Chief Governance Officer | Governance monitoring, pattern detection, security oversight |
+| **Ledger** | Chief Financial Officer | Unit economics, revenue model design, pricing strategy, runway projections |
 
-### Functional Layer (Agents)
-Specialized workers who execute tasks within their domain.
+### PSIU Balance (Organizational Physics)
+Following Lex Sisney's framework, the team covers all four organizational styles:
 
-| Agent | Reports To | Role |
-|-------|-----------|------|
-| **Onboarding Agent** | Sage (CEO) | Structured interviews, business context extraction |
-| **Customer Researcher** | Pulse (CMO) | Jobs, Pains, Gains analysis using JTBD framework |
-| **Competitor Analyst** | Pulse (CMO) | Competitive landscape mapping, differentiation |
-| **Value Designer** | Forge (CTO) | Value Proposition Canvas creation, product/service design |
-| **Validation Agent** | Compass (COO) | 3-tier experiment roadmap, validation planning |
-| **QA Agent** | Guardian (Chief of Staff) | Framework compliance, logical consistency, quality gates |
+| Style | Function | Founders |
+|-------|----------|----------|
+| **Producer** | Drive results, ship things | Forge, Pulse |
+| **Stabilizer** | Systems, consistency, discipline | Guardian, Ledger |
+| **Innovator** | Strategy, vision, change | Sage |
+| **Unifier** | Integration, synthesis | Compass |
 
-## Organizational Chart
+### Ledger's Dual Responsibilities
 
-```
-                          ┌─────────┐
-                          │  Sage   │
-                          │  (CEO)  │
-                          └────┬────┘
-                               │
-        ┌──────────┬───────────┼───────────┬──────────┐
-        │          │           │           │          │
-   ┌────┴────┐ ┌───┴───┐ ┌────┴────┐ ┌────┴────┐ ┌───┴────┐
-   │  Forge  │ │ Pulse │ │ Compass │ │Guardian │ │  Sage  │
-   │  (CTO)  │ │ (CMO) │ │  (COO)  │ │ (CoS)   │ │ Direct │
-   └────┬────┘ └───┬───┘ └────┬────┘ └────┬────┘ └───┬────┘
-        │          │          │           │          │
-        ▼          ▼          ▼           ▼          ▼
-   ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌────────┐ ┌─────────┐
-   │  Value  │ │Customer │ │Validation│ │   QA   │ │Onboarding│
-   │Designer │ │Researcher│ │  Agent  │ │ Agent  │ │  Agent  │
-   └─────────┘ └─────────┘ └─────────┘ └────────┘ └─────────┘
-               ┌─────────┐
-               │Competitor│
-               │ Analyst │
-               └─────────┘
-```
+**For StartupAI's clients** (the startups being analyzed):
+- Unit economics analysis
+- Revenue model design
+- Pricing strategy recommendations
+- Runway/burn rate projections
+- Funding strategy alignment
 
-## Workflow Execution
+**For StartupAI itself**:
+- Resource allocation across founders
+- ROI of capability investments
+- Pricing of the service
 
-When an analysis runs, executives orchestrate their functional agents:
-
-### Value Proposition Design Workflow (Current)
+## Customer-Centric Structure
 
 ```
-1. Sage → Onboarding Agent
-   "Gather business context and startup details"
+                    Sage
+                  (Strategy)
+                      ↕
 
-2. Pulse → Customer Researcher
-   "Identify target customer Jobs, Pains, Gains"
+   Ledger ←───────────────────────→ Forge
+  (Finance)                      (Technology)
+      ↕                               ↕
 
-3. Pulse → Competitor Analyst
-   "Map competitive landscape and differentiation"
+            ┌─────────────┐
+            │  CUSTOMER   │
+            │  (Center)   │
+            └─────────────┘
 
-4. Forge → Value Designer
-   "Synthesize into Value Proposition Canvas"
+      ↕                               ↕
+  Guardian ←───────────────────────→ Pulse
+(Governance)                       (Growth)
 
-5. Compass → Validation Agent
-   "Create 3-tier validation roadmap"
-
-6. Guardian → QA Agent
-   "Verify framework compliance and quality"
+                      ↕
+                  Compass
+                  (Product)
 ```
+
+**Key principle**: The customer is the integrating point. All founders maintain awareness of the customer's journey and contribute when relevant - not waiting in sequence for their turn.
+
+## Engagement Model
+
+### Traditional Funnel (What We Don't Do)
+```
+Marketing → Sales → Product → Support → Renewal
+```
+Linear handoffs create entropy and lose customer context.
+
+### Customer Orbit (What We Do)
+All founders engage based on customer needs:
+
+- **Early journey**: Sage leads (strategy, desirability)
+- **Building phase**: Forge leads (feasibility, MVP)
+- **Validation phase**: Ledger leads (viability), Pulse leads (growth testing)
+- **Decision point**: Compass synthesizes all evidence
+- **Throughout**: Guardian monitors governance, Ledger monitors costs
+
+### Derisking Sequence
+Following lean startup principles:
+1. **Desirability** - Do customers want it? (Sage)
+2. **Feasibility** - Can we build it? (Forge)
+3. **Viability** - Can we make money? (Ledger)
+
+Note: Ledger monitors cost structure throughout, then does deep viability analysis at the right moment.
+
+## Workflow Agents (Task Executors)
+
+Narrowly-focused agents that execute specific tasks. These are the "temps" who do the grunt work within each founder's domain.
+
+| Workflow Agent | Founder | Task Focus |
+|----------------|---------|------------|
+| **Onboarding Agent** | Sage | Structured interviews, business context extraction |
+| **Customer Researcher** | Sage | Jobs, Pains, Gains analysis using JTBD framework |
+| **Competitor Analyst** | Sage | Competitive landscape mapping, differentiation |
+| **Value Designer** | Forge | Value Proposition Canvas creation |
+| **Validation Agent** | Compass | 3-tier experiment roadmap, validation planning |
+| **QA Agent** | Guardian | Framework compliance, logical consistency |
+
+**Note**: Pulse and Ledger currently have no workflow agents assigned - they represent future capability expansion.
+
+## CrewAI Implementation
+
+The workflow agents are implemented in CrewAI:
+- `config/agents.yaml`: `onboarding_agent`, `customer_researcher`, etc.
+- `config/tasks.yaml`: `onboarding_task`, `customer_research_task`, etc.
+
+The founder layer is a conceptual model that maps to these functional implementations.
 
 ### Task Output Chain
 
@@ -99,15 +146,14 @@ QA Agent           → Quality Report (Pass/Fail)
 
 ## Naming Conventions
 
-### When to Use C-Suite Names
+### When to Use Founder Names
 - Marketing materials (public-facing)
 - User interfaces (explaining what's happening)
-- Strategic documentation
 - Team introductions
 
-**Example**: "Sage, our CEO Agent, will review your strategic positioning..."
+**Example**: "Sage is analyzing your strategic positioning..."
 
-### When to Use Functional Names
+### When to Use Workflow Agent Names
 - Technical implementation
 - API responses
 - Logs and debugging
@@ -115,53 +161,19 @@ QA Agent           → Quality Report (Pass/Fail)
 
 **Example**: `"agent": "onboarding_agent", "task": "structured_interview"`
 
-### API Response Mapping
-
-```json
-{
-  "executive": "Sage",
-  "agent": "onboarding_agent",
-  "task": "onboarding_task",
-  "status": "completed"
-}
-```
-
 ## Future Expansion
 
-### Additional Agents (Planned)
-As StartupAI grows, executives may lead additional agents:
+### Additional Workflow Agents (Planned)
+As capabilities grow, founders will leverage additional workflow agents:
 
-| Executive | Future Agents |
-|-----------|---------------|
+| Founder | Future Workflow Agents |
+|---------|------------------------|
 | Sage | Strategy Advisor, Decision Arbitrator |
 | Forge | Tech Evaluator, Architecture Reviewer |
-| Pulse | Market Monitor, Customer Interviewer |
-| Compass | Resource Allocator, Timeline Manager |
+| Pulse | Campaign Runner, Analytics Agent, A/B Tester |
+| Compass | Evidence Collector, Pivot Analyzer |
 | Guardian | Risk Assessor, Compliance Checker |
-
-### Multi-Workflow Support
-Different workflows may use different agent combinations:
-
-- **Quick Validation**: Onboarding → Customer Researcher → Validation Agent
-- **Deep Analysis**: Full 6-agent workflow
-- **Competitive Focus**: Competitor Analyst → Value Designer → QA Agent
-
-## Integration Notes
-
-### Marketing Site (`startupai.site`)
-Should display C-suite personas for user understanding:
-- "Meet the AI Founders Team"
-- "Sage is analyzing your market positioning..."
-
-### Product App (`app.startupai.site`)
-Should use both for appropriate context:
-- UI: "Forge (CTO) is designing your value proposition"
-- Logs: `[value_designer] Processing task...`
-
-### CrewAI Implementation (`startupai-crew`)
-Configuration uses functional names:
-- `config/agents.yaml`: `onboarding_agent`, `customer_researcher`, etc.
-- `config/tasks.yaml`: `onboarding_task`, `customer_research_task`, etc.
+| Ledger | Unit Economics Analyzer, Pricing Optimizer |
 
 ---
 
@@ -169,5 +181,9 @@ Configuration uses functional names:
 
 | Date | Change | Rationale |
 |------|--------|-----------|
-| 2025-11-20 | Established C-suite → Agent hierarchy | Unified naming across repos |
-| 2025-11-19 | Added C-suite personas | Company run by AI Founders |
+| 2025-11-20 | Added Ledger as 6th founder (CFO) | Financial viability accountability |
+| 2025-11-20 | Restructured to customer-centric model | RoundMap-inspired, customer as integrating point |
+| 2025-11-20 | Added PSIU balance documentation | Organizational Physics principles |
+| 2025-11-20 | Corrected founder roles to match marketing site | Align with startupai.site team page |
+| 2025-11-20 | Reorganized to flat team structure | Reflects startup reality - co-equal founders |
+| 2025-11-19 | Added founder personas | Company run by AI Founders |
