@@ -83,7 +83,11 @@ Other documents reference these sources - they don't duplicate the content.
 ## Related Repositories
 
 - **Marketing Site**: `startupai.site` - Lead capture and transparency
+  - Docs: `startupai.site/docs/`
+  - Work tracking: `startupai.site/docs/work/`
 - **Product App**: `app.startupai.site` - Customer portal and delivery
+  - Docs: `app.startupai.site/docs/`
+  - Work tracking: `app.startupai.site/docs/work/`
 
 This repository (startupai-crew) is **upstream** of both - changes here unblock downstream work.
 

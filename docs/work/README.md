@@ -17,3 +17,12 @@ last_reviewed: "2025-11-21"
 - [Done](./done.md) - Recently delivered
 - [Phases](./phases.md) - Engineering phases
 - [Roadmap](./roadmap.md) - Strategic timeline
+- [Cross-Repo Blockers](./cross-repo-blockers.md) - Dependencies and downstream impacts
+
+## Cross-Repo Coordination
+
+This repository is **upstream** of both downstream repos. Updates here unblock:
+- **Product App**: `app.startupai.site/docs/work/cross-repo-blockers.md`
+- **Marketing Site**: `startupai.site/docs/work/cross-repo-blockers.md`
+
+When completing phase milestones, update downstream blockers files to notify those repos.

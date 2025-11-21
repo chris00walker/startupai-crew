@@ -24,3 +24,10 @@ features/
 ├── governance-crew/
 └── ...
 ```
+
+## Ecosystem Context
+
+- **Master Architecture**: `../master-architecture/`
+- **API Contracts**: `../master-architecture/reference/api-contracts.md`
+- **Product App Features**: `app.startupai.site/docs/work/features/`
+- **Marketing Site Features**: `startupai.site/docs/work/features/`

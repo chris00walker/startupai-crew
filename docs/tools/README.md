@@ -1,41 +1,39 @@
 # CrewAI Tools Documentation
 
-This directory documents the custom tools available to CrewAI agents.
+This directory documents the planned custom tools for CrewAI agents.
 
-## Available Tools
+## Current Status
 
-The following tools are defined in `src/startupai/tools/`:
+**Tools are not yet implemented.** The crew currently operates with pure LLM-based agents without custom tools.
 
-### web_search.py
+## Planned Tools
+
+The following tools will be created in `src/startupai/tools/` when implemented:
+
+### web_search.py (Planned)
 **Purpose**: Web search capabilities for research tasks
 
-**Used by**:
+**Will be used by**:
 - Customer Researcher (segment research)
 - Competitor Analyst (market research)
 
-**Status**: Planned
-
 ---
 
-### analytics.py
+### analytics.py (Planned)
 **Purpose**: Analytics and data processing for experiment results
 
-**Used by**:
+**Will be used by**:
 - Social Media Analyst (engagement metrics)
 - Project Manager (evidence aggregation)
 
-**Status**: Planned
-
 ---
 
-### report_generator.py
+### report_generator.py (Planned)
 **Purpose**: Generate structured reports from analysis results
 
-**Used by**:
+**Will be used by**:
 - QA Agent (quality reports)
 - All crews (output formatting)
-
-**Status**: Planned
 
 ---
 
@@ -43,8 +41,9 @@ The following tools are defined in `src/startupai/tools/`:
 
 ### Creating a New Tool
 
-1. Create a new file in `src/startupai/tools/`
-2. Use the CrewAI tool decorator pattern:
+1. Create `src/startupai/tools/` directory
+2. Create a new file for the tool
+3. Use the CrewAI tool decorator pattern:
 
 ```python
 from crewai_tools import tool
@@ -64,7 +63,7 @@ def tool_function(input_param: str) -> str:
     return result
 ```
 
-3. Register the tool in the relevant agent's configuration
+4. Register the tool in the relevant agent's configuration
 
 ### Tool Best Practices
 
@@ -76,7 +75,7 @@ def tool_function(input_param: str) -> str:
 
 ### Assigning Tools to Agents
 
-Tools are assigned in `config/agents.yaml`:
+Tools are assigned in `src/startupai/config/agents.yaml`:
 
 ```yaml
 customer_researcher:
@@ -96,8 +95,10 @@ customer_researcher:
 
 ## Related Documents
 
-- [02-organization.md](../master-architecture/02-organization.md) - Which agents use which tools
+- [02-organization.md](../master-architecture/02-organization.md) - Which agents will use which tools
 - [03-validation-spec.md](../master-architecture/03-validation-spec.md) - How tools fit in the flow
 
 ---
-**Last Updated**: 2025-11-21
+
+**Last Updated**: November 21, 2025
+**Status**: Planning phase - tools not yet implemented

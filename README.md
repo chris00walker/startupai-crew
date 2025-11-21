@@ -173,24 +173,33 @@ curl https://startupai-...crewai.com/status/{kickoff_id} \
 
 ```
 startupai-crew/
-├── docs/
-│   ├── architecture.md              # This repo's architecture
-│   ├── environments.md              # Environment setup
-│   └── master-architecture/         # ECOSYSTEM SOURCE OF TRUTH
-│       ├── ecosystem.md             # Three-service overview
-│       ├── organizational-structure.md  # 6 founders, 18 agents
-│       ├── internal-validation-system-spec.md  # Technical blueprint
-│       ├── current-state.md         # Honest assessment
-├── work/
-│   │       └── backlog.md              # Hypothesis queue
 ├── src/
 │   └── startupai/
-│       ├── flows/                   # CrewAI Flows orchestration
-│       ├── crews/                   # 8 specialized crews
-│       └── tools/                   # Shared tools
-├── CLAUDE.md                        # AI context
-├── README.md                        # This file
-└── pyproject.toml                   # Dependencies
+│       ├── __init__.py
+│       ├── crew.py                 # Crew definition
+│       └── config/                 # Agent/task YAML configs
+│           ├── agents.yaml
+│           └── tasks.yaml
+├── docs/
+│   ├── README.md                   # Documentation index
+│   ├── environments.md             # Environment setup
+│   ├── master-architecture/        # ECOSYSTEM SOURCE OF TRUTH
+│   │   ├── 00-introduction.md
+│   │   ├── 01-ecosystem.md         # Three-service overview
+│   │   ├── 02-organization.md      # 6 founders, 18 agents
+│   │   ├── 03-validation-spec.md   # Technical blueprint
+│   │   ├── 04-status.md            # Current state assessment
+│   │   └── reference/              # API contracts, approval workflows
+│   ├── tools/                      # Tool documentation
+│   └── work/                       # Work tracking
+│       ├── backlog.md
+│       ├── in-progress.md
+│       ├── done.md
+│       ├── phases.md
+│       └── roadmap.md
+├── CLAUDE.md                       # AI context
+├── README.md                       # This file
+└── pyproject.toml                  # Dependencies
 ```
 
 ---
@@ -204,7 +213,7 @@ startupai-crew/
 
 ## Documentation
 
-- **Architecture:** `docs/architecture.md`
+- **Docs Index:** `docs/README.md`
 - **Master Architecture:** `docs/master-architecture/`
 - **CrewAI Docs:** https://docs.crewai.com
 
@@ -237,4 +246,5 @@ crewai deploy list
 ---
 
 **Status:** Rebuilding from 6-agent to 8-crew/18-agent Flows architecture
+**Last Updated:** November 21, 2025
 **License:** Proprietary - StartupAI Platform

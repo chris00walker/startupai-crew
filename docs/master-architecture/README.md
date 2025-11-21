@@ -52,5 +52,16 @@ Detailed specifications extracted for standalone reference:
 - Environment setup: `../environments.md`
 - Other repos reference this directory as source of truth
 
+## Downstream Repositories
+
+These repositories consume this architecture:
+
+- **Product App**: `app.startupai.site`
+  - Docs: `app.startupai.site/docs/`
+  - Blockers: `app.startupai.site/docs/work/cross-repo-blockers.md`
+- **Marketing Site**: `startupai.site`
+  - Docs: `startupai.site/docs/`
+  - Blockers: `startupai.site/docs/work/cross-repo-blockers.md`
+
 ---
 **Last Updated**: 2025-11-21
