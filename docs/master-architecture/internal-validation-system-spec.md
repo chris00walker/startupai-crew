@@ -643,6 +643,462 @@ src/startupai/
 
 ---
 
+## Marketing Site AI Integration
+
+The marketing site (startupai.site) requires AI integration to embody our transparency values and demonstrate the AI Founders' capabilities before conversion.
+
+### Customer Service Agent
+
+**Dual Placement Strategy**:
+
+#### 1. Floating Chat Widget
+- Persistent bottom-right bubble available on all pages
+- General support agent answering questions about StartupAI, pricing, features
+- Implemented in site `layout.tsx` for global availability
+- Uses Vercel AI SDK for streaming responses
+
+#### 2. Founder-Specific Chat in Modals
+- Extend `FounderProfileCard.tsx` with tabbed interface: "Profile" | "Chat"
+- Each founder responds in character based on their role:
+  - **Sage**: Strategy questions, VPC design, customer insights
+  - **Forge**: Technical feasibility, build considerations
+  - **Pulse**: Growth tactics, market signals
+  - **Compass**: Synthesis, tradeoffs, decision support
+  - **Guardian**: Governance, risk, accountability
+  - **Ledger**: Financial viability, unit economics
+- System prompts derived from founder personality/role in `aiFounders` data
+
+#### Backend Architecture
+- Netlify function: `/.netlify/functions/chat`
+- Input: `{ message: string, founderId?: string, context?: string }`
+- Routes to AI model with founder-specific system prompts
+- Stores conversation history in Supabase for continuity
+
+### Live Data Integration
+
+Replace all hardcoded mock data with live platform metrics to demonstrate transparency.
+
+#### Supabase Schema (New Tables)
+
+```sql
+-- Aggregated platform statistics
+CREATE TABLE platform_metrics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  metric_name TEXT NOT NULL,          -- 'validations_completed', 'mvps_built', etc.
+  metric_value INTEGER NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Anonymized recent agent activities
+CREATE TABLE public_activity_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  founder_id TEXT NOT NULL,           -- 'sage', 'forge', etc.
+  activity_type TEXT NOT NULL,        -- 'analysis', 'build', 'validation'
+  description TEXT NOT NULL,          -- Anonymized activity description
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Per-founder performance metrics
+CREATE TABLE founder_stats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  founder_id TEXT NOT NULL UNIQUE,
+  analyses_completed INTEGER DEFAULT 0,
+  accuracy_rate DECIMAL(5,2),
+  avg_response_time INTERVAL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+#### Netlify Functions (Data Layer)
+
+**`/.netlify/functions/metrics`**
+- Returns: platform stats + founder stats
+- Caches responses (5-10 min TTL)
+- Reduces Supabase load
+
+**`/.netlify/functions/activities`**
+- Returns: recent anonymized activities
+- Filterable by founder
+- Paginated results
+
+#### Frontend Data Flow
+
+**Current State** (to replace):
+```typescript
+// src/data/agentActivity.ts - hardcoded
+export const aiFounders = [
+  { name: "Guardian", stats: { analyses: 142, accuracy: "94%" } },
+  // ...
+];
+```
+
+**Target State**:
+```typescript
+// src/data/agentActivity.ts - fetches live data
+export async function getFounderStats(): Promise<FounderStats[]> {
+  const response = await fetch('/.netlify/functions/metrics');
+  return response.json();
+}
+
+// Components use React Query or SWR for caching
+const { data: founders, isLoading } = useQuery('founders', getFounderStats);
+```
+
+#### Mock Data Locations to Replace
+
+| File | Data | Replacement |
+|------|------|-------------|
+| `src/data/agentActivity.ts:45-192` | `aiFounders` stats | `/.netlify/functions/metrics` |
+| `src/data/agentActivity.ts:195-265` | `recentActivities` | `/.netlify/functions/activities` |
+| `src/data/agentActivity.ts` | `dashboardMetrics` | `/.netlify/functions/metrics` |
+| `src/app/demo/dashboard/page.tsx:29-65` | `activeWorkflows` | Keep demo data (not production) |
+
+**Note**: Static data (names, roles, avatars, personalities) remains hardcoded. Only dynamic metrics and activities fetch from API.
+
+### Implementation Sequence
+
+1. **Supabase schema** - Create tables for metrics and activities
+2. **Netlify functions** - Build data fetching endpoints with caching
+3. **Update agentActivity.ts** - Export async fetch functions instead of static arrays
+4. **Component updates** - Add loading states, error handling, async data fetching
+5. **Shared chat component** - Build reusable chat UI
+6. **Floating widget** - Implement global chat bubble
+7. **Founder modal chat** - Add chat tab to existing modals
+8. **Chat backend** - Create Netlify function with founder-specific prompts
+
+### Data Architecture Decision
+
+**Recommended: Netlify Functions → Supabase**
+
+Rationale:
+- Keeps marketing site self-contained and deployable
+- Enables caching to reduce Supabase load
+- Allows rate limiting and security at function layer
+- Can be upgraded to call product app API later if needed
+- Consistent with existing `/.netlify/functions/contact` pattern
+
+---
+
+## Product App Smart Artifact Architecture
+
+### Vision: Reimagining Strategyzer Frameworks
+
+Traditional Strategyzer tools (VPC, BMC, Testing Business Ideas) rely on static formats: PDFs, posters, whiteboards, sticky notes. While helpful for ideation, these are a "horror show to maintain" - disconnected, unversioned, and divorced from actual validation evidence.
+
+**The StartupAI reimagining**:
+- Transform canvases from static documents into **living digital artifacts**
+- Wire frameworks together so insights flow between VPC, BMC, and TBI
+- Connect canvases to real testing assets and evidence
+- Enable both human DIY entry and AI agent population
+- Keep humans in the loop with configurable approval checkpoints
+
+### Human/AI Mode Configuration
+
+All four interaction modes are configurable in dashboard settings:
+
+| Mode | Scope | Behavior |
+|------|-------|----------|
+| **Global toggle** | Project-level | Set DIY or AI-assisted mode for entire project |
+| **Per-canvas toggle** | Canvas-level | VPC, BMC, TBI can each be independently DIY or AI |
+| **Per-section hybrid** | Section-level | Within a canvas, some sections DIY, others AI-populated |
+| **Suggestion-based** | Entry-level | AI always suggests, human confirms/edits before save |
+
+**Default behavior**: AI does initial heavy lifting (populating canvases from onboarding brief and analysis), but all modes are selectable. Users choose their level of control.
+
+### Approval Checkpoints
+
+Six categories of actions require explicit human approval before AI proceeds:
+
+#### 1. Spend Increases
+- Any experiment or test that costs money beyond current budget
+- Ad spend, user testing incentives, tool subscriptions
+- Shows projected cost, ROI estimate, and alternatives
+
+#### 2. Campaign Launch
+- All advertising and marketing campaigns before they go live
+- **Critical control point**: Content leaves StartupAI's ecosystem and enters the broader internet/social media
+- Includes: ad creative, copy, targeting parameters, landing pages, email sequences
+- Client reviews and signs off on everything that will represent their brand publicly
+
+#### 3. Stage Gate Progression
+- Moving between validation stages: Desirability → Feasibility → Viability
+- Guardian QA must pass before gate unlock is offered
+- Human reviews evidence synthesis and confirms readiness
+
+#### 4. Pivot Recommendations
+- When evidence suggests significant VPC/BMC changes
+- Compass synthesizes invalidated assumptions
+- Human approves pivot direction before AI updates canvases
+
+#### 5. Direct Customer Contact
+- Before AI initiates contact with real people (interview requests, survey outreach, user testing recruitment)
+- Different from broadcast campaigns - this is 1:1 or 1:few contact representing the client
+- Includes: email outreach, LinkedIn messages, phone call scripts
+- Client reviews messaging and target list before contact begins
+
+#### 6. Third-Party Data Sharing
+- When system needs to share client project data with external tools or services
+- Connecting to new APIs, uploading data to testing platforms, analytics integrations
+- Shows: what data will be shared, with whom, for what purpose, retention policy
+- Client retains control over where their business data goes
+
+**Approval UI**: Modal with clear context, evidence summary, and approve/reject/modify options.
+
+### Approval Workflow Architecture
+
+#### Approval Types & Default Behaviors
+
+| Approval Type | Default Behavior | Rationale |
+|---------------|------------------|-----------|
+| Campaign Launch | **Blocking** | High risk - content goes public |
+| Direct Customer Contact | **Blocking** | Represents client to real people |
+| Spend Increases | **Blocking** | Financial commitment |
+| Third-Party Data Sharing | Parallel | Can queue while AI continues |
+| Stage Gate Progression | **Blocking** | Major strategic decision |
+| Pivot Recommendations | **Blocking** | Major strategic direction change |
+
+Users can override defaults per project via delegation settings.
+
+#### Notification Escalation
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Immediate  │ ──→ │   +15 min   │ ──→ │   +24 hrs   │ ──→ │   +48 hrs   │
+│   In-app    │     │    Email    │     │  SMS/Push   │     │  Escalate   │
+│ notification│     │    alert    │     │ (if urgent) │     │ to backup   │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+```
+
+- **Urgency classification**: System assigns urgency based on approval type and context
+- **Time-sensitive examples**: Campaign with scheduled launch, expiring ad credits
+- **Escalation path**: Secondary approver (if configured) or project pause
+
+#### Delegation Control System
+
+Both Founders and Consultants can configure approval delegation:
+
+**Auto-Approve Rules**:
+- Per approval type (e.g., "auto-approve spend under $50")
+- Per project phase (e.g., "auto-approve all desirability experiments")
+- Per evidence strength (e.g., "auto-proceed if Guardian QA passes with >90%")
+
+**Consultant-Specific Options**:
+- **Operational vs. Client-Facing**: Consultants can auto-approve operational decisions while routing brand-facing decisions to clients
+- **Approval Summaries**: Batch low-risk auto-approvals into daily digest for client awareness
+- **Override Authority**: Define which approvals consultant can make on client's behalf
+
+**Presets**:
+- "High Control" - All approvals require explicit sign-off
+- "Balanced" - Block campaigns/contact/gates, parallel for data/spend-under-threshold
+- "High Autonomy" - Auto-approve within budget, only block campaigns and gates
+- "Custom" - Full configuration control
+
+#### Approval Queue Interface
+
+**Dashboard View**:
+- Pending approvals sorted by urgency
+- Grouped by project and type
+- Quick-approve for low-risk items
+- Bulk actions for similar approvals
+
+**Approval Detail Modal**:
+- Context: What AI wants to do and why
+- Evidence: Supporting data and analysis
+- Risk assessment: What could go wrong
+- Alternatives: Other options considered
+- Actions: Approve / Reject / Modify / Delegate
+
+**Audit Trail**:
+- All approvals logged with timestamp, user, decision, and any modifications
+- Required for Guardian governance reporting
+- Exportable for compliance
+
+#### Database Schema Additions
+
+```sql
+-- Approval requests
+CREATE TABLE approval_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  approval_type TEXT NOT NULL,  -- 'campaign', 'spend', 'contact', etc.
+  status TEXT DEFAULT 'pending', -- 'pending', 'approved', 'rejected', 'modified'
+  urgency TEXT DEFAULT 'normal', -- 'low', 'normal', 'high', 'critical'
+  blocks_workflow BOOLEAN DEFAULT true,
+
+  -- Request details
+  title TEXT NOT NULL,
+  description TEXT,
+  context JSONB,                 -- AI's reasoning and evidence
+  requested_action JSONB,        -- What AI wants to do
+  alternatives JSONB,            -- Other options considered
+
+  -- Resolution
+  resolved_by UUID REFERENCES users(id),
+  resolved_at TIMESTAMPTZ,
+  resolution_notes TEXT,
+  modifications JSONB,           -- Changes made by approver
+
+  -- Escalation
+  escalation_level INTEGER DEFAULT 0,
+  escalated_to UUID REFERENCES users(id),
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- User delegation preferences
+CREATE TABLE approval_preferences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  project_id UUID REFERENCES projects(id), -- NULL for global defaults
+
+  approval_type TEXT NOT NULL,
+  auto_approve BOOLEAN DEFAULT false,
+  auto_approve_conditions JSONB,  -- e.g., {"max_spend": 50, "min_qa_score": 0.9}
+  notification_channels TEXT[],   -- ['in_app', 'email', 'sms']
+  escalation_contact UUID REFERENCES users(id),
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, project_id, approval_type)
+);
+```
+
+#### Key Implementation Files
+
+**Approval System**:
+- New: `frontend/src/components/approvals/ApprovalQueue.tsx`
+- New: `frontend/src/components/approvals/ApprovalDetailModal.tsx`
+- New: `frontend/src/components/settings/DelegationSettings.tsx`
+- New: `frontend/src/hooks/useApprovals.ts`
+
+**Notifications**:
+- New: `frontend/src/services/notifications.ts`
+- New: `backend/src/jobs/approval-escalation.ts` (cron job)
+
+**Database**:
+- New: `frontend/src/db/schema/approvals.ts`
+- New: `frontend/src/db/schema/approval-preferences.ts`
+
+### Framework Wiring Logic
+
+#### Stage-Based BMC Population
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    BUSINESS MODEL CANVAS                        │
+├─────────────┬─────────────┬───────────────┬─────────────────────┤
+│ Key         │ Key         │ Value         │ Customer      │ Customer   │
+│ Partners    │ Activities  │ Propositions  │ Relationships │ Segments   │
+│ [FEAS]      │ [FEAS]      │ [DESIR]       │ [DESIR/FEAS]  │ [DESIR]    │
+├─────────────┴─────────────┼───────────────┼───────────────┴─────┤
+│ Key Resources             │               │ Channels            │
+│ [FEAS]                    │               │ [DESIR/FEAS]        │
+├───────────────────────────┴───────────────┴─────────────────────┤
+│ Cost Structure [VIAB]           │ Revenue Streams [DESIR/VIAB]  │
+└─────────────────────────────────┴───────────────────────────────┘
+```
+
+#### Validation Flow
+
+**1. Desirability Stage (VPC-Driven)**
+```
+VPC Customer Profile    →   TBI Experiments    →   BMC Population
+  - Customer Jobs           - "Do they want it?"    - Customer Segments
+  - Pains                   - "Will they pay?"      - Value Propositions
+  - Gains                                           - Revenue Streams (pricing)
+
+VPC Value Map
+  - Products & Services
+  - Pain Relievers
+  - Gain Creators
+```
+
+**2. Channel & Relationship Testing (Desirability/Feasibility Overlap)**
+- *Desirability lens*: Which channels do customers prefer? What relationship type do they want?
+- *Feasibility lens*: Can we use those channels cost-effectively? Can we deliver that relationship at scale?
+- Evidence populates BMC: Channels, Customer Relationships
+
+**3. Feasibility Stage**
+- Key Activities, Key Resources, Key Partners
+- Operational capability validation
+- Technical feasibility (Forge's domain)
+
+**4. Viability Stage**
+- Cost Structure vs Revenue Streams = unit economics
+- Sustainable business model validation
+- Ledger's financial analysis
+
+#### Bidirectional Evidence Flow
+
+Evidence doesn't just validate canvases - it updates them:
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│     VPC     │ ←──→│     TBI     │ ←──→│     BMC     │
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                   │                   │
+       └───────────┬───────┴───────┬───────────┘
+                   │               │
+            ┌──────▼───────┐ ┌─────▼──────┐
+            │   Evidence   │ │ Hypotheses │
+            │   (Vector)   │ │  Tracking  │
+            └──────────────┘ └────────────┘
+```
+
+- **Evidence validates hypotheses** → Updates hypothesis status across all canvases
+- **Contradicting evidence** → Triggers pivot recommendation (requires approval)
+- **Strong evidence** → Auto-strengthens related canvas sections
+- **Weak evidence** → Suggests additional experiments
+
+### Current Implementation Status
+
+**Infrastructure Complete (~55-60%)**:
+- ✅ Canvas components (VPC, BMC, TBI) with guided modes
+- ✅ Data models (projects, hypotheses, experiments, evidence)
+- ✅ Vector embeddings (pgvector 1536 dims for semantic search)
+- ✅ AI onboarding (Vercel AI SDK with quality scoring)
+- ✅ CrewAI integration (strategic analysis)
+- ✅ Stage-gate validation model
+
+**Missing: Bidirectional Sync Layer**:
+- ❌ AI insights → canvas auto-population
+- ❌ Evidence → hypothesis validation visualization
+- ❌ Canvas sections showing validation status (tested/untested/contradicted)
+- ❌ Approval workflow UI for spend/gates/pivots
+- ❌ Mode configuration dashboard
+
+### Implementation Priorities
+
+1. **Mode configuration UI** - Dashboard settings for all 4 interaction modes
+2. **Approval workflow** - Modal system for spend/gates/pivots
+3. **AI → Canvas bridge** - CrewAI output populates canvas sections
+4. **Evidence → Canvas linking** - Visual indicators of validation status
+5. **Hypothesis tracking UI** - Connect experiments to hypotheses to evidence
+6. **Framework wiring** - VPC changes cascade to BMC, evidence updates all
+
+### Key Files to Modify
+
+**Dashboard Settings**:
+- New: `frontend/src/components/settings/AIAssistanceSettings.tsx`
+- New: `frontend/src/components/settings/ApprovalPreferences.tsx`
+
+**Canvas Components** (add AI population + validation status):
+- `frontend/src/components/canvas/ValuePropositionCanvas.tsx`
+- `frontend/src/components/canvas/BusinessModelCanvas.tsx`
+- `frontend/src/components/canvas/TestingBusinessIdeasCanvas.tsx`
+
+**Approval Workflow**:
+- New: `frontend/src/components/approvals/ApprovalModal.tsx`
+- New: `frontend/src/components/approvals/SpendApproval.tsx`
+- New: `frontend/src/components/approvals/CampaignApproval.tsx`
+- New: `frontend/src/components/approvals/GateApproval.tsx`
+- New: `frontend/src/components/approvals/PivotApproval.tsx`
+
+**Evidence Integration**:
+- Modify: `frontend/src/db/schema/evidence.ts` (add canvas_section linking)
+- New: `frontend/src/components/canvas/ValidationIndicator.tsx`
+
+---
+
 ## Development Sequence
 
 ### Immediate Next Steps (Phase 1)
@@ -730,6 +1186,9 @@ src/startupai/
 | Date | Change | Author |
 |------|--------|--------|
 | 2025-11-21 | Initial spec created | Claude + Chris |
+| 2025-11-21 | Added Marketing Site AI Integration section | Claude + Chris |
+| 2025-11-21 | Added Product App Smart Artifact Architecture section | Claude + Chris |
+| 2025-11-21 | Expanded to 6 approval checkpoints with full workflow architecture | Claude + Chris |
 
 ---
 
