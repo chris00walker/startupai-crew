@@ -2,355 +2,392 @@
 
 ## Overview
 
-**Pure, standalone CrewAI automation for Value Proposition Design**
+**CrewAI Flows-based validation engine for delivering Fortune 500-quality strategic analysis**
 
-This repository contains a completely decoupled CrewAI automation designed exclusively for deployment on CrewAI AMP. It implements a 6-agent workflow for helping entrepreneurs design and validate value propositions. It has zero external dependencies and operates independently of any frontend, backend, or database systems.
+This repository contains the brain of the StartupAI ecosystem - a multi-crew orchestration system that powers the AI Founders team. It implements 8 specialized crews with 18 specialist agents, coordinated through CrewAI Flows to deliver desirability, feasibility, and viability validation.
 
 ## Design Principles
 
-### 1. **Pure Automation**
-- No frontend coupling
-- No backend integration
-- No database dependencies
-- No custom tools requiring external APIs
-- Pure LLM-based reasoning and analysis
+### 1. **Service/Commercial Model**
+Organized around the customer, not a linear pipeline:
+- **Service Side**: Customer intake and brief capture
+- **Commercial Side**: Value delivery through analysis and validation
+- **Compass**: Balances competing interests, synthesizes evidence
+- **Guardian**: Governance oversight across all functions
 
-### 2. **Minimal Dependencies**
-```toml
-dependencies = [
-    "crewai>=0.80.0",  # Only core CrewAI package
-]
+### 2. **Gated Validation**
+Validation is sequential, not parallel:
+```
+[Test Cycles] → DESIRABILITY GATE → [Test Cycles] → FEASIBILITY GATE → [Test Cycles] → VIABILITY GATE
 ```
 
-### 3. **Microservices Architecture**
+### 3. **Flows + Crews Architecture**
+- **Crews**: Autonomous agent teams that collaborate on tasks
+- **Flows**: Event-driven orchestration that coordinates crews
+- **Routers**: Implement governance gates with conditional routing
+- **Structured State**: Pydantic models carry data through the system
+
+## Ecosystem Architecture
+
 ```
 ┌─────────────────────┐
-│  startupai.site     │  ← Marketing site (separate repo)
-└─────────────────────┘
-
-┌─────────────────────┐
-│ app.startupai.site  │  ← Product platform (separate repo)
-│  (Next.js Frontend) │     Calls CrewAI via REST API
+│   AI Founders Core  │
+│   (startupai-crew)  │  ← THIS REPOSITORY
+│  CrewAI Flows Engine│
 └──────────┬──────────┘
-           │ HTTP/REST
-           ▼
-┌─────────────────────┐
-│   CrewAI AMP        │  ← Managed platform
-│                     │
-│  ┌───────────────┐  │
-│  │ startupai-crew│  │  ← THIS REPOSITORY (pure automation)
-│  └───────────────┘  │
-└─────────────────────┘
+           │
+┌──────────┼──────────────┐
+│          │              │
+▼          │              ▼
+┌──────────────┐   │    ┌──────────────┐
+│startupai.site│   │    │app.startupai │
+│  Marketing   │   │    │   .site      │
+│  (Netlify)   │   │    │  (Netlify)   │
+└──────────────┘   │    └──────────────┘
+                   │
+                   ▼
+           ┌─────────────┐
+           │  Supabase   │
+           │   Shared DB │
+           └─────────────┘
 ```
 
-## Repository Structure
+## The 6 AI Founders
+
+| Founder | Title | Responsibility |
+|---------|-------|----------------|
+| **Sage** | CSO | Strategy, VPC design, owns Service Side |
+| **Forge** | CTO | Build, technical feasibility |
+| **Pulse** | CGO | Growth, market signals, desirability evidence |
+| **Compass** | CPO | Balance, synthesis, pivot/proceed |
+| **Guardian** | CGO | Governance, accountability, oversight |
+| **Ledger** | CFO | Finance, viability, compliance |
+
+## Organizational Structure
 
 ```
-startupai-crew/
-├── .claude/
-│   └── project.md               # AI assistant instructions
-├── docs/
-│   ├── architecture.md          # This file
-│   └── environments.md          # Deployment environment guide
-├── src/
-│   └── startupai/
-│       ├── __init__.py
-│       ├── crew.py              # Main crew definition (@CrewBase)
-│       └── config/
-│           ├── agents.yaml      # 6 agent configurations
-│           └── tasks.yaml       # 6 task definitions
-├── .gitignore
-├── pyproject.toml               # Minimal dependencies (crewai>=0.80.0)
-├── README.md                    # User documentation
-└── uv.lock                      # Reproducible builds
+                    GUARDIAN
+                  (Board Chair)
+                       │
+    ┌──────────────────┼──────────────────┐
+    │                  │                  │
+SERVICE SIDE        COMPASS          COMMERCIAL SIDE
+(Customer-Facing)  (Balance)        (Value Delivery)
+
+Sage owns:        Project Manager   Sage, Forge, Pulse, Ledger
+• Customer Service                  (flat peers)
+• Founder Onboarding
+• Consultant Onboarding
+        │
+        └──→ [Client Brief] ──────→
 ```
 
-## Agents (6 Total)
+## 8 Crews Architecture
 
-**Purpose:** Guides entrepreneurs through Value Proposition Design using proven frameworks (Value Proposition Canvas, Jobs-to-be-Done, Strategyzer methodology)
+### Phase 1: Service Side + Desirability Validation
 
-### 1. Onboarding Agent
-- **Role:** Startup Consultant & Interviewer
-- **Goal:** Guide entrepreneurs through structured onboarding to extract essential business context
-- **Tools:** None (pure LLM reasoning)
-- **Max Iterations:** 10
-- **Focus:** Collect startup idea, target customers, problem understanding, and business context
+#### 1. Service Crew (Sage owns)
+**Purpose**: Intake and brief capture
 
-### 2. Customer Researcher
-- **Role:** Customer Insight Analyst
-- **Goal:** Identify target customer Jobs, Pains, and Gains following JTBD framework
-- **Tools:** None (pure LLM reasoning)
-- **Max Iterations:** 10
-- **Focus:** Customer profile with Jobs (functional, social, emotional), Pains (obstacles, risks, undesired outcomes), Gains (required, expected, desired)
+| Agent | Task Focus |
+|-------|------------|
+| Customer Service Agent | Lead qualification, routing |
+| Founder Onboarding Agent | Structured interviews for founders |
+| Consultant Onboarding Agent | Multi-client context for agencies |
 
-### 3. Competitor Analyst
-- **Role:** Market & Competitor Strategist
-- **Goal:** Map competitive landscape and identify differentiation opportunities
-- **Tools:** None (pure LLM reasoning)
-- **Max Iterations:** 8
-- **Focus:** Competitor analysis report, positioning map, white space identification
+**Output**: Client Brief
 
-### 4. Value Designer
-- **Role:** Value Proposition Architect
-- **Goal:** Synthesize insights into complete Value Proposition Canvas
-- **Tools:** None (pure LLM reasoning)
-- **Max Iterations:** 10
-- **Focus:** Products & Services, Pain Relievers, Gain Creators, Value Proposition Statement
+#### 2. Analysis Crew (Sage)
+**Purpose**: Customer and competitor analysis
 
-### 5. Validation Agent
-- **Role:** Experiment Designer & Validation Strategist
-- **Goal:** Develop 3-tier Validation Roadmap with prioritized experiments
-- **Tools:** None (pure LLM reasoning)
-- **Max Iterations:** 8
-- **Focus:**
-  - **Tier 1:** Smoke tests (landing pages, prototypes, pre-orders)
-  - **Tier 2:** Problem interviews, solution interviews
-  - **Tier 3:** MVPs, pilot programs, concierge tests
-  - Includes success metrics and validation criteria
+| Agent | Task Focus |
+|-------|------------|
+| Customer Researcher | Jobs, Pains, Gains (JTBD framework) |
+| Competitor Analyst | Competitive landscape, differentiation |
 
-### 6. QA Agent
-- **Role:** Quality Assurance & Model Validation Specialist
-- **Goal:** Verify framework compliance and logical consistency
-- **Tools:** None (pure LLM reasoning)
-- **Max Iterations:** 5
-- **Focus:** Quality assessment, completeness check, pass/fail recommendation with improvement suggestions
-- **Tools:** None (pure LLM reasoning)
-- **Max Iterations:** 10
+**Output**: VPC components ready for testing
 
-## Tasks (Sequential Workflow)
+#### 3. Governance Crew (Guardian) - Phase 1
+**Purpose**: Quality validation before proceeding
+
+| Agent | Task Focus |
+|-------|------------|
+| QA Agent | Framework compliance, logical consistency |
+
+**Output**: QA Pass/Fail with feedback
+
+### Phase 2: Commercial Side + Build/Test
+
+#### 4. Build Crew (Forge)
+**Purpose**: Create testable artifacts
+
+| Agent | Task Focus |
+|-------|------------|
+| UX/UI Designer | Interface design for MVPs |
+| Frontend Developer | UI implementation |
+| Backend Developer | API, data layer |
+
+**Output**: Deployed testable artifacts with tracking
+
+#### 5. Growth Crew (Pulse)
+**Purpose**: Run experiments, collect signals
+
+| Agent | Task Focus |
+|-------|------------|
+| Ad Creative Agent | Ad copy, landing pages |
+| Communications Agent | Messaging, content |
+| Social Media Analyst | Engagement, sentiment |
+
+**Output**: Desirability evidence (quantitative + qualitative)
+
+#### 6. Synthesis Crew (Compass)
+**Purpose**: Integrate evidence, recommend pivot/proceed
+
+| Agent | Task Focus |
+|-------|------------|
+| Project Manager | Coordination, deliverable tracking |
+
+**Output**: Evidence synthesis with recommendation
+
+### Phase 3: Governance + Viability
+
+#### 7. Finance Crew (Ledger)
+**Purpose**: Validate business model viability
+
+| Agent | Task Focus |
+|-------|------------|
+| Financial Controller | Unit economics, budget |
+| Legal & Compliance Agent | Regulatory, contracts |
+
+**Output**: Viability assessment with financial model
+
+#### 8. Enhanced Governance Crew (Guardian)
+**Purpose**: Full audit trail and compliance
+
+| Agent | Task Focus |
+|-------|------------|
+| Audit Agent | Process compliance, accountability |
+| Security Agent | Data privacy, threat assessment |
+| QA Agent | Cross-crew quality checks |
+
+**Output**: Audit report with compliance status
+
+## CrewAI Flows Implementation
+
+### Flow State Management
+
+```python
+from crewai.flow.flow import Flow, start, listen, router
+from pydantic import BaseModel
+
+class ValidationState(BaseModel):
+    id: str
+    brief: ClientBrief
+    customer_profiles: List[CustomerProfile] = []
+    competitor_analysis: CompetitorReport = None
+    qa_status: str = "pending"
+    evidence: List[Evidence] = []
+    recommendation: str = None
+```
+
+### Phase 1 Flow Structure
+
+```python
+class Phase1Flow(Flow[ValidationState]):
+
+    @start()
+    def capture_brief(self):
+        """Service Crew captures client context"""
+        result = ServiceCrew().crew().kickoff(inputs={...})
+        self.state.brief = result.pydantic
+
+    @listen(capture_brief)
+    def analyze_customers(self):
+        """Analysis Crew researches customer segments"""
+        result = AnalysisCrew().crew().kickoff(inputs={...})
+        self.state.customer_profiles = result.pydantic
+
+    @listen(analyze_customers)
+    def analyze_competitors(self):
+        """Analysis Crew maps competitive landscape"""
+        result = AnalysisCrew().crew().kickoff(inputs={...})
+        self.state.competitor_analysis = result.pydantic
+
+    @listen(analyze_competitors)
+    def governance_review(self):
+        """Guardian QA gate"""
+        result = GovernanceCrew().crew().kickoff(inputs={...})
+        self.state.qa_status = result.status
+
+    @router(governance_review)
+    def qa_gate(self):
+        if self.state.qa_status == "passed":
+            return "approved"
+        return "needs_revision"
+
+    @listen("approved")
+    def output_deliverables(self):
+        """Compile Phase 1 outputs"""
+        return self.state
+```
+
+## File Structure
 
 ```
-┌────────────────────┐
-│ onboarding_task    │  Structured interview with entrepreneur
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│ customer_research  │  Jobs, Pains, Gains analysis
-│ _task              │
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│ competitor_        │  Competitive landscape mapping
-│ analysis_task      │
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│ value_design_task  │  Value Proposition Canvas creation
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│ validation_task    │  3-tier experiment roadmap
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│ qa_task            │  Quality assurance check
-└────────────────────┘
+src/startupai/
+├── flows/
+│   ├── __init__.py
+│   ├── internal_validation_flow.py
+│   └── state_schemas.py
+│
+├── crews/
+│   ├── service/
+│   │   ├── config/
+│   │   │   ├── agents.yaml
+│   │   │   └── tasks.yaml
+│   │   └── service_crew.py
+│   │
+│   ├── analysis/
+│   │   ├── config/
+│   │   │   ├── agents.yaml
+│   │   │   └── tasks.yaml
+│   │   └── analysis_crew.py
+│   │
+│   ├── governance/
+│   │   └── ...
+│   │
+│   ├── build/
+│   │   └── ...
+│   │
+│   ├── growth/
+│   │   └── ...
+│   │
+│   ├── synthesis/
+│   │   └── ...
+│   │
+│   └── finance/
+│       └── ...
+│
+├── tools/
+│   ├── web_search.py
+│   ├── analytics.py
+│   └── report_generator.py
+│
+└── knowledge/
+    └── flywheel_learnings.json
 ```
 
 ## Inputs
 
-The crew accepts entrepreneur input describing their startup idea:
-
-```python
+```json
 {
-  "entrepreneur_input": "Detailed description of the startup idea, target customers, and business context"
+  "entrepreneur_input": "Detailed description of startup idea, target customers, and business context"
 }
 ```
 
-**Example:**
-```python
-{
-  "entrepreneur_input": "I want to build a B2B SaaS platform that helps small manufacturing companies track their equipment maintenance. My target customers are facilities managers at companies with 50-200 employees who currently use spreadsheets and struggle with unexpected equipment failures."
-}
-```
+## Outputs
 
-## Output
+Structured deliverables per phase:
 
-The crew returns structured task outputs (not a file):
+### Phase 1 (Desirability)
+- Client Brief (structured business context)
+- Customer Profiles (Jobs/Pains/Gains per segment)
+- Competitor Analysis (positioning map)
+- Value Proposition Canvas
+- Assumption Backlog (prioritized)
+- QA Report
 
-1. **Entrepreneur Brief** (JSON) - Structured onboarding data
-2. **Customer Profile** - Jobs, Pains, and Gains analysis
-3. **Competitor Analysis Report** - Competitive landscape with positioning map
-4. **Value Proposition Canvas** - Complete canvas with value statement
-5. **3-Tier Validation Roadmap** - Prioritized experiments and metrics
-6. **QA Report** - Quality assessment with pass/fail recommendation
+### Phase 2 (Feasibility)
+- Test Artifacts (landing pages, ads, prototypes)
+- Evidence Report (signals collected)
+- Assumption Validation (validated/invalidated)
+- Pivot/Proceed Recommendation
 
-**Format:** Task outputs returned as structured data via CrewAI API
+### Phase 3 (Viability)
+- Feasibility Report
+- Viability Model (unit economics)
+- Audit Trail
+- Flywheel Entry (methodology improvements)
 
 ## Deployment
 
-### Initial Deployment
+### Current Deployment
+- **UUID**: `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
+- **URL**: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
+- **Platform**: CrewAI AMP
 
-```bash
-# From project root
-crewai deploy create
-
-# Follow prompts for:
-# - Crew name: startupai
-# - GitHub repository: chris00walker/startupai-crew
-```
-
-### Redeployment
-
-```bash
-crewai deploy push --uuid <deployment-uuid>
-```
-
-### GitHub Auto-Deploy
-
-Configure in CrewAI AMP Dashboard:
-1. Go to https://app.crewai.com/deployments
-2. Select "startupai" crew
-3. Settings → GitHub Integration
-4. Connect repository: `chris00walker/startupai-crew`
-5. Branch: `main`
-6. Enable auto-deploy on push
-
-## API Integration
-
-### Get Inputs Schema
-```bash
-curl https://your-crew-url.crewai.com/inputs \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-### Kickoff Execution
-```bash
-curl -X POST https://your-crew-url.crewai.com/kickoff \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "strategic_question": "How should we expand into the European market?",
-    "project_context": "B2B SaaS company, $5M ARR, US-based"
-  }'
-```
-
-### Check Status
-```bash
-curl https://your-crew-url.crewai.com/status/{kickoff_id} \
-  -H "Authorization: Bearer YOUR_TOKEN"
-```
-
-## Development
-
-### Local Setup
+### Commands
 
 ```bash
 # Install dependencies
 uv sync
 
-# Run crew locally
+# Run locally
 crewai run
+
+# Deploy
+crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+
+# Check status
+crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+
+# View logs
+crewai deploy logs --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 ```
 
-### Testing
+## API Endpoints
 
 ```bash
-# Unit tests (if added)
-pytest tests/
+# Get inputs schema
+curl https://startupai-...crewai.com/inputs \
+  -H "Authorization: Bearer TOKEN"
 
-# Integration test via CrewAI CLI
-crewai test
+# Kickoff workflow
+curl -X POST https://startupai-...crewai.com/kickoff \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"entrepreneur_input": "Business idea..."}'
+
+# Check status
+curl https://startupai-...crewai.com/status/{kickoff_id} \
+  -H "Authorization: Bearer TOKEN"
 ```
 
-## Benefits of This Architecture
+## Development Sequence
 
-### ✅ Clean Separation
-- CrewAI automation is completely decoupled
-- Frontend integration happens via REST API only
-- No shared code or dependencies
+### Immediate (Phase 1)
+1. Create state schemas (`state_schemas.py`)
+2. Build Service Crew (agents.yaml, tasks.yaml, service_crew.py)
+3. Build Analysis Crew
+4. Build Governance Crew (Phase 1)
+5. Create Phase 1 Flow
+6. Test with StartupAI's own business context
 
-### ✅ Independent Deployment
-- Deploy crew changes without touching frontend
-- Deploy frontend changes without touching crew
-- True microservices independence
+### Next (Phase 2)
+1. Build Crew, Growth Crew, Synthesis Crew
+2. Add pivot/proceed router logic
+3. Implement evidence synthesis
 
-### ✅ Minimal Complexity
-- Single dependency (crewai)
-- No external tools to maintain
-- Pure LLM-based reasoning
+### Future (Phase 3)
+1. Finance Crew
+2. Enhanced Governance Crew
+3. Flywheel learning capture
 
-### ✅ Easy GitHub Auto-Deploy
-- Dedicated repository for CrewAI
-- Push to main → automatic deployment
-- No mixed concerns in deployment pipeline
+## Related Documentation
 
-### ✅ Scalability
-- CrewAI AMP handles scaling automatically
-- No infrastructure to manage
-- Pay only for execution time
-
-## Future Enhancements
-
-### Phase 1: Add Tools (Optional)
-Once pure automation works, can add:
-- Web search tool (built-in CrewAI tools)
-- File operations tool
-- Custom lightweight tools
-
-### Phase 2: Advanced Features
-- Streaming responses
-- Webhook notifications
-- Custom error handling
-- Metrics and monitoring
-
-### Phase 3: Multi-Crew System
-- Specialized crews for different domains
-- Crew orchestration
-- Cross-crew communication
-
-## Migration Notes
-
-### From app.startupai.site Integration
-
-**Before:** Tightly coupled
-```
-app.startupai.site/
-├── frontend/        (Next.js)
-├── backend/         (FastAPI + CrewAI)
-├── src/startupai/   (CrewAI crew)
-└── database/        (Supabase)
-```
-
-**After:** Loosely coupled microservices
-```
-app.startupai.site/      (Next.js only)
-  └── calls REST API
-
-startupai-crew/          (Pure CrewAI)
-  └── standalone automation
-```
-
-### Integration Points
-
-**Frontend → CrewAI:**
-```typescript
-// app.startupai.site/frontend/src/lib/crewai.ts
-const response = await fetch(CREWAI_API_URL + '/kickoff', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${CREWAI_TOKEN}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    strategic_question: userInput.question,
-    project_context: userInput.context
-  })
-});
-```
+- **Ecosystem Overview**: `docs/master-architecture/ecosystem.md`
+- **Organizational Structure**: `docs/master-architecture/organizational-structure.md`
+- **Technical Specification**: `docs/master-architecture/internal-validation-system-spec.md`
+- **Current State**: `docs/master-architecture/current-state.md`
+- **Validation Backlog**: `docs/master-architecture/validation-backlog.md`
 
 ## Support
 
-For issues or questions:
 - CrewAI Docs: https://docs.crewai.com
-- CrewAI AMP Dashboard: https://app.crewai.com
+- CrewAI Dashboard: https://app.crewai.com
 - GitHub Issues: https://github.com/chris00walker/startupai-crew/issues
 
-## License
+---
 
-Proprietary - StartupAI Platform
+**Status**: Rebuilding from 6-agent crew to 8-crew/18-agent Flows architecture
+**Last Updated**: 2025-11-21

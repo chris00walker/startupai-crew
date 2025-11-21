@@ -1,29 +1,70 @@
-# StartupAI Crew - Pure CrewAI Automation
+# StartupAI Crew - AI Founders Engine
 
-**Standalone CrewAI automation for strategic business analysis**
+**CrewAI Flows-based validation engine powering the AI Founders team**
 
-This is a pure, standalone CrewAI automation designed exclusively for deployment on the CrewAI AMP platform. It operates independently with no external dependencies on frontend or backend systems.
-
----
-
-## 🏗️ Architecture
-
-**6-Agent Value Proposition Design Workflow:**
-1. **Onboarding Agent** - Startup Consultant & Interviewer - Guides entrepreneurs through structured onboarding
-2. **Customer Researcher** - Customer Insight Analyst - Identifies target customer Jobs, Pains, and Gains
-3. **Competitor Analyst** - Market & Competitor Strategist - Maps competitive landscape and differentiation
-4. **Value Designer** - Value Proposition Architect - Synthesizes insights into Value Proposition Canvas
-5. **Validation Agent** - Experiment Designer & Validation Strategist - Develops 3-tier Validation Roadmap
-6. **QA Agent** - Quality Assurance & Model Validation Specialist - Verifies framework compliance
-
-**Pure LLM-Based:**
-- No external tools or API dependencies
-- Pure reasoning using agent knowledge bases
-- Sequential process for comprehensive analysis
+This repository is the brain of the StartupAI ecosystem - a multi-crew orchestration system that delivers Fortune 500-quality strategic analysis through 6 AI Founders and 18 specialist agents.
 
 ---
 
-## 🚀 Quick Start (New Machine Setup)
+## Architecture
+
+### The 6 AI Founders
+
+| Founder | Title | Responsibility |
+|---------|-------|----------------|
+| **Sage** | CSO | Strategy, VPC design, owns Service Side |
+| **Forge** | CTO | Build, technical feasibility |
+| **Pulse** | CGO | Growth, market signals, desirability evidence |
+| **Compass** | CPO | Balance, synthesis, pivot/proceed |
+| **Guardian** | CGO | Governance, accountability, oversight |
+| **Ledger** | CFO | Finance, viability, compliance |
+
+### 8 Crews / 18 Agents
+
+**Service Side (Sage owns):**
+- Service Crew: Customer Service, Founder Onboarding, Consultant Onboarding
+
+**Commercial Side:**
+- Analysis Crew (Sage): Customer Researcher, Competitor Analyst
+- Build Crew (Forge): UX/UI Designer, Frontend Developer, Backend Developer
+- Growth Crew (Pulse): Ad Creative, Communications, Social Media Analyst
+- Synthesis Crew (Compass): Project Manager
+- Finance Crew (Ledger): Financial Controller, Legal & Compliance
+
+**Governance (Guardian):**
+- Governance Crew: Audit Agent, Security Agent, QA Agent
+
+### Gated Validation
+
+```
+[Test Cycles] → DESIRABILITY GATE → [Test Cycles] → FEASIBILITY GATE → [Test Cycles] → VIABILITY GATE
+```
+
+**Technology:** CrewAI Flows with `@listen` and `@router` decorators for crew orchestration and governance gates.
+
+---
+
+## Ecosystem
+
+```
+┌─────────────────────┐
+│   AI Founders Core  │  ← THIS REPOSITORY
+│   (startupai-crew)  │
+│  CrewAI Flows Engine│
+└──────────┬──────────┘
+           │
+    ┌──────┼──────┐
+    │      │      │
+    ▼      ▼      ▼
+Marketing  DB   Product
+  Site          App
+```
+
+**Master Architecture:** See `docs/master-architecture/` for ecosystem source of truth.
+
+---
+
+## Quick Start
 
 ### 1. Clone Repository
 ```bash
@@ -38,253 +79,161 @@ uv sync
 
 ### 3. Configure Environment
 ```bash
-# Copy example environment file
 cp .env.example .env
-
-# Edit .env and add your OpenAI API key
-# OPENAI_API_KEY=sk-...
+# Add OPENAI_API_KEY=sk-...
 ```
 
 ### 4. Authenticate with CrewAI
 ```bash
-# First time on new machine
-crewai login
-
-# This creates ~/.config/crewai/settings.json with:
-# - Organization: StartupAI
-# - Org UUID: 8f17470f-7841-4079-860d-de91ed5d1091
-```
-
-### 5. Connect to Existing Deployment
-```bash
-# Check deployment status
-crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
-
-# Deploy updates
-crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
-```
-
----
-
-## 📦 Deployment Information
-
-**Current Deployment:**
-- **UUID:** `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
-- **Token:** `f4cc39d92520`
-- **Public URL:** `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
-- **Organization:** StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
-- **GitHub Repo:** `chris00walker/startupai-crew`
-- **Branch:** `main`
-- **Status:** ✅ Online
-
-**Previous Deployment (Deprecated):**
-- **UUID:** `4e368758-a5e9-4b5d-9379-cb7621e044bc` (linked to wrong repository)
-
-**Dashboard:** https://app.crewai.com/deployments
-
----
-
-## 🔑 Authentication & Environment Setup
-
-### Global CrewAI Configuration
-CrewAI stores authentication globally (not per-project):
-
-**Location:** `~/.config/crewai/settings.json`
-
-**To authenticate on a new machine:**
-```bash
 crewai login
 ```
 
-This will:
-1. Open browser for authentication
-2. Save credentials to `~/.config/crewai/settings.json`
-3. Link to StartupAI organization
-
-### Environment Variables
-
-**For Local Development:**
+### 5. Run Locally
 ```bash
-# Create .env file from example
-cp .env.example .env
-
-# Add your API key
-echo "OPENAI_API_KEY=sk-your-key-here" >> .env
-```
-
-**For CrewAI AMP Deployment:**
-- Go to https://app.crewai.com/deployments
-- Select "Startupai" deployment
-- Navigate to "Environment Variables" tab
-- Add: `OPENAI_API_KEY=sk-your-key-here`
-
-⚠️ **IMPORTANT:** Local `.env` files are NOT used by deployed crews. Environment variables must be set in the CrewAI dashboard.
-
----
-
-## 📂 Repository Structure
-
-```
-startupai-crew/
-├── .claude/
-│   └── project.md               # AI assistant instructions
-├── docs/
-│   ├── architecture.md          # Detailed architecture docs
-│   └── environments.md          # Environment setup guide
-├── src/
-│   └── startupai/
-│       ├── __init__.py
-│       ├── crew.py              # Main crew definition (@CrewBase)
-│       └── config/
-│           ├── agents.yaml      # 6 agent configurations
-│           └── tasks.yaml       # 6 task definitions
-├── .env.example                 # Environment template
-├── .gitignore
-├── README.md                    # This file
-├── pyproject.toml               # Project metadata (pure crewai)
-└── uv.lock                      # Dependency lock file
-```
-
----
-
-## 🎯 Inputs & Outputs
-
-### Inputs
-The crew accepts entrepreneur input describing their startup idea:
-
-```python
-{
-  "entrepreneur_input": "Detailed description of the startup idea, target customers, and business context"
-}
-```
-
-**Example:**
-```python
-{
-  "entrepreneur_input": "I want to build a B2B SaaS platform that helps small manufacturing companies track their equipment maintenance. My target customers are facilities managers at companies with 50-200 employees who currently use spreadsheets and struggle with unexpected equipment failures."
-}
-```
-
-### Output
-The crew returns structured task outputs (not a file):
-
-1. **Entrepreneur Brief** (JSON) - Structured onboarding data
-2. **Customer Profile** - Jobs, Pains, and Gains analysis
-3. **Competitor Analysis Report** - Competitive landscape with positioning map
-4. **Value Proposition Canvas** - Complete canvas with value statement
-5. **3-Tier Validation Roadmap** - Prioritized experiments and metrics
-6. **QA Report** - Quality assessment with pass/fail recommendation
-
-**Format:** Task outputs returned as structured data, not markdown files
-
----
-
-## 🔌 API Integration
-
-### Get Inputs Schema
-```bash
-curl https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/inputs \
-  -H "Authorization: Bearer f4cc39d92520"
-```
-
-### Kickoff Crew Execution
-```bash
-curl -X POST https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/kickoff \
-  -H "Authorization: Bearer f4cc39d92520" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "entrepreneur_input": "I want to build a B2B SaaS platform that helps small manufacturing companies track their equipment maintenance. Target customers are facilities managers at 50-200 employee companies."
-  }'
-```
-
-### Check Execution Status
-```bash
-curl https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/status/{kickoff_id} \
-  -H "Authorization: Bearer f4cc39d92520"
-```
-
----
-
-## 💻 Local Development
-
-### Test Locally
-```bash
-# Make sure .env file has OPENAI_API_KEY
 crewai run
 ```
 
-### Deploy Changes
-```bash
-# Commit and push to GitHub
-git add .
-git commit -m "your changes"
-git push origin main
+---
 
-# Deploy to CrewAI AMP
+## Deployment
+
+**Current Deployment:**
+- **UUID:** `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
+- **URL:** `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
+- **Token:** `f4cc39d92520`
+- **Dashboard:** https://app.crewai.com/deployments
+
+### Commands
+
+```bash
+# Deploy updates
 crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
-```
 
-### View Logs
-```bash
+# Check status
+crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+
+# View logs
 crewai deploy logs --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 ```
 
-### Check Status
+---
+
+## Inputs & Outputs
+
+### Input
+```json
+{
+  "entrepreneur_input": "Detailed description of startup idea, target customers, and business context"
+}
+```
+
+### Output (Per Phase)
+
+**Phase 1 - Desirability:**
+- Client Brief
+- Customer Profiles (Jobs/Pains/Gains)
+- Competitor Analysis
+- Value Proposition Canvas
+- Assumption Backlog
+- QA Report
+
+**Phase 2 - Feasibility:**
+- Test Artifacts
+- Evidence Report
+- Pivot/Proceed Recommendation
+
+**Phase 3 - Viability:**
+- Viability Model
+- Audit Trail
+- Flywheel Entry
+
+---
+
+## API Integration
+
 ```bash
-crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+# Get inputs schema
+curl https://startupai-...crewai.com/inputs \
+  -H "Authorization: Bearer f4cc39d92520"
+
+# Kickoff workflow
+curl -X POST https://startupai-...crewai.com/kickoff \
+  -H "Authorization: Bearer f4cc39d92520" \
+  -H "Content-Type: application/json" \
+  -d '{"entrepreneur_input": "Business idea..."}'
+
+# Check status
+curl https://startupai-...crewai.com/status/{kickoff_id} \
+  -H "Authorization: Bearer f4cc39d92520"
 ```
 
 ---
 
-## 🆘 Troubleshooting
+## Repository Structure
+
+```
+startupai-crew/
+├── docs/
+│   ├── architecture.md              # This repo's architecture
+│   ├── environments.md              # Environment setup
+│   └── master-architecture/         # ECOSYSTEM SOURCE OF TRUTH
+│       ├── ecosystem.md             # Three-service overview
+│       ├── organizational-structure.md  # 6 founders, 18 agents
+│       ├── internal-validation-system-spec.md  # Technical blueprint
+│       ├── current-state.md         # Honest assessment
+│       └── validation-backlog.md    # Hypothesis queue
+├── src/
+│   └── startupai/
+│       ├── flows/                   # CrewAI Flows orchestration
+│       ├── crews/                   # 8 specialized crews
+│       └── tools/                   # Shared tools
+├── CLAUDE.md                        # AI context
+├── README.md                        # This file
+└── pyproject.toml                   # Dependencies
+```
+
+---
+
+## Related Repositories
+
+- **Marketing Site:** [startupai.site](https://github.com/chris00walker/startupai.site) - Lead capture & transparency
+- **Product App:** [app.startupai.site](https://github.com/chris00walker/app.startupai.site) - Delivery portal
+
+---
+
+## Documentation
+
+- **Architecture:** `docs/architecture.md`
+- **Master Architecture:** `docs/master-architecture/`
+- **CrewAI Docs:** https://docs.crewai.com
+
+---
+
+## Troubleshooting
 
 ### "Authentication failed"
 ```bash
-# Re-authenticate
 crewai login
 ```
 
+### "No OPENAI_API_KEY"
+- Local: Check `.env` file
+- Deployed: Set in CrewAI dashboard → Environment Variables
+
 ### "Crew not found"
 ```bash
-# Verify you're using the correct UUID
 crewai deploy list
 ```
 
-### "No OPENAI_API_KEY"
-```bash
-# For local development: check .env file
-cat .env
-
-# For deployed crew: check dashboard environment variables
-# https://app.crewai.com/deployments → Startupai → Environment Variables
-```
-
-### "Wrong agents showing in dashboard"
-This means the deployment is pulling from the wrong repository:
-1. Check GitHub integration in CrewAI dashboard
-2. Verify it points to `chris00walker/startupai-crew`
-3. May need to create fresh deployment if incorrectly configured
-
 ---
 
-## 🔗 Related Repositories
-
-- **Marketing Site:** https://github.com/chris00walker/startupai.site
-- **Product Platform:** https://github.com/chris00walker/app.startupai.site
-- **This Crew:** https://github.com/chris00walker/startupai-crew
-
-**Architecture:** Microservices (frontend → CrewAI AMP API → this crew)
-
----
-
-## 📄 License
-
-Proprietary - StartupAI Platform
-
----
-
-## 📞 Support
+## Support
 
 - **CrewAI Docs:** https://docs.crewai.com
-- **CrewAI AMP Dashboard:** https://app.crewai.com
-- **GitHub Issues:** https://github.com/chris00walker/startupai-crew/issues
+- **Dashboard:** https://app.crewai.com
+- **Issues:** https://github.com/chris00walker/startupai-crew/issues
+
+---
+
+**Status:** Rebuilding from 6-agent to 8-crew/18-agent Flows architecture
+**License:** Proprietary - StartupAI Platform

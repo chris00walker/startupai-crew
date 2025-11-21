@@ -17,7 +17,7 @@ StartupAI is a three-service ecosystem where AI Founders (this repository) serve
 ┌─────────────────────┐        │    ┌─────────────────────┐
 │   startupai.site    │        │    │ app.startupai.site  │
 │  Marketing & Trust  │        │    │ Product & Delivery  │
-│    (Netlify)        │        │    │     (Vercel)        │
+│    (Netlify)        │        │    │    (Netlify)        │
 └─────────────────────┘        │    └─────────────────────┘
                                │
                                ▼
@@ -47,7 +47,7 @@ StartupAI is a three-service ecosystem where AI Founders (this repository) serve
 ### Product Interface (`app.startupai.site`)
 **The Delivery Layer** - Customer portal for validation delivery
 
-- **Technology**: Next.js 15, Vercel AI SDK, deployed on Vercel
+- **Technology**: Next.js 15, Vercel AI SDK, deployed on Netlify
 - **Purpose**: Onboarding, trigger analysis, display results
 - **Communication**: REST to CrewAI, read/write to Supabase
 

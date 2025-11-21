@@ -1,42 +1,57 @@
 # CLAUDE.md - StartupAI CrewAI Backend Memory
 
 ## Project Identity
-**Name**: StartupAI CrewAI Backend  
-**Purpose**: 6-agent strategic business analysis workflow  
-**Framework**: CrewAI (Python)  
-**Deployment**: CrewAI AMP Platform  
-**Status**: ✅ Core workflow functional (15% tools implemented)  
+**Name**: StartupAI AI Founders Engine
+**Purpose**: 8-crew/18-agent validation engine with CrewAI Flows
+**Framework**: CrewAI Flows (Python)
+**Deployment**: CrewAI AMP Platform
+**Status**: Rebuilding to Flows architecture
 
 ## Critical Context
-**⚠️ IMPORTANT**: This is NOT deprecated. CrewAI AMP is a **fundamental building block** of the StartupAI value proposition. It delivers Fortune 500-quality strategic analysis that differentiates the product.
+**⚠️ IMPORTANT**: This repository is the **brain of the StartupAI ecosystem**. It powers the 6 AI Founders team that delivers Fortune 500-quality strategic analysis.
 
 ### Architecture Position
 ```
 [Product App] → [Onboarding: Vercel AI SDK] → Collects business data
                                     ↓
-                          [CrewAI AMP Workflow]
-                          6-Agent Analysis Pipeline
+                          [CrewAI Flows Engine]
+                     8 Crews / 18 Specialist Agents
                                     ↓
                        [Structured Reports → Supabase]
                                     ↓
                           [Product App Displays Results]
 ```
 
+### Master Architecture
+**Source of Truth**: `docs/master-architecture/`
+- `ecosystem.md` - Three-service overview
+- `organizational-structure.md` - 6 founders, 18 agents
+- `internal-validation-system-spec.md` - Technical blueprint (implementation guide)
+- `current-state.md` - Honest assessment
+- `validation-backlog.md` - Hypothesis queue
+
 ## Directory Structure
 ```
 src/startupai/
-├── __init__.py
-├── crew.py                     # Main @CrewBase class
-└── config/
-    ├── agents.yaml             # 6 agent definitions
-    └── tasks.yaml              # 6 task definitions
+├── flows/                      # CrewAI Flows orchestration
+│   ├── internal_validation_flow.py
+│   └── state_schemas.py
+├── crews/                      # 8 specialized crews
+│   ├── service/
+│   ├── analysis/
+│   ├── governance/
+│   ├── build/
+│   ├── growth/
+│   ├── synthesis/
+│   └── finance/
+└── tools/                      # Shared tools
 
 docs/
-├── architecture.md             # Detailed architecture
-└── environments.md             # Environment setup
+├── architecture.md             # This repo's architecture
+├── environments.md             # Environment setup
+└── master-architecture/        # ECOSYSTEM SOURCE OF TRUTH
 
-.env.example                    # Template (not used in deployment)
-pyproject.toml                  # Dependencies (pure crewai)
+pyproject.toml                  # Dependencies
 uv.lock                         # Locked dependencies
 ```
 
@@ -88,37 +103,31 @@ OPENAI_API_KEY=sk-...          # Set in CrewAI dashboard, NOT in .env
 
 **⚠️ CRITICAL**: `.env` files are NOT used by deployed crews. All environment variables must be set in the CrewAI AMP dashboard.
 
-## 6-Agent Workflow
-### Agent Definitions (`config/agents.yaml`)
-1. **Onboarding Agent** (Startup Consultant & Interviewer)
-   - Role: Guide entrepreneurs through structured onboarding
-   - Output: Entrepreneur Brief (JSON)
+## Architecture Overview
 
-2. **Customer Researcher** (Customer Insight Analyst)
-   - Role: Identify target customer Jobs, Pains, and Gains
-   - Output: Customer Profile
+### The 6 AI Founders
+| Founder | Title | Responsibility |
+|---------|-------|----------------|
+| **Sage** | CSO | Strategy, VPC design, owns Service Side |
+| **Forge** | CTO | Build, technical feasibility |
+| **Pulse** | CGO | Growth, market signals |
+| **Compass** | CPO | Balance, synthesis, pivot/proceed |
+| **Guardian** | CGO | Governance, accountability |
+| **Ledger** | CFO | Finance, viability |
 
-3. **Competitor Analyst** (Market & Competitor Strategist)
-   - Role: Map competitive landscape and differentiation
-   - Output: Competitor Analysis Report
+### 8 Crews / 18 Agents
+**Service Side**: Service Crew (Sage)
+**Commercial Side**: Analysis, Build, Growth, Synthesis, Finance Crews
+**Governance**: Governance Crew (Guardian)
 
-4. **Value Designer** (Value Proposition Architect)
-   - Role: Synthesize insights into Value Proposition Canvas
-   - Output: Value Proposition Canvas
-
-5. **Validation Agent** (Experiment Designer & Validation Strategist)
-   - Role: Develop 3-tier Validation Roadmap
-   - Output: 3-Tier Validation Roadmap
-
-6. **QA Agent** (Quality Assurance & Model Validation Specialist)
-   - Role: Verify framework compliance
-   - Output: QA Report (pass/fail recommendation)
-
-### Task Flow (`config/tasks.yaml`)
-Sequential execution:
+### Gated Validation Flow
 ```
-Onboarding → Customer Research → Competitor Analysis → Value Design → Validation Planning → QA Review
+[Test Cycles] → DESIRABILITY GATE → [Test Cycles] → FEASIBILITY GATE → [Test Cycles] → VIABILITY GATE
 ```
+
+Orchestrated with CrewAI Flows using `@listen` and `@router` decorators.
+
+**Full Details**: See `docs/architecture.md` and `docs/master-architecture/internal-validation-system-spec.md`
 
 ## API Interface
 ### Input Format
@@ -199,21 +208,26 @@ export async function POST(req: Request) {
 - **Expected Output**: Clear deliverable format
 - **Agent**: Assigned agent from `agents.yaml`
 
-## Known Limitations & Future Enhancements
-### Current State (15% Tools Implemented)
-- **Pure LLM-Based**: No external tools/APIs (web search, data retrieval)
-- **Mock Data**: Some tools return placeholder responses
-- **Tools Needing Implementation**:
-  - `EvidenceStoreTool`: Search/retrieve validation evidence
-  - `WebSearchTool`: Real-time market research
-  - `ReportGeneratorTool`: Formatted output generation
+## Implementation Roadmap
 
-### Enhancement Roadmap
-1. Implement real tools (web search, data APIs)
-2. Add caching for repeated analyses
-3. Optimize token usage (currently ~100K tokens per run)
-4. Add streaming for long-running tasks
-5. Integrate with Supabase for result storage
+### Phase 1: Service Side + Desirability (Current)
+1. Create state schemas (`state_schemas.py`)
+2. Build Service Crew
+3. Build Analysis Crew
+4. Build Governance Crew (Phase 1)
+5. Create Phase 1 Flow
+
+### Phase 2: Commercial Side + Build/Test
+1. Build Crew, Growth Crew, Synthesis Crew
+2. Add pivot/proceed router logic
+3. Implement evidence synthesis
+
+### Phase 3: Governance + Viability
+1. Finance Crew
+2. Enhanced Governance Crew
+3. Flywheel learning capture
+
+**Detailed Plan**: See `docs/master-architecture/internal-validation-system-spec.md`
 
 ## Troubleshooting
 ### "Repository wrong" error
@@ -238,12 +252,12 @@ export async function POST(req: Request) {
 
 ## Documentation
 
-### Master Architecture (Cross-Service)
-This repository is the **single source of truth** for ecosystem architecture:
-- `docs/master-architecture/ecosystem.md` - Three-service reality diagram
-- `docs/master-architecture/organizational-structure.md` - Flat founder team & workflow agents
-- `docs/master-architecture/current-state.md` - Honest status assessment
-- `docs/master-architecture/validation-backlog.md` - Hypothesis-driven feature queue
+### Master Architecture (Ecosystem Source of Truth)
+- `docs/master-architecture/ecosystem.md` - Three-service overview
+- `docs/master-architecture/organizational-structure.md` - 6 founders, 18 agents
+- `docs/master-architecture/internal-validation-system-spec.md` - Technical blueprint
+- `docs/master-architecture/current-state.md` - Status assessment
+- `docs/master-architecture/validation-backlog.md` - Hypothesis queue
 
 ### Service-Specific
 - Architecture: `docs/architecture.md`
@@ -251,7 +265,7 @@ This repository is the **single source of truth** for ecosystem architecture:
 - CrewAI Docs: https://docs.crewai.com
 
 ---
-**Last Updated**: Generated by Claude Code Architect  
-**Maintainer**: Chris Walker  
-**Status**: Production-ready (15% tools functional, LLM-based analysis works)  
-**Critical Note**: This is a FUNDAMENTAL building block, not deprecated
+**Last Updated**: 2025-11-21
+**Maintainer**: Chris Walker
+**Status**: Rebuilding to 8-crew/18-agent Flows architecture
+**Critical Note**: This is the BRAIN of the StartupAI ecosystem
