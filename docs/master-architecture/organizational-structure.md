@@ -253,6 +253,34 @@ Guardian is *accountable* for governance outcomes (the buck stops here), while s
 - Guardian accountable for security → Forge's team responsible for secure code
 - Guardian accountable for quality → All teams responsible for quality work
 
+### Approval Checkpoint Ownership
+
+Human-in-the-loop (HITL) approvals are distributed across founders based on domain expertise. Each approval type has a primary owner who prepares the approval request and a governance reviewer.
+
+| Approval Type | Primary Owner | Prepares Request | Governance Review |
+|---------------|---------------|------------------|-------------------|
+| **Spend Increases** | Ledger (CFO) | Cost analysis, ROI projection, alternatives | Guardian |
+| **Campaign Launch** | Pulse (CGO) | Creative, copy, targeting, landing pages | Guardian |
+| **Direct Customer Contact** | Pulse (CGO) | Messaging, target list, outreach plan | Guardian |
+| **Stage Gate Progression** | Guardian (CGO) | QA report, evidence synthesis, gate criteria | Compass (synthesis) |
+| **Pivot Recommendations** | Compass (CPO) | Evidence synthesis, pivot rationale, direction | Guardian |
+| **Third-Party Data Sharing** | Guardian (CGO) | Data inventory, recipient, purpose, retention | Ledger (compliance) |
+
+**Workflow Pattern:**
+1. Primary owner's crew generates proposal with supporting evidence
+2. Task with `human_input: true` pauses workflow
+3. Webhook notifies product app → approval modal appears
+4. Human reviews, approves/rejects/modifies
+5. Product app calls `/resume` endpoint
+6. Flow continues based on decision
+
+**Guardian's Approval Orchestration Role:**
+Guardian serves as the approval orchestrator, ensuring:
+- All approval requests meet quality standards before reaching users
+- Approval audit trail is maintained
+- Escalations are handled appropriately
+- Compliance requirements are satisfied
+
 ### The Client Brief Handoff
 
 The **Client Brief** is the contract between Service and Commercial sides:
@@ -375,6 +403,7 @@ This organizational structure is the **conceptual design**. Translation to CrewA
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2025-11-21 | Added Approval Checkpoint Ownership section | HITL workflow distribution across founders |
 | 2025-11-21 | Complete organizational restructure with Service/Commercial model | Organizational Physics principles, clear separation of concerns |
 | 2025-11-21 | Added 18 specialist agents across all founders | Complete task executor coverage |
 | 2025-11-21 | Documented Guardian dual role (Founder + Board) | Accountability vs responsibility distinction |

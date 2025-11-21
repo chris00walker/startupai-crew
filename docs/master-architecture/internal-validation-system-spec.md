@@ -978,6 +978,126 @@ CREATE TABLE approval_preferences (
 - New: `frontend/src/db/schema/approvals.ts`
 - New: `frontend/src/db/schema/approval-preferences.ts`
 
+### CrewAI Implementation Patterns
+
+#### Task Configuration with Human Input
+
+Tasks requiring approval use the `human_input` flag in `tasks.yaml`:
+
+```yaml
+# config/tasks.yaml
+qa_gate_review:
+  description: >
+    Review the analysis quality and determine if it passes the {gate_type} gate.
+    Evaluate completeness, logical consistency, and evidence strength.
+  expected_output: >
+    QA report with pass/fail status, score breakdown, and actionable feedback.
+  agent: qa_agent
+  human_input: true  # Pauses flow, sends webhook
+  output_json: QAGateReport
+
+campaign_launch_approval:
+  description: >
+    Prepare campaign creative, copy, and targeting for human approval.
+    Include all assets that will be published publicly.
+  expected_output: >
+    Complete campaign package ready for client sign-off.
+  agent: ad_creative_agent
+  human_input: true
+  output_json: CampaignApprovalPackage
+```
+
+#### Webhook Configuration in Flow
+
+Configure webhooks when starting the flow:
+
+```python
+from crewai.flow.flow import Flow, start, listen, router
+
+class InternalValidationFlow(Flow[ValidationState]):
+
+    def __init__(self):
+        super().__init__()
+        # Configure webhook for HITL notifications
+        self.webhook_config = {
+            "url": "https://app.startupai.site/api/approvals/webhook",
+            "authentication": {
+                "strategy": "bearer",
+                "token": os.getenv("APPROVAL_WEBHOOK_SECRET")
+            }
+        }
+
+    @start()
+    def begin_validation(self):
+        result = ServiceCrew().crew().kickoff(
+            inputs={"context": self.state.brief},
+            humanInputWebhook=self.webhook_config  # Enable webhooks
+        )
+        self.state.brief_result = result
+```
+
+#### Approval Router Pattern
+
+Use routers to gate flow based on approval decisions:
+
+```python
+@listen(governance_review)
+def capture_approval_status(self):
+    """Receive approval status from resumed task"""
+    # human_feedback and is_approve are injected by resume
+    self.state.approval_status = self.state.qa_result.is_approved
+    self.state.approval_feedback = self.state.qa_result.human_feedback
+
+@router(capture_approval_status)
+def qa_gate_router(self):
+    """Route based on human approval decision"""
+    if self.state.approval_status:
+        return "approved"
+    elif "retry" in self.state.approval_feedback.lower():
+        return "needs_revision"
+    else:
+        return "rejected"
+
+@listen("approved")
+def proceed_to_next_phase(self):
+    """Continue to next validation phase"""
+    pass
+
+@listen("needs_revision")
+def revise_with_feedback(self):
+    """Loop back with human feedback as additional context"""
+    result = AnalysisCrew().crew().kickoff(
+        inputs={
+            "previous_work": self.state.analysis,
+            "revision_feedback": self.state.approval_feedback
+        }
+    )
+    self.state.analysis = result.pydantic
+
+@listen("rejected")
+def handle_rejection(self):
+    """Escalate or terminate based on rejection"""
+    pass
+```
+
+#### State Persistence for Long-Running Approvals
+
+Use `@persist` to maintain state across approval wait times:
+
+```python
+from crewai.flow.persistence import SQLiteFlowPersistence
+
+@persist(SQLiteFlowPersistence())
+class InternalValidationFlow(Flow[ValidationState]):
+    """
+    Flow state persists to SQLite, allowing:
+    - Resumption after server restarts
+    - Multiple days between approval submissions
+    - Audit trail of all state changes
+    """
+    pass
+```
+
 ### Framework Wiring Logic
 
 #### Stage-Based BMC Population
@@ -1189,6 +1309,7 @@ Evidence doesn't just validate canvases - it updates them:
 | 2025-11-21 | Added Marketing Site AI Integration section | Claude + Chris |
 | 2025-11-21 | Added Product App Smart Artifact Architecture section | Claude + Chris |
 | 2025-11-21 | Expanded to 6 approval checkpoints with full workflow architecture | Claude + Chris |
+| 2025-11-21 | Added CrewAI implementation patterns for HITL approvals | Claude + Chris |
 
 ---
 
