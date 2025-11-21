@@ -24,11 +24,12 @@
 
 ### Master Architecture
 **Source of Truth**: `docs/master-architecture/`
-- `ecosystem.md` - Three-service overview
-- `organizational-structure.md` - 6 founders, 18 agents
-- `internal-validation-system-spec.md` - Technical blueprint (implementation guide)
-- `current-state.md` - Honest assessment
-- `validation-backlog.md` - Hypothesis queue
+- `01-ecosystem.md` - Three-service overview
+- `02-organization.md` - 6 founders, 18 agents
+- `03-validation-spec.md` - Technical blueprint (implementation guide)
+- `04-status.md` - Honest assessment
+- `reference/api-contracts.md` - All API specifications
+- `reference/approval-workflows.md` - HITL patterns
 
 ## Directory Structure
 ```
@@ -250,14 +251,36 @@ export async function POST(req: Request) {
 - Marketing Site: `startupai.site` (lead capture)
 - Product Platform: `app.startupai.site` (frontend + backend)
 
+## Cross-Repo Coordination
+
+**⚠️ This repo is UPSTREAM of all others.** Changes here unblock downstream repos.
+
+### Before Starting Work
+- Check `docs/work/cross-repo-blockers.md` for current dependencies
+- Review `docs/work/phases.md` for Phase completion criteria
+
+### When Completing Phase Milestones
+1. Update completion checkboxes in `docs/work/phases.md`
+2. Update `docs/work/cross-repo-blockers.md` with new status
+3. Notify downstream repos by updating their blockers:
+   - `app.startupai.site/docs/work/cross-repo-blockers.md`
+   - `startupai.site/docs/work/cross-repo-blockers.md`
+
+### Dependency Chain
+```
+CrewAI (this repo) → Product App → Marketing Site
+```
+
+**Current blocker**: Phase 1 completion criteria in `docs/work/phases.md`
+
 ## Documentation
 
 ### Master Architecture (Ecosystem Source of Truth)
-- `docs/master-architecture/ecosystem.md` - Three-service overview
-- `docs/master-architecture/organizational-structure.md` - 6 founders, 18 agents
-- `docs/master-architecture/internal-validation-system-spec.md` - Technical blueprint
-- `docs/master-architecture/current-state.md` - Status assessment
-- `docs/master-architecture/validation-backlog.md` - Hypothesis queue
+- `docs/master-architecture/01-ecosystem.md` - Three-service overview
+- `docs/master-architecture/02-organization.md` - 6 founders, 18 agents
+- `docs/master-architecture/03-validation-spec.md` - Technical blueprint
+- `docs/master-architecture/04-status.md` - Status assessment
+- `docs/master-architecture/reference/` - API contracts, approval workflows
 
 ### Service-Specific
 - Architecture: `docs/architecture.md`

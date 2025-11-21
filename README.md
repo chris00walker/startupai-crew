@@ -181,7 +181,8 @@ startupai-crew/
 │       ├── organizational-structure.md  # 6 founders, 18 agents
 │       ├── internal-validation-system-spec.md  # Technical blueprint
 │       ├── current-state.md         # Honest assessment
-│       └── validation-backlog.md    # Hypothesis queue
+├── work/
+│   │       └── backlog.md              # Hypothesis queue
 ├── src/
 │   └── startupai/
 │       ├── flows/                   # CrewAI Flows orchestration
