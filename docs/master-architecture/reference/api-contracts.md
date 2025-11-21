@@ -1,0 +1,127 @@
+# API Contracts
+
+All API endpoints, webhooks, and payloads for StartupAI services.
+
+## CrewAI AMP Endpoints
+
+**Base URL**: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
+
+### Working Endpoints
+
+| Endpoint | Method | Purpose | Status |
+|----------|--------|---------|--------|
+| `/inputs` | GET | Schema for input parameters | Working |
+| `/kickoff` | POST | Start analysis workflow | Working |
+| `/status/{id}` | GET | Check execution status | Working |
+| `/resume` | POST | Resume paused flow with human input | Working |
+
+### Kickoff Request
+```bash
+curl -X POST https://startupai-...crewai.com/kickoff \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "entrepreneur_input": "Business idea description..."
+  }'
+```
+
+### Status Response
+```json
+{
+  "kickoff_id": "uuid",
+  "status": "running|completed|failed",
+  "result": { ... }
+}
+```
+
+---
+
+## Marketing → Product App Contracts
+
+| Contract | Implementation | Status |
+|----------|---------------|--------|
+| Auth redirect with plan | Query param `?plan=professional` | Working |
+| Shared Supabase instance | Same project, different clients | Working |
+
+---
+
+## Approval Workflow API
+
+### Webhook (CrewAI → Product App)
+
+```
+POST https://app.startupai.site/api/approvals/webhook
+Content-Type: application/json
+Authorization: Bearer {webhook-secret}
+
+{
+  "execution_id": "uuid-of-flow-execution",
+  "task_id": "uuid-of-paused-task",
+  "crew_name": "governance",
+  "task_name": "qa_gate_review",
+  "task_output": {
+    "approval_type": "stage_gate",
+    "title": "Desirability Gate Approval",
+    "context": {
+      "project_id": "uuid",
+      "evidence_summary": "...",
+      "qa_score": 0.85,
+      "assumptions_tested": 5,
+      "assumptions_validated": 4
+    },
+    "recommendation": "proceed",
+    "alternatives": [
+      {"action": "proceed", "rationale": "Strong evidence"},
+      {"action": "retry", "rationale": "Address weak areas"},
+      {"action": "pivot", "rationale": "Fundamental issues"}
+    ]
+  }
+}
+```
+
+### Resume (Product App → CrewAI)
+
+```
+POST https://startupai-...crewai.com/resume
+Content-Type: application/json
+Authorization: Bearer {crew-token}
+
+{
+  "execution_id": "uuid-of-flow-execution",
+  "task_id": "uuid-of-paused-task",
+  "human_feedback": "Approved with note: Focus on pricing validation next",
+  "is_approve": true,
+  "humanInputWebhook": {
+    "url": "https://app.startupai.site/api/approvals/webhook",
+    "authentication": {
+      "strategy": "bearer",
+      "token": "{webhook-secret}"
+    }
+  }
+}
+```
+
+---
+
+## Aspirational Contracts (NOT IMPLEMENTED)
+
+These were documented but do not exist yet:
+- `GET /api/v1/agents/activity` - Activity feed for marketing site
+- `GET /api/v1/metrics/public` - Trust metrics for marketing site
+
+---
+
+## Implementation Status
+
+| Component | Status |
+|-----------|--------|
+| CrewAI `/kickoff` | ✅ Working |
+| CrewAI `/status` | ✅ Working |
+| CrewAI `/resume` | ✅ Available in CrewAI AMP |
+| CrewAI webhook delivery | ✅ Available in CrewAI AMP |
+| Product app webhook receiver | ❌ NOT IMPLEMENTED |
+| Activity feed API | ❌ NOT IMPLEMENTED |
+| Metrics API | ❌ NOT IMPLEMENTED |
+
+---
+**Last Updated**: 2025-11-21

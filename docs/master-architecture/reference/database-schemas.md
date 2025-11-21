@@ -1,0 +1,235 @@
+---
+purpose: Database schema definitions for all services
+status: planning
+last_reviewed: 2025-11-21
+---
+
+# Database Schemas
+
+This document consolidates all SQL schema definitions used across the StartupAI ecosystem.
+
+## Approval System Tables
+
+### Approval Requests
+
+```sql
+-- Approval requests
+CREATE TABLE approval_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  approval_type TEXT NOT NULL,  -- 'campaign', 'spend', 'contact', etc.
+  status TEXT DEFAULT 'pending', -- 'pending', 'approved', 'rejected', 'modified'
+  urgency TEXT DEFAULT 'normal', -- 'low', 'normal', 'high', 'critical'
+  blocks_workflow BOOLEAN DEFAULT true,
+
+  -- Request details
+  title TEXT NOT NULL,
+  description TEXT,
+  context JSONB,                 -- AI's reasoning and evidence
+  requested_action JSONB,        -- What AI wants to do
+  alternatives JSONB,            -- Other options considered
+
+  -- Resolution
+  resolved_by UUID REFERENCES users(id),
+  resolved_at TIMESTAMPTZ,
+  resolution_notes TEXT,
+  modifications JSONB,           -- Changes made by approver
+
+  -- Escalation
+  escalation_level INTEGER DEFAULT 0,
+  escalated_to UUID REFERENCES users(id),
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Approval Preferences
+
+```sql
+-- User delegation preferences
+CREATE TABLE approval_preferences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  project_id UUID REFERENCES projects(id), -- NULL for global defaults
+
+  approval_type TEXT NOT NULL,
+  auto_approve BOOLEAN DEFAULT false,
+  auto_approve_conditions JSONB,  -- e.g., {"max_spend": 50, "min_qa_score": 0.9}
+  notification_channels TEXT[],   -- ['in_app', 'email', 'sms']
+  escalation_contact UUID REFERENCES users(id),
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, project_id, approval_type)
+);
+```
+
+## Marketing Site Tables
+
+### Platform Metrics
+
+```sql
+-- Aggregated platform statistics
+CREATE TABLE platform_metrics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  metric_name TEXT NOT NULL,          -- 'validations_completed', 'mvps_built', etc.
+  metric_value INTEGER NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Public Activity Log
+
+```sql
+-- Anonymized recent agent activities
+CREATE TABLE public_activity_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  founder_id TEXT NOT NULL,           -- 'sage', 'forge', etc.
+  activity_type TEXT NOT NULL,        -- 'analysis', 'build', 'validation'
+  description TEXT NOT NULL,          -- Anonymized activity description
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Founder Stats
+
+```sql
+-- Per-founder performance metrics
+CREATE TABLE founder_stats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  founder_id TEXT NOT NULL UNIQUE,
+  analyses_completed INTEGER DEFAULT 0,
+  accuracy_rate DECIMAL(5,2),
+  avg_response_time INTERVAL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+## Product App Core Tables
+
+> Note: These are the aspirational schemas from the technical specification. Actual implementations may vary. Check `frontend/src/db/schema/` in the product app for current implementations.
+
+### Projects
+
+```sql
+CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  name TEXT NOT NULL,
+  description TEXT,
+  stage TEXT DEFAULT 'desirability', -- 'desirability', 'feasibility', 'viability'
+  status TEXT DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Hypotheses
+
+```sql
+CREATE TABLE hypotheses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  statement TEXT NOT NULL,
+  category TEXT NOT NULL,  -- 'desirability', 'feasibility', 'viability'
+  priority INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'untested', -- 'untested', 'testing', 'validated', 'invalidated'
+  evidence_needed TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Evidence
+
+```sql
+CREATE TABLE evidence (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  hypothesis_id UUID REFERENCES hypotheses(id),
+  experiment_id UUID REFERENCES experiments(id),
+  evidence_type TEXT NOT NULL,  -- 'quantitative', 'qualitative'
+  data JSONB NOT NULL,
+  supports_hypothesis BOOLEAN,
+  confidence_score DECIMAL(3,2),
+  embedding VECTOR(1536),  -- For semantic search
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Experiments
+
+```sql
+CREATE TABLE experiments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  name TEXT NOT NULL,
+  description TEXT,
+  experiment_type TEXT NOT NULL,  -- 'landing_page', 'ad_campaign', 'interview', etc.
+  status TEXT DEFAULT 'draft', -- 'draft', 'running', 'completed'
+  budget DECIMAL(10,2),
+  metrics JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Entrepreneur Briefs
+
+```sql
+CREATE TABLE entrepreneur_briefs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  business_idea TEXT NOT NULL,
+  customer_segments JSONB,
+  problem_statement TEXT,
+  current_stage TEXT,
+  key_assumptions JSONB,
+  validation_goals JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+### Gate Scores
+
+```sql
+CREATE TABLE gate_scores (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  gate_type TEXT NOT NULL,  -- 'desirability', 'feasibility', 'viability'
+  score DECIMAL(5,2),
+  criteria JSONB,
+  passed BOOLEAN,
+  feedback TEXT,
+  reviewed_by TEXT,  -- 'guardian', 'qa_agent', etc.
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+## Indexes
+
+Recommended indexes for performance:
+
+```sql
+-- Approval queries
+CREATE INDEX idx_approval_requests_project ON approval_requests(project_id);
+CREATE INDEX idx_approval_requests_status ON approval_requests(status) WHERE status = 'pending';
+
+-- Activity queries
+CREATE INDEX idx_activity_log_founder ON public_activity_log(founder_id);
+CREATE INDEX idx_activity_log_created ON public_activity_log(created_at DESC);
+
+-- Evidence semantic search
+CREATE INDEX idx_evidence_embedding ON evidence USING ivfflat (embedding vector_cosine_ops);
+
+-- Hypothesis lookup
+CREATE INDEX idx_hypotheses_project ON hypotheses(project_id);
+CREATE INDEX idx_hypotheses_status ON hypotheses(status);
+```
+
+---
+
+## Related Documents
+
+- [approval-workflows.md](./approval-workflows.md) - How approvals work
+- [product-artifacts.md](./product-artifacts.md) - Canvas architecture
+- [api-contracts.md](./api-contracts.md) - API specifications
+
+---
+**Last Updated**: 2025-11-21

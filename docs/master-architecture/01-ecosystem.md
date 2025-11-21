@@ -1,3 +1,9 @@
+---
+purpose: Three-service ecosystem architecture overview
+status: active
+last_reviewed: 2025-11-21
+---
+
 # StartupAI Ecosystem - Master Architecture
 
 ## Overview
@@ -140,167 +146,35 @@ CrewAI AMP ────► Supabase (entrepreneur_briefs, analysis_results)
 
 ---
 
-## API Contracts (What Actually Exists)
+## API Contracts
 
-### CrewAI AMP Endpoints (REAL)
-| Endpoint | Method | Purpose | Status |
-|----------|--------|---------|--------|
-| `/inputs` | GET | Schema for input parameters | Working |
-| `/kickoff` | POST | Start analysis workflow | Working |
-| `/status/{id}` | GET | Check execution status | Working |
+For detailed API specifications, see **[reference/api-contracts.md](./reference/api-contracts.md)**.
 
-**Base URL**: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
+### Summary
 
-### Marketing → App Contracts (REAL)
-| Contract | Implementation | Status |
-|----------|---------------|--------|
-| Auth redirect with plan | Query param `?plan=professional` | Working |
-| Shared Supabase instance | Same project, different clients | Working |
-
-### Aspirational Contracts (NOT IMPLEMENTED)
-These were documented but do not exist:
-- `GET /api/v1/agents/activity`
-- `GET /api/v1/metrics/public`
-- `POST /api/v1/analysis/start` (it's `/kickoff`)
+| Service | Endpoints | Status |
+|---------|-----------|--------|
+| CrewAI AMP | `/inputs`, `/kickoff`, `/status`, `/resume` | Working |
+| Marketing → App | Auth redirect with plan param | Working |
+| Activity Feed | `GET /api/v1/agents/activity` | NOT IMPLEMENTED |
+| Metrics | `GET /api/v1/metrics/public` | NOT IMPLEMENTED |
 
 ---
 
-## Approval Workflow Communication
+## Approval Workflows
 
-Human-in-the-loop (HITL) approvals require bidirectional communication between CrewAI AMP and the product app.
+For detailed HITL patterns, see **[reference/approval-workflows.md](./reference/approval-workflows.md)**.
 
-### Approval Flow Architecture
+### Summary
 
-```
-┌─────────────────┐                    ┌─────────────────┐
-│   CrewAI AMP    │                    │   Product App   │
-│   (startupai-   │                    │  (app.startupai │
-│    crew)        │                    │    .site)       │
-└────────┬────────┘                    └────────┬────────┘
-         │                                      │
-         │ 1. Task with human_input: true       │
-         │    → Flow pauses                     │
-         │                                      │
-         │ 2. Webhook POST                      │
-         │ ─────────────────────────────────►   │
-         │    {execution_id, task_id,           │
-         │     task_output}                     │
-         │                                      │
-         │                              3. Store in approval_requests
-         │                              4. Show ApprovalDetailModal
-         │                              5. User decides
-         │                                      │
-         │ 6. POST /resume                      │
-         │ ◄─────────────────────────────────   │
-         │    {execution_id, task_id,           │
-         │     human_feedback, is_approve}      │
-         │                                      │
-         │ 7. Flow resumes                      │
-         │    → Router routes based on          │
-         │       approval status                │
-         └──────────────────────────────────────┘
-```
+Human-in-the-loop approvals require bidirectional communication:
+1. CrewAI task pauses with `human_input: true`
+2. Webhook notifies product app
+3. User approves/rejects in UI
+4. Product app calls `/resume`
+5. Flow continues
 
-### API Contracts: Approval Workflow
-
-#### Webhook (CrewAI → Product App)
-```
-POST https://app.startupai.site/api/approvals/webhook
-Content-Type: application/json
-Authorization: Bearer {webhook-secret}
-
-{
-  "execution_id": "uuid-of-flow-execution",
-  "task_id": "uuid-of-paused-task",
-  "crew_name": "governance",
-  "task_name": "qa_gate_review",
-  "task_output": {
-    "approval_type": "stage_gate",
-    "title": "Desirability Gate Approval",
-    "context": {
-      "project_id": "uuid",
-      "evidence_summary": "...",
-      "qa_score": 0.85,
-      "assumptions_tested": 5,
-      "assumptions_validated": 4
-    },
-    "recommendation": "proceed",
-    "alternatives": [
-      {"action": "proceed", "rationale": "Strong evidence"},
-      {"action": "retry", "rationale": "Address weak areas"},
-      {"action": "pivot", "rationale": "Fundamental issues"}
-    ]
-  }
-}
-```
-
-#### Resume (Product App → CrewAI)
-```
-POST https://startupai-...crewai.com/resume
-Content-Type: application/json
-Authorization: Bearer {crew-token}
-
-{
-  "execution_id": "uuid-of-flow-execution",
-  "task_id": "uuid-of-paused-task",
-  "human_feedback": "Approved with note: Focus on pricing validation next",
-  "is_approve": true,
-  "humanInputWebhook": {
-    "url": "https://app.startupai.site/api/approvals/webhook",
-    "authentication": {
-      "strategy": "bearer",
-      "token": "{webhook-secret}"
-    }
-  }
-}
-```
-
-### Approval Types & Blocking Behavior
-
-| Approval Type | Blocking | Primary Owner | CrewAI Task Location |
-|---------------|----------|---------------|----------------------|
-| Spend Increases | Yes | Ledger | Build/Growth Crew |
-| Campaign Launch | Yes | Pulse | Growth Crew |
-| Direct Customer Contact | Yes | Pulse | Growth Crew |
-| Stage Gate Progression | Yes | Guardian | Governance Crew |
-| Pivot Recommendations | Yes | Compass | Synthesis Crew |
-| Third-Party Data Sharing | No (Parallel) | Guardian | Governance Crew |
-
-### Product App Responsibilities
-
-1. **Webhook Receiver** (`/api/approvals/webhook`)
-   - Validate webhook authentication
-   - Store approval request in `approval_requests` table
-   - Check auto-approve rules in `approval_preferences`
-   - If auto-approve: immediately call `/resume`
-   - Else: send notifications (in-app, email)
-
-2. **Approval UI**
-   - `ApprovalQueue.tsx` - Dashboard view of pending approvals
-   - `ApprovalDetailModal.tsx` - Full context and decision interface
-   - Show: what AI wants, evidence, risks, alternatives
-
-3. **Resume Client** (`/services/crewai-client.ts`)
-   - Call CrewAI `/resume` endpoint with user decision
-   - Include webhook config for subsequent approvals
-   - Handle errors and retries
-
-4. **Notification Escalation**
-   - Cron job checks for aging approvals
-   - Escalate: in-app → email (15min) → SMS (24hr) → backup (48hr)
-
-### Status
-
-| Component | Status |
-|-----------|--------|
-| CrewAI `human_input` support | ✅ Available in CrewAI AMP |
-| CrewAI webhook delivery | ✅ Available in CrewAI AMP |
-| CrewAI `/resume` endpoint | ✅ Available in CrewAI AMP |
-| Product app webhook receiver | ❌ NOT IMPLEMENTED |
-| Product app approval UI | ❌ NOT IMPLEMENTED |
-| Product app resume client | ❌ NOT IMPLEMENTED |
-| Notification escalation | ❌ NOT IMPLEMENTED |
-| Auto-approve rules | ❌ NOT IMPLEMENTED |
+**Implementation Status**: CrewAI side available, product app side NOT IMPLEMENTED.
 
 ---
 
@@ -329,12 +203,14 @@ Since StartupAI uses lean validation (not waterfall), build order is determined 
 2. **What's the minimum build to test it?**
 3. **What did we learn? Pivot or persevere?**
 
-See `validation-backlog.md` for the current hypothesis queue.
+See `docs/work/backlog.md` for the current hypothesis queue.
 
 ---
 
 ## Related Documents
 
-- `organizational-structure.md` - Flat founder team & workflow agents
-- `current-state.md` - Detailed status of each service
-- `validation-backlog.md` - Hypothesis-driven feature backlog
+- `02-organization.md` - Flat founder team & workflow agents
+- `04-status.md` - Detailed status of each service
+- `../work/backlog.md` - Hypothesis-driven feature backlog
+- `reference/api-contracts.md` - All API specifications
+- `reference/approval-workflows.md` - HITL patterns

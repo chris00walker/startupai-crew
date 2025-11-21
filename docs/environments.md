@@ -182,7 +182,7 @@ cat .env | grep OPENAI_API_KEY
 crewai run
 
 # 3. Verify output
-# Should see 6 agents executing tasks
+# Should see agents executing tasks (8 crews, 18 agents when fully deployed)
 
 # 4. Check for errors
 # All tasks should complete successfully
@@ -386,18 +386,16 @@ crewai deploy logs
 
 ## 🏗️ Architecture
 
-### 6-Agent Workflow
-```
-Research Coordinator → Evidence Discovery
-Strategic Analyst → Pattern Recognition  
-Evidence Validator → Quality Verification
-Strategic Synthesizer → Insight Combination
-Report Generator → Professional Reports
-Workflow Orchestrator → Quality Control
-```
+### 8 Crews / 18 Agents
+
+> **Single Source**: See [master-architecture/02-organization.md](./master-architecture/02-organization.md) for complete agent details.
+
+**Phase 1**: Service Crew, Analysis Crew, Governance Crew
+**Phase 2**: Build Crew, Growth Crew, Synthesis Crew
+**Phase 3**: Finance Crew, Enhanced Governance Crew
 
 ### Pure LLM-Based
-- No external tools or APIs
+- No external tools or APIs (currently)
 - Pure reasoning using agent knowledge bases
 - Sequential processing for comprehensive analysis
 - All agents use OpenAI GPT models
@@ -444,8 +442,8 @@ AGENTUITY_AGENT_URL=https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6
 
 ---
 
-**Last Updated:** October 30, 2025  
-**Repository:** startupai-crew  
-**Environment Version:** 1.0.0  
-**Platform:** CrewAI AMP (Cloud-Hosted)  
+**Last Updated:** 2025-11-21
+**Repository:** startupai-crew
+**Environment Version:** 1.0.0
+**Platform:** CrewAI AMP (Cloud-Hosted)
 **Deployment UUID:** b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b

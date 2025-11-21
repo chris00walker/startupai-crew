@@ -1,4 +1,10 @@
-# StartupAI Crew - Architecture Documentation
+---
+purpose: Repository introduction, architecture overview, and quick start
+status: active
+last_reviewed: 2025-11-21
+---
+
+# StartupAI Crew - Introduction & Architecture
 
 ## Overview
 
@@ -8,26 +14,26 @@ This repository contains the brain of the StartupAI ecosystem - a multi-crew orc
 
 ## Design Principles
 
-### 1. **Service/Commercial Model**
+### 1. Service/Commercial Model
 Organized around the customer, not a linear pipeline:
 - **Service Side**: Customer intake and brief capture
 - **Commercial Side**: Value delivery through analysis and validation
 - **Compass**: Balances competing interests, synthesizes evidence
 - **Guardian**: Governance oversight across all functions
 
-### 2. **Gated Validation**
+### 2. Gated Validation
 Validation is sequential, not parallel:
 ```
 [Test Cycles] → DESIRABILITY GATE → [Test Cycles] → FEASIBILITY GATE → [Test Cycles] → VIABILITY GATE
 ```
 
-### 3. **Flows + Crews Architecture**
+### 3. Flows + Crews Architecture
 - **Crews**: Autonomous agent teams that collaborate on tasks
 - **Flows**: Event-driven orchestration that coordinates crews
 - **Routers**: Implement governance gates with conditional routing
 - **Structured State**: Pydantic models carry data through the system
 
-## Ecosystem Architecture
+## Ecosystem Position
 
 ```
 ┌─────────────────────┐
@@ -54,123 +60,66 @@ Validation is sequential, not parallel:
 
 ## The 6 AI Founders
 
-| Founder | Title | Responsibility |
+> **Single Source**: See [02-organization.md](./02-organization.md) for complete founder details, responsibilities, and organizational structure.
+
+| Founder | Title | Primary Domain |
 |---------|-------|----------------|
 | **Sage** | CSO | Strategy, VPC design, owns Service Side |
 | **Forge** | CTO | Build, technical feasibility |
-| **Pulse** | CGO | Growth, market signals, desirability evidence |
+| **Pulse** | CGrO | Growth, market signals, desirability evidence |
 | **Compass** | CPO | Balance, synthesis, pivot/proceed |
-| **Guardian** | CGO | Governance, accountability, oversight |
+| **Guardian** | CGoO | Governance, accountability, oversight |
 | **Ledger** | CFO | Finance, viability, compliance |
 
-## Organizational Structure
-
-```
-                    GUARDIAN
-                  (Board Chair)
-                       │
-    ┌──────────────────┼──────────────────┐
-    │                  │                  │
-SERVICE SIDE        COMPASS          COMMERCIAL SIDE
-(Customer-Facing)  (Balance)        (Value Delivery)
-
-Sage owns:        Project Manager   Sage, Forge, Pulse, Ledger
-• Customer Service                  (flat peers)
-• Founder Onboarding
-• Consultant Onboarding
-        │
-        └──→ [Client Brief] ──────→
-```
-
 ## 8 Crews Architecture
+
+> **Single Source**: See [02-organization.md](./02-organization.md) for complete agent details per crew.
 
 ### Phase 1: Service Side + Desirability Validation
 
 #### 1. Service Crew (Sage owns)
 **Purpose**: Intake and brief capture
-
-| Agent | Task Focus |
-|-------|------------|
-| Customer Service Agent | Lead qualification, routing |
-| Founder Onboarding Agent | Structured interviews for founders |
-| Consultant Onboarding Agent | Multi-client context for agencies |
-
-**Output**: Client Brief
+- Customer Service Agent, Founder Onboarding Agent, Consultant Onboarding Agent
+- **Output**: Client Brief
 
 #### 2. Analysis Crew (Sage)
 **Purpose**: Customer and competitor analysis
-
-| Agent | Task Focus |
-|-------|------------|
-| Customer Researcher | Jobs, Pains, Gains (JTBD framework) |
-| Competitor Analyst | Competitive landscape, differentiation |
-
-**Output**: VPC components ready for testing
+- Customer Researcher, Competitor Analyst
+- **Output**: VPC components ready for testing
 
 #### 3. Governance Crew (Guardian) - Phase 1
 **Purpose**: Quality validation before proceeding
-
-| Agent | Task Focus |
-|-------|------------|
-| QA Agent | Framework compliance, logical consistency |
-
-**Output**: QA Pass/Fail with feedback
+- QA Agent
+- **Output**: QA Pass/Fail with feedback
 
 ### Phase 2: Commercial Side + Build/Test
 
 #### 4. Build Crew (Forge)
 **Purpose**: Create testable artifacts
-
-| Agent | Task Focus |
-|-------|------------|
-| UX/UI Designer | Interface design for MVPs |
-| Frontend Developer | UI implementation |
-| Backend Developer | API, data layer |
-
-**Output**: Deployed testable artifacts with tracking
+- UX/UI Designer, Frontend Developer, Backend Developer
+- **Output**: Deployed testable artifacts with tracking
 
 #### 5. Growth Crew (Pulse)
 **Purpose**: Run experiments, collect signals
-
-| Agent | Task Focus |
-|-------|------------|
-| Ad Creative Agent | Ad copy, landing pages |
-| Communications Agent | Messaging, content |
-| Social Media Analyst | Engagement, sentiment |
-
-**Output**: Desirability evidence (quantitative + qualitative)
+- Ad Creative Agent, Communications Agent, Social Media Analyst
+- **Output**: Desirability evidence (quantitative + qualitative)
 
 #### 6. Synthesis Crew (Compass)
 **Purpose**: Integrate evidence, recommend pivot/proceed
-
-| Agent | Task Focus |
-|-------|------------|
-| Project Manager | Coordination, deliverable tracking |
-
-**Output**: Evidence synthesis with recommendation
+- Project Manager
+- **Output**: Evidence synthesis with recommendation
 
 ### Phase 3: Governance + Viability
 
 #### 7. Finance Crew (Ledger)
 **Purpose**: Validate business model viability
-
-| Agent | Task Focus |
-|-------|------------|
-| Financial Controller | Unit economics, budget |
-| Legal & Compliance Agent | Regulatory, contracts |
-
-**Output**: Viability assessment with financial model
+- Financial Controller, Legal & Compliance Agent
+- **Output**: Viability assessment with financial model
 
 #### 8. Enhanced Governance Crew (Guardian)
 **Purpose**: Full audit trail and compliance
-
-| Agent | Task Focus |
-|-------|------------|
-| Audit Agent | Process compliance, accountability |
-| Security Agent | Data privacy, threat assessment |
-| QA Agent | Cross-crew quality checks |
-
-**Output**: Audit report with compliance status
+- Audit Agent, Security Agent, QA Agent
+- **Output**: Audit report with compliance status
 
 ## CrewAI Flows Implementation
 
@@ -337,6 +286,8 @@ crewai deploy logs --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 
 ## API Endpoints
 
+> **Full Specification**: See [reference/api-contracts.md](./reference/api-contracts.md) for complete API documentation.
+
 ```bash
 # Get inputs schema
 curl https://startupai-...crewai.com/inputs \
@@ -375,11 +326,13 @@ curl https://startupai-...crewai.com/status/{kickoff_id} \
 
 ## Related Documentation
 
-- **Ecosystem Overview**: `docs/master-architecture/ecosystem.md`
-- **Organizational Structure**: `docs/master-architecture/organizational-structure.md`
-- **Technical Specification**: `docs/master-architecture/internal-validation-system-spec.md`
-- **Current State**: `docs/master-architecture/current-state.md`
-- **Validation Backlog**: `docs/master-architecture/validation-backlog.md`
+- **Ecosystem Overview**: [01-ecosystem.md](./01-ecosystem.md)
+- **Organizational Structure**: [02-organization.md](./02-organization.md) (single source for founders/agents)
+- **Technical Specification**: [03-validation-spec.md](./03-validation-spec.md)
+- **Current State**: [04-status.md](./04-status.md)
+- **API Contracts**: [reference/api-contracts.md](./reference/api-contracts.md)
+- **Approval Workflows**: [reference/approval-workflows.md](./reference/approval-workflows.md)
+- **Validation Backlog**: [../work/backlog.md](../work/backlog.md)
 
 ## Support
 

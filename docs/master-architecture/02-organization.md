@@ -1,8 +1,16 @@
+---
+purpose: Single source of truth for 6 AI Founders and 18 agents
+status: active
+last_reviewed: 2025-11-21
+---
+
 # StartupAI Organizational Structure
 
 ## Overview
 
-StartupAI is run by a team of AI Founders - six co-equal team members organized around the customer. They collaborate as peers to deliver strategic business analysis and validation. This document is the **single source of truth** for agent names, roles, and structure.
+StartupAI is run by a team of AI Founders - six co-equal team members organized around the customer. They collaborate as peers to deliver strategic business analysis and validation.
+
+**This document is the SINGLE SOURCE OF TRUTH for founder names, roles, agents, and organizational structure. All other documents reference here - they do not duplicate this content.**
 
 ## Design Philosophy
 

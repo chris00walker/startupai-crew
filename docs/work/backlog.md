@@ -12,6 +12,89 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 ---
 
+## Priority 0: Flows Architecture Rebuild
+
+> **CURRENT FOCUS**: Rebuild from 6-agent workflow to 8-crew/18-agent Flows architecture
+
+### Hypothesis: Multi-Crew System Enables Scale
+
+> **If** we structure validation as 8 specialized crews with 18 agents using CrewAI Flows,
+> **Then** we can deliver higher quality analysis with clear accountability and extensibility.
+
+**Build**:
+- Phase 1: Service Crew, Analysis Crew, Governance Crew (QA)
+- Phase 2: Build Crew, Growth Crew, Synthesis Crew
+- Phase 3: Finance Crew, Enhanced Governance Crew
+
+**Measure**:
+- Output quality vs current 6-agent system
+- Time to complete validation cycle
+- Ability to extend with new crews/agents
+
+**Learn**:
+- Does crew specialization improve output?
+- Is the Service/Commercial model effective?
+- Where are the bottlenecks?
+
+**Minimum Build** (Phase 1):
+```
+[ ] state_schemas.py - ValidationState, ClientBrief, CustomerProfile
+[ ] Service Crew - 3 agents (intake, brief capture)
+[ ] Analysis Crew - 2 agents (customer research, competitor analysis)
+[ ] Governance Crew - 1 agent (QA validation)
+[ ] Phase 1 Flow - orchestrate with @listen/@router
+```
+
+**Status**: IN PROGRESS - See `in-progress.md` for detailed task tracking
+
+---
+
+### Hypothesis: Tools Improve Analysis Quality
+
+> **If** we add web search, analytics, and report tools to agents,
+> **Then** analysis quality will significantly improve beyond pure LLM reasoning.
+
+**Build**:
+- `tools/web_search.py` - market research capability
+- `tools/analytics.py` - data processing
+- `tools/report_generator.py` - structured outputs
+
+**Measure**:
+- Quality score comparison (with/without tools)
+- Factual accuracy
+- Token efficiency
+
+**Learn**:
+- Which tools provide most value?
+- Is real-time data necessary or is LLM knowledge sufficient?
+
+**Status**: NOT STARTED - See `docs/tools/README.md` for specifications
+
+---
+
+### Hypothesis: HITL Approvals Prevent Bad Outcomes
+
+> **If** we require human approval for high-risk actions (spend, campaigns, gates),
+> **Then** users will trust the system with more autonomous operation.
+
+**Build**:
+- 6 approval checkpoint types per `reference/approval-workflows.md`
+- Webhook notification system
+- Resume API for continuing flows
+
+**Measure**:
+- Approval latency
+- Override rate (how often users change AI recommendations)
+- Trust scores
+
+**Learn**:
+- Which approvals are always accepted (can be automated)?
+- What information do users need to approve confidently?
+
+**Status**: NOT STARTED - Requires Phase 1 completion
+
+---
+
 ## Priority 1: Core Value Delivery
 
 ### Hypothesis: Users Complete Analysis
@@ -211,17 +294,11 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 **Why deprioritized**: Unclear if this is actually wanted. Validate core value first.
 
-### Multi-crew System
+### Advanced Market Data APIs
 
-> Different workflows for different use cases.
+> Bloomberg, Crunchbase, etc. for competitive intelligence.
 
-**Why deprioritized**: Need to prove single workflow works first.
-
-### Custom Tools
-
-> Web search, market data APIs for better analysis.
-
-**Why deprioritized**: Pure LLM analysis may be sufficient. Validate quality first.
+**Why deprioritized**: Start with web search tool, add expensive APIs only if needed.
 
 ---
 
@@ -253,4 +330,4 @@ Currently, **Priority 1: E2E Analysis Flow** is the answer to all four questions
 ---
 
 ## Last Updated
-2025-11-20
+2025-11-21
