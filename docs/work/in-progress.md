@@ -33,6 +33,12 @@ class ValidationState(BaseModel):
     qa_status: str = "pending"
 ```
 
+### What This Unblocks (Downstream)
+
+Completing Phase 1 unblocks:
+- **Product App**: Results display UI, AI visibility in dashboards
+- **Marketing Site**: Activity Feed API, Trust Metrics API, validation cycles
+
 ---
 
 ## Documentation / Infrastructure
