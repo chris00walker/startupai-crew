@@ -16,6 +16,7 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 |---------|--------|-------------|----------|
 | Phase 1 Completion | In Progress | Service Crew, Analysis Crew, Governance Crew (QA), Phase 1 Flow | Product Phase Alpha results display |
 | Results → Supabase | Not Started | Persist to `entrepreneur_briefs`, `analysis_results` tables | Product app can display analysis results |
+| Flywheel Learning Schema | Not Started | SQL for `learnings`, `patterns`, `outcomes`, `domain_expertise` tables | Learning tools can persist/query |
 | Resume/Webhook API | Not Started | `POST /resume` with `human_feedback` for HITL | Product approval UI |
 
 **Specific API Endpoints Needed:**
@@ -23,6 +24,11 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 - `GET /status/{id}` - Already working
 - `POST /resume` - For approval workflows (per `reference/approval-workflows.md`)
 - Webhook to `https://app.startupai.site/api/approvals/webhook` - Push notifications
+
+**Flywheel Learning Tables Needed:**
+- Schema: See `docs/master-architecture/reference/flywheel-learning.md`
+- Requires pgvector extension enabled in Supabase
+- Tables: `learnings`, `patterns`, `outcomes`, `domain_expertise`
 
 ### Marketing Site (`startupai.site`)
 
@@ -37,7 +43,9 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 
 | Blocker | Source Repo | Status | Impact |
 |---------|-------------|--------|--------|
-| None currently | — | — | CrewAI is upstream of all other repos |
+| Learning tables migration | Product App | Not Started | Flywheel learning tools need pgvector tables in Supabase |
+
+**Note**: Product app manages Supabase migrations. Learning tables schema is defined in `docs/master-architecture/reference/flywheel-learning.md`.
 
 ## Coordination Notes
 

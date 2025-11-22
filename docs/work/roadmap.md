@@ -8,9 +8,15 @@ last_reviewed: "2025-11-21"
 
 | Quarter | Theme | Key Deliverables |
 | --- | --- | --- |
-| Q4 2025 | Phase 1 - Desirability | State schemas, Service Crew, Analysis Crew, Governance Crew (QA), Phase 1 Flow, integration with product app onboarding |
-| Q1 2026 | Phase 2 - Feasibility | Build Crew, Growth Crew, Synthesis Crew, pivot/proceed routing, evidence synthesis, test artifact generation |
-| Q2 2026 | Phase 3 - Viability | Finance Crew, enhanced Governance Crew (Audit + Security), flywheel learning capture, full audit trail |
-| TBD | Optimization & Scale | Performance tuning, cost optimization, multi-tenant support, advanced analytics |
+| Q4 2025 | Phase 1 - Desirability | State schemas, Service Crew, Analysis Crew, Governance Crew (QA), Phase 1 Flow, **Flywheel Learning Foundation** (tables, anonymizer, capture/retrieval tools), integration with product app |
+| Q1 2026 | Phase 2 - Feasibility | Build Crew, Growth Crew, Synthesis Crew, pivot/proceed routing, evidence synthesis, **Learning Integration** (all agents query learnings), outcome tracking |
+| Q2 2026 | Phase 3 - Viability | Finance Crew, enhanced Governance Crew (Audit + Security), **Flywheel Optimization** (outcome feedback loop, retrieval tuning), full audit trail |
+| TBD | Optimization & Scale | Performance tuning, cost optimization, multi-tenant support, advanced analytics, learning quality metrics dashboard |
+
+## Competitive Moat: Flywheel Learning
+
+Every validation run makes all 6 AI Founders smarter through shared, anonymized learnings.
+
+**Spec**: See `docs/master-architecture/reference/flywheel-learning.md`
 
 Roadmap is reviewed monthly with product + marketing. Update deliverables once backlog items graduate into committed work.

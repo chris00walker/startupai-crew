@@ -731,10 +731,113 @@ The following sections have been extracted into focused reference documents:
 
 ---
 
+## State Persistence & Error Recovery
+
+### State Persistence with @persist
+
+Use the `@persist` decorator to save flow state after critical methods:
+
+```python
+from crewai.flow.flow import Flow, persist
+
+class Phase1Flow(Flow[InternalValidationState]):
+
+    @start()
+    @persist()  # Save state after brief capture
+    def capture_startupai_brief(self):
+        ...
+
+    @listen(analyze_competitors)
+    @persist()  # Save before governance review
+    def governance_review(self):
+        ...
+```
+
+**Storage Options**:
+- Default: SQLite file (local development)
+- Production: Configure for Supabase persistence
+
+**Recovery**: On restart, flow resumes from last persisted state.
+
+### Error Recovery Patterns
+
+```python
+@router(governance_review)
+def qa_gate(self):
+    if self.state.qa_status == "passed":
+        return "approved"
+    elif self.state.retry_count < 3:
+        self.state.retry_count += 1
+        return "needs_revision"  # Loop back with feedback
+    else:
+        return "manual_review"   # Escalate to human
+
+@listen("manual_review")
+def escalate_to_human(self):
+    """Notify product app for human intervention"""
+    # Emit webhook event for HITL
+    self.emit_event("approval_needed", {
+        "type": "qa_escalation",
+        "state": self.state.dict()
+    })
+```
+
+**See also**: [reference/amp-configuration.md](./reference/amp-configuration.md) for platform error handling.
+
+---
+
+## Flywheel Learning Integration
+
+The Flywheel Learning System captures patterns, outcomes, and domain expertise from each validation run. This is StartupAI's competitive moat.
+
+### Learning Capture Points
+
+After each phase completion, capture learnings:
+
+```python
+@listen("approved")
+def capture_phase_learnings(self):
+    """After Guardian approves, capture learnings"""
+    from startupai.tools.learning_capture import LearningCaptureTool
+
+    learnings = self.extract_learnings_from_state()
+    for learning in learnings:
+        LearningCaptureTool()._run(
+            learning_type=learning['type'],
+            title=learning['title'],
+            description=learning['description'],
+            context=self.state.brief.get_abstract_context(),
+            founder=learning['founder'],
+            phase=self.state.current_phase
+        )
+```
+
+### Learning Retrieval in Tasks
+
+Agents query the learning database before analysis:
+
+```yaml
+customer_research_task:
+  description: |
+    First, query the learning database for relevant patterns:
+    - Use retrieve_learnings tool
+    - query: "Customer research patterns for {industry}"
+    - founder: "sage"
+
+    Use these learnings to inform your research approach.
+    Then conduct customer research for the {segment} segment...
+```
+
+**Full specification**: [reference/flywheel-learning.md](./reference/flywheel-learning.md)
+
+---
+
 ## References
 
 - [02-organization.md](./02-organization.md) - Organizational structure (single source)
 - [01-ecosystem.md](./01-ecosystem.md) - Three-service architecture
+- [reference/flywheel-learning.md](./reference/flywheel-learning.md) - **Competitive moat learning system**
+- [reference/amp-configuration.md](./reference/amp-configuration.md) - CrewAI AMP platform config
 - [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
 - [reference/product-artifacts.md](./reference/product-artifacts.md) - Smart canvas architecture
 - [reference/marketing-integration.md](./reference/marketing-integration.md) - Marketing site AI

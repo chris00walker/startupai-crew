@@ -20,6 +20,8 @@ Detailed specifications extracted for standalone reference:
 
 | Document | Purpose |
 |----------|---------|
+| [reference/flywheel-learning.md](./reference/flywheel-learning.md) | **Competitive moat** - shared anonymized learning system |
+| [reference/amp-configuration.md](./reference/amp-configuration.md) | CrewAI AMP platform config and capabilities |
 | [reference/api-contracts.md](./reference/api-contracts.md) | All API endpoints, webhooks, payloads |
 | [reference/approval-workflows.md](./reference/approval-workflows.md) | Human-in-the-loop patterns |
 | [reference/marketing-integration.md](./reference/marketing-integration.md) | Marketing site AI chat and live data |
@@ -34,6 +36,8 @@ Detailed specifications extracted for standalone reference:
 - **AI Founders**: 02-organization.md (canonical source)
 - **18 Agents**: 02-organization.md (canonical source)
 - **Gated Validation**: 03-validation-spec.md
+- **Flywheel Learning**: reference/flywheel-learning.md (competitive moat)
+- **AMP Platform**: reference/amp-configuration.md
 - **API Integration**: reference/api-contracts.md
 - **HITL Approvals**: reference/approval-workflows.md
 - **What Works Today**: 04-status.md
@@ -43,6 +47,8 @@ Detailed specifications extracted for standalone reference:
 - **"I'm new, where do I start?"** → Read 01 → 02 → 03 → 04 in order
 - **"I need to integrate with CrewAI API"** → reference/api-contracts.md
 - **"I'm implementing approval UI"** → reference/approval-workflows.md
+- **"I want to understand the learning system"** → reference/flywheel-learning.md
+- **"I'm configuring AMP deployment"** → reference/amp-configuration.md
 - **"What's the current status?"** → 04-status.md
 - **"Who owns what?"** → 02-organization.md
 
