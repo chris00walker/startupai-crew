@@ -50,6 +50,52 @@ Certain AI decisions require human approval before proceeding. This document con
 | Stage Gate Progression | Yes | Guardian | Governance Crew | Quality assurance |
 | Pivot Recommendations | Yes | Compass | Synthesis Crew | Strategic alignment |
 | Third-Party Data Sharing | No (Parallel) | Guardian | Governance Crew | Security/compliance |
+| **Segment Pivot** | Yes | Compass | Flow Router | Evidence shows wrong audience |
+| **Value Pivot** | Yes | Compass | Flow Router | Evidence shows wrong promise |
+| **Feature Downgrade** | Yes | Forge | Flow Router | Technical impossibility |
+| **Strategic Pivot** | Yes | Compass | Flow Router | Unit economics failure |
+
+### Innovation Physics Pivot Triggers
+
+The flow routers trigger approvals when evidence indicates a strategic pivot:
+
+```python
+# From internal_validation_flow.py
+
+@router(test_desirability)
+def desirability_gate(self) -> str:
+    # SEGMENT PIVOT: Low problem resonance
+    if evidence.problem_resonance < 0.3:
+        self.state.pivot_recommendation = PivotRecommendation.SEGMENT_PIVOT
+        self.state.human_input_required = True
+        self.state.human_input_reason = "Customer segment shows low interest"
+        return "segment_pivot_required"
+
+    # VALUE PIVOT: High traffic, low commitment (zombie)
+    elif evidence.traffic_quality == "High" and zombie_ratio < 0.1:
+        self.state.pivot_recommendation = PivotRecommendation.VALUE_PIVOT
+        self.state.human_input_required = True
+        self.state.human_input_reason = "High traffic but low commitment"
+        return "value_pivot_required"
+
+@router(test_feasibility)
+def feasibility_gate(self) -> str:
+    # FEATURE DOWNGRADE: Technically impossible
+    if self.state.feasibility_status == FeasibilityStatus.IMPOSSIBLE:
+        self.state.human_input_required = True
+        self.state.human_input_reason = "Core features technically impossible"
+        return "downgrade_and_retest"
+
+@router(test_viability)
+def viability_gate(self) -> str:
+    # STRATEGIC PIVOT: CAC > LTV
+    if self.state.unit_economics_status == UnitEconomicsStatus.UNDERWATER:
+        self.state.human_input_required = True
+        self.state.human_input_reason = "Unit economics unsustainable"
+        return "strategic_pivot_required"  # Choose: increase price or reduce cost
+```
+
+See `03-validation-spec.md` section "Innovation Physics - Non-Linear Flow Logic" for full router details.
 
 ### Ownership Rationale
 
@@ -134,4 +180,6 @@ def output_deliverables(self):
 - Implementation details: `../03-validation-spec.md`
 
 ---
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-11-22
+
+**Latest Changes**: Added Innovation Physics pivot triggers (Segment, Value, Feature Downgrade, Strategic) and router code examples.

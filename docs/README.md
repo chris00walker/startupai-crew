@@ -8,15 +8,17 @@ Welcome to the StartupAI CrewAI Backend documentation. This repository contains 
 docs/
 ├── README.md                     # You are here
 ├── environments.md               # Local/production setup
+├── INNOVATION_PHYSICS_README.md  # Non-linear routing logic
 ├── master-architecture/          # Ecosystem source of truth
 │   ├── 00-introduction.md        # This repo's architecture & quick start
 │   ├── 01-ecosystem.md           # 3-service overview
 │   ├── 02-organization.md        # 6 founders, 18 agents (SINGLE SOURCE)
-│   ├── 03-validation-spec.md     # Core validation flow
+│   ├── 03-validation-spec.md     # Core validation flow + Innovation Physics
 │   ├── 04-status.md              # Current state assessment
 │   └── reference/
 │       ├── api-contracts.md      # All API specifications
-│       ├── approval-workflows.md # HITL patterns
+│       ├── approval-workflows.md # HITL patterns + pivot triggers
+│       ├── flywheel-learning.md  # Competitive moat learning system
 │       ├── marketing-integration.md   # Marketing site AI
 │       ├── product-artifacts.md       # Smart canvas architecture
 │       └── database-schemas.md        # SQL schema reference
@@ -74,6 +76,7 @@ Other documents reference these sources - they don't duplicate the content.
 | Understand the 3-service architecture | [01-ecosystem.md](./master-architecture/01-ecosystem.md) |
 | See all founders and agents | [02-organization.md](./master-architecture/02-organization.md) |
 | Build a crew or flow | [03-validation-spec.md](./master-architecture/03-validation-spec.md) |
+| Understand router and pivot logic | [INNOVATION_PHYSICS_README.md](./INNOVATION_PHYSICS_README.md) |
 | Set up my development environment | [environments.md](./environments.md) |
 | Integrate with CrewAI API | [reference/api-contracts.md](./master-architecture/reference/api-contracts.md) |
 | Implement approval UI | [reference/approval-workflows.md](./master-architecture/reference/approval-workflows.md) |
@@ -92,4 +95,6 @@ Other documents reference these sources - they don't duplicate the content.
 This repository (startupai-crew) is **upstream** of both - changes here unblock downstream work.
 
 ---
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-11-22
+
+**Latest Changes**: Added Innovation Physics documentation to structure and navigation.

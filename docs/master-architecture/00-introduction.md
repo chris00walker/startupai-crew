@@ -125,60 +125,92 @@ Validation is sequential, not parallel:
 
 ### Flow State Management
 
+The ValidationState carries **Innovation Physics signals** for evidence-driven routing:
+
 ```python
 from crewai.flow.flow import Flow, start, listen, router
 from pydantic import BaseModel
+from enum import Enum
+
+# Innovation Physics Signals
+class EvidenceStrength(str, Enum):
+    STRONG = "strong"      # >60% positive + behavioral commitment
+    WEAK = "weak"          # 30-60% or verbal only
+    NONE = "none"          # <30% or negative
+
+class PivotRecommendation(str, Enum):
+    SEGMENT_PIVOT = "segment_pivot"    # Change customer segment
+    VALUE_PIVOT = "value_pivot"        # Change value proposition
+    FEATURE_PIVOT = "feature_pivot"    # Downgrade features
+    NO_PIVOT = "no_pivot"
 
 class ValidationState(BaseModel):
     id: str
-    brief: ClientBrief
-    customer_profiles: List[CustomerProfile] = []
-    competitor_analysis: CompetitorReport = None
-    qa_status: str = "pending"
-    evidence: List[Evidence] = []
-    recommendation: str = None
+    business_idea: str
+    # Evidence signals for routing
+    evidence_strength: EvidenceStrength = EvidenceStrength.NONE
+    pivot_recommendation: PivotRecommendation = PivotRecommendation.NO_PIVOT
+    human_input_required: bool = False
+    # Customer analysis
+    customer_profiles: Dict[str, CustomerProfile] = {}
+    desirability_evidence: Optional[DesirabilityEvidence] = None
 ```
 
-### Phase 1 Flow Structure
+> **Full Implementation**: See `src/startupai/flows/state_schemas.py`
+
+### Innovation Physics Flow Example
+
+The flow uses **non-linear routing** where evidence signals determine the path:
 
 ```python
-class Phase1Flow(Flow[ValidationState]):
+class InternalValidationFlow(Flow[ValidationState]):
 
     @start()
-    def capture_brief(self):
-        """Service Crew captures client context"""
+    def intake_entrepreneur_input(self):
+        """Service Crew captures business context"""
         result = ServiceCrew().crew().kickoff(inputs={...})
-        self.state.brief = result.pydantic
+        self.state.business_idea = result.pydantic.business_idea
 
-    @listen(capture_brief)
-    def analyze_customers(self):
-        """Analysis Crew researches customer segments"""
-        result = AnalysisCrew().crew().kickoff(inputs={...})
-        self.state.customer_profiles = result.pydantic
+    @listen(intake_entrepreneur_input)
+    def test_desirability(self):
+        """Growth Crew tests if customers actually care"""
+        result = GrowthCrew().crew().kickoff(inputs={...})
+        self.state.desirability_evidence = result.pydantic
+        self._calculate_signals()
 
-    @listen(analyze_customers)
-    def analyze_competitors(self):
-        """Analysis Crew maps competitive landscape"""
-        result = AnalysisCrew().crew().kickoff(inputs={...})
-        self.state.competitor_analysis = result.pydantic
+    @router(test_desirability)
+    def desirability_gate(self) -> str:
+        """Innovation Physics: Evidence-driven routing"""
+        evidence = self.state.desirability_evidence
 
-    @listen(analyze_competitors)
-    def governance_review(self):
-        """Guardian QA gate"""
-        result = GovernanceCrew().crew().kickoff(inputs={...})
-        self.state.qa_status = result.status
+        # PROBLEM-SOLUTION FILTER: Low resonance = wrong audience
+        if evidence.problem_resonance < 0.3:
+            self.state.pivot_recommendation = PivotRecommendation.SEGMENT_PIVOT
+            self.state.human_input_required = True
+            return "segment_pivot_required"
 
-    @router(governance_review)
-    def qa_gate(self):
-        if self.state.qa_status == "passed":
-            return "approved"
-        return "needs_revision"
+        # PRODUCT-MARKET FILTER: High traffic but low commitment = zombie
+        elif evidence.traffic_quality == "High" and evidence.zombie_ratio < 0.1:
+            self.state.pivot_recommendation = PivotRecommendation.VALUE_PIVOT
+            self.state.human_input_required = True
+            return "value_pivot_required"
 
-    @listen("approved")
-    def output_deliverables(self):
-        """Compile Phase 1 outputs"""
-        return self.state
+        # Strong signal = proceed
+        elif self.state.evidence_strength == EvidenceStrength.STRONG:
+            return "proceed_to_feasibility"
+
+        return "compass_synthesis_required"
+
+    @listen("segment_pivot_required")
+    def pivot_customer_segment(self):
+        """Don't change solution; change audience"""
+        if self.state.human_input_required:
+            # HITL approval workflow
+            pass
+        # Route back to Sage for new segment
 ```
+
+> **Full Implementation**: See `src/startupai/flows/internal_validation_flow.py` and `docs/INNOVATION_PHYSICS_README.md`
 
 ## File Structure
 

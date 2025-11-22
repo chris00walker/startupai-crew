@@ -586,6 +586,157 @@ class Phase3Flow(Flow[InternalValidationState]):
 
 ---
 
+## Innovation Physics - Non-Linear Flow Logic
+
+> **Implementation**: See `src/startupai/flows/internal_validation_flow.py` and `docs/INNOVATION_PHYSICS_README.md`
+
+The validation flow is NOT linear. Evidence signals drive routing decisions that can loop back to earlier phases or pivot strategy. This implements the Strategyzer methodology's "chaotic iteration" pattern.
+
+### State Signals for Routing
+
+The `ValidationState` carries these signals that determine routing:
+
+```python
+# From src/startupai/flows/state_schemas.py
+
+class EvidenceStrength(str, Enum):
+    STRONG = "strong"      # >60% positive + behavioral commitment
+    WEAK = "weak"          # 30-60% or verbal only
+    NONE = "none"          # <30% or negative
+
+class CommitmentType(str, Enum):
+    SKIN_IN_GAME = "skin_in_game"  # Money, time, reputation
+    VERBAL = "verbal"              # Only verbal interest
+    NONE = "none"
+
+class FeasibilityStatus(str, Enum):
+    POSSIBLE = "possible"
+    CONSTRAINED = "constrained"  # Degraded version possible
+    IMPOSSIBLE = "impossible"
+
+class UnitEconomicsStatus(str, Enum):
+    PROFITABLE = "profitable"    # LTV > 3x CAC
+    MARGINAL = "marginal"        # LTV = 1-3x CAC
+    UNDERWATER = "underwater"    # LTV < CAC
+
+class PivotRecommendation(str, Enum):
+    SEGMENT_PIVOT = "segment_pivot"
+    VALUE_PIVOT = "value_pivot"
+    CHANNEL_PIVOT = "channel_pivot"
+    MODEL_PIVOT = "model_pivot"
+    FEATURE_PIVOT = "feature_pivot"
+    NO_PIVOT = "no_pivot"
+    KILL = "kill"
+```
+
+### Phase 1 Router: Desirability Gate
+
+**The Problem-Solution Filter:**
+- Signal: `problem_resonance < 0.3` (customer doesn't care about the problem)
+- Action: Route to `segment_pivot_required`
+- Logic: Don't change the solution; change the audience
+
+**The Product-Market Filter:**
+- Signal: `traffic_quality == "High"` but `zombie_ratio < 0.1`
+- Action: Route to `value_pivot_required`
+- Logic: The audience is right, but the promise is wrong
+
+```python
+@router(test_desirability)
+def desirability_gate(self) -> str:
+    evidence = self.state.desirability_evidence
+    zombie_ratio = self.state.calculate_zombie_ratio()
+
+    # PROBLEM-SOLUTION FILTER
+    if evidence.problem_resonance < 0.3:
+        self.state.pivot_recommendation = PivotRecommendation.SEGMENT_PIVOT
+        self.state.human_input_required = True
+        return "segment_pivot_required"
+
+    # PRODUCT-MARKET FILTER
+    elif evidence.traffic_quality == "High" and zombie_ratio < 0.1:
+        self.state.pivot_recommendation = PivotRecommendation.VALUE_PIVOT
+        self.state.human_input_required = True
+        return "value_pivot_required"
+
+    elif self.state.evidence_strength == EvidenceStrength.STRONG:
+        return "proceed_to_feasibility"
+
+    else:
+        return "compass_synthesis_required"
+```
+
+### Phase 2 Router: Feasibility Gate
+
+**The Downgrade Protocol:**
+- Signal: `feasibility_status == IMPOSSIBLE`
+- Action: Route to `downgrade_and_retest`
+- Logic: Must verify customers still want the product without that feature
+
+```python
+@router(test_feasibility)
+def feasibility_gate(self) -> str:
+    if self.state.feasibility_status == FeasibilityStatus.IMPOSSIBLE:
+        self.state.human_input_required = True
+        return "downgrade_and_retest"  # Re-test desirability with degraded version
+
+    elif self.state.feasibility_status == FeasibilityStatus.CONSTRAINED:
+        return "test_degraded_desirability"
+
+    elif self.state.feasibility_status == FeasibilityStatus.POSSIBLE:
+        return "proceed_to_viability"
+```
+
+### Phase 3 Router: Viability Gate
+
+**The Unit Economics Trigger:**
+- Signal: `unit_economics_status == UNDERWATER` (CAC > LTV)
+- Action: Route to `strategic_pivot_required`
+- Options: 1) Increase Price (test willingness), 2) Reduce Cost (reduce features)
+
+```python
+@router(test_viability)
+def viability_gate(self) -> str:
+    if self.state.unit_economics_status == UnitEconomicsStatus.UNDERWATER:
+        self.state.human_input_required = True
+        return "strategic_pivot_required"  # Compass decides: price up or cost down
+
+    elif self.state.unit_economics_status == UnitEconomicsStatus.MARGINAL:
+        return "optimize_economics"
+
+    elif self.state.unit_economics_status == UnitEconomicsStatus.PROFITABLE:
+        return "validation_complete"
+```
+
+### Human-in-the-Loop Integration
+
+When `human_input_required=True`, the flow pauses for strategic decisions:
+
+```python
+@listen("segment_pivot_required")
+def pivot_customer_segment(self):
+    if self.state.human_input_required:
+        # Triggers approval workflow in product app
+        # See reference/approval-workflows.md
+        human_decision = self._get_human_input_segment_pivot()
+        if not human_decision.get("approved"):
+            self.state.pivot_recommendation = PivotRecommendation.KILL
+            return
+```
+
+### Pivot History & Learning
+
+All pivots are tracked for Flywheel learning:
+
+```python
+self.state.add_pivot_to_history(
+    PivotRecommendation.SEGMENT_PIVOT,
+    f"Low problem resonance ({evidence.problem_resonance:.1%})"
+)
+```
+
+---
+
 ## Implementation File Structure
 
 ```

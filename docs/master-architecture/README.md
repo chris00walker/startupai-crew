@@ -12,6 +12,7 @@ Start here and progress through the numbered documents:
 | 1 | [01-ecosystem.md](./01-ecosystem.md) | 3-service architecture overview | Second - understand the system |
 | 2 | [02-organization.md](./02-organization.md) | 6 founders, 18 agents (SINGLE SOURCE) | Third - understand the team |
 | 3 | [03-validation-spec.md](./03-validation-spec.md) | Core validation flow implementation | When building crews/flows |
+| 3.5 | [../INNOVATION_PHYSICS_README.md](../INNOVATION_PHYSICS_README.md) | **Non-linear routing logic** | When understanding pivot decisions |
 | 4 | [04-status.md](./04-status.md) | Current state and blockers | Before starting any work |
 
 ## Reference Documents
@@ -36,6 +37,7 @@ Detailed specifications extracted for standalone reference:
 - **AI Founders**: 02-organization.md (canonical source)
 - **18 Agents**: 02-organization.md (canonical source)
 - **Gated Validation**: 03-validation-spec.md
+- **Innovation Physics**: ../INNOVATION_PHYSICS_README.md (non-linear routing)
 - **Flywheel Learning**: reference/flywheel-learning.md (competitive moat)
 - **AMP Platform**: reference/amp-configuration.md
 - **API Integration**: reference/api-contracts.md
@@ -51,6 +53,8 @@ Detailed specifications extracted for standalone reference:
 - **"I'm configuring AMP deployment"** → reference/amp-configuration.md
 - **"What's the current status?"** → 04-status.md
 - **"Who owns what?"** → 02-organization.md
+- **"How do routers and pivots work?"** → ../INNOVATION_PHYSICS_README.md
+- **"Why did the flow route to pivot?"** → 03-validation-spec.md (Innovation Physics section)
 
 ## Cross-References
 
@@ -70,4 +74,6 @@ These repositories consume this architecture:
   - Blockers: `startupai.site/docs/work/cross-repo-blockers.md`
 
 ---
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-11-22
+
+**Latest Changes**: Added Innovation Physics documentation to reading order and navigation.

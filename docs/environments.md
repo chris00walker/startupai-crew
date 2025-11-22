@@ -58,12 +58,23 @@ startupai-crew/
 ├── .env.example          # Template (committed to git)
 ├── .env                  # Local development (gitignored) ⭐ YOU CREATE THIS
 ├── src/
-│   └── startupai_crew/
-│       ├── config/
-│       │   ├── agents.yaml    # Agent definitions
-│       │   └── tasks.yaml     # Task definitions
-│       └── crew.py            # Main crew orchestration
-└── pyproject.toml            # Python dependencies
+│   └── startupai/
+│       ├── flows/                      # Innovation Physics orchestration
+│       │   ├── state_schemas.py        # Validation signals & state
+│       │   └── internal_validation_flow.py  # Non-linear routers
+│       ├── crews/                      # 8 specialized crews
+│       │   ├── service/
+│       │   ├── analysis/
+│       │   ├── build/
+│       │   ├── growth/
+│       │   ├── synthesis/              # Pivot decision logic
+│       │   ├── finance/
+│       │   └── governance/
+│       └── main.py                     # Entry point
+├── docs/
+│   ├── INNOVATION_PHYSICS_README.md    # Router logic guide
+│   └── master-architecture/            # Ecosystem source of truth
+└── pyproject.toml                      # Python dependencies
 ```
 
 **⚠️ IMPORTANT:** You must create `.env` from `.env.example` for local testing

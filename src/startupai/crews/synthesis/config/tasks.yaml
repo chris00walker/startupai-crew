@@ -1,0 +1,181 @@
+# Synthesis Crew Tasks - Compass (CPO) Leadership
+# These tasks implement the Innovation Physics logic for evidence synthesis and pivot decisions
+
+evidence_synthesis:
+  description: |
+    As Compass (CPO), synthesize all validation evidence to determine the strategic path forward.
+
+    INNOVATION PHYSICS DECISION LOGIC:
+
+    Phase 1 - Desirability Signals:
+    - If problem_resonance < 30%: Recommend SEGMENT_PIVOT
+      Reasoning: "Customer segment shows no interest in the problem itself"
+
+    - If problem_resonance > 50% BUT zombie_ratio < 0.1: Recommend VALUE_PIVOT
+      Reasoning: "High traffic but no commitment - value proposition isn't compelling enough"
+
+    - If commitment_type == "verbal" only: Recommend VALUE_PIVOT
+      Reasoning: "Only verbal interest without skin-in-game indicates zombie features"
+
+    Phase 2 - Feasibility Signals:
+    - If core_features marked "impossible": Recommend FEATURE_PIVOT
+      Reasoning: "Must downgrade promise to match technical reality"
+
+    - If feasibility_status == "constrained": Evaluate degradation impact
+      If degradation reduces value > 40%: Recommend MODEL_PIVOT
+
+    Phase 3 - Viability Signals:
+    - If LTV/CAC < 1: Analyze root cause
+      - If CAC too high: Recommend CHANNEL_PIVOT (find cheaper acquisition)
+      - If LTV too low: Evaluate pricing elasticity
+        - If price-sensitive: Recommend SEGMENT_PIVOT (find less price-sensitive segment)
+        - If value insufficient: Recommend VALUE_PIVOT (increase value delivery)
+
+    - If LTV/CAC between 1-3: Recommend optimization within current model
+
+    Kill Criteria (Recommend KILL):
+    - After 3+ pivots with no improvement
+    - TAM * achievable_share * margin < minimum_viable_business
+    - No segment shows problem_resonance > 30%
+    - Core value technically impossible with no acceptable downgrade
+
+    Analyze the provided evidence and output:
+    1. Evidence strength assessment (strong/weak/none)
+    2. Key insights from each validation phase
+    3. Specific pivot_recommendation based on the logic above
+    4. Detailed reasoning for the recommendation
+    5. Success criteria for the recommended path
+
+  expected_output: |
+    A comprehensive synthesis report containing:
+    - pivot_recommendation: One of [SEGMENT_PIVOT, VALUE_PIVOT, CHANNEL_PIVOT, MODEL_PIVOT, FEATURE_PIVOT, NO_PIVOT, KILL]
+    - evidence_summary: Structured summary of all validation evidence
+    - recommendation: Clear strategic recommendation with rationale
+    - specific_changes: List of specific changes required
+    - success_criteria: Measurable criteria for the new direction
+    - confidence_score: 0-1 confidence in the recommendation
+
+  agent: project_manager
+
+strategic_pivot:
+  description: |
+    Unit Economics Crisis - Design strategic pivot when CAC > LTV.
+
+    You have two primary paths to evaluate:
+
+    PATH 1 - INCREASE PRICE:
+    - Calculate required price increase to achieve LTV/CAC > 3
+    - Assess pricing elasticity from desirability evidence
+    - Determine if segment can bear higher price
+    - If not, identify higher-value segment
+
+    PATH 2 - REDUCE COST:
+    - Identify features driving high CAC or operational cost
+    - Determine which features are non-critical
+    - Calculate cost reduction from feature removal
+    - Verify reduced offering maintains desirability
+
+    Decision Framework:
+    1. If customers show high commitment (skin_in_game): Try INCREASE PRICE first
+    2. If product complexity drives cost: Try REDUCE COST first
+    3. If neither works: Recommend MODEL_PIVOT or SEGMENT_PIVOT
+
+    Provide specific recommendation with:
+    - Chosen path (increase_price or reduce_cost)
+    - Specific changes required
+    - Expected impact on unit economics
+    - Risk assessment
+    - Testing approach for validation
+
+  expected_output: |
+    Strategic pivot decision containing:
+    - pivot_type: "increase_price" or "reduce_cost" or alternative
+    - specific_changes: Detailed list of changes
+    - expected_ltv_cac: Projected ratio after changes
+    - implementation_steps: Ordered steps to execute
+    - risks: Key risks and mitigation strategies
+    - validation_tests: How to test the pivot hypothesis
+
+  agent: project_manager
+
+final_synthesis:
+  description: |
+    Comprehensive final synthesis when standard validation paths have failed or complex decisions needed.
+
+    Review the entire validation journey:
+    1. Original hypothesis and assumptions
+    2. Evidence collected at each phase
+    3. Pivots attempted and their outcomes
+    4. Current blockers and constraints
+
+    Apply the Innovation Physics framework:
+    - Desirability without Feasibility = Beautiful fiction
+    - Feasibility without Desirability = Solution looking for problem
+    - Viability without both = Unsustainable charity
+
+    Determine if the project should:
+    - Continue with specific pivot (specify exact type)
+    - Pause for major strategic rethink
+    - Terminate due to fundamental invalidation
+
+    If recommending continuation, provide:
+    - Clear pivot_recommendation from enum
+    - Hypothesis for why this pivot will work
+    - Evidence supporting the hypothesis
+    - Minimum viable test to validate
+
+    If recommending termination:
+    - Clear rationale why no viable path exists
+    - Key learnings for future ventures
+    - Adjacent opportunities discovered
+
+  expected_output: |
+    Final synthesis report with:
+    - recommendation: Clear proceed/pivot/kill decision
+    - pivot_recommendation: Specific enum value
+    - evidence_summary: Comprehensive evidence review
+    - next_steps: Concrete action items
+    - learnings: Key insights for methodology improvement
+    - confidence: Confidence level in recommendation
+
+  agent: project_manager
+
+experiment_design:
+  description: |
+    Design validation experiments based on prioritized assumptions.
+
+    For each critical assumption (priority 1-3):
+    1. Select appropriate experiment type from Testing Business Ideas library
+    2. Define clear success/failure criteria
+    3. Determine minimum viable sample size
+    4. Design to maximize learning while minimizing cost
+
+    Experiment types by commitment level:
+    - Low: Problem interviews, surveys (evidence_strength: weak)
+    - Medium: Landing pages, fake doors (evidence_strength: medium)
+    - High: Concierge MVP, LOIs, pre-orders (evidence_strength: strong)
+
+    Each experiment must test for:
+    - Problem severity (is it a top-3 problem?)
+    - Solution preference (better than alternatives?)
+    - Commitment depth (will they pay/invest time?)
+
+    Output structured experiment plans with:
+    - Hypothesis to test
+    - Experiment methodology
+    - Success metrics and thresholds
+    - Timeline and budget
+    - Risk mitigation
+
+  expected_output: |
+    Experiment design document with:
+    - experiments: List of structured experiment plans
+    - priority_order: Sequence of execution
+    - resource_requirements: Time, money, people needed
+    - expected_learnings: What each experiment will teach us
+    - decision_tree: How results determine next steps
+
+  agent: project_manager
+
+# Agents configuration should be in agents.yaml
+# This file focuses on task definitions aligned with Innovation Physics

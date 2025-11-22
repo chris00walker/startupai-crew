@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "version": "1.0",
+  "project_name": "StartupAI CrewAI Backend",
+  "description": "6-agent strategic business analysis workflow on CrewAI AMP",
+  
+  "security": {
+    "mode": "strict",
+    "deny_file_access": [
+      ".env*",
+      "~/.config/crewai/**",
+      "*.pem",
+      "*.key",
+      ".git/**"
+    ],
+    "deny_file_edit": [
+      ".env*",
+      "~/.config/crewai/settings.json"
+    ],
+    "sensitive_patterns": [
+      "OPENAI_API_KEY",
+      "crewai.com",
+      "Bearer",
+      "b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b",
+      "f4cc39d92520"
+    ]
+  },
+
+  "permissions": {
+    "allowed_commands_no_confirm": [
+      "git status",
+      "git log",
+      "git diff",
+      "crewai deploy status*",
+      "crewai deploy logs*",
+      "ls",
+      "cat",
+      "pwd",
+      "uv sync"
+    ],
+    "require_confirmation": [
+      "crewai deploy push*",
+      "crewai login",
+      "git push*",
+      "git commit*",
+      "uv add*",
+      "uv remove*",
+      "rm *",
+      "mv *"
+    ],
+    "blocked_commands": [
+      "sudo*",
+      "chmod*",
+      "pip*"
+    ]
+  },
+
+  "project_context": {
+    "framework": "CrewAI (Python)",
+    "architecture": "6-agent sequential workflow",
+    "deployment": "CrewAI AMP Platform",
+    "package_manager": "uv",
+    "python_version": "3.11+",
+    "purpose": "Fortune 500-quality strategic business analysis",
+    "deployment_uuid": "b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b",
+    "organization": "StartupAI (8f17470f-7841-4079-860d-de91ed5d1091)",
+    "critical_note": "CrewAI AMP is a FUNDAMENTAL building block, not deprecated"
+  },
+
+  "agent_workflow": {
+    "agents": [
+      "Onboarding Agent (Consultant & Interviewer)",
+      "Customer Researcher (Insight Analyst)",
+      "Competitor Analyst (Market Strategist)",
+      "Value Designer (Value Proposition Architect)",
+      "Validation Agent (Experiment Designer)",
+      "QA Agent (Quality Assurance Specialist)"
+    ],
+    "input_format": {
+      "entrepreneur_input": "Detailed business idea description"
+    },
+    "output_format": "Structured task outputs (Entrepreneur Brief, Customer Profile, Competitor Analysis, Value Proposition Canvas, 3-Tier Validation Roadmap, QA Report)"
+  },
+
+  "coding_standards": {
+    "agent_definitions": "src/startupai/config/agents.yaml",
+    "task_definitions": "src/startupai/config/tasks.yaml",
+    "crew_class": "src/startupai/crew.py (@CrewBase decorator)",
+    "type_hints": "Always use Python type hints",
+    "docstrings": "Google-style docstrings for all functions",
+    "formatter": "black (88 char line length)"
+  },
+
+  "workflow": {
+    "planning_mode": "always",
+    "require_plan_for": [
+      "agent_changes",
+      "task_modifications",
+      "workflow_restructuring",
+      "deployment_pushes"
+    ]
+  },
+
+  "deployment": {
+    "endpoint": "https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com",
+    "bearer_token": "[REDACTED - stored in CrewAI dashboard]",
+    "github_repo": "chris00walker/startupai-crew",
+    "branch": "main"
+  }
+}

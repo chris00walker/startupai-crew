@@ -29,8 +29,33 @@ curl -X POST https://startupai-...crewai.com/kickoff \
 ```json
 {
   "kickoff_id": "uuid",
-  "status": "running|completed|failed",
-  "result": { ... }
+  "status": "running|completed|failed|paused",
+  "current_phase": "desirability|feasibility|viability|complete",
+  "result": {
+    "validation_report": {
+      "evidence_strength": "strong|weak|none",
+      "pivot_recommendation": "segment_pivot|value_pivot|feature_pivot|no_pivot|kill",
+      "human_input_required": false,
+      "next_steps": ["..."]
+    },
+    "value_proposition_canvas": { ... },
+    "evidence": {
+      "desirability": {
+        "problem_resonance": 0.65,
+        "zombie_ratio": 0.15,
+        "commitment_type": "skin_in_game|verbal|none"
+      },
+      "feasibility": {
+        "status": "possible|constrained|impossible"
+      },
+      "viability": {
+        "cac": 150.00,
+        "ltv": 600.00,
+        "ltv_cac_ratio": 4.0,
+        "unit_economics_status": "profitable|marginal|underwater"
+      }
+    }
+  }
 }
 ```
 
@@ -124,4 +149,6 @@ These were documented but do not exist yet:
 | Metrics API | ❌ NOT IMPLEMENTED |
 
 ---
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-11-22
+
+**Latest Changes**: Added Innovation Physics signal fields to status response (evidence_strength, pivot_recommendation, commitment_type, unit_economics_status).
