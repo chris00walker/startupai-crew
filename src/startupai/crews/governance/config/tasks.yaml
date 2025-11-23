@@ -1,0 +1,90 @@
+quality_review:
+  description: >
+    Perform quality review of validation outputs at gate checkpoints:
+
+    Phase: {phase}
+    State: {state}
+    Evidence: {evidence}
+
+    Review for:
+    1. Completeness - All required outputs present
+    2. Accuracy - Calculations and analysis correct
+    3. Consistency - No contradictions between sections
+    4. Evidence quality - Sufficient data to support conclusions
+    5. Actionability - Recommendations are specific and executable
+  expected_output: >
+    QA report containing:
+    - status: PASSED/FAILED/NEEDS_REVISION
+    - completeness_score: float 0-1
+    - issues_found: list of {severity, description, location}
+    - recommendations: list of improvements
+    - gate_decision: proceed/revise/escalate
+  agent: qa_auditor
+
+final_audit:
+  description: >
+    Perform comprehensive final audit of complete validation:
+
+    Full State: {full_state}
+
+    Audit all aspects:
+    1. Process compliance - Did we follow the methodology?
+    2. Evidence chain - Is every conclusion supported?
+    3. Pivot rationale - Were pivots evidence-driven?
+    4. Output quality - Are deliverables complete and accurate?
+    5. Learning capture - Have insights been documented?
+  expected_output: >
+    Final audit report containing:
+    - status: PASSED/FAILED
+    - overall_score: float 0-1
+    - process_compliance: assessment
+    - evidence_quality: assessment
+    - key_findings: list
+    - improvement_areas: list for future validations
+  agent: qa_auditor
+
+track_progress:
+  description: >
+    Track validation progress and maintain audit trail:
+
+    Validation ID: {validation_id}
+    Current Phase: {current_phase}
+    Events: {events}
+
+    Record:
+    1. Phase transitions with timestamps
+    2. Key decisions and rationale
+    3. Evidence collected
+    4. Pivots executed
+    5. Human approvals obtained
+  expected_output: >
+    Progress report containing:
+    - timeline: list of events with timestamps
+    - phase_history: phases visited
+    - decisions_log: key decisions made
+    - evidence_summary: what was collected
+    - audit_trail: complete record for compliance
+  agent: accountability_tracker
+
+capture_learnings:
+  description: >
+    Extract and document learnings for the Flywheel system:
+
+    Validation Results: {results}
+    Pivot History: {pivot_history}
+    Evidence: {evidence}
+
+    Identify:
+    1. What worked well
+    2. What didn't work
+    3. Patterns to recognize
+    4. Process improvements
+    5. Knowledge to preserve
+  expected_output: >
+    Learning capture containing:
+    - key_learnings: list of insights
+    - pattern_matches: similar past validations
+    - process_improvements: suggestions
+    - knowledge_artifacts: reusable content
+    - flywheel_updates: what to add to knowledge base
+  agent: accountability_tracker

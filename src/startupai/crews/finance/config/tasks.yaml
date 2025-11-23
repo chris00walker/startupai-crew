@@ -1,0 +1,88 @@
+analyze_viability:
+  description: >
+    Calculate unit economics and assess business viability:
+
+    Value Maps: {value_maps}
+    Desirability Evidence: {desirability_evidence}
+    Feasibility Evidence: {feasibility_evidence}
+    Market Size: {market_size}
+
+    Calculate:
+    1. Customer Acquisition Cost (CAC)
+       - Marketing costs per channel
+       - Sales costs if applicable
+       - Conversion funnel analysis
+    2. Lifetime Value (LTV)
+       - Revenue per customer
+       - Retention/churn rate
+       - Expansion revenue potential
+    3. LTV/CAC Ratio
+       - Target: >3x for healthy business
+    4. Payback Period
+       - Months to recover CAC
+    5. Gross Margin
+       - Revenue minus direct costs
+  expected_output: >
+    Viability evidence containing:
+    - cac: float (customer acquisition cost)
+    - ltv: float (lifetime value)
+    - ltv_cac_ratio: float
+    - payback_months: int
+    - gross_margin: float (percentage)
+    - break_even_customers: int
+    - market_size_addressable: float
+    - viability_assessment: string summary
+  agent: unit_economics_analyst
+
+optimize_economics:
+  description: >
+    Identify optimizations to improve marginal unit economics:
+
+    Current CAC: {current_cac}
+    Current LTV: {current_ltv}
+    Current Margin: {current_margin}
+
+    Analyze opportunities to:
+    1. Reduce CAC
+       - Channel optimization
+       - Conversion improvements
+       - Viral/referral mechanisms
+    2. Increase LTV
+       - Pricing optimization
+       - Retention improvements
+       - Upsell/cross-sell
+    3. Improve margins
+       - Cost reduction
+       - Automation opportunities
+
+    Prioritize by impact and effort.
+  expected_output: >
+    Optimized metrics containing:
+    - optimized_metrics: updated viability evidence
+    - optimizations_applied: list of changes
+    - expected_improvement: percentage gain in LTV/CAC
+    - implementation_effort: High/Medium/Low
+  agent: unit_economics_analyst
+
+build_financial_model:
+  description: >
+    Create a financial projection model for the business:
+
+    Viability Evidence: {viability_evidence}
+    Market Size: {market_size}
+    Growth Assumptions: {growth_assumptions}
+
+    Build a 3-year projection showing:
+    1. Revenue growth trajectory
+    2. Cost structure evolution
+    3. Path to profitability
+    4. Funding requirements
+    5. Key milestones and metrics
+  expected_output: >
+    Financial model containing:
+    - monthly_projections: first 12 months detailed
+    - annual_projections: years 1-3
+    - key_milestones: revenue and profitability targets
+    - funding_needs: amount and timing
+    - sensitivity_analysis: key variable impacts
+  agent: financial_modeler

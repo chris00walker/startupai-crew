@@ -1,0 +1,49 @@
+capture_entrepreneur_brief:
+  description: >
+    Analyze the entrepreneur's input and extract structured information:
+
+    Input: {entrepreneur_input}
+
+    Extract and structure:
+    1. Business Idea - Core value proposition in one sentence
+    2. Target Customer Segments - Specific customer types with demographics
+    3. Problem Statement - The pain points being addressed
+    4. Proposed Solution - How the product/service solves the problem
+    5. Key Assumptions - Critical beliefs that must be true for success
+    6. Revenue Model - How the business will make money
+
+    For each assumption, categorize as:
+    - Desirability (customer wants it)
+    - Feasibility (can be built)
+    - Viability (can make money)
+  expected_output: >
+    A structured JSON brief containing:
+    - business_idea: string
+    - target_segments: list of segment names
+    - problem_statement: string
+    - solution_description: string
+    - assumptions: list of objects with {assumption, category, criticality}
+    - revenue_model: string
+  agent: founder_onboarding_agent
+
+segment_pivot_analysis:
+  description: >
+    Based on evidence showing low interest from current segment, identify
+    alternative customer segments to target:
+
+    Current Segment: {current_segment}
+    Evidence: {evidence}
+    Business Idea: {business_idea}
+
+    Analyze:
+    1. Why the current segment showed low interest
+    2. What characteristics would indicate a better-fit segment
+    3. 2-3 alternative segments to consider
+    4. Recommended segment with rationale
+  expected_output: >
+    A recommendation object containing:
+    - current_segment_analysis: why it failed
+    - new_segment: recommended alternative
+    - segment_rationale: why this segment is better suited
+    - testing_approach: how to validate with new segment
+  agent: founder_onboarding_agent

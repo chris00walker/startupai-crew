@@ -1,0 +1,91 @@
+test_desirability:
+  description: >
+    Design and conceptualize experiments to test desirability assumptions:
+
+    Customer Profiles: {customer_profiles}
+    Value Maps: {value_maps}
+    Critical Assumptions: {assumptions}
+    Competitor Analysis: {competitor_analysis}
+
+    For each critical desirability assumption, design an experiment that:
+    1. Tests behavioral commitment (not just verbal interest)
+    2. Can run quickly (days, not weeks)
+    3. Provides clear pass/fail criteria
+    4. Measures both traffic and conversion
+
+    Focus on experiments that detect:
+    - Problem resonance (do they care about the problem?)
+    - Solution fit (does our approach resonate?)
+    - Commitment depth (will they put skin in the game?)
+  expected_output: >
+    Desirability evidence containing:
+    - experiments: list of {name, hypothesis, method, success_criteria, results}
+    - problem_resonance: float 0-1
+    - conversion_rate: float 0-1
+    - traffic_quality: High/Medium/Low
+    - commitment_depth: SKIN_IN_GAME/VERBAL/NONE
+    - key_learnings: list of insights
+  agent: experiment_designer
+
+test_pricing:
+  description: >
+    Test willingness to pay at a higher price point:
+
+    Current Price: {current_price}
+    New Price Multiplier: {new_price_multiplier}
+    Customer Profiles: {customer_profiles}
+    Value Maps: {value_maps}
+
+    Design experiments to test:
+    1. Price sensitivity at new level
+    2. Which segments accept higher price
+    3. What additional value might justify increase
+    4. Comparison with competitor pricing
+  expected_output: >
+    Pricing test results containing:
+    - acceptance_rate: float 0-1 (percentage accepting new price)
+    - segment_breakdown: acceptance by segment
+    - objections: common reasons for rejection
+    - value_gaps: what would justify the price
+    - recommendations: pricing strategy suggestions
+  agent: signal_analyst
+
+test_degraded:
+  description: >
+    Test whether customers accept a degraded version of the product:
+
+    Original Value Maps: {original_value_maps}
+    Degradation Impact: {degradation_impact}
+    Customer Profiles: {customer_profiles}
+
+    Assess:
+    1. Which features customers consider essential
+    2. Acceptance of degraded alternative
+    3. Impact on willingness to pay
+    4. Comparison with competitive alternatives
+  expected_output: >
+    Degradation acceptance test results:
+    - acceptance_rate: float 0-1
+    - essential_features: what must stay
+    - acceptable_tradeoffs: what can be cut
+    - price_impact: effect on willingness to pay
+    - competitive_position: how we compare with less features
+  agent: signal_analyst
+
+refine_experiments:
+  description: >
+    Refine and improve experiments based on weak initial results:
+
+    Previous Evidence: {previous_evidence}
+    Customer Profiles: {customer_profiles}
+    Value Maps: {value_maps}
+
+    Analyze what went wrong and design improved experiments:
+    1. Better targeting of customer segment
+    2. Clearer value proposition messaging
+    3. Stronger calls to action
+    4. Better success metrics
+  expected_output: >
+    Refined desirability evidence with improved experimental design
+    and updated results
+  agent: experiment_designer

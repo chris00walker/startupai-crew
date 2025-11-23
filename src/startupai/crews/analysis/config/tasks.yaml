@@ -1,0 +1,82 @@
+analyze_customer_segment:
+  description: >
+    Perform deep analysis of the target customer segment using Jobs-to-be-Done
+    framework:
+
+    Segment: {segment}
+    Business Idea: {business_idea}
+    Initial Assumptions: {assumptions}
+
+    Create a comprehensive customer profile:
+    1. Customer Jobs
+       - Functional jobs (tasks to complete)
+       - Social jobs (how they want to be perceived)
+       - Emotional jobs (feelings they seek)
+    2. Customer Pains
+       - Undesired outcomes and obstacles
+       - Risks and negative consequences
+    3. Customer Gains
+       - Required outcomes and expectations
+       - Desired outcomes and aspirations
+       - Unexpected delights
+
+    Also create the Value Map showing how the solution addresses these.
+  expected_output: >
+    A structured analysis containing:
+    - customer_profile: {jobs: [], pains: [], gains: []}
+    - value_map: {pain_relievers: [], gain_creators: [], products_services: []}
+    - fit_score: float between 0-1 indicating problem-solution fit
+    - key_insights: list of critical findings
+  agent: customer_researcher
+
+analyze_competitors:
+  description: >
+    Map the competitive landscape for the business idea:
+
+    Business Idea: {business_idea}
+    Target Segments: {segments}
+
+    Analyze:
+    1. Direct Competitors - Same solution, same customer
+    2. Indirect Competitors - Different solution, same job-to-be-done
+    3. Substitutes - What customers do today without this solution
+    4. Positioning Map - 2x2 matrix of key differentiators
+
+    For each competitor, evaluate:
+    - Value proposition strength
+    - Market share/traction
+    - Pricing model
+    - Key weaknesses
+  expected_output: >
+    A competitive analysis report containing:
+    - direct_competitors: list of {name, description, strengths, weaknesses}
+    - indirect_competitors: list
+    - substitutes: list
+    - positioning_map: {x_axis, y_axis, positions}
+    - market_gaps: identified opportunities
+    - competitive_threats: key risks
+  agent: competitor_analyst
+
+iterate_value_proposition:
+  description: >
+    Based on evidence showing high interest but low commitment (zombie signal),
+    redesign the value proposition:
+
+    Current Value Map: {current_value_map}
+    Customer Profile: {customer_profile}
+    Evidence: {evidence}
+    Zombie Ratio: {zombie_ratio}
+
+    The audience is right, but the promise is wrong. Analyze:
+    1. Which pain relievers are not resonating
+    2. Which gain creators are missing impact
+    3. How to intensify the value proposition
+
+    Redesign the value map to create stronger commitment signals.
+  expected_output: >
+    An updated value map with:
+    - new_value_map: redesigned {pain_relievers, gain_creators, products_services}
+    - changes_made: list of specific modifications
+    - expected_impact: predicted improvement in commitment
+    - testing_approach: how to validate the new proposition
+  agent: customer_researcher

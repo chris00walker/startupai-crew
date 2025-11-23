@@ -1,44 +1,75 @@
 """
 Governance Crew - Led by Guardian (CGO).
-Ensures quality, compliance, and methodology adherence.
+Handles quality assurance, compliance, and accountability.
 """
 
-from crewai import Crew, Agent, Task
-from crewai.project import CrewBase
+from crewai import Agent, Crew, Process, Task
+from crewai.project import CrewBase, agent, crew, task
 
 
-class GovernanceCrew(CrewBase):
-    """Guardian's Governance Crew for quality assurance and audit."""
+@CrewBase
+class GovernanceCrew:
+    """
+    Guardian's Governance Crew for quality and compliance.
 
+    This crew performs quality audits, monitors process compliance,
+    and captures learnings for the Flywheel system.
+    """
+
+    agents_config = 'config/agents.yaml'
+    tasks_config = 'config/tasks.yaml'
+
+    @agent
+    def qa_auditor(self) -> Agent:
+        return Agent(
+            config=self.agents_config['qa_auditor'],
+            verbose=True
+        )
+
+    @agent
+    def compliance_monitor(self) -> Agent:
+        return Agent(
+            config=self.agents_config['compliance_monitor'],
+            verbose=True
+        )
+
+    @agent
+    def accountability_tracker(self) -> Agent:
+        return Agent(
+            config=self.agents_config['accountability_tracker'],
+            verbose=True
+        )
+
+    @task
+    def quality_review(self) -> Task:
+        return Task(
+            config=self.tasks_config['quality_review']
+        )
+
+    @task
+    def final_audit(self) -> Task:
+        return Task(
+            config=self.tasks_config['final_audit']
+        )
+
+    @task
+    def track_progress(self) -> Task:
+        return Task(
+            config=self.tasks_config['track_progress']
+        )
+
+    @task
+    def capture_learnings(self) -> Task:
+        return Task(
+            config=self.tasks_config['capture_learnings']
+        )
+
+    @crew
     def crew(self) -> Crew:
-        """Create the Governance Crew."""
-        # Placeholder implementation
-        qa_agent = Agent(
-            role="Quality Assurance Agent",
-            goal="Validate analysis quality and framework compliance",
-            backstory="Expert in Strategyzer methodologies and validation frameworks"
-        )
-
-        audit_agent = Agent(
-            role="Audit Agent",
-            goal="Document decision trail and ensure accountability",
-            backstory="Expert in governance and compliance tracking"
-        )
-
-        qa_task = Task(
-            description="Review analysis for quality and completeness",
-            expected_output="QA report with pass/fail status and feedback",
-            agent=qa_agent
-        )
-
-        audit_task = Task(
-            description="Perform final audit and documentation",
-            expected_output="Complete audit report with compliance status",
-            agent=audit_agent
-        )
-
+        """Creates the Governance Crew."""
         return Crew(
-            agents=[qa_agent, audit_agent],
-            tasks=[qa_task, audit_task],
+            agents=self.agents,
+            tasks=self.tasks,
+            process=Process.sequential,
             verbose=True
         )

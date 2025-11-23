@@ -1,44 +1,62 @@
 """
 Analysis Crew - Led by Sage (CSO).
-Analyzes customer segments and competitive landscape.
+Handles customer research and competitive analysis.
 """
 
-from crewai import Crew, Agent, Task
-from crewai.project import CrewBase
+from crewai import Agent, Crew, Process, Task
+from crewai.project import CrewBase, agent, crew, task
 
 
-class AnalysisCrew(CrewBase):
-    """Sage's Analysis Crew for customer and competitor research."""
+@CrewBase
+class AnalysisCrew:
+    """
+    Sage's Analysis Crew for market research.
 
+    This crew performs deep customer research using Jobs-to-be-Done
+    framework and competitive landscape analysis.
+    """
+
+    agents_config = 'config/agents.yaml'
+    tasks_config = 'config/tasks.yaml'
+
+    @agent
+    def customer_researcher(self) -> Agent:
+        return Agent(
+            config=self.agents_config['customer_researcher'],
+            verbose=True
+        )
+
+    @agent
+    def competitor_analyst(self) -> Agent:
+        return Agent(
+            config=self.agents_config['competitor_analyst'],
+            verbose=True
+        )
+
+    @task
+    def analyze_customer_segment(self) -> Task:
+        return Task(
+            config=self.tasks_config['analyze_customer_segment']
+        )
+
+    @task
+    def analyze_competitors(self) -> Task:
+        return Task(
+            config=self.tasks_config['analyze_competitors']
+        )
+
+    @task
+    def iterate_value_proposition(self) -> Task:
+        return Task(
+            config=self.tasks_config['iterate_value_proposition']
+        )
+
+    @crew
     def crew(self) -> Crew:
-        """Create the Analysis Crew."""
-        # Placeholder implementation
-        customer_researcher = Agent(
-            role="Customer Researcher",
-            goal="Analyze customer Jobs, Pains, and Gains",
-            backstory="Expert in customer development and Jobs-to-be-Done framework"
-        )
-
-        competitor_analyst = Agent(
-            role="Competitor Analyst",
-            goal="Map competitive landscape and positioning",
-            backstory="Expert in competitive analysis and market positioning"
-        )
-
-        customer_task = Task(
-            description="Research customer segment and create profile",
-            expected_output="Customer Profile with Jobs, Pains, Gains",
-            agent=customer_researcher
-        )
-
-        competitor_task = Task(
-            description="Analyze competitors and market positioning",
-            expected_output="Competitive analysis report",
-            agent=competitor_analyst
-        )
-
+        """Creates the Analysis Crew."""
         return Crew(
-            agents=[customer_researcher, competitor_analyst],
-            tasks=[customer_task, competitor_task],
+            agents=self.agents,
+            tasks=self.tasks,
+            process=Process.sequential,
             verbose=True
         )
