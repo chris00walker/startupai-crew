@@ -72,6 +72,13 @@ from startupai.crews.crew_outputs import (
     GovernanceCrewOutput,
 )
 
+# Import Flywheel Learning tools
+from startupai.tools.learning_capture import (
+    LearningCaptureTool,
+    capture_pattern_learning,
+    capture_outcome_learning,
+)
+
 
 class InternalValidationFlow(Flow[ValidationState]):
     """
@@ -1108,28 +1115,132 @@ class InternalValidationFlow(Flow[ValidationState]):
             return deliverables
 
     def _capture_flywheel_learnings(self):
-        """Capture learnings for continuous improvement"""
-        learnings = {
-            "validation_id": self.state.id,
-            "business_idea": self.state.business_idea,
-            "segments_tested": self.state.target_segments,
-            "pivots_executed": self.state.pivot_history,
-            "final_evidence": {
-                "desirability": self.state.evidence_strength.value if self.state.evidence_strength else None,
-                "feasibility": self.state.feasibility_status.value if self.state.feasibility_status else None,
-                "viability": self.state.unit_economics_status.value if self.state.unit_economics_status else None
-            },
-            "key_learnings": [],
-            "timestamp": datetime.now().isoformat()
+        """
+        Capture learnings for the Flywheel continuous improvement system.
+
+        Persists anonymized learnings to the learnings table via LearningCaptureTool.
+        Captures three types of learnings:
+        1. Outcome learning - final validation result
+        2. Pattern learnings - recurring patterns observed during validation
+        3. Domain learnings - industry-specific insights
+        """
+        print("\n📚 Capturing Flywheel learnings...")
+
+        captured_count = 0
+
+        # Build context for learning capture (will be anonymized)
+        context = {
+            "desirability_signal": self.state.evidence_strength.value if self.state.evidence_strength else "NONE",
+            "feasibility_signal": self.state.feasibility_status.value if self.state.feasibility_status else "NONE",
+            "viability_signal": self.state.unit_economics_status.value if self.state.unit_economics_status else "NONE",
+            "phase": self.state.phase.value if self.state.phase else "UNKNOWN",
+            "pivot_history": [p.get("type", "unknown") for p in self.state.pivot_history] if self.state.pivot_history else [],
         }
 
-        # Extract key learnings from evidence
-        if self.state.desirability_evidence:
-            for experiment in self.state.desirability_evidence.experiments:
-                learnings["key_learnings"].extend(experiment.key_learnings)
+        # Determine industry from business idea (simplified classification)
+        industry = self._classify_industry()
 
-        # In production, this would be persisted to a knowledge base
-        print(f"   📚 Captured {len(learnings['key_learnings'])} learnings for Flywheel")
+        try:
+            # 1. Capture OUTCOME learning - the final validation result
+            outcome_title = f"Validation outcome: {self.state.pivot_recommendation.value if self.state.pivot_recommendation else 'PROCEED'}"
+            outcome_description = (
+                f"Business idea validation completed in phase {self.state.phase.value if self.state.phase else 'UNKNOWN'}. "
+                f"Desirability: {context['desirability_signal']}, "
+                f"Feasibility: {context['feasibility_signal']}, "
+                f"Viability: {context['viability_signal']}. "
+                f"Pivots executed: {len(self.state.pivot_history)}."
+            )
+
+            result = capture_outcome_learning(
+                title=outcome_title,
+                description=outcome_description,
+                context=context,
+                founder=self.state.user_id or self.state.id,
+                phase=self.state.phase.value if self.state.phase else "VALIDATED",
+                tags=["validation_outcome", f"phase_{self.state.phase.value if self.state.phase else 'validated'}"],
+                confidence_score=self.state.synthesis_confidence if hasattr(self.state, 'synthesis_confidence') and self.state.synthesis_confidence else 0.7,
+                industry=industry,
+            )
+            if "successfully" in result.lower():
+                captured_count += 1
+
+            # 2. Capture PATTERN learnings from pivots
+            if self.state.pivot_history:
+                for pivot in self.state.pivot_history:
+                    pivot_type = pivot.get("type", "unknown")
+                    pivot_reason = pivot.get("reason", "No reason provided")
+
+                    pattern_title = f"Pivot pattern: {pivot_type}"
+                    pattern_description = (
+                        f"Pivot executed during validation: {pivot_type}. "
+                        f"Trigger: {pivot_reason}"
+                    )
+
+                    result = capture_pattern_learning(
+                        title=pattern_title,
+                        description=pattern_description,
+                        context=context,
+                        founder=self.state.user_id or self.state.id,
+                        phase=self.state.phase.value if self.state.phase else "VALIDATED",
+                        tags=["pivot_pattern", pivot_type.lower().replace(" ", "_")],
+                        confidence_score=0.8,
+                        industry=industry,
+                    )
+                    if "successfully" in result.lower():
+                        captured_count += 1
+
+            # 3. Capture key learnings from experiments
+            if self.state.desirability_evidence and hasattr(self.state.desirability_evidence, 'experiments'):
+                for experiment in self.state.desirability_evidence.experiments[:3]:  # Limit to top 3
+                    if hasattr(experiment, 'key_learnings') and experiment.key_learnings:
+                        for learning in experiment.key_learnings[:2]:  # Max 2 per experiment
+                            result = capture_pattern_learning(
+                                title=f"Experiment insight: {experiment.name if hasattr(experiment, 'name') else 'Unnamed'}",
+                                description=learning,
+                                context=context,
+                                founder=self.state.user_id or self.state.id,
+                                phase="DESIRABILITY",
+                                tags=["experiment_insight", "desirability"],
+                                confidence_score=0.6,
+                                industry=industry,
+                            )
+                            if "successfully" in result.lower():
+                                captured_count += 1
+
+            print(f"   ✅ Captured {captured_count} learnings for Flywheel system")
+
+        except Exception as e:
+            # Learning capture should not fail the flow
+            print(f"   ⚠️ Flywheel learning capture failed (non-blocking): {str(e)}")
+            traceback.print_exc()
+
+    def _classify_industry(self) -> Optional[str]:
+        """
+        Simple industry classification based on business idea keywords.
+        In production, this could use NLP/LLM classification.
+        """
+        if not self.state.business_idea:
+            return None
+
+        idea_lower = self.state.business_idea.lower()
+
+        # Simple keyword-based classification
+        if any(kw in idea_lower for kw in ["saas", "software", "platform", "api", "cloud"]):
+            if any(kw in idea_lower for kw in ["enterprise", "b2b", "business"]):
+                return "B2B SaaS"
+            return "SaaS"
+        elif any(kw in idea_lower for kw in ["ecommerce", "e-commerce", "shop", "retail", "d2c", "direct-to-consumer"]):
+            return "E-commerce"
+        elif any(kw in idea_lower for kw in ["marketplace", "platform", "two-sided", "matching"]):
+            return "Marketplace"
+        elif any(kw in idea_lower for kw in ["fintech", "finance", "payment", "banking", "lending"]):
+            return "Fintech"
+        elif any(kw in idea_lower for kw in ["health", "medical", "healthcare", "wellness"]):
+            return "Healthcare"
+        elif any(kw in idea_lower for kw in ["education", "learning", "edtech", "course"]):
+            return "EdTech"
+        else:
+            return None  # Unknown - will still capture learning without industry filter
 
     def _generate_final_deliverables(self) -> Dict[str, Any]:
         """Generate structured outputs for the user"""
