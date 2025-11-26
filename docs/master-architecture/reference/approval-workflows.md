@@ -165,8 +165,13 @@ def output_deliverables(self):
 | CrewAI `human_input` support | ✅ Available in CrewAI AMP |
 | CrewAI webhook delivery | ✅ Available in CrewAI AMP |
 | CrewAI `/resume` endpoint | ✅ Available in CrewAI AMP |
-| Product app webhook receiver | ❌ NOT IMPLEMENTED |
-| Product app approval UI | ❌ NOT IMPLEMENTED |
+| Product app webhook receiver | ✅ Implemented (`/api/approvals/webhook`) |
+| Product app approvals CRUD API | ✅ Implemented (`/api/approvals/`) |
+| Product app `useApprovals` hook | ✅ Implemented |
+| `approval_requests` table | ✅ Deployed (migration 20251126000002) |
+| `approval_preferences` table | ✅ Deployed (migration 20251126000002) |
+| `approval_history` table | ✅ Deployed (migration 20251126000002) |
+| Product app approval UI components | ⏳ Partial (API ready, full UI pending) |
 | Product app resume client | ❌ NOT IMPLEMENTED |
 | Notification escalation | ❌ NOT IMPLEMENTED |
 | Auto-approve rules | ❌ NOT IMPLEMENTED |
@@ -177,9 +182,9 @@ def output_deliverables(self):
 
 - API payloads: `api-contracts.md`
 - Founder ownership: `../02-organization.md`
-- Implementation details: `../03-validation-spec.md`
+- Implementation details: `../03-validation-spec.md` (authoritative blueprint)
 
 ---
-**Last Updated**: 2025-11-22
+**Last Updated**: 2025-11-26
 
-**Latest Changes**: Added Innovation Physics pivot triggers (Segment, Value, Feature Downgrade, Strategic) and router code examples.
+**Latest Changes**: Updated implementation status - approval webhook, CRUD API, hook, and database tables now implemented. See `03-validation-spec.md` for full technical specification.

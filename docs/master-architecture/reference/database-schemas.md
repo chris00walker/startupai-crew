@@ -1,14 +1,19 @@
 ---
 purpose: Database schema definitions for all services
-status: planning
-last_reviewed: 2025-11-21
+status: partially-implemented
+last_reviewed: 2025-11-26
 ---
 
 # Database Schemas
 
 This document consolidates all SQL schema definitions used across the StartupAI ecosystem.
 
+> **Implementation Status**: Many tables are now deployed. See status indicators below.
+> **Authoritative Spec**: `../03-validation-spec.md` contains the complete state architecture.
+
 ## Approval System Tables
+
+**Status**: ✅ Deployed (migration `20251126000002_approval_requests.sql`)
 
 ### Approval Requests
 
@@ -65,6 +70,8 @@ CREATE TABLE approval_preferences (
 
 ## Marketing Site Tables
 
+**Status**: ❌ NOT DEPLOYED (marketing site still uses mock data)
+
 ### Platform Metrics
 
 ```sql
@@ -106,7 +113,9 @@ CREATE TABLE founder_stats (
 
 ## Product App Core Tables
 
-> Note: These are the aspirational schemas from the technical specification. Actual implementations may vary. Check `frontend/src/db/schema/` in the product app for current implementations.
+**Status**: ✅ Mostly Deployed (12 migrations in Supabase)
+
+> Note: Check `frontend/src/db/schema/` in the product app for current Drizzle implementations.
 
 ### Projects
 
@@ -266,6 +275,9 @@ CREATE INDEX idx_hypotheses_status ON hypotheses(status);
 - [approval-workflows.md](./approval-workflows.md) - How approvals work
 - [product-artifacts.md](./product-artifacts.md) - Canvas architecture
 - [api-contracts.md](./api-contracts.md) - API specifications
+- [../03-validation-spec.md](../03-validation-spec.md) - Authoritative technical blueprint
 
 ---
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-11-26
+
+**Latest Changes**: Updated implementation status indicators. Approval tables and most product app tables are now deployed.

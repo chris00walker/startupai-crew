@@ -164,11 +164,14 @@ These were documented but do not exist yet:
 | CrewAI `/status` | ✅ Working |
 | CrewAI `/resume` | ✅ Available in CrewAI AMP |
 | CrewAI webhook delivery | ✅ Available in CrewAI AMP |
-| Product app webhook receiver | ❌ NOT IMPLEMENTED |
-| Activity feed API | ❌ NOT IMPLEMENTED |
-| Metrics API | ❌ NOT IMPLEMENTED |
+| Product app unified webhook | ✅ Implemented (`/api/crewai/webhook`) |
+| Product app results webhook | ✅ Implemented (`/api/crewai/results`) |
+| Product app consultant webhook | ✅ Implemented (`/api/crewai/consultant`) |
+| Product app approvals API | ✅ Implemented (`/api/approvals/` CRUD + webhook) |
+| Activity feed API | ❌ NOT IMPLEMENTED (marketing site feature) |
+| Metrics API | ❌ NOT IMPLEMENTED (marketing site feature) |
 
 ---
-**Last Updated**: 2025-11-22
+**Last Updated**: 2025-11-26
 
-**Latest Changes**: Added Innovation Physics signal fields to status response (evidence_strength, pivot_recommendation, commitment_type, unit_economics_status).
+**Latest Changes**: Updated implementation status - product app webhooks and approvals API now implemented. See `03-validation-spec.md` for authoritative technical details.
