@@ -136,6 +136,8 @@ OPENAI_API_KEY=sk-your-actual-key-here
 **Environment Variables Set in Dashboard:**
 - `OPENAI_API_KEY` - Primary LLM provider
 - `ANTHROPIC_API_KEY` - Fallback LLM provider (optional)
+- `STARTUPAI_RESULTS_WEBHOOK_URL` - Product app webhook for results persistence (e.g., `https://app.startupai.site/api/crewai/results`)
+- `STARTUPAI_RESULTS_BEARER_TOKEN` - Bearer token for webhook authentication (same as `CREW_CONTRACT_BEARER` in product app)
 
 **Deployment:** Automatic on `crewai deploy push` or GitHub integration
 
@@ -320,6 +322,16 @@ crewai login
 ### Minimum Required (Local & Production)
 ```bash
 OPENAI_API_KEY=sk-...
+```
+
+### Results Persistence (Production Only)
+These enable the flow to persist results to the product app database:
+```bash
+# Webhook endpoint for results persistence
+STARTUPAI_RESULTS_WEBHOOK_URL=https://app.startupai.site/api/crewai/results
+
+# Bearer token for webhook authentication (must match CREW_CONTRACT_BEARER in product app)
+STARTUPAI_RESULTS_BEARER_TOKEN=your-shared-secret-token
 ```
 
 ### Optional Providers

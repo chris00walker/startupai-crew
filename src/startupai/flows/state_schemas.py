@@ -454,10 +454,13 @@ class StartupValidationState(BaseModel):
     - Governance Crew Outputs (3 fields)
     """
 
-    # =================== IDENTITY & BOOKKEEPING (5 fields) ===================
+    # =================== IDENTITY & BOOKKEEPING (8 fields) ===================
     # Note: CrewAI Flow requires 'id' field directly - cannot use property
     id: str = Field(default_factory=lambda: f"val_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
     project_id: str = ""  # Will be synced with id in validator
+    user_id: str = ""  # User ID from product app (for persistence)
+    session_id: str = ""  # Onboarding session ID (for entrepreneur_briefs linking)
+    kickoff_id: str = ""  # CrewAI kickoff ID (for status tracking)
     iteration: int = 0
     phase: Phase = Phase.IDEATION
     current_risk_axis: RiskAxis = RiskAxis.DESIRABILITY

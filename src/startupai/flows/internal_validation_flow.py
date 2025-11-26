@@ -8,6 +8,8 @@ enforcing non-linear iteration based on evidence signals.
 from typing import Dict, Any, Optional
 from datetime import datetime
 import traceback
+import os
+import httpx
 from crewai.flow.flow import Flow, start, listen, router
 from crewai import Crew
 
@@ -1087,7 +1089,12 @@ class InternalValidationFlow(Flow[ValidationState]):
             print(f"   Unit economics: {self.state.unit_economics_status}")
 
             # Generate final deliverables
-            return self._generate_final_deliverables()
+            deliverables = self._generate_final_deliverables()
+
+            # Persist to Supabase via product app webhook
+            self._persist_to_supabase(deliverables)
+
+            return deliverables
 
         except Exception as e:
             error_msg = f"Final validation failed: {str(e)}"
@@ -1095,8 +1102,10 @@ class InternalValidationFlow(Flow[ValidationState]):
             print(f"❌ {error_msg}")
             print(traceback.format_exc())
 
-            # Still generate deliverables with available data
-            return self._generate_final_deliverables()
+            # Still generate deliverables with available data and try to persist
+            deliverables = self._generate_final_deliverables()
+            self._persist_to_supabase(deliverables)
+            return deliverables
 
     def _capture_flywheel_learnings(self):
         """Capture learnings for continuous improvement"""
@@ -1148,6 +1157,86 @@ class InternalValidationFlow(Flow[ValidationState]):
             "qa_report": self.state.qa_reports[-1].dict() if self.state.qa_reports else None
         }
 
+    def _persist_to_supabase(self, deliverables: Dict[str, Any]) -> bool:
+        """
+        Persist validation results to Supabase via the product app webhook.
+
+        Calls POST /api/crewai/results on app.startupai.site to store:
+        - Validation report in reports table
+        - Evidence in evidence table
+        - Entrepreneur brief in entrepreneur_briefs table
+
+        Returns:
+            True if persistence succeeded, False otherwise
+        """
+        # Get webhook URL and bearer token from environment
+        webhook_url = os.environ.get("STARTUPAI_RESULTS_WEBHOOK_URL")
+        bearer_token = os.environ.get("STARTUPAI_RESULTS_BEARER_TOKEN")
+
+        if not webhook_url:
+            print("⚠️ STARTUPAI_RESULTS_WEBHOOK_URL not configured, skipping persistence")
+            return False
+
+        if not bearer_token:
+            print("⚠️ STARTUPAI_RESULTS_BEARER_TOKEN not configured, skipping persistence")
+            return False
+
+        # Skip persistence if no project_id or user_id
+        if not self.state.project_id or not self.state.user_id:
+            print("⚠️ Missing project_id or user_id, skipping persistence")
+            return False
+
+        # Build the payload for the webhook
+        payload = {
+            "project_id": self.state.project_id,
+            "user_id": self.state.user_id,
+            "kickoff_id": self.state.kickoff_id or "",
+            "session_id": self.state.session_id or None,
+            "validation_report": deliverables.get("validation_report", {}),
+            "value_proposition_canvas": deliverables.get("value_proposition_canvas", {}),
+            "evidence": deliverables.get("evidence", {}),
+            "qa_report": deliverables.get("qa_report"),
+            "completed_at": datetime.now().isoformat(),
+        }
+
+        try:
+            print(f"\n📤 Persisting results to Supabase...")
+            print(f"   Webhook: {webhook_url}")
+            print(f"   Project: {self.state.project_id}")
+
+            # Make the HTTP request
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(
+                    webhook_url,
+                    json=payload,
+                    headers={
+                        "Authorization": f"Bearer {bearer_token}",
+                        "Content-Type": "application/json",
+                    }
+                )
+
+            if response.status_code == 200:
+                result = response.json()
+                print(f"✅ Results persisted successfully")
+                print(f"   Report ID: {result.get('report_id')}")
+                print(f"   Evidence created: {result.get('evidence_created', 0)}")
+                return True
+            else:
+                print(f"❌ Persistence failed: {response.status_code}")
+                print(f"   Response: {response.text[:500]}")
+                return False
+
+        except httpx.TimeoutException:
+            print("❌ Persistence timed out")
+            return False
+        except httpx.RequestError as e:
+            print(f"❌ Persistence request failed: {e}")
+            return False
+        except Exception as e:
+            print(f"❌ Unexpected persistence error: {e}")
+            traceback.print_exc()
+            return False
+
     # ===========================================================================
     # HUMAN INPUT SIMULATION (In production, these would be async webhooks)
     # ===========================================================================
@@ -1176,22 +1265,39 @@ class InternalValidationFlow(Flow[ValidationState]):
 # FLOW INITIALIZATION
 # ===========================================================================
 
-def create_validation_flow(entrepreneur_input: str) -> InternalValidationFlow:
+def create_validation_flow(
+    entrepreneur_input: str,
+    project_id: Optional[str] = None,
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    kickoff_id: Optional[str] = None,
+) -> InternalValidationFlow:
     """
     Factory function to create and initialize a validation flow.
 
     Args:
         entrepreneur_input: The raw business idea and context from the entrepreneur
+        project_id: UUID of the project in the product app (for result persistence)
+        user_id: UUID of the user in the product app (for result persistence)
+        session_id: Onboarding session ID (for entrepreneur_briefs linking)
+        kickoff_id: CrewAI kickoff ID (for status tracking)
 
     Returns:
         Configured InternalValidationFlow ready to run
     """
+    # Generate a unique validation ID
+    validation_id = f"val_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
     # Create flow with state values passed as kwargs
     # CrewAI Flow expects state fields as direct kwargs, not an initial_state object
     flow = InternalValidationFlow(
-        id=f"val_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+        id=validation_id,
         entrepreneur_input=entrepreneur_input,
-        phase=Phase.IDEATION.value  # Pass enum value for serialization
+        phase=Phase.IDEATION.value,  # Pass enum value for serialization
+        project_id=project_id or validation_id,
+        user_id=user_id or "",
+        session_id=session_id or "",
+        kickoff_id=kickoff_id or "",
     )
 
     return flow

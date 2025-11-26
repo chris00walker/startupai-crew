@@ -22,7 +22,11 @@ def kickoff(inputs: dict = None):
 
     Args:
         inputs: Dictionary containing flow inputs. Expected keys:
-            - entrepreneur_input: The business idea description
+            - entrepreneur_input: The business idea description (required)
+            - project_id: UUID of project in product app (optional, for persistence)
+            - user_id: UUID of user in product app (optional, for persistence)
+            - session_id: Onboarding session ID (optional, for brief linking)
+            - kickoff_id: CrewAI kickoff ID (optional, for tracking)
 
     Returns:
         Flow execution result with validation report
@@ -42,6 +46,12 @@ def kickoff(inputs: dict = None):
             "status": "failed"
         }
 
+    # Extract optional context for persistence
+    project_id = inputs.get("project_id")
+    user_id = inputs.get("user_id")
+    session_id = inputs.get("session_id")
+    kickoff_id = inputs.get("kickoff_id")
+
     # Verify OpenAI API key is set
     if not os.getenv("OPENAI_API_KEY"):
         return {
@@ -54,10 +64,20 @@ def kickoff(inputs: dict = None):
     print("Innovation Physics Flow Engine v1.0")
     print("=" * 80)
     print(f"\n📋 Business Idea Submitted ({len(entrepreneur_input)} chars)")
+    if project_id:
+        print(f"📁 Project: {project_id}")
+    if user_id:
+        print(f"👤 User: {user_id}")
 
-    # Create the validation flow
+    # Create the validation flow with context for persistence
     print("\n🚀 Initializing validation flow with Innovation Physics logic...")
-    flow = create_validation_flow(entrepreneur_input)
+    flow = create_validation_flow(
+        entrepreneur_input=entrepreneur_input,
+        project_id=project_id,
+        user_id=user_id,
+        session_id=session_id,
+        kickoff_id=kickoff_id,
+    )
 
     # Run the flow
     print("\n▶️  Starting validation process...")
