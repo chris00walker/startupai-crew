@@ -81,6 +81,18 @@ from startupai.tools.flywheel_insights import (
     track_prediction,
     record_prediction_outcome,
 )
+from startupai.tools.privacy_guard import (
+    PrivacyGuardTool,
+    SensitivityLevel,
+    ComplianceFramework,
+    PrivacyViolation,
+    PrivacyAuditRecord,
+    PrivacyCheckResult,
+    check_privacy,
+    is_safe_for_storage,
+    sanitize_for_flywheel,
+    classify_sensitivity,
+)
 
 __all__ = [
     # Anonymization
@@ -153,4 +165,15 @@ __all__ = [
     "capture_flywheel_pattern",
     "track_prediction",
     "record_prediction_outcome",
+    # Privacy Guard
+    "PrivacyGuardTool",
+    "SensitivityLevel",
+    "ComplianceFramework",
+    "PrivacyViolation",
+    "PrivacyAuditRecord",
+    "PrivacyCheckResult",
+    "check_privacy",
+    "is_safe_for_storage",
+    "sanitize_for_flywheel",
+    "classify_sensitivity",
 ]

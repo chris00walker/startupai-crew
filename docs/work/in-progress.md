@@ -6,6 +6,26 @@ last_reviewed: "2025-11-26"
 
 # In Progress
 
+## Phase 2D: Privacy & Persistence Infrastructure (✅ Complete)
+
+Privacy protection for Flywheel data and flow state persistence.
+
+| Item | Status | Owner | Notes |
+|------|--------|-------|-------|
+| Implement PrivacyGuardTool | ✅ Complete | @ai-platform | PII detection, compliance (GDPR/CCPA/HIPAA), cross-validation privacy |
+| Create Supabase predictions table | ✅ Complete | @ai-platform | pgvector table for OutcomeTrackerTool |
+| Add @persist() decorators to flow | ✅ Complete | @ai-platform | 9 checkpoint methods for state recovery |
+| Add PrivacyGuard tests | ✅ Complete | @ai-platform | 40 tests in test_privacy_guard.py |
+
+### Phase 2D Complete Criteria
+
+- [x] PrivacyGuardTool detects PII before Flywheel storage
+- [x] Cross-validation privacy boundaries enforced
+- [x] Predictions table stores outcomes for model improvement
+- [x] Flow can recover from checkpoints via @persist() decorators
+
+---
+
 ## Phase 2C: Enhanced Governance + Flywheel Learning (✅ Complete)
 
 Flywheel learning system with industry/stage patterns and outcome tracking.
@@ -129,12 +149,12 @@ Closing the critical blocker - users can see validation results.
 
 ## Immediate Next Step
 
-**All Core Phases Complete** - Phase 1A, 1B, 2A, 2B, and 2C are all implemented.
+**All Core Phases Complete** - Phase 1A, 1B, 2A, 2B, 2C, and 2D are all implemented.
 
 Next priorities (future phases):
-- Supabase persistence for learnings (pgvector tables)
 - Real ad platform integration (Meta/Google APIs)
 - Real experiment tracking and analytics
+- Production webhook integration with product app
 
 ---
 
@@ -155,6 +175,12 @@ Next priorities (future phases):
 - **Flywheel Learning**: Pattern capture for improved predictions
 - **Cross-validation Context**: Learn from similar past validations
 - **Model Improvement**: Outcome tracking for continuous improvement
+
+**Phase 2D Complete unblocks:**
+- **Privacy Protection**: PII-safe Flywheel data storage
+- **Compliance Ready**: GDPR/CCPA/HIPAA checks before storage
+- **Flow Recovery**: State persistence at 9 checkpoints for failure recovery
+- **Predictions Table**: Outcome tracking storage in Supabase (pgvector)
 
 ---
 
@@ -178,4 +204,4 @@ Next priorities (future phases):
 ---
 **Last Updated**: 2025-11-26
 
-**Latest Changes**: Phase 2C completed - Flywheel learning system implemented with FlywheelInsightsTool (industry/stage patterns) and OutcomeTrackerTool (prediction tracking). Governance Crew wired with all Flywheel tools. 102 integration tests passing. All core phases (1A, 1B, 2A, 2B, 2C) complete.
+**Latest Changes**: Phase 2D completed - Privacy & Persistence Infrastructure implemented with PrivacyGuardTool (PII detection, GDPR/CCPA/HIPAA compliance, cross-validation privacy boundaries), Supabase `predictions` table (pgvector), and @persist() decorators on 9 flow checkpoint methods. 152 integration tests passing. All core phases (1A, 1B, 2A, 2B, 2C, 2D) complete.

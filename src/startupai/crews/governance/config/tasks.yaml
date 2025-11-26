@@ -216,3 +216,51 @@ record_outcomes:
     - variance_notes: explanation of differences
     - learning_captured: insights from this cycle
   agent: accountability_tracker
+
+check_privacy:
+  description: >
+    Check content for privacy violations before Flywheel storage:
+
+    Content: {content}
+    Context: {context}
+    Compliance Requirements: {compliance}
+
+    Using the privacy_guard tool, check for:
+    1. PII (emails, phones, SSNs, credit cards)
+    2. Sensitive credentials (API keys, passwords)
+    3. Business-sensitive information (revenue, valuation)
+    4. High-risk content that could identify individuals
+    5. Compliance violations (GDPR, CCPA, HIPAA)
+
+    Content must pass privacy check before being stored in Flywheel.
+  expected_output: >
+    Privacy check result containing:
+    - is_safe: boolean indicating if content can be stored
+    - sensitivity_level: public, internal, confidential, or restricted
+    - violations: list of detected privacy issues
+    - recommendations: how to remediate violations
+    - sanitized_content: cleaned version if requested
+  agent: compliance_monitor
+
+validate_cross_validation_sharing:
+  description: >
+    Validate content is safe for cross-validation sharing:
+
+    Content: {content}
+    Source Validation: {source_validation_id}
+    Target Validation: {target_validation_id}
+
+    Using the privacy_guard tool, ensure:
+    1. No founder-specific PII is present
+    2. Business details are abstracted to patterns
+    3. Content represents generalizable learnings
+    4. Privacy boundaries between validations are maintained
+
+    Cross-validation sharing enables Flywheel learning while protecting privacy.
+  expected_output: >
+    Cross-validation privacy check containing:
+    - is_safe: boolean indicating if sharing is permitted
+    - violations: any privacy boundary issues
+    - recommendations: how to properly abstract content
+    - audit_record: compliance trail for the sharing operation
+  agent: compliance_monitor

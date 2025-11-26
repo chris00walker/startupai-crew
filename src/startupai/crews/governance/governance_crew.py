@@ -22,6 +22,9 @@ from startupai.tools.methodology_check import MethodologyCheckTool
 # Import enhanced Flywheel tools
 from startupai.tools.flywheel_insights import FlywheelInsightsTool, OutcomeTrackerTool
 
+# Import privacy protection tool
+from startupai.tools.privacy_guard import PrivacyGuardTool
+
 
 @CrewBase
 class GovernanceCrew:
@@ -55,6 +58,9 @@ class GovernanceCrew:
         self._flywheel_insights_tool = FlywheelInsightsTool()
         self._outcome_tracker_tool = OutcomeTrackerTool()
 
+        # Privacy protection tool
+        self._privacy_guard_tool = PrivacyGuardTool()
+
     @agent
     def qa_auditor(self) -> Agent:
         return Agent(
@@ -75,6 +81,7 @@ class GovernanceCrew:
             tools=[
                 self._anonymizer_tool,
                 self._methodology_check_tool,
+                self._privacy_guard_tool,  # Privacy protection
             ],
             verbose=True
         )
@@ -89,6 +96,7 @@ class GovernanceCrew:
                 self._anonymizer_tool,
                 self._flywheel_insights_tool,  # Phase 2C: Pattern capture
                 self._outcome_tracker_tool,     # Phase 2C: Outcome tracking
+                self._privacy_guard_tool,       # Privacy protection before storage
             ],
             verbose=True
         )
@@ -145,6 +153,18 @@ class GovernanceCrew:
     def record_outcomes(self) -> Task:
         return Task(
             config=self.tasks_config['record_outcomes']
+        )
+
+    @task
+    def check_privacy(self) -> Task:
+        return Task(
+            config=self.tasks_config['check_privacy']
+        )
+
+    @task
+    def validate_cross_validation_sharing(self) -> Task:
+        return Task(
+            config=self.tasks_config['validate_cross_validation_sharing']
         )
 
     @crew

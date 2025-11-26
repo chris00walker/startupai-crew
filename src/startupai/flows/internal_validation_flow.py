@@ -11,6 +11,7 @@ import traceback
 import os
 import httpx
 from crewai.flow.flow import Flow, start, listen, router
+from crewai.flow.persistence import persist
 from crewai import Crew
 
 # Import error handling
@@ -113,6 +114,7 @@ class InternalValidationFlow(Flow[ValidationState]):
     # PHASE 1: INTAKE & INITIAL ANALYSIS
     # ===========================================================================
 
+    @persist()  # Checkpoint: Initial state captured
     @start()
     def intake_entrepreneur_input(self):
         """
@@ -175,6 +177,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                 context={"entrepreneur_input": self.state.entrepreneur_input}
             )
 
+    @persist()  # Checkpoint: Customer profiles loaded
     @listen(intake_entrepreneur_input)
     def analyze_customer_segments(self):
         """
@@ -253,6 +256,7 @@ class InternalValidationFlow(Flow[ValidationState]):
     # PHASE 1 LOGIC: DESIRABILITY (The "Truth" Engine)
     # ===========================================================================
 
+    @persist()  # Checkpoint: Desirability evidence collected
     @listen(analyze_customer_segments)
     def test_desirability(self):
         """
@@ -391,6 +395,7 @@ class InternalValidationFlow(Flow[ValidationState]):
     # CREATIVE APPROVAL WORKFLOW (HITL)
     # ===========================================================================
 
+    @persist()  # Checkpoint: Before HITL creative review
     @listen(test_desirability)
     def review_creatives_for_deployment(self):
         """
@@ -485,6 +490,7 @@ class InternalValidationFlow(Flow[ValidationState]):
         print("❌ All creatives rejected - regeneration required")
         return "creatives_rejected"
 
+    @persist()  # Checkpoint: HITL pause - awaiting creative approval
     @listen("await_creative_approval")
     def pause_for_creative_approval(self):
         """
@@ -740,6 +746,7 @@ class InternalValidationFlow(Flow[ValidationState]):
     # PHASE 2 LOGIC: FEASIBILITY (The "Reality" Check)
     # ===========================================================================
 
+    @persist()  # Checkpoint: Feasibility phase entered
     @listen("proceed_to_feasibility")
     def test_feasibility(self):
         """
@@ -947,6 +954,7 @@ class InternalValidationFlow(Flow[ValidationState]):
     # PHASE 3 LOGIC: VIABILITY (The "Survival" Equation)
     # ===========================================================================
 
+    @persist()  # Checkpoint: Viability phase entered
     @listen("proceed_to_viability")
     def test_viability(self):
         """
@@ -1079,6 +1087,7 @@ class InternalValidationFlow(Flow[ValidationState]):
     # VIABILITY APPROVAL WORKFLOW (HITL)
     # ===========================================================================
 
+    @persist()  # Checkpoint: HITL pause - awaiting viability decision
     @listen("await_viability_decision")
     def pause_for_viability_decision(self):
         """
@@ -1518,6 +1527,7 @@ class InternalValidationFlow(Flow[ValidationState]):
             self.state.phase = Phase.VALIDATED
             self.state.final_recommendation = "Synthesis failed - manual review required"
 
+    @persist()  # Checkpoint: Final validation state
     @listen("validation_complete")
     def finalize_validation(self):
         """

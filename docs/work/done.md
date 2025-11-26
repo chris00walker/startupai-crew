@@ -6,6 +6,46 @@ last_reviewed: "2025-11-26"
 
 # Recently Delivered
 
+## Phase 2D: Privacy & Persistence Infrastructure (2025-11-26)
+
+Privacy protection for Flywheel data and flow state persistence.
+
+### PrivacyGuard Tool Implemented
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | PrivacyGuardTool | `tools/privacy_guard.py` - PII detection, compliance checks, sanitization |
+| 2025-11-26 | SensitivityLevel enum | PUBLIC, INTERNAL, CONFIDENTIAL, RESTRICTED |
+| 2025-11-26 | ComplianceFramework enum | GDPR, CCPA, HIPAA, SOC2, GENERAL |
+| 2025-11-26 | PrivacyCheckResult model | Violations, recommendations, audit records |
+| 2025-11-26 | Cross-validation privacy | validate_cross_validation_sharing() method |
+
+### Supabase Tables
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | predictions table | pgvector table for OutcomeTrackerTool predictions |
+| 2025-11-26 | RLS policies | Service role access, proper indexes |
+
+### Flow Persistence
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | @persist() decorators | 9 checkpoint methods in internal_validation_flow.py |
+| 2025-11-26 | Checkpoint methods | intake, analysis, desirability, creative HITL, feasibility, viability HITL, final |
+
+### Governance Crew Updates
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | PrivacyGuardTool wired | compliance_monitor + accountability_tracker agents |
+| 2025-11-26 | check_privacy task | Privacy validation before storage |
+| 2025-11-26 | validate_cross_validation_sharing task | Privacy boundaries between validations |
+
+### Test Coverage
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | Privacy guard tests | `tests/integration/test_privacy_guard.py` - 40 tests |
+| 2025-11-26 | Total tests | 152 integration tests passing |
+
+---
+
 ## Phase 2C: Flywheel Learning System (2025-11-26)
 
 Enhanced learning system with industry/stage patterns and outcome tracking.
