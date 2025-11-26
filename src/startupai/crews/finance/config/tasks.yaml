@@ -86,3 +86,37 @@ build_financial_model:
     - funding_needs: amount and timing
     - sensitivity_analysis: key variable impacts
   agent: financial_modeler
+
+prepare_viability_decision:
+  description: >
+    Prepare unit economics analysis for human strategic decision:
+
+    CAC: {cac}
+    LTV: {ltv}
+    Gross Margin: {gross_margin}
+    TAM: {tam}
+    Business Context: {business_context}
+
+    Using the viability_approval tool, analyze the unit economics and:
+    1. Determine viability status (profitable, marginal, underwater, zombie)
+    2. Identify all critical and warning issues
+    3. Generate pivot recommendations if needed
+    4. Calculate confidence score based on data quality
+    5. Prepare summary for human dashboard display
+
+    The output will be shown to the user to help them decide:
+    - Price pivot: Increase pricing to improve LTV
+    - Cost pivot: Reduce CAC through feature/channel cuts
+    - Continue: Proceed despite marginal economics
+    - Kill: Terminate the validation
+
+  expected_output: >
+    Viability decision package containing:
+    - status: profitable/marginal/underwater/zombie
+    - needs_decision: boolean
+    - metrics: {cac, ltv, ltv_cac_ratio, gross_margin, tam}
+    - issues: list of {severity, metric, message}
+    - pivot_options: list of {type, description, impact, confidence}
+    - recommended_pivot: price_pivot/cost_pivot/segment_pivot/kill or null
+    - summary: human-readable assessment
+  agent: unit_economics_analyst

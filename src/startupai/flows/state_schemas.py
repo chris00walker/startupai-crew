@@ -65,8 +65,9 @@ class FeasibilitySignal(str, Enum):
 class ViabilitySignal(str, Enum):
     """Unit economics and market viability (Ledger)"""
     UNKNOWN = "unknown"
-    PROFITABLE = "profitable"        # LTV > CAC with healthy margins
-    UNDERWATER = "underwater"        # CAC > LTV, bleeding money
+    PROFITABLE = "profitable"        # LTV > CAC with healthy margins (LTV/CAC >= 3)
+    MARGINAL = "marginal"            # 1 < LTV/CAC < 3 - needs optimization
+    UNDERWATER = "underwater"        # CAC > LTV, bleeding money (LTV/CAC < 1)
     ZOMBIE_MARKET = "zombie_market"  # CAC < LTV but TAM too small
 
 
@@ -564,6 +565,10 @@ class StartupValidationState(BaseModel):
     creatives_needing_human_review: List[Dict[str, Any]] = Field(default_factory=list)  # Artifacts flagged for HITL
     auto_approved_creatives: List[str] = Field(default_factory=list)  # Artifact IDs that passed auto-QA
 
+    # =================== VIABILITY HITL - Decision State (2 fields) ===================
+    viability_analysis: Optional[Dict[str, Any]] = None  # ViabilityApprovalResult for dashboard
+    viability_decision: Optional[Dict[str, Any]] = None  # Human decision from /resume webhook
+
     # =================== BUILD CREW OUTPUTS - Cost Estimates (3 fields) ===================
     api_costs: Dict[str, float] = Field(default_factory=dict)
     infra_costs: Dict[str, float] = Field(default_factory=dict)
@@ -671,8 +676,11 @@ class StartupValidationState(BaseModel):
         """Track pivot decisions for learning (stored in audit_log_ids)"""
         # This would integrate with the persistence layer
         self.last_pivot_type = pivot_type
+        # Handle both enum and string values (due to use_enum_values config)
+        pivot_value = pivot_type.value if hasattr(pivot_type, 'value') else str(pivot_type)
+        phase_value = self.phase.value if hasattr(self.phase, 'value') else str(self.phase)
         self.audit_log_ids.append(
-            f"{datetime.now().isoformat()}|{self.phase.value}|{pivot_type.value}|{reason}"
+            f"{datetime.now().isoformat()}|{phase_value}|{pivot_value}|{reason}"
         )
 
     class Config:

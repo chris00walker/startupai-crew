@@ -6,23 +6,43 @@ last_reviewed: "2025-11-26"
 
 # In Progress
 
-## Phase 2B: HITL Workflows - Viability Approval (Next)
+## Phase 2C: Enhanced Governance + Flywheel Learning (Next)
+
+Complete the Flywheel learning system for pattern capture across validations.
+
+| Item | Status | Owner | Notes |
+|------|--------|-------|-------|
+| Enhance LearningCaptureTool patterns | Pending | @ai-platform | Industry/stage pattern matching |
+| Add cross-validation learning retrieval | Pending | @ai-platform | Retrieve similar past validations |
+| Implement outcome tracking | Pending | @ai-platform | Link predictions to actual results |
+| Add Flywheel workflow tests | Pending | @ai-platform | test_flywheel_workflow.py |
+
+### Phase 2C Complete Criteria
+
+- [ ] Pattern learnings captured after each validation phase
+- [ ] Similar past validations retrieved for context
+- [ ] Outcome tracking for model improvement
+- [ ] Governance Crew uses learnings for better predictions
+
+---
+
+## Phase 2B: HITL Workflows - Viability Approval (✅ Complete)
 
 Flow can pause for human viability decisions at the unit economics gate.
 
 | Item | Status | Owner | Notes |
 |------|--------|-------|-------|
-| Add await_viability_decision flow node | Pending | @ai-platform | HITL pause at viability gate |
-| Wire ViabilityApprovalTool to Finance | Pending | @ai-platform | Surface LTV/CAC for human review |
-| Implement cost pivot decision handler | Pending | @ai-platform | Increase price vs reduce cost |
-| Add viability approval tests | Pending | @ai-platform | test_viability_workflow.py |
+| Add await_viability_decision flow node | ✅ Complete | @ai-platform | HITL pause at viability gate |
+| Wire ViabilityApprovalTool to Finance | ✅ Complete | @ai-platform | Surface LTV/CAC for human review |
+| Implement cost pivot decision handler | ✅ Complete | @ai-platform | Price/cost pivot execution |
+| Add viability approval tests | ✅ Complete | @ai-platform | 21 tests in test_viability_workflow.py |
 
 ### Phase 2B Complete Criteria
 
-- [ ] Flow pauses when unit economics need human decision
-- [ ] /resume payload processes viability decisions (proceed/pivot/kill)
-- [ ] Finance Crew surfaces unit economics for review
-- [ ] Cost optimization recommendations presented to user
+- [x] Flow pauses when unit economics need human decision
+- [x] /resume payload processes viability decisions (proceed/pivot/kill)
+- [x] Finance Crew surfaces unit economics for review
+- [x] Cost optimization recommendations presented to user
 
 ---
 
@@ -109,26 +129,29 @@ Closing the critical blocker - users can see validation results.
 
 ## Immediate Next Step
 
-**Phase 2B: HITL Workflows - Viability Approval** - Enable human-in-the-loop for viability decisions.
+**Phase 2C: Enhanced Governance + Flywheel Learning** - Complete the learning capture system.
 
-See Phase 2B section above for task breakdown.
+See Phase 2C section above for task breakdown.
 
 ---
 
 ## What This Unblocks (Downstream)
 
-**Phase 1A + 1B + 2A Complete unblocks:**
+**Phase 1A + 1B + 2A + 2B Complete unblocks:**
 - **Product App**: Can display validation results from webhook
 - **All Crews**: Real tools instead of LLM-only outputs
 - **Growth Crew**: Can deploy landing pages for experiments
 - **Marketing**: Real URLs for demos
 - **Quality Assurance**: Human review before ad deployment
 - **Compliance**: Review workflow for creative content
-
-**Phase 2B Will unblock:**
 - **Strategic Decisions**: Human approval at viability gate
 - **Unit Economics**: Real LTV/CAC decisions with human oversight
 - **Pivot Execution**: Cost/price optimization with human approval
+
+**Phase 2C Will unblock:**
+- **Flywheel Learning**: Pattern capture for improved predictions
+- **Cross-validation Context**: Learn from similar past validations
+- **Model Improvement**: Outcome tracking for continuous improvement
 
 ---
 
@@ -152,4 +175,4 @@ See Phase 2B section above for task breakdown.
 ---
 **Last Updated**: 2025-11-26
 
-**Latest Changes**: Phase 2A completed - HITL creative approval workflow implemented with GuardianReviewTool, MethodologyCheckTool, /resume webhook handler, and await_creative_approval flow node. 32 integration tests passing. Phase 2B (HITL viability approval) is next.
+**Latest Changes**: Phase 2B completed - HITL viability approval workflow implemented with ViabilityApprovalTool, await_viability_decision flow node, and pivot execution (price/cost/kill). 68 integration tests passing. Phase 2C (Flywheel learning) is next.

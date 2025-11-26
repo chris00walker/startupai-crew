@@ -58,6 +58,14 @@ from startupai.tools.methodology_check import (
     check_vpc,
     check_bmc,
 )
+from startupai.tools.viability_approval import (
+    ViabilityApprovalTool,
+    ViabilityApprovalResult,
+    ViabilityStatus,
+    PivotRecommendation,
+    analyze_viability,
+    format_viability_for_dashboard,
+)
 
 __all__ = [
     # Anonymization
@@ -109,4 +117,11 @@ __all__ = [
     "MethodologyType",
     "check_vpc",
     "check_bmc",
+    # Viability Approval (HITL)
+    "ViabilityApprovalTool",
+    "ViabilityApprovalResult",
+    "ViabilityStatus",
+    "PivotRecommendation",
+    "analyze_viability",
+    "format_viability_for_dashboard",
 ]

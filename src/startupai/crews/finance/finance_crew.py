@@ -2,7 +2,9 @@
 Finance Crew - Led by Ledger (CFO).
 Handles unit economics and financial viability analysis.
 
-Now equipped with industry benchmark tools for data-driven analysis!
+Now equipped with:
+- Industry benchmark tools for data-driven analysis
+- HITL viability approval tool for strategic decisions
 """
 
 from crewai import Agent, Crew, Process, Task
@@ -15,6 +17,9 @@ from startupai.tools.financial_data import (
 )
 from startupai.tools.web_search import TavilySearchTool, MarketResearchTool
 
+# Import HITL viability tool
+from startupai.tools.viability_approval import ViabilityApprovalTool
+
 
 @CrewBase
 class FinanceCrew:
@@ -24,10 +29,11 @@ class FinanceCrew:
     This crew calculates unit economics, builds financial models,
     and assesses business viability.
 
-    Now uses real benchmark data for:
-    - CAC/LTV comparisons by industry
+    Now uses:
+    - Real benchmark data for CAC/LTV comparisons by industry
     - Unit economics calculations
     - Market size research
+    - ViabilityApprovalTool for HITL strategic decisions
     """
 
     agents_config = 'config/agents.yaml'
@@ -39,6 +45,7 @@ class FinanceCrew:
         self._calculator_tool = UnitEconomicsCalculatorTool()
         self._web_search_tool = TavilySearchTool()
         self._market_research_tool = MarketResearchTool()
+        self._viability_approval_tool = ViabilityApprovalTool()
 
     @agent
     def unit_economics_analyst(self) -> Agent:
@@ -47,6 +54,7 @@ class FinanceCrew:
             tools=[
                 self._benchmark_tool,
                 self._calculator_tool,
+                self._viability_approval_tool,
             ],
             verbose=True
         )
@@ -90,6 +98,12 @@ class FinanceCrew:
     def build_financial_model(self) -> Task:
         return Task(
             config=self.tasks_config['build_financial_model']
+        )
+
+    @task
+    def prepare_viability_decision(self) -> Task:
+        return Task(
+            config=self.tasks_config['prepare_viability_decision']
         )
 
     @crew

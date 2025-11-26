@@ -6,6 +6,36 @@ last_reviewed: "2025-11-26"
 
 # Recently Delivered
 
+## Phase 2B: HITL Viability Approval Workflow (2025-11-26)
+
+Human-in-the-loop workflow for unit economics decisions at viability gate.
+
+### HITL Tool Implemented
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | ViabilityApprovalTool | `tools/viability_approval.py` - Analyzes LTV/CAC and generates pivot recommendations |
+
+### Flow Integration
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | await_viability_decision node | Flow pauses for human viability decision |
+| 2025-11-26 | viability_gate router update | Routes to HITL when economics underwater/marginal |
+| 2025-11-26 | Pivot execution methods | _execute_price_pivot, _execute_cost_pivot, _execute_kill |
+| 2025-11-26 | Viability state fields | viability_analysis, viability_decision |
+
+### Finance Crew Updates
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | prepare_viability_decision task | Finance Crew task for HITL preparation |
+| 2025-11-26 | unit_economics_analyst tools | ViabilityApprovalTool wired |
+
+### Test Coverage
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | Viability workflow tests | `tests/integration/test_viability_workflow.py` - 21 tests passing |
+
+---
+
 ## Phase 2A: HITL Creative Approval Workflow (2025-11-26)
 
 Human-in-the-loop workflow for creative review before deployment.

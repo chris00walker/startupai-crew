@@ -5,7 +5,7 @@ This flow implements the specific decision trees from Strategyzer methodologies,
 enforcing non-linear iteration based on evidence signals.
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 import traceback
 import os
@@ -85,9 +85,17 @@ from startupai.tools.guardian_review import (
     review_landing_page,
     ReviewDecision,
 )
+# Import HITL tools for viability decisions
+from startupai.tools.viability_approval import (
+    ViabilityApprovalTool,
+    ViabilityStatus,
+    analyze_viability,
+    format_viability_for_dashboard,
+)
 from startupai.webhooks.resume_handler import (
     ResumeHandler,
     ApprovalType,
+    ViabilityChoice,
 )
 
 
@@ -1025,7 +1033,7 @@ class InternalValidationFlow(Flow[ValidationState]):
         INNOVATION PHYSICS - Phase 3 Router
 
         The Unit Economics Trigger:
-        - If CAC > LTV → Route to Compass for Strategic Pivot Decision
+        - If CAC > LTV → Route to HITL for Strategic Pivot Decision
         - Two paths: Increase Price (test willingness) OR Reduce Cost (reduce features)
         """
         print("\n🚦 Viability Gate - Evaluating unit economics...")
@@ -1033,15 +1041,15 @@ class InternalValidationFlow(Flow[ValidationState]):
         # UNIT ECONOMICS TRIGGER
         if self.state.unit_economics_status == UnitEconomicsStatus.UNDERWATER:
             print(f"❌ UNIT ECONOMICS FAILURE: CAC > LTV ({self.state.viability_evidence.ltv_cac_ratio:.1f})")
-            print("   → Routing to Compass for strategic pivot decision")
-            print("   → Options: 1) Increase Price, 2) Reduce Cost")
+            print("   → Routing to HITL for strategic pivot decision")
+            print("   → Options: 1) Increase Price, 2) Reduce Cost, 3) Kill")
 
             self.state.human_input_required = True
             self.state.human_input_reason = (
                 f"Unit economics underwater (LTV/CAC = {self.state.viability_evidence.ltv_cac_ratio:.1f}). "
-                "Strategic decision needed: increase price or reduce costs?"
+                "Strategic decision needed: increase price, reduce costs, or kill?"
             )
-            return "strategic_pivot_required"
+            return "await_viability_decision"
 
         # MARGINAL ECONOMICS
         elif self.state.unit_economics_status == UnitEconomicsStatus.MARGINAL:
@@ -1050,7 +1058,13 @@ class InternalValidationFlow(Flow[ValidationState]):
                 self.state.retry_count += 1
                 return "optimize_economics"
             else:
-                return "compass_synthesis_required"
+                # After 2 failed optimizations, escalate to HITL
+                self.state.human_input_required = True
+                self.state.human_input_reason = (
+                    f"Marginal unit economics (LTV/CAC = {self.state.viability_evidence.ltv_cac_ratio:.1f}) "
+                    "after optimization attempts. Human decision needed."
+                )
+                return "await_viability_decision"
 
         # PROFITABLE
         elif self.state.unit_economics_status == UnitEconomicsStatus.PROFITABLE:
@@ -1060,6 +1074,224 @@ class InternalValidationFlow(Flow[ValidationState]):
 
         else:
             return "compass_synthesis_required"
+
+    # ===========================================================================
+    # VIABILITY APPROVAL WORKFLOW (HITL)
+    # ===========================================================================
+
+    @listen("await_viability_decision")
+    def pause_for_viability_decision(self):
+        """
+        Pause the flow to await human viability/pivot decision.
+
+        Uses ViabilityApprovalTool to analyze unit economics and generate
+        pivot recommendations for the human dashboard.
+
+        The flow resumes when the product app calls POST /resume with:
+        {
+            "kickoff_id": "...",
+            "approval_type": "viability_decision",
+            "viability_decision": {
+                "choice": "price_pivot" | "cost_pivot" | "kill" | "continue",
+                "rationale": "...",
+                "new_price_target": 99.0,        // for price_pivot
+                "cost_reduction_target": 0.3,    // for cost_pivot
+                "features_to_cut": ["feature1"]  // for cost_pivot
+            }
+        }
+        """
+        print("\n⏸️ FLOW PAUSED: Awaiting human viability decision")
+        print(f"   Kickoff ID: {self.state.kickoff_id}")
+
+        # Use ViabilityApprovalTool to analyze and generate recommendations
+        viability_result = analyze_viability(
+            cac=self.state.viability_evidence.cac if self.state.viability_evidence else 0,
+            ltv=self.state.viability_evidence.ltv if self.state.viability_evidence else 0,
+            gross_margin=self.state.viability_evidence.gross_margin if self.state.viability_evidence else 0,
+            tam=self.state.viability_evidence.tam_usd if self.state.viability_evidence else None,
+            context={
+                "business_idea": self.state.business_idea,
+                "segment": self.state.current_segment,
+            }
+        )
+
+        # Store viability analysis for dashboard
+        self.state.viability_analysis = format_viability_for_dashboard(viability_result)
+
+        print(f"   Status: {viability_result.status.value}")
+        print(f"   LTV/CAC: {viability_result.ltv_cac_ratio:.2f}")
+        if viability_result.recommended_pivot:
+            print(f"   Recommended: {viability_result.recommended_pivot.value}")
+
+        # Notify product app via webhook
+        self._notify_viability_approval_needed(viability_result)
+
+        # In production with CrewAI AMP, the flow state is persisted and
+        # the flow resumes when /resume webhook is called.
+        # For local testing, simulate immediate decision.
+        if not os.environ.get("CREWAI_AMP"):
+            print("   (Local mode: simulating immediate decision)")
+            # Simulate choosing the recommended pivot or cost_pivot
+            simulated_choice = viability_result.recommended_pivot.value if viability_result.recommended_pivot else "cost_pivot"
+            self._handle_viability_resume({
+                "choice": simulated_choice,
+                "rationale": "Auto-selected in local mode",
+                "cost_reduction_target": 0.3,
+                "features_to_cut": [],
+            })
+
+    def _notify_viability_approval_needed(self, viability_result):
+        """Notify product app that viability decision is needed."""
+        webhook_url = os.environ.get("STARTUPAI_WEBHOOK_URL")
+        bearer_token = os.environ.get("STARTUPAI_WEBHOOK_BEARER_TOKEN")
+
+        if not webhook_url or not bearer_token:
+            print("   ⚠️ Webhook not configured, cannot notify")
+            return
+
+        payload = {
+            "flow_type": "viability_decision_needed",
+            "kickoff_id": self.state.kickoff_id,
+            "project_id": self.state.project_id,
+            "user_id": self.state.user_id,
+            "viability_analysis": format_viability_for_dashboard(viability_result),
+            "current_metrics": {
+                "cac": self.state.viability_evidence.cac if self.state.viability_evidence else 0,
+                "ltv": self.state.viability_evidence.ltv if self.state.viability_evidence else 0,
+                "ltv_cac_ratio": self.state.viability_evidence.ltv_cac_ratio if self.state.viability_evidence else 0,
+                "gross_margin": self.state.viability_evidence.gross_margin if self.state.viability_evidence else 0,
+            }
+        }
+
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                response = client.post(
+                    webhook_url,
+                    json=payload,
+                    headers={
+                        "Authorization": f"Bearer {bearer_token}",
+                        "Content-Type": "application/json",
+                    }
+                )
+                if response.status_code == 200:
+                    print("   📤 Product app notified of pending viability decision")
+                else:
+                    print(f"   ⚠️ Notification failed: {response.status_code}")
+        except Exception as e:
+            print(f"   ⚠️ Notification error: {e}")
+
+    def _handle_viability_resume(self, viability_decision: Dict[str, Any]):
+        """
+        Handle resume from viability decision webhook.
+
+        Routes to appropriate pivot execution based on human choice.
+        """
+        choice = viability_decision.get("choice", "")
+        rationale = viability_decision.get("rationale", "")
+
+        print(f"\n🔄 Viability decision received: {choice}")
+        print(f"   Rationale: {rationale}")
+
+        # Update state
+        self.state.human_input_required = False
+        self.state.viability_decision = viability_decision
+
+        # Route based on choice
+        if choice == ViabilityChoice.PRICE_PIVOT.value or choice == "price_pivot":
+            print("   → Executing price pivot")
+            new_price_target = viability_decision.get("new_price_target")
+            self._execute_price_pivot(new_price_target)
+        elif choice == ViabilityChoice.COST_PIVOT.value or choice == "cost_pivot":
+            print("   → Executing cost pivot")
+            cost_target = viability_decision.get("cost_reduction_target", 0.3)
+            features_to_cut = viability_decision.get("features_to_cut", [])
+            self._execute_cost_pivot(cost_target, features_to_cut)
+        elif choice == ViabilityChoice.KILL.value or choice == "kill":
+            print("   → Project KILLED by human decision")
+            kill_reason = viability_decision.get("kill_reason", rationale)
+            self._execute_kill(kill_reason)
+        elif choice == ViabilityChoice.CONTINUE.value or choice == "continue":
+            print("   → Proceeding despite warnings")
+            self.state.phase = Phase.VALIDATED
+
+    def _execute_price_pivot(self, new_price_target: Optional[float] = None):
+        """Execute price pivot and re-test desirability."""
+        # Calculate price multiplier
+        current_price = self.state.viability_evidence.ltv / 12 if self.state.viability_evidence else 100
+        if new_price_target:
+            price_multiplier = new_price_target / current_price
+        else:
+            price_multiplier = 1.5  # Default 50% increase
+
+        print(f"   Price multiplier: {price_multiplier:.1f}x")
+
+        # Update viability evidence optimistically
+        if self.state.viability_evidence:
+            self.state.viability_evidence.ltv *= price_multiplier
+            self.state.viability_evidence.ltv_cac_ratio = (
+                self.state.viability_evidence.ltv / self.state.viability_evidence.cac
+            )
+
+        # Record pivot
+        self.state.add_pivot_to_history(
+            PivotRecommendation.PRICE_PIVOT,
+            f"Price pivot: {price_multiplier:.1f}x increase"
+        )
+
+        # Recalculate signals
+        self._calculate_viability_signals()
+
+        # Route back to test if price change is accepted
+        if self.state.unit_economics_status == UnitEconomicsStatus.PROFITABLE:
+            print("   ✅ Price pivot successful - economics now profitable")
+            self.state.phase = Phase.VALIDATED
+        else:
+            print("   ⚠️ Price pivot not sufficient - further optimization needed")
+
+    def _execute_cost_pivot(self, cost_reduction_target: float, features_to_cut: List[str]):
+        """Execute cost pivot by reducing CAC."""
+        print(f"   Cost reduction target: {cost_reduction_target:.0%}")
+        if features_to_cut:
+            print(f"   Features to cut: {', '.join(features_to_cut)}")
+
+        # Update viability evidence
+        if self.state.viability_evidence:
+            new_cac = self.state.viability_evidence.cac * (1 - cost_reduction_target)
+            self.state.viability_evidence.cac = new_cac
+            self.state.viability_evidence.ltv_cac_ratio = (
+                self.state.viability_evidence.ltv / new_cac
+            )
+            print(f"   New CAC: ${new_cac:.2f}")
+
+        # Record pivot
+        self.state.add_pivot_to_history(
+            PivotRecommendation.COST_PIVOT,
+            f"Cost pivot: {cost_reduction_target:.0%} reduction, cut features: {features_to_cut}"
+        )
+
+        # Recalculate signals
+        self._calculate_viability_signals()
+
+        # Check if economics are now viable
+        if self.state.unit_economics_status == UnitEconomicsStatus.PROFITABLE:
+            print("   ✅ Cost pivot successful - economics now profitable")
+            self.state.phase = Phase.VALIDATED
+        else:
+            print("   ⚠️ Cost pivot not sufficient - may need further action")
+
+    def _execute_kill(self, reason: str):
+        """Execute project kill based on human decision."""
+        print(f"   Kill reason: {reason}")
+
+        self.state.phase = Phase.KILLED
+        self.state.pivot_recommendation = PivotRecommendation.KILL
+        self.state.final_recommendation = f"Project terminated by human decision: {reason}"
+
+        # Record in history
+        self.state.add_pivot_to_history(
+            PivotRecommendation.KILL,
+            reason
+        )
 
     @listen("strategic_pivot_required")
     def execute_strategic_pivot(self):
