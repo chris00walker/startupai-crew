@@ -94,15 +94,30 @@ crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 ## Environment Variables
 ### Local Development (`.env`)
 ```env
-OPENAI_API_KEY=sk-...          # Required for local testing
+OPENAI_API_KEY=sk-...                    # Required for local testing
+TAVILY_API_KEY=tvly-...                  # For web search tool
+SUPABASE_URL=https://xxx.supabase.co     # Supabase project URL
+SUPABASE_KEY=eyJ...                      # Supabase service role key
+STARTUPAI_WEBHOOK_URL=https://app.startupai.site/api/crewai/webhook
+STARTUPAI_WEBHOOK_BEARER_TOKEN=xxx       # Shared webhook auth token
 ```
 
 ### CrewAI AMP Deployment (Dashboard → Environment Variables)
 ```env
-OPENAI_API_KEY=sk-...          # Set in CrewAI dashboard, NOT in .env
+OPENAI_API_KEY=sk-...                    # OpenAI API key
+TAVILY_API_KEY=tvly-...                  # Tavily API key for web search
+SUPABASE_URL=https://eqxropalhxjeyvfcoyxg.supabase.co
+SUPABASE_KEY=eyJ...                      # Supabase service role key (from dashboard)
+STARTUPAI_WEBHOOK_URL=https://app.startupai.site/api/crewai/webhook
+STARTUPAI_WEBHOOK_BEARER_TOKEN=startupai-webhook-secret-2024
 ```
 
 **⚠️ CRITICAL**: `.env` files are NOT used by deployed crews. All environment variables must be set in the CrewAI AMP dashboard.
+
+### Unified Webhook
+All CrewAI flows use a single webhook endpoint with `flow_type` differentiation:
+- `POST /api/crewai/webhook` with `flow_type: "founder_validation"` for founder validation results
+- `POST /api/crewai/webhook` with `flow_type: "consultant_onboarding"` for consultant onboarding results
 
 ## Architecture Overview
 

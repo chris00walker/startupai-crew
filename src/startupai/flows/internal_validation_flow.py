@@ -1270,9 +1270,9 @@ class InternalValidationFlow(Flow[ValidationState]):
 
     def _persist_to_supabase(self, deliverables: Dict[str, Any]) -> bool:
         """
-        Persist validation results to Supabase via the product app webhook.
+        Persist validation results to Supabase via the unified webhook.
 
-        Calls POST /api/crewai/results on app.startupai.site to store:
+        Calls POST /api/crewai/webhook on app.startupai.site to store:
         - Validation report in reports table
         - Evidence in evidence table
         - Entrepreneur brief in entrepreneur_briefs table
@@ -1280,16 +1280,16 @@ class InternalValidationFlow(Flow[ValidationState]):
         Returns:
             True if persistence succeeded, False otherwise
         """
-        # Get webhook URL and bearer token from environment
-        webhook_url = os.environ.get("STARTUPAI_RESULTS_WEBHOOK_URL")
-        bearer_token = os.environ.get("STARTUPAI_RESULTS_BEARER_TOKEN")
+        # Get unified webhook URL and bearer token from environment
+        webhook_url = os.environ.get("STARTUPAI_WEBHOOK_URL")
+        bearer_token = os.environ.get("STARTUPAI_WEBHOOK_BEARER_TOKEN")
 
         if not webhook_url:
-            print("⚠️ STARTUPAI_RESULTS_WEBHOOK_URL not configured, skipping persistence")
+            print("⚠️ STARTUPAI_WEBHOOK_URL not configured, skipping persistence")
             return False
 
         if not bearer_token:
-            print("⚠️ STARTUPAI_RESULTS_BEARER_TOKEN not configured, skipping persistence")
+            print("⚠️ STARTUPAI_WEBHOOK_BEARER_TOKEN not configured, skipping persistence")
             return False
 
         # Skip persistence if no project_id or user_id
@@ -1297,8 +1297,9 @@ class InternalValidationFlow(Flow[ValidationState]):
             print("⚠️ Missing project_id or user_id, skipping persistence")
             return False
 
-        # Build the payload for the webhook
+        # Build the payload for the unified webhook with flow_type
         payload = {
+            "flow_type": "founder_validation",
             "project_id": self.state.project_id,
             "user_id": self.state.user_id,
             "kickoff_id": self.state.kickoff_id or "",

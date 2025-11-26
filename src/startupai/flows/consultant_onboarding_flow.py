@@ -296,29 +296,31 @@ White Label Interest: {'Yes' if pd.white_label_enabled else 'No'}
 
     def _persist_to_supabase(self, deliverables: Dict[str, Any]) -> bool:
         """
-        Persist onboarding results to Supabase via webhook.
+        Persist onboarding results to Supabase via the unified webhook.
 
         Updates the consultant_profiles table with:
         - AI-generated recommendations
         - Suggested templates and workflows
         - White-label configuration suggestions
         """
-        webhook_url = os.environ.get("STARTUPAI_CONSULTANT_WEBHOOK_URL")
-        bearer_token = os.environ.get("STARTUPAI_RESULTS_BEARER_TOKEN")
+        webhook_url = os.environ.get("STARTUPAI_WEBHOOK_URL")
+        bearer_token = os.environ.get("STARTUPAI_WEBHOOK_BEARER_TOKEN")
 
         if not webhook_url:
-            print("⚠️ STARTUPAI_CONSULTANT_WEBHOOK_URL not configured, skipping persistence")
+            print("⚠️ STARTUPAI_WEBHOOK_URL not configured, skipping persistence")
             return False
 
         if not bearer_token:
-            print("⚠️ STARTUPAI_RESULTS_BEARER_TOKEN not configured, skipping persistence")
+            print("⚠️ STARTUPAI_WEBHOOK_BEARER_TOKEN not configured, skipping persistence")
             return False
 
         if not self.state.user_id:
             print("⚠️ No user_id provided, skipping persistence")
             return False
 
+        # Build payload with flow_type for unified webhook
         payload = {
+            "flow_type": "consultant_onboarding",
             "consultant_id": self.state.user_id,
             "session_id": self.state.session_id,
             "practice_analysis": self.state.practice_analysis,
