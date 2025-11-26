@@ -1,10 +1,19 @@
 """
 Finance Crew - Led by Ledger (CFO).
 Handles unit economics and financial viability analysis.
+
+Now equipped with industry benchmark tools for data-driven analysis!
 """
 
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+
+# Import financial tools
+from startupai.tools.financial_data import (
+    IndustryBenchmarkTool,
+    UnitEconomicsCalculatorTool,
+)
+from startupai.tools.web_search import TavilySearchTool, MarketResearchTool
 
 
 @CrewBase
@@ -14,15 +23,31 @@ class FinanceCrew:
 
     This crew calculates unit economics, builds financial models,
     and assesses business viability.
+
+    Now uses real benchmark data for:
+    - CAC/LTV comparisons by industry
+    - Unit economics calculations
+    - Market size research
     """
 
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
 
+    def __init__(self):
+        """Initialize crew with financial tools."""
+        self._benchmark_tool = IndustryBenchmarkTool()
+        self._calculator_tool = UnitEconomicsCalculatorTool()
+        self._web_search_tool = TavilySearchTool()
+        self._market_research_tool = MarketResearchTool()
+
     @agent
     def unit_economics_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config['unit_economics_analyst'],
+            tools=[
+                self._benchmark_tool,
+                self._calculator_tool,
+            ],
             verbose=True
         )
 
@@ -30,6 +55,11 @@ class FinanceCrew:
     def financial_modeler(self) -> Agent:
         return Agent(
             config=self.agents_config['financial_modeler'],
+            tools=[
+                self._benchmark_tool,
+                self._calculator_tool,
+                self._market_research_tool,
+            ],
             verbose=True
         )
 
@@ -37,6 +67,10 @@ class FinanceCrew:
     def funding_strategist(self) -> Agent:
         return Agent(
             config=self.agents_config['funding_strategist'],
+            tools=[
+                self._web_search_tool,
+                self._market_research_tool,
+            ],
             verbose=True
         )
 

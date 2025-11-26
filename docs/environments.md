@@ -136,6 +136,7 @@ OPENAI_API_KEY=sk-your-actual-key-here
 **Environment Variables Set in Dashboard:**
 - `OPENAI_API_KEY` - Primary LLM provider
 - `ANTHROPIC_API_KEY` - Fallback LLM provider (optional)
+- `TAVILY_API_KEY` - Web research for market intelligence (recommended)
 - `STARTUPAI_RESULTS_WEBHOOK_URL` - Product app webhook for results persistence (e.g., `https://app.startupai.site/api/crewai/results`)
 - `STARTUPAI_RESULTS_BEARER_TOKEN` - Bearer token for webhook authentication (same as `CREW_CONTRACT_BEARER` in product app)
 
@@ -334,6 +335,18 @@ STARTUPAI_RESULTS_WEBHOOK_URL=https://app.startupai.site/api/crewai/results
 STARTUPAI_RESULTS_BEARER_TOKEN=your-shared-secret-token
 ```
 
+### Web Research Tools (Recommended)
+These enable real-time web search for market research and competitive analysis:
+```bash
+# Tavily API for AI-optimized web search ($0.01/search)
+# Get your key at: https://tavily.com
+TAVILY_API_KEY=tvly-...
+```
+
+**Used by:**
+- Analysis Crew: Customer research, competitor analysis, market intelligence
+- Finance Crew: Market research for financial modeling
+
 ### Optional Providers
 ```bash
 ANTHROPIC_API_KEY=sk-ant-...
@@ -417,9 +430,10 @@ crewai deploy logs
 **Phase 2**: Build Crew, Growth Crew, Synthesis Crew
 **Phase 3**: Finance Crew, Enhanced Governance Crew
 
-### Pure LLM-Based
-- No external tools or APIs (currently)
-- Pure reasoning using agent knowledge bases
+### Tool-Equipped Agents
+- **Web Research**: Tavily-powered search for market intelligence
+- **Financial Analysis**: Industry benchmarks (CAC/LTV) and unit economics calculators
+- **Learning System**: Captures validation insights for continuous improvement
 - Sequential processing for comprehensive analysis
 - All agents use OpenAI GPT models
 
@@ -465,8 +479,8 @@ AGENTUITY_AGENT_URL=https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6
 
 ---
 
-**Last Updated:** 2025-11-21
+**Last Updated:** 2025-11-26
 **Repository:** startupai-crew
-**Environment Version:** 1.0.0
+**Environment Version:** 1.1.0
 **Platform:** CrewAI AMP (Cloud-Hosted)
 **Deployment UUID:** b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b

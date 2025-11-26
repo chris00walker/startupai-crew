@@ -1,10 +1,20 @@
 """
 Analysis Crew - Led by Sage (CSO).
 Handles customer research and competitive analysis.
+
+Now equipped with real web search tools for market research!
 """
 
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+
+# Import web research tools
+from startupai.tools.web_search import (
+    TavilySearchTool,
+    CustomerResearchTool,
+    CompetitorResearchTool,
+    MarketResearchTool,
+)
 
 
 @CrewBase
@@ -14,15 +24,33 @@ class AnalysisCrew:
 
     This crew performs deep customer research using Jobs-to-be-Done
     framework and competitive landscape analysis.
+
+    Now uses real web search via Tavily API for:
+    - Customer segment research
+    - Competitor analysis
+    - Market intelligence
     """
 
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
 
+    def __init__(self):
+        """Initialize crew with web research tools."""
+        # Create tool instances
+        self._web_search_tool = TavilySearchTool()
+        self._customer_research_tool = CustomerResearchTool()
+        self._competitor_research_tool = CompetitorResearchTool()
+        self._market_research_tool = MarketResearchTool()
+
     @agent
     def customer_researcher(self) -> Agent:
         return Agent(
             config=self.agents_config['customer_researcher'],
+            tools=[
+                self._web_search_tool,
+                self._customer_research_tool,
+                self._market_research_tool,
+            ],
             verbose=True
         )
 
@@ -30,6 +58,11 @@ class AnalysisCrew:
     def competitor_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config['competitor_analyst'],
+            tools=[
+                self._web_search_tool,
+                self._competitor_research_tool,
+                self._market_research_tool,
+            ],
             verbose=True
         )
 
