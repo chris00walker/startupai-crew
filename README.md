@@ -245,6 +245,24 @@ crewai deploy list
 
 ---
 
-**Status:** Rebuilding from 6-agent to 8-crew/18-agent Flows architecture
-**Last Updated:** November 21, 2025
+## Current Limitations
+
+> **Important:** Phase 1 flow orchestration is functional, but all crew outputs are LLM-generated synthetic data. See [04-status.md](docs/master-architecture/04-status.md) for the full marketing vs reality gap analysis.
+
+**What Works:**
+- Flow orchestration with 3-phase gated validation
+- State management with 70-field schema
+- CrewAI AMP deployment responding to API calls
+
+**Not Yet Implemented:**
+- Real market research (web search, data APIs)
+- Real competitor analysis
+- Real financial modeling (CAC/LTV from actual data)
+- MVP code generation
+- Ad platform integration
+
+---
+
+**Status:** Phase 1 partial - flow works, outputs synthetic
+**Last Updated:** November 26, 2025
 **License:** Proprietary - StartupAI Platform

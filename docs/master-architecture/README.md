@@ -74,6 +74,6 @@ These repositories consume this architecture:
   - Blockers: `startupai.site/docs/work/cross-repo-blockers.md`
 
 ---
-**Last Updated**: 2025-11-22
+**Last Updated**: 2025-11-26
 
-**Latest Changes**: Added Innovation Physics documentation to reading order and navigation.
+**Latest Changes**: Added Marketing vs Reality gap analysis to 04-status.md and cross-repo-blockers.md.
