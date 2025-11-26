@@ -1,0 +1,117 @@
+assess_feasibility:
+  description: >
+    Evaluate technical feasibility of the value proposition:
+
+    Value Maps: {value_maps}
+    Desirability Evidence: {desirability_evidence}
+    Technical Requirements: {technical_requirements}
+
+    For each product/service feature, assess:
+    1. Technical complexity (Low/Medium/High/Impossible)
+    2. Key dependencies and risks
+    3. Required skills and technologies
+    4. Estimated development effort
+
+    Identify any features that are technically impossible with current
+    technology or would require unreasonable resources.
+  expected_output: >
+    A feasibility assessment containing:
+    - core_features_feasible: dict of {feature: status (POSSIBLE/CONSTRAINED/IMPOSSIBLE)}
+    - technical_risks: list of key risks
+    - skill_requirements: list of required capabilities
+    - estimated_effort: rough timeline estimate
+    - downgrade_required: boolean
+    - downgrade_impact: description if downgrade needed
+  agent: technical_feasibility_agent
+
+design_downgrade:
+  description: >
+    Design a downgraded value proposition when core features are impossible:
+
+    Current Value Maps: {current_value_maps}
+    Feasibility Evidence: {feasibility_evidence}
+    Impossible Features: {impossible_features}
+
+    Create a technically feasible alternative that:
+    1. Removes or simplifies impossible features
+    2. Maintains core value for customers
+    3. Can be built with available resources
+    4. Preserves the essential problem-solution fit
+  expected_output: >
+    A downgrade specification containing:
+    - downgraded_value_maps: modified value maps per segment
+    - removed_features: list of what was cut
+    - alternative_approaches: how value is preserved
+    - impact_assessment: expected effect on customer value
+  agent: technical_feasibility_agent
+
+reduce_scope:
+  description: >
+    Identify features to cut to achieve cost reduction target:
+
+    Current Features: {current_features}
+    Cost Reduction Target: {cost_reduction_target}
+    Value Maps: {value_maps}
+
+    Analyze each feature for:
+    1. Development cost contribution
+    2. Customer value contribution
+    3. Cut priority (low value/high cost first)
+
+    Recommend specific features to remove to meet cost target while
+    preserving maximum customer value.
+  expected_output: >
+    A scope reduction plan containing:
+    - features_to_remove: list of features to cut
+    - cost_savings: estimated reduction percentage
+    - value_impact: effect on customer value
+    - remaining_features: what stays in scope
+  agent: resource_estimator
+
+generate_landing_pages:
+  description: >
+    Generate landing page variants for A/B testing:
+
+    Value Proposition Canvas: {value_proposition_canvas}
+    Target Segment: {target_segment}
+    Business Idea: {business_idea}
+
+    Using the landing_page_generator tool, create multiple landing page
+    variants optimized for conversion. Each variant should test a different
+    messaging approach (benefit-focused vs problem-focused).
+
+    Generate at least 2 variants with complete HTML code ready for deployment.
+  expected_output: >
+    Landing page generation output containing:
+    - variants: list of landing page variants with HTML code
+    - headlines: the different headlines being tested
+    - cta_text: call-to-action button text
+    - deployment_ready: boolean indicating if code is deployable
+  agent: prototype_designer
+
+validate_landing_pages:
+  description: >
+    Validate generated landing page HTML for deployment readiness:
+
+    Generated Landing Pages: {generated_landing_pages}
+
+    Using the code_validator tool, check each landing page variant for:
+    1. HTML syntax errors
+    2. Accessibility compliance (WCAG 2.1 AA basics)
+    3. Security vulnerabilities (XSS, unsafe URLs)
+    4. SEO requirements (title, meta tags)
+    5. Best practices (DOCTYPE, charset, viewport)
+
+    For each variant, provide a validation report indicating whether
+    the code is ready for production deployment.
+
+    If any critical errors are found, suggest specific fixes.
+  expected_output: >
+    Validation report containing:
+    - validation_results: list of validation results per variant
+    - deployment_ready_variants: list of variant IDs ready for deployment
+    - errors_found: total count of errors across all variants
+    - warnings_found: total count of warnings
+    - recommended_fixes: list of suggested fixes for any issues
+    - overall_status: PASS/FAIL indicating if variants can be deployed
+  agent: prototype_designer

@@ -30,6 +30,15 @@ from startupai.tools.landing_page import (
     LandingPageStyle,
     generate_landing_pages,
 )
+from startupai.tools.code_validator import (
+    CodeValidatorTool,
+    ValidationResult,
+    ValidationIssue,
+    ValidationSeverity,
+    ValidationCategory,
+    validate_html,
+    is_deployment_ready,
+)
 
 __all__ = [
     # Anonymization
@@ -57,4 +66,12 @@ __all__ = [
     "LandingPageVariant",
     "LandingPageStyle",
     "generate_landing_pages",
+    # Code Validation
+    "CodeValidatorTool",
+    "ValidationResult",
+    "ValidationIssue",
+    "ValidationSeverity",
+    "ValidationCategory",
+    "validate_html",
+    "is_deployment_ready",
 ]
