@@ -47,3 +47,59 @@ segment_pivot_analysis:
     - segment_rationale: why this segment is better suited
     - testing_approach: how to validate with new segment
   agent: founder_onboarding_agent
+
+# =======================================================================================
+# CONSULTANT ONBOARDING TASKS
+# =======================================================================================
+
+analyze_consultant_practice:
+  description: >
+    Analyze the consultant's practice to understand their specialization,
+    strengths, and opportunities for growth with StartupAI:
+
+    Practice Summary: {practice_summary}
+    Industries Served: {industries}
+    Services Offered: {services}
+    Tools Currently Used: {tools}
+    Pain Points: {pain_points}
+
+    Analyze:
+    1. Practice strengths - what they do well
+    2. Practice gaps - areas for improvement
+    3. Market positioning - how they differentiate
+    4. Growth opportunities - how StartupAI can help
+    5. Ideal client profile - who would benefit most from their services + AI validation
+  expected_output: >
+    A practice analysis object containing:
+    - practice_strengths: list of identified strengths
+    - practice_gaps: list of areas for improvement
+    - market_positioning: how the practice is positioned
+    - growth_opportunities: list of growth opportunities with StartupAI
+    - client_profile_summary: description of ideal clients
+  agent: consultant_onboarding_agent
+
+generate_consultant_recommendations:
+  description: >
+    Generate personalized recommendations for how the consultant can best
+    use the StartupAI platform based on their practice analysis:
+
+    Practice Analysis: {practice_analysis}
+    Practice Data: {practice_data}
+    Conversation Summary: {conversation_summary}
+
+    Generate:
+    1. Platform recommendations - how to use StartupAI effectively
+    2. Client onboarding tips - how to introduce AI validation to clients
+    3. Suggested templates - report templates that match their methodology
+    4. Suggested workflows - validation workflows for their client types
+    5. White-label suggestions - branding configuration if enabled
+    6. Success metrics - how to measure success with the platform
+  expected_output: >
+    A recommendations object containing:
+    - platform_recommendations: list of platform usage tips
+    - client_onboarding_tips: list of tips for introducing AI to clients
+    - suggested_templates: list of template names to use
+    - suggested_workflows: list of workflow configurations
+    - white_label_suggestions: object with branding configuration
+    - success_metrics: list of KPIs to track
+  agent: consultant_onboarding_agent

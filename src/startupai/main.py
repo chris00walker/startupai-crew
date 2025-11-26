@@ -1,17 +1,26 @@
 #!/usr/bin/env python
 """
-Main entry point for StartupAI Internal Validation Flow.
+Main entry point for StartupAI CrewAI Flows.
 
 This module provides the required entry points for CrewAI AMP deployment:
-- kickoff(inputs): Main execution entry point
+- kickoff(inputs): Main execution entry point (supports multiple flow types)
 - plot(): Flow visualization generator
+
+Supported Flow Types:
+- "founder_validation" (default): Full business idea validation
+- "consultant_onboarding": Consultant practice analysis and recommendations
 """
 
 import os
 from datetime import datetime
 from dotenv import load_dotenv
 
-from startupai.flows import create_validation_flow, InternalValidationFlow
+from startupai.flows import (
+    create_validation_flow,
+    InternalValidationFlow,
+    create_consultant_onboarding_flow,
+    ConsultantOnboardingFlow,
+)
 
 
 def kickoff(inputs: dict = None):
@@ -19,17 +28,27 @@ def kickoff(inputs: dict = None):
     Main entry point for CrewAI AMP deployment.
 
     This function is called when the flow is triggered via the AMP API.
+    It supports multiple flow types via the 'flow_type' input parameter.
 
     Args:
-        inputs: Dictionary containing flow inputs. Expected keys:
+        inputs: Dictionary containing flow inputs.
+
+        For founder_validation (default):
             - entrepreneur_input: The business idea description (required)
-            - project_id: UUID of project in product app (optional, for persistence)
-            - user_id: UUID of user in product app (optional, for persistence)
-            - session_id: Onboarding session ID (optional, for brief linking)
-            - kickoff_id: CrewAI kickoff ID (optional, for tracking)
+            - project_id: UUID of project in product app (optional)
+            - user_id: UUID of user in product app (optional)
+            - session_id: Onboarding session ID (optional)
+            - kickoff_id: CrewAI kickoff ID (optional)
+
+        For consultant_onboarding:
+            - flow_type: "consultant_onboarding" (required to select this flow)
+            - user_id: UUID of consultant (required)
+            - session_id: Onboarding session ID (required)
+            - practice_data: Dict with practice info (required)
+            - conversation_summary: Optional summary of onboarding chat
 
     Returns:
-        Flow execution result with validation report
+        Flow execution result
     """
     # Load environment variables (for local development)
     load_dotenv()
@@ -38,6 +57,25 @@ def kickoff(inputs: dict = None):
     if inputs is None:
         inputs = {}
 
+    # Determine flow type
+    flow_type = inputs.get("flow_type", "founder_validation")
+
+    # Verify OpenAI API key is set
+    if not os.getenv("OPENAI_API_KEY"):
+        return {
+            "error": "OPENAI_API_KEY not found in environment variables",
+            "status": "failed"
+        }
+
+    # Route to appropriate flow
+    if flow_type == "consultant_onboarding":
+        return _run_consultant_onboarding(inputs)
+    else:
+        return _run_founder_validation(inputs)
+
+
+def _run_founder_validation(inputs: dict):
+    """Run the founder validation flow."""
     entrepreneur_input = inputs.get("entrepreneur_input", "")
 
     if not entrepreneur_input:
@@ -51,13 +89,6 @@ def kickoff(inputs: dict = None):
     user_id = inputs.get("user_id")
     session_id = inputs.get("session_id")
     kickoff_id = inputs.get("kickoff_id")
-
-    # Verify OpenAI API key is set
-    if not os.getenv("OPENAI_API_KEY"):
-        return {
-            "error": "OPENAI_API_KEY not found in environment variables",
-            "status": "failed"
-        }
 
     print("=" * 80)
     print("STARTUPAI INTERNAL VALIDATION SYSTEM")
@@ -119,6 +150,80 @@ def kickoff(inputs: dict = None):
         return {"error": "Interrupted", "status": "cancelled"}
     except Exception as e:
         print(f"\n❌ Error during validation: {str(e)}")
+        return {"error": str(e), "status": "failed"}
+
+
+def _run_consultant_onboarding(inputs: dict):
+    """Run the consultant onboarding flow."""
+    user_id = inputs.get("user_id")
+    session_id = inputs.get("session_id")
+    practice_data = inputs.get("practice_data", {})
+    conversation_summary = inputs.get("conversation_summary", "")
+
+    if not user_id:
+        return {
+            "error": "Missing required input: user_id",
+            "status": "failed"
+        }
+
+    if not session_id:
+        return {
+            "error": "Missing required input: session_id",
+            "status": "failed"
+        }
+
+    print("=" * 80)
+    print("STARTUPAI CONSULTANT ONBOARDING")
+    print("Practice Analysis & Recommendations Engine")
+    print("=" * 80)
+    print(f"\n👤 Consultant: {user_id}")
+    print(f"📋 Session: {session_id}")
+    if practice_data.get("company_name"):
+        print(f"🏢 Practice: {practice_data.get('company_name')}")
+
+    # Create the consultant onboarding flow
+    print("\n🚀 Initializing consultant onboarding flow...")
+    flow = create_consultant_onboarding_flow(
+        user_id=user_id,
+        session_id=session_id,
+        practice_data=practice_data,
+        conversation_summary=conversation_summary,
+    )
+
+    # Run the flow
+    print("\n▶️  Starting practice analysis...")
+    print("This will:")
+    print("  1. Analyze your practice strengths and opportunities")
+    print("  2. Generate personalized platform recommendations")
+    print("  3. Suggest templates and workflows for your clients")
+    print("\n" + "=" * 80)
+
+    try:
+        # Execute the flow
+        result = flow.kickoff()
+
+        # Display results
+        print("\n" + "=" * 80)
+        print("CONSULTANT ONBOARDING COMPLETE")
+        print("=" * 80)
+
+        if isinstance(result, dict):
+            recommendations = result.get('recommendations', [])
+            if recommendations:
+                print("\n💡 Platform Recommendations:")
+                for i, rec in enumerate(recommendations[:5], 1):
+                    print(f"  {i}. {rec}")
+
+        print("\n✅ Consultant onboarding flow completed successfully!")
+        print("=" * 80)
+
+        return result
+
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Onboarding interrupted by user")
+        return {"error": "Interrupted", "status": "cancelled"}
+    except Exception as e:
+        print(f"\n❌ Error during onboarding: {str(e)}")
         return {"error": str(e), "status": "failed"}
 
 

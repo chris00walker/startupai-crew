@@ -137,7 +137,8 @@ OPENAI_API_KEY=sk-your-actual-key-here
 - `OPENAI_API_KEY` - Primary LLM provider
 - `ANTHROPIC_API_KEY` - Fallback LLM provider (optional)
 - `TAVILY_API_KEY` - Web research for market intelligence (recommended)
-- `STARTUPAI_RESULTS_WEBHOOK_URL` - Product app webhook for results persistence (e.g., `https://app.startupai.site/api/crewai/results`)
+- `STARTUPAI_RESULTS_WEBHOOK_URL` - Founder validation results webhook (`https://app.startupai.site/api/crewai/results`)
+- `STARTUPAI_CONSULTANT_WEBHOOK_URL` - Consultant onboarding results webhook (`https://app.startupai.site/api/crewai/consultant`)
 - `STARTUPAI_RESULTS_BEARER_TOKEN` - Bearer token for webhook authentication (same as `CREW_CONTRACT_BEARER` in product app)
 
 **Deployment:** Automatic on `crewai deploy push` or GitHub integration
@@ -328,8 +329,11 @@ OPENAI_API_KEY=sk-...
 ### Results Persistence (Production Only)
 These enable the flow to persist results to the product app database:
 ```bash
-# Webhook endpoint for results persistence
+# Webhook endpoint for founder validation results
 STARTUPAI_RESULTS_WEBHOOK_URL=https://app.startupai.site/api/crewai/results
+
+# Webhook endpoint for consultant onboarding results
+STARTUPAI_CONSULTANT_WEBHOOK_URL=https://app.startupai.site/api/crewai/consultant
 
 # Bearer token for webhook authentication (must match CREW_CONTRACT_BEARER in product app)
 STARTUPAI_RESULTS_BEARER_TOKEN=your-shared-secret-token
