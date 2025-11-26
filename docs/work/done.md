@@ -6,6 +6,38 @@ last_reviewed: "2025-11-26"
 
 # Recently Delivered
 
+## Phase 2A: HITL Creative Approval Workflow (2025-11-26)
+
+Human-in-the-loop workflow for creative review before deployment.
+
+### HITL Tools Implemented
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | GuardianReviewTool | `tools/guardian_review.py` - Auto-QA for landing pages and ad creatives |
+| 2025-11-26 | MethodologyCheckTool | `tools/methodology_check.py` - VPC/BMC structure validation |
+| 2025-11-26 | ResumeHandler | `webhooks/resume_handler.py` - Parse /resume webhook payloads |
+
+### Flow Integration
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | await_creative_approval node | Flow pauses for human creative approval |
+| 2025-11-26 | creative_approval_gate router | Routes to auto-approve, human review, or reject |
+| 2025-11-26 | Creative state fields | landing_pages, creative_review_results, auto_approved_creatives |
+
+### Governance Crew Updates
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | review_creatives task | Guardian auto-QA before deployment |
+| 2025-11-26 | validate_methodology task | VPC/BMC structure validation |
+| 2025-11-26 | qa_auditor tools | GuardianReviewTool + MethodologyCheckTool wired |
+
+### Test Coverage
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | HITL workflow tests | `tests/integration/test_hitl_workflow.py` - 32 tests passing |
+
+---
+
 ## Phase 1B: Landing Page Deployment (2025-11-26)
 
 Build Crew now has full landing page pipeline for live A/B testing.
@@ -115,4 +147,4 @@ These items represent what currently works before the Flows rebuild:
 The current 6-agent workflow will be replaced by the 8-crew/18-agent Flows architecture. The baseline above represents what to maintain backward compatibility with during the transition.
 
 ---
-**Last Updated**: 2025-11-22
+**Last Updated**: 2025-11-26

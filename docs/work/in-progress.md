@@ -6,24 +6,44 @@ last_reviewed: "2025-11-26"
 
 # In Progress
 
-## Phase 2A: HITL Workflows - Creative Approval (Next)
+## Phase 2B: HITL Workflows - Viability Approval (Next)
+
+Flow can pause for human viability decisions at the unit economics gate.
+
+| Item | Status | Owner | Notes |
+|------|--------|-------|-------|
+| Add await_viability_decision flow node | Pending | @ai-platform | HITL pause at viability gate |
+| Wire ViabilityApprovalTool to Finance | Pending | @ai-platform | Surface LTV/CAC for human review |
+| Implement cost pivot decision handler | Pending | @ai-platform | Increase price vs reduce cost |
+| Add viability approval tests | Pending | @ai-platform | test_viability_workflow.py |
+
+### Phase 2B Complete Criteria
+
+- [ ] Flow pauses when unit economics need human decision
+- [ ] /resume payload processes viability decisions (proceed/pivot/kill)
+- [ ] Finance Crew surfaces unit economics for review
+- [ ] Cost optimization recommendations presented to user
+
+---
+
+## Phase 2A: HITL Workflows - Creative Approval (✅ Complete)
 
 Flow can pause for human creative decisions.
 
 | Item | Status | Owner | Notes |
 |------|--------|-------|-------|
-| Implement /resume webhook handler | Pending | @ai-platform | Parse creative approval payloads |
-| Wire GuardianReviewTool to Governance | Pending | @ai-platform | Auto-QA creatives |
-| Implement MethodologyCheckTool | Pending | @ai-platform | VPC/BMC structure validation |
-| Add await_creative_approval flow node | Pending | @ai-platform | HITL pause point |
-| Add HITL workflow tests | Pending | @ai-platform | test_hitl_workflow.py |
+| Implement /resume webhook handler | ✅ Complete | @ai-platform | Parse creative approval payloads |
+| Wire GuardianReviewTool to Governance | ✅ Complete | @ai-platform | Auto-QA creatives |
+| Implement MethodologyCheckTool | ✅ Complete | @ai-platform | VPC/BMC structure validation |
+| Add await_creative_approval flow node | ✅ Complete | @ai-platform | HITL pause point in flow |
+| Add HITL workflow tests | ✅ Complete | @ai-platform | 32 tests passing |
 
 ### Phase 2A Complete Criteria
 
-- [ ] Flow pauses when Guardian flags issues requiring human review
-- [ ] /resume payload updates ad/LP approval statuses
-- [ ] GuardianReviewTool auto-approves safe creatives
-- [ ] MethodologyCheckTool validates VPC/BMC structure
+- [x] Flow pauses when Guardian flags issues requiring human review
+- [x] /resume payload updates ad/LP approval statuses
+- [x] GuardianReviewTool auto-approves safe creatives
+- [x] MethodologyCheckTool validates VPC/BMC structure
 
 ---
 
@@ -81,7 +101,7 @@ Closing the critical blocker - users can see validation results.
 | Growth Crew | ✅ Complete | Stub (needs experiment tools in Phase 2B) |
 | Synthesis Crew | ✅ Complete | Full task definitions with pivot logic |
 | Finance Crew | ✅ Complete | IndustryBenchmarkTool + UnitEconomicsCalculatorTool wired |
-| Governance Crew | ✅ Complete | LearningCaptureTool + AnonymizerTool wired |
+| Governance Crew | ✅ Complete | LearningCaptureTool + AnonymizerTool + HITL tools wired |
 | Phase 1 Flow orchestration | ✅ Complete | Non-linear routers with Innovation Physics |
 | Results persistence | ✅ Complete | Webhook to product app on flow completion |
 
@@ -89,23 +109,26 @@ Closing the critical blocker - users can see validation results.
 
 ## Immediate Next Step
 
-**Phase 2A: HITL Workflows - Creative Approval** - Enable human-in-the-loop for creative review.
+**Phase 2B: HITL Workflows - Viability Approval** - Enable human-in-the-loop for viability decisions.
 
-See Phase 2A section above for task breakdown.
+See Phase 2B section above for task breakdown.
 
 ---
 
 ## What This Unblocks (Downstream)
 
-**Phase 1A + 1B Complete unblocks:**
+**Phase 1A + 1B + 2A Complete unblocks:**
 - **Product App**: Can display validation results from webhook
 - **All Crews**: Real tools instead of LLM-only outputs
 - **Growth Crew**: Can deploy landing pages for experiments
 - **Marketing**: Real URLs for demos
-
-**Phase 2A Will unblock:**
 - **Quality Assurance**: Human review before ad deployment
 - **Compliance**: Review workflow for creative content
+
+**Phase 2B Will unblock:**
+- **Strategic Decisions**: Human approval at viability gate
+- **Unit Economics**: Real LTV/CAC decisions with human oversight
+- **Pivot Execution**: Cost/price optimization with human approval
 
 ---
 
@@ -121,7 +144,7 @@ See Phase 2A section above for task breakdown.
 
 ## How to Use This Document
 
-1. **Pick an item** from the Phase 1B table above
+1. **Pick an item** from the Phase 2B table above
 2. **Update status** when you start work
 3. **Move to done.md** when complete
 4. **Update phases.md** checkboxes to match
@@ -129,4 +152,4 @@ See Phase 2A section above for task breakdown.
 ---
 **Last Updated**: 2025-11-26
 
-**Latest Changes**: Phase 1A + 1B completed - all crews have tools wired, LandingPageDeploymentTool implemented, 17 integration tests passing. Phase 2A (HITL creative approval) is next.
+**Latest Changes**: Phase 2A completed - HITL creative approval workflow implemented with GuardianReviewTool, MethodologyCheckTool, /resume webhook handler, and await_creative_approval flow node. 32 integration tests passing. Phase 2B (HITL viability approval) is next.

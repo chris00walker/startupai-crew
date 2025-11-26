@@ -88,3 +88,54 @@ capture_learnings:
     - knowledge_artifacts: reusable content
     - flywheel_updates: what to add to knowledge base
   agent: accountability_tracker
+
+review_creatives:
+  description: >
+    Review creative artifacts (landing pages, ad creatives) before deployment:
+
+    Artifacts: {artifacts}
+    Business Context: {business_context}
+    Campaign Goals: {campaign_goals}
+
+    Using the guardian_review tool, check each artifact for:
+    1. Compliance issues (misleading claims, missing disclaimers)
+    2. Accessibility (alt text, contrast, screen reader compatibility)
+    3. Conversion best practices (CTA clarity, value prop visibility)
+    4. Security concerns (unsafe URLs, suspicious scripts)
+    5. Brand consistency (tone, messaging alignment)
+
+    Determine which artifacts can be auto-approved and which need human review.
+  expected_output: >
+    Creative review report containing:
+    - review_results: list of {artifact_id, decision, issues}
+    - auto_approved: list of artifact IDs safe to deploy
+    - needs_human_review: list requiring human approval with reasons
+    - rejected: list that must be fixed before any approval
+    - summary: overall assessment and recommendations
+  agent: qa_auditor
+
+validate_methodology:
+  description: >
+    Validate strategic artifacts against Strategyzer methodology:
+
+    Methodology Type: {methodology_type}
+    Artifact: {artifact}
+    Related Context: {context}
+
+    Using the methodology_check tool, validate:
+    1. VPC - Customer Profile completeness (jobs, pains, gains)
+    2. VPC - Value Map completeness (products, pain relievers, gain creators)
+    3. VPC - Fit between customer profile and value map
+    4. BMC - All 9 building blocks present and consistent
+    5. Assumptions - Properly mapped and prioritized
+
+    Flag any structural issues that would prevent meaningful validation.
+  expected_output: >
+    Methodology validation report containing:
+    - is_valid: boolean indicating structural soundness
+    - completeness_score: 0.0-1.0 score
+    - quality_score: 0.0-1.0 score
+    - issues: list of {severity, component, message, suggestion}
+    - ready_for_next_phase: boolean
+    - summary: human-readable assessment
+  agent: compliance_monitor

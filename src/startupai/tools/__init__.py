@@ -44,6 +44,20 @@ from startupai.tools.landing_page_deploy import (
     DeploymentResult,
     deploy_landing_page,
 )
+from startupai.tools.guardian_review import (
+    GuardianReviewTool,
+    GuardianReviewResult,
+    ReviewDecision,
+    review_landing_page,
+    review_ad_creative,
+)
+from startupai.tools.methodology_check import (
+    MethodologyCheckTool,
+    MethodologyCheckResult,
+    MethodologyType,
+    check_vpc,
+    check_bmc,
+)
 
 __all__ = [
     # Anonymization
@@ -83,4 +97,16 @@ __all__ = [
     "LandingPageDeploymentTool",
     "DeploymentResult",
     "deploy_landing_page",
+    # Guardian Review (HITL)
+    "GuardianReviewTool",
+    "GuardianReviewResult",
+    "ReviewDecision",
+    "review_landing_page",
+    "review_ad_creative",
+    # Methodology Check
+    "MethodologyCheckTool",
+    "MethodologyCheckResult",
+    "MethodologyType",
+    "check_vpc",
+    "check_bmc",
 ]

@@ -79,6 +79,17 @@ from startupai.tools.learning_capture import (
     capture_outcome_learning,
 )
 
+# Import HITL tools for creative review
+from startupai.tools.guardian_review import (
+    GuardianReviewTool,
+    review_landing_page,
+    ReviewDecision,
+)
+from startupai.webhooks.resume_handler import (
+    ResumeHandler,
+    ApprovalType,
+)
+
 
 class InternalValidationFlow(Flow[ValidationState]):
     """
@@ -363,6 +374,227 @@ class InternalValidationFlow(Flow[ValidationState]):
         else:
             print("❌ No desirability signal - fundamental pivot required")
             return "compass_synthesis_required"
+
+    # ===========================================================================
+    # DESIRABILITY PIVOT HANDLERS
+    # ===========================================================================
+
+    # ===========================================================================
+    # CREATIVE APPROVAL WORKFLOW (HITL)
+    # ===========================================================================
+
+    @listen(test_desirability)
+    def review_creatives_for_deployment(self):
+        """
+        Guardian's auto-QA review of creatives (landing pages, ad copy).
+
+        This runs after Growth Crew generates landing pages and before deployment.
+        Uses GuardianReviewTool to auto-approve safe content or flag for human review.
+        """
+        print("\n🎨 Reviewing creatives for deployment...")
+
+        # Check if we have landing pages to review
+        landing_pages = getattr(self.state, 'landing_pages', [])
+        if not landing_pages:
+            print("   No landing pages to review, skipping")
+            return
+
+        # Initialize results storage
+        self.state.creative_review_results = []
+        self.state.creatives_needing_human_review = []
+        self.state.auto_approved_creatives = []
+
+        # Review each landing page
+        for i, page in enumerate(landing_pages):
+            artifact_id = f"lp_{i+1}"
+            html_content = page.get('html', page) if isinstance(page, dict) else str(page)
+
+            # Run auto-QA
+            review_result = review_landing_page(
+                artifact_id=artifact_id,
+                html_content=html_content,
+                business_context={
+                    "business_idea": self.state.business_idea,
+                    "target_segment": self.state.current_segment,
+                }
+            )
+
+            self.state.creative_review_results.append(review_result)
+
+            # Categorize by decision
+            if review_result.decision == ReviewDecision.AUTO_APPROVED:
+                self.state.auto_approved_creatives.append(artifact_id)
+                print(f"   ✅ {artifact_id}: AUTO-APPROVED")
+            elif review_result.decision == ReviewDecision.REJECTED:
+                # Rejected creatives need fixes, not approval
+                print(f"   ❌ {artifact_id}: REJECTED - {len(review_result.blocking_issues)} blockers")
+            else:
+                # Needs human review
+                self.state.creatives_needing_human_review.append({
+                    "artifact_id": artifact_id,
+                    "issues": [issue.dict() for issue in review_result.issues],
+                    "summary": review_result.summary,
+                })
+                print(f"   ⏸️ {artifact_id}: NEEDS HUMAN REVIEW - {len(review_result.issues)} issues")
+
+        print(f"\n   Summary: {len(self.state.auto_approved_creatives)} auto-approved, "
+              f"{len(self.state.creatives_needing_human_review)} need review")
+
+    @router(review_creatives_for_deployment)
+    def creative_approval_gate(self) -> str:
+        """
+        Router to determine if creatives can proceed or need human approval.
+
+        Returns:
+            - "creatives_approved" if all auto-approved or no creatives
+            - "await_creative_approval" if some need human review
+            - "creatives_rejected" if all rejected (must regenerate)
+        """
+        # No creatives to review
+        if not hasattr(self.state, 'creative_review_results') or not self.state.creative_review_results:
+            return "creatives_approved"
+
+        needs_review = len(getattr(self.state, 'creatives_needing_human_review', []))
+        auto_approved = len(getattr(self.state, 'auto_approved_creatives', []))
+        total = len(self.state.creative_review_results)
+
+        # All auto-approved
+        if auto_approved == total:
+            print("✅ All creatives auto-approved")
+            return "creatives_approved"
+
+        # Some need human review
+        if needs_review > 0:
+            print(f"⏸️ {needs_review} creatives need human review - pausing for approval")
+            self.state.human_input_required = True
+            self.state.human_input_reason = (
+                f"{needs_review} creative artifacts need human review before deployment. "
+                "Please review the flagged issues in the dashboard."
+            )
+            return "await_creative_approval"
+
+        # All rejected - need to regenerate
+        print("❌ All creatives rejected - regeneration required")
+        return "creatives_rejected"
+
+    @listen("await_creative_approval")
+    def pause_for_creative_approval(self):
+        """
+        Pause the flow to await human approval of creatives.
+
+        In production, this triggers a webhook to the product app dashboard
+        where the user can review and approve/reject each creative.
+
+        The flow resumes when the product app calls POST /resume with:
+        {
+            "kickoff_id": "...",
+            "approval_type": "creative_approval",
+            "creative_approval": {
+                "approved_artifact_ids": ["lp_1", "lp_2"],
+                "rejected_artifact_ids": ["lp_3"],
+                "feedback": "Please fix the headline on lp_3"
+            }
+        }
+        """
+        print("\n⏸️ FLOW PAUSED: Awaiting human creative approval")
+        print(f"   Kickoff ID: {self.state.kickoff_id}")
+        print(f"   Artifacts needing review: {len(self.state.creatives_needing_human_review)}")
+
+        # Notify product app via webhook that approval is needed
+        self._notify_creative_approval_needed()
+
+        # In production with CrewAI AMP, the flow state is persisted and
+        # the flow resumes when /resume webhook is called.
+        # For local testing, we simulate immediate approval.
+        if not os.environ.get("CREWAI_AMP"):
+            print("   (Local mode: simulating immediate approval)")
+            self._handle_creative_resume({
+                "approved_artifact_ids": [item["artifact_id"] for item in self.state.creatives_needing_human_review],
+                "rejected_artifact_ids": [],
+            })
+
+    def _notify_creative_approval_needed(self):
+        """Notify product app that creative approval is needed."""
+        webhook_url = os.environ.get("STARTUPAI_WEBHOOK_URL")
+        bearer_token = os.environ.get("STARTUPAI_WEBHOOK_BEARER_TOKEN")
+
+        if not webhook_url or not bearer_token:
+            print("   ⚠️ Webhook not configured, cannot notify")
+            return
+
+        payload = {
+            "flow_type": "creative_approval_needed",
+            "kickoff_id": self.state.kickoff_id,
+            "project_id": self.state.project_id,
+            "user_id": self.state.user_id,
+            "creatives_needing_review": self.state.creatives_needing_human_review,
+            "auto_approved_creatives": self.state.auto_approved_creatives,
+        }
+
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                response = client.post(
+                    webhook_url,
+                    json=payload,
+                    headers={
+                        "Authorization": f"Bearer {bearer_token}",
+                        "Content-Type": "application/json",
+                    }
+                )
+                if response.status_code == 200:
+                    print("   📤 Product app notified of pending approval")
+                else:
+                    print(f"   ⚠️ Notification failed: {response.status_code}")
+        except Exception as e:
+            print(f"   ⚠️ Notification error: {e}")
+
+    def _handle_creative_resume(self, creative_approval: Dict[str, Any]):
+        """
+        Handle resume from creative approval webhook.
+
+        Called when the product app sends POST /resume with approval decision.
+        """
+        approved = creative_approval.get("approved_artifact_ids", [])
+        rejected = creative_approval.get("rejected_artifact_ids", [])
+        feedback = creative_approval.get("feedback", "")
+
+        print(f"\n🔄 Creative approval received:")
+        print(f"   Approved: {len(approved)}")
+        print(f"   Rejected: {len(rejected)}")
+
+        # Update state
+        self.state.human_input_required = False
+        self.state.auto_approved_creatives.extend(approved)
+
+        # Store feedback for rejected items
+        if rejected and feedback:
+            self.state.guardian_last_issues.append(f"Creative feedback: {feedback}")
+
+        # If any approved, we can proceed
+        if approved:
+            print("   → Proceeding with approved creatives")
+        elif rejected:
+            print("   → All creatives rejected, may need regeneration")
+
+    @listen("creatives_approved")
+    def proceed_with_approved_creatives(self):
+        """Continue flow after creatives are approved (auto or human)."""
+        print("\n✅ Creatives approved - continuing validation flow")
+        # The flow continues naturally from here via the desirability_gate router
+
+    @listen("creatives_rejected")
+    def handle_rejected_creatives(self):
+        """Handle case where all creatives were rejected."""
+        print("\n🔧 Regenerating creatives after rejection...")
+
+        # Clear old results
+        self.state.landing_pages = []
+        self.state.creative_review_results = []
+
+        # The Growth Crew will regenerate when desirability retests
+        self.state.guardian_last_issues.append(
+            "All creatives rejected - regeneration triggered"
+        )
 
     # ===========================================================================
     # DESIRABILITY PIVOT HANDLERS

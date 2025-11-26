@@ -558,6 +558,12 @@ class StartupValidationState(BaseModel):
     ad_signups: int = 0
     ad_spend: float = 0.0
 
+    # =================== CREATIVE ARTIFACTS - Landing Pages (4 fields) ===================
+    landing_pages: List[Dict[str, Any]] = Field(default_factory=list)  # Generated LP variants
+    creative_review_results: List[Any] = Field(default_factory=list)  # GuardianReviewResult objects
+    creatives_needing_human_review: List[Dict[str, Any]] = Field(default_factory=list)  # Artifacts flagged for HITL
+    auto_approved_creatives: List[str] = Field(default_factory=list)  # Artifact IDs that passed auto-QA
+
     # =================== BUILD CREW OUTPUTS - Cost Estimates (3 fields) ===================
     api_costs: Dict[str, float] = Field(default_factory=dict)
     infra_costs: Dict[str, float] = Field(default_factory=dict)
