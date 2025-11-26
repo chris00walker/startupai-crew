@@ -10,7 +10,7 @@ Architecture: StartupValidationState (31 fields, signal-based)
 from typing import List, Optional, Dict, Any, Literal
 from enum import Enum
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator, HttpUrl
+from pydantic import BaseModel, Field, field_validator, model_validator, HttpUrl
 
 
 # =======================================================================================
@@ -347,6 +347,53 @@ class ViabilityMetrics(BaseModel):
 
 
 # =======================================================================================
+# EVIDENCE MODELS - Used by Flow for Phase Outputs
+# =======================================================================================
+
+class DesirabilityEvidence(BaseModel):
+    """Evidence collected from desirability testing phase"""
+    problem_resonance: float = 0.0  # 0-1 scale, how much the problem resonates
+    conversion_rate: float = 0.0    # Signup/click rate
+    commitment_depth: CommitmentType = CommitmentType.NONE
+    zombie_ratio: float = 0.0       # High interest but no commitment
+    experiments: List[Dict[str, Any]] = Field(default_factory=list)
+    key_learnings: List[str] = Field(default_factory=list)
+    tested_segments: List[str] = Field(default_factory=list)
+
+    # Metrics from ad campaigns
+    impressions: int = 0
+    clicks: int = 0
+    signups: int = 0
+    spend_usd: float = 0.0
+
+
+class FeasibilityEvidence(BaseModel):
+    """Evidence collected from feasibility testing phase"""
+    core_features_feasible: Dict[str, str] = Field(default_factory=dict)  # feature -> POSSIBLE/CONSTRAINED/IMPOSSIBLE
+    technical_risks: List[str] = Field(default_factory=list)
+    skill_requirements: List[str] = Field(default_factory=list)
+    estimated_effort: Optional[str] = None
+    downgrade_required: bool = False
+    downgrade_impact: Optional[str] = None
+    removed_features: List[str] = Field(default_factory=list)
+    alternative_approaches: List[str] = Field(default_factory=list)
+    monthly_cost_estimate_usd: float = 0.0
+
+
+class ViabilityEvidence(BaseModel):
+    """Evidence collected from viability testing phase"""
+    cac: float = 0.0                # Customer Acquisition Cost
+    ltv: float = 0.0                # Lifetime Value
+    ltv_cac_ratio: float = 0.0      # Must be > 3 for healthy business
+    gross_margin: float = 0.0       # Gross margin percentage
+    payback_months: float = 0.0     # Months to recover CAC
+    break_even_customers: int = 0   # Customers needed to break even
+    tam_usd: float = 0.0            # Total Addressable Market
+    market_share_target: float = 0.0
+    viability_assessment: Optional[str] = None  # Summary assessment
+
+
+# =======================================================================================
 # QUALITY & GOVERNANCE
 # =======================================================================================
 
@@ -370,19 +417,47 @@ class QAReport(BaseModel):
 
 
 # =======================================================================================
-# MAIN STATE: StartupValidationState (31 fields)
+# MAIN STATE: StartupValidationState (70 fields)
 # =======================================================================================
 
 class StartupValidationState(BaseModel):
     """
     Master state for Innovation Physics flow.
-    31 fields organized by owner/purpose.
+    70 fields organized by owner/purpose.
 
     This replaces the legacy ValidationState with signal-based architecture.
+
+    Field Categories:
+    - Identity & Bookkeeping (4 fields)
+    - Problem/Solution Fit - Sage (5 fields)
+    - Innovation Physics Signals (3 fields)
+    - Desirability Artifacts - Pulse (2 fields)
+    - Feasibility Artifact - Forge (1 field)
+    - Viability Metrics - Ledger (1 field)
+    - Pivot & Routing State (2 fields)
+    - Global Human Approvals (2 fields)
+    - HITL Bookkeeping (2 fields)
+    - Guardian/Governance Metadata (2 fields)
+    - Evidence Containers (3 fields)
+    - Signal Tracking (4 fields)
+    - Output Tracking (3 fields)
+    - QA and Governance (2 fields)
+    - HITL Workflow (3 fields)
+    - Retry Logic (3 fields)
+    - Legacy Compatibility (7 fields)
+    - Service Crew Outputs (3 fields)
+    - Analysis Crew Outputs (2 fields)
+    - Growth Crew Outputs - Ad Metrics (4 fields)
+    - Build Crew Outputs - Cost Estimates (3 fields)
+    - Finance Crew Outputs - Unit Economics (5 fields)
+    - Synthesis Crew Outputs (1 field)
+    - Governance Crew Outputs (3 fields)
     """
 
-    # =================== IDENTITY & BOOKKEEPING (4 fields) ===================
-    project_id: str
+    # =================== IDENTITY & BOOKKEEPING (5 fields) ===================
+    # Note: CrewAI Flow requires 'id' field directly - cannot use property
+    id: str = Field(default_factory=lambda: f"val_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+    project_id: str = ""  # Will be synced with id in validator
     iteration: int = 0
     phase: Phase = Phase.IDEATION
     current_risk_axis: RiskAxis = RiskAxis.DESIRABILITY
@@ -425,6 +500,36 @@ class StartupValidationState(BaseModel):
     guardian_last_issues: List[str] = Field(default_factory=list)
     audit_log_ids: List[str] = Field(default_factory=list)
 
+    # =================== EVIDENCE CONTAINERS (3 fields) ===================
+    desirability_evidence: Optional[DesirabilityEvidence] = None
+    feasibility_evidence: Optional[FeasibilityEvidence] = None
+    viability_evidence: Optional[ViabilityEvidence] = None
+
+    # =================== SIGNAL TRACKING (4 fields) ===================
+    commitment_type: Optional[CommitmentType] = None
+    evidence_strength: Optional[EvidenceStrength] = None
+    feasibility_status: Optional[FeasibilitySignal] = None
+    unit_economics_status: Optional[ViabilitySignal] = None
+
+    # =================== OUTPUT TRACKING (3 fields) ===================
+    evidence_summary: Optional[str] = None
+    final_recommendation: Optional[str] = None
+    next_steps: List[str] = Field(default_factory=list)
+
+    # =================== QA AND GOVERNANCE (2 fields) ===================
+    qa_reports: List[QAReport] = Field(default_factory=list)
+    current_qa_status: Optional[QAStatus] = None
+
+    # =================== HITL WORKFLOW (3 fields) ===================
+    human_input_required: bool = False
+    human_input_reason: Optional[str] = None
+    pivot_recommendation: Optional[PivotType] = None
+
+    # =================== RETRY LOGIC (3 fields) ===================
+    pivot_history: List[Dict[str, Any]] = Field(default_factory=list)
+    max_retries: int = 3
+    retry_count: int = 0
+
     # =================== LEGACY COMPATIBILITY FIELDS (7 fields) ===================
     # These maintain compatibility with existing flow logic during migration
     business_idea: Optional[str] = None
@@ -434,6 +539,50 @@ class StartupValidationState(BaseModel):
     customer_profiles: Dict[str, CustomerProfile] = Field(default_factory=dict)
     value_maps: Dict[str, ValueMap] = Field(default_factory=dict)
     competitor_report: Optional[CompetitorReport] = None
+
+    # =================== SERVICE CREW OUTPUTS (3 fields) ===================
+    problem_statement: Optional[str] = None
+    solution_description: Optional[str] = None
+    revenue_model: Optional[str] = None
+
+    # =================== ANALYSIS CREW OUTPUTS (2 fields) ===================
+    segment_fit_scores: Dict[str, float] = Field(default_factory=dict)
+    analysis_insights: List[str] = Field(default_factory=list)
+
+    # =================== GROWTH CREW OUTPUTS - Ad Metrics (4 fields) ===================
+    ad_impressions: int = 0
+    ad_clicks: int = 0
+    ad_signups: int = 0
+    ad_spend: float = 0.0
+
+    # =================== BUILD CREW OUTPUTS - Cost Estimates (3 fields) ===================
+    api_costs: Dict[str, float] = Field(default_factory=dict)
+    infra_costs: Dict[str, float] = Field(default_factory=dict)
+    total_monthly_cost: float = 0.0
+
+    # =================== FINANCE CREW OUTPUTS - Unit Economics (5 fields) ===================
+    cac: float = 0.0
+    ltv: float = 0.0
+    ltv_cac_ratio: float = 0.0
+    gross_margin: float = 0.0
+    tam: float = 0.0
+
+    # =================== SYNTHESIS CREW OUTPUTS (1 field) ===================
+    synthesis_confidence: float = 0.0
+
+    # =================== GOVERNANCE CREW OUTPUTS (3 fields) ===================
+    framework_compliance: bool = False
+    logical_consistency: bool = False
+    completeness: bool = False
+
+    # =================== VALIDATORS ===================
+
+    @model_validator(mode='after')
+    def sync_project_id(self) -> 'StartupValidationState':
+        """Ensure project_id is synced with id for backward compatibility"""
+        if not self.project_id:
+            object.__setattr__(self, 'project_id', self.id)
+        return self
 
     # =================== HELPER METHODS ===================
 

@@ -51,6 +51,25 @@ from startupai.crews.growth.growth_crew import GrowthCrew
 from startupai.crews.synthesis.synthesis_crew import SynthesisCrew
 from startupai.crews.finance.finance_crew import FinanceCrew
 
+# Import Pydantic output models for type-safe crew results
+from startupai.crews.crew_outputs import (
+    ServiceCrewOutput,
+    SegmentPivotOutput,
+    AnalysisCrewOutput,
+    CompetitorAnalysisOutput,
+    ValuePropIterationOutput,
+    BuildCrewOutput,
+    DowngradeOutput,
+    GrowthCrewOutput,
+    PricingTestOutput,
+    DegradationTestOutput,
+    SynthesisCrewOutput,
+    PivotDecisionOutput,
+    FinanceCrewOutput,
+    OptimizedMetricsOutput,
+    GovernanceCrewOutput,
+)
+
 
 class InternalValidationFlow(Flow[ValidationState]):
     """
@@ -78,14 +97,23 @@ class InternalValidationFlow(Flow[ValidationState]):
         try:
             # Service Crew captures the entrepreneur input
             result = ServiceCrew().crew().kickoff(
-                inputs={"entrepreneur_input": self.state.entrepreneur_input}
+                inputs={"entrepreneur_input": self.state.entrepreneur_input},
+                output_pydantic=ServiceCrewOutput
             )
 
-            # Parse the brief from Service Crew
-            if result and hasattr(result, 'pydantic') and result.pydantic:
-                self.state.business_idea = getattr(result.pydantic, 'business_idea', self.state.entrepreneur_input)
-                self.state.target_segments = getattr(result.pydantic, 'target_segments', [])
-                self.state.assumptions = getattr(result.pydantic, 'assumptions', [])
+            # Parse the brief from Service Crew with typed output
+            if result.pydantic:
+                output: ServiceCrewOutput = result.pydantic
+                self.state.business_idea = output.business_idea
+                self.state.target_segments = output.target_segments
+                self.state.assumptions = output.assumptions
+                # Store additional fields from typed output
+                if output.problem_statement:
+                    self.state.problem_statement = output.problem_statement
+                if output.solution_description:
+                    self.state.solution_description = output.solution_description
+                if output.revenue_model:
+                    self.state.revenue_model = output.revenue_model
             else:
                 # Fallback: use raw output
                 self.state.business_idea = self.state.entrepreneur_input
@@ -136,13 +164,20 @@ class InternalValidationFlow(Flow[ValidationState]):
                             "segment": segment,
                             "business_idea": self.state.business_idea,
                             "assumptions": [a.dict() for a in self.state.assumptions]
-                        }
+                        },
+                        output_pydantic=AnalysisCrewOutput
                     )
 
-                    # Store customer profile and value map
-                    if result and hasattr(result, 'pydantic') and result.pydantic:
-                        self.state.customer_profiles[segment] = result.pydantic.customer_profile
-                        self.state.value_maps[segment] = result.pydantic.value_map
+                    # Store customer profile and value map with typed output
+                    if result.pydantic:
+                        output: AnalysisCrewOutput = result.pydantic
+                        self.state.customer_profiles[segment] = output.customer_profile
+                        self.state.value_maps[segment] = output.value_map
+                        # Store fit score and insights
+                        if output.fit_score:
+                            self.state.segment_fit_scores[segment] = output.fit_score
+                        if output.key_insights:
+                            self.state.analysis_insights.extend(output.key_insights)
                     else:
                         self.state.guardian_last_issues.append(f"Analysis Crew returned no structured output for segment: {segment}")
                 except Exception as segment_error:
@@ -157,9 +192,10 @@ class InternalValidationFlow(Flow[ValidationState]):
                         "task": "competitor_analysis",
                         "business_idea": self.state.business_idea,
                         "segments": self.state.target_segments
-                    }
+                    },
+                    output_pydantic=CompetitorAnalysisOutput
                 )
-                if comp_result and hasattr(comp_result, 'pydantic') and comp_result.pydantic:
+                if comp_result.pydantic:
                     self.state.competitor_report = comp_result.pydantic
                 else:
                     self.state.guardian_last_issues.append("Competitor analysis returned no structured output")
@@ -205,12 +241,19 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()},
                     "assumptions": [a.dict() for a in self.state.get_critical_assumptions()],
                     "competitor_analysis": self.state.competitor_report.dict() if self.state.competitor_report else None
-                }
+                },
+                output_pydantic=GrowthCrewOutput
             )
 
-            # Store desirability evidence
-            if result and hasattr(result, 'pydantic') and result.pydantic:
-                self.state.desirability_evidence = result.pydantic
+            # Store desirability evidence with typed output
+            if result.pydantic:
+                output: GrowthCrewOutput = result.pydantic
+                self.state.desirability_evidence = output
+                # Store ad campaign metrics
+                self.state.ad_impressions = output.impressions
+                self.state.ad_clicks = output.clicks
+                self.state.ad_signups = output.signups
+                self.state.ad_spend = output.spend_usd
             else:
                 self.state.guardian_last_issues.append("Growth Crew returned no structured output for desirability testing")
 
@@ -344,11 +387,13 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "current_segment": self.state.target_segments[0],
                 "evidence": self.state.desirability_evidence.dict(),
                 "business_idea": self.state.business_idea
-            }
+            },
+            output_pydantic=SegmentPivotOutput
         )
 
-        # Update state with new segment
-        new_segment = result.pydantic.new_segment
+        # Update state with new segment from typed output
+        output: SegmentPivotOutput = result.pydantic
+        new_segment = output.new_segment
         self.state.target_segments = [new_segment]
         self.state.add_pivot_to_history(
             PivotRecommendation.SEGMENT_PIVOT,
@@ -391,11 +436,13 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "customer_profile": self.state.customer_profiles[self.state.target_segments[0]].dict(),
                 "evidence": self.state.desirability_evidence.dict(),
                 "zombie_ratio": self.state.calculate_zombie_ratio()
-            }
+            },
+            output_pydantic=ValuePropIterationOutput
         )
 
-        # Update value proposition
-        self.state.value_maps[self.state.target_segments[0]] = result.pydantic.new_value_map
+        # Update value proposition from typed output
+        output: ValuePropIterationOutput = result.pydantic
+        self.state.value_maps[self.state.target_segments[0]] = output.new_value_map
         self.state.add_pivot_to_history(
             PivotRecommendation.VALUE_PIVOT,
             f"High traffic but low commitment (zombie ratio: {self.state.calculate_zombie_ratio():.1%})"
@@ -420,11 +467,12 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "previous_evidence": self.state.desirability_evidence.dict() if self.state.desirability_evidence else {},
                     "customer_profiles": {k: v.dict() for k, v in self.state.customer_profiles.items()},
                     "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()}
-                }
+                },
+                output_pydantic=GrowthCrewOutput
             )
 
-            # Update evidence
-            if result and hasattr(result, 'pydantic') and result.pydantic:
+            # Update evidence with typed output
+            if result.pydantic:
                 self.state.desirability_evidence = result.pydantic
             else:
                 self.state.guardian_last_issues.append("Growth Crew returned no structured output for refined testing")
@@ -458,12 +506,18 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()},
                     "desirability_evidence": self.state.desirability_evidence.dict() if self.state.desirability_evidence else {},
                     "technical_requirements": self._extract_technical_requirements()
-                }
+                },
+                output_pydantic=BuildCrewOutput
             )
 
-            # Store feasibility evidence
-            if result and hasattr(result, 'pydantic') and result.pydantic:
-                self.state.feasibility_evidence = result.pydantic
+            # Store feasibility evidence with typed output
+            if result.pydantic:
+                output: BuildCrewOutput = result.pydantic
+                self.state.feasibility_evidence = output
+                # Store cost estimates
+                self.state.api_costs = output.api_costs
+                self.state.infra_costs = output.infra_costs
+                self.state.total_monthly_cost = output.total_monthly_cost
             else:
                 self.state.guardian_last_issues.append("Build Crew returned no structured output for feasibility testing")
 
@@ -591,12 +645,14 @@ class InternalValidationFlow(Flow[ValidationState]):
                     k for k, v in self.state.feasibility_evidence.core_features_feasible.items()
                     if v == FeasibilityStatus.IMPOSSIBLE
                 ]
-            }
+            },
+            output_pydantic=DowngradeOutput
         )
 
-        # Update value maps with downgraded version
+        # Update value maps with downgraded version from typed output
+        output: DowngradeOutput = downgrade_result.pydantic
         for segment in self.state.target_segments:
-            self.state.value_maps[segment] = downgrade_result.pydantic.downgraded_value_maps[segment]
+            self.state.value_maps[segment] = output.downgraded_value_maps[segment]
 
         self.state.add_pivot_to_history(
             PivotRecommendation.FEATURE_PIVOT,
@@ -622,11 +678,13 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "original_value_maps": {k: v.dict() for k, v in self.state.value_maps.items()},
                 "degradation_impact": self.state.feasibility_evidence.downgrade_impact,
                 "customer_profiles": {k: v.dict() for k, v in self.state.customer_profiles.items()}
-            }
+            },
+            output_pydantic=DegradationTestOutput
         )
 
-        # Compare acceptance of degraded version
-        degraded_acceptance = result.pydantic.acceptance_rate
+        # Compare acceptance of degraded version from typed output
+        output: DegradationTestOutput = result.pydantic
+        degraded_acceptance = output.acceptance_rate
 
         if degraded_acceptance > 0.6:  # 60% still want it
             print(f"✅ Degraded version accepted ({degraded_acceptance:.1%} acceptance)")
@@ -656,12 +714,20 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "desirability_evidence": self.state.desirability_evidence.dict() if self.state.desirability_evidence else {},
                     "feasibility_evidence": self.state.feasibility_evidence.dict() if self.state.feasibility_evidence else {},
                     "market_size": self._estimate_market_size()
-                }
+                },
+                output_pydantic=FinanceCrewOutput
             )
 
-            # Store viability evidence
-            if result and hasattr(result, 'pydantic') and result.pydantic:
-                self.state.viability_evidence = result.pydantic
+            # Store viability evidence with typed output
+            if result.pydantic:
+                output: FinanceCrewOutput = result.pydantic
+                self.state.viability_evidence = output
+                # Store key metrics in state for easy access
+                self.state.cac = output.cac
+                self.state.ltv = output.ltv
+                self.state.ltv_cac_ratio = output.ltv_cac_ratio
+                self.state.gross_margin = output.gross_margin
+                self.state.tam = output.tam_usd
             else:
                 self.state.guardian_last_issues.append("Finance Crew returned no structured output for viability testing")
 
@@ -772,10 +838,12 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "pivot_history": self.state.pivot_history,
                 "current_cac": self.state.viability_evidence.cac,
                 "current_ltv": self.state.viability_evidence.ltv
-            }
+            },
+            output_pydantic=PivotDecisionOutput
         )
 
-        pivot_decision = result.pydantic.pivot_decision
+        # Get pivot decision from typed output
+        pivot_decision: PivotDecisionOutput = result.pydantic
 
         if self.state.human_input_required:
             print("\n🤔 HUMAN INPUT REQUIRED")
@@ -822,19 +890,21 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "new_price_multiplier": new_price_multiplier,
                 "customer_profiles": {k: v.dict() for k, v in self.state.customer_profiles.items()},
                 "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()}
-            }
+            },
+            output_pydantic=PricingTestOutput
         )
 
-        # Update viability evidence with new pricing
-        if result.pydantic.acceptance_rate > 0.5:  # 50% accept higher price
-            print(f"✅ Higher price accepted ({result.pydantic.acceptance_rate:.1%})")
+        # Update viability evidence with new pricing from typed output
+        output: PricingTestOutput = result.pydantic
+        if output.acceptance_rate > 0.5:  # 50% accept higher price
+            print(f"✅ Higher price accepted ({output.acceptance_rate:.1%})")
             self.state.viability_evidence.ltv *= new_price_multiplier
             self.state.viability_evidence.ltv_cac_ratio = (
                 self.state.viability_evidence.ltv / self.state.viability_evidence.cac
             )
             self._calculate_viability_signals()
         else:
-            print(f"❌ Higher price rejected ({result.pydantic.acceptance_rate:.1%})")
+            print(f"❌ Higher price rejected ({output.acceptance_rate:.1%})")
             self.state.pivot_recommendation = PivotRecommendation.MODEL_PIVOT
 
     def _pivot_reduce_costs(self):
@@ -850,11 +920,13 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "current_features": list(self.state.feasibility_evidence.core_features_feasible.keys()),
                 "cost_reduction_target": 0.4,  # 40% cost reduction target
                 "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()}
-            }
+            },
+            output_pydantic=DowngradeOutput
         )
 
-        # Update cost structure
-        reduced_features = result.pydantic.features_to_remove
+        # Update cost structure from typed output
+        output: DowngradeOutput = result.pydantic
+        reduced_features = output.removed_features
         new_cac = self.state.viability_evidence.cac * 0.6  # 40% reduction
 
         print(f"   Features to remove: {', '.join(reduced_features)}")
@@ -880,12 +952,14 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "current_cac": self.state.viability_evidence.cac if self.state.viability_evidence else 0,
                     "current_ltv": self.state.viability_evidence.ltv if self.state.viability_evidence else 0,
                     "current_margin": self.state.viability_evidence.gross_margin if self.state.viability_evidence else 0
-                }
+                },
+                output_pydantic=OptimizedMetricsOutput
             )
 
-            # Apply optimizations
-            if result and hasattr(result, 'pydantic') and result.pydantic:
-                self.state.viability_evidence = result.pydantic.optimized_metrics
+            # Apply optimizations from typed output
+            if result.pydantic:
+                output: OptimizedMetricsOutput = result.pydantic
+                self.state.viability_evidence = output.optimized_metrics
             else:
                 self.state.guardian_last_issues.append("Finance Crew returned no structured output for optimization")
 
@@ -920,16 +994,19 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "full_state": self.state.dict(),
                     "phase": self.state.phase.value,
                     "pivot_history": self.state.pivot_history
-                }
+                },
+                output_pydantic=SynthesisCrewOutput
             )
 
-            # Extract recommendation
-            if result and hasattr(result, 'pydantic') and result.pydantic:
-                synthesis = result.pydantic
+            # Extract recommendation from typed output
+            if result.pydantic:
+                synthesis: SynthesisCrewOutput = result.pydantic
                 self.state.final_recommendation = synthesis.recommendation
                 self.state.evidence_summary = synthesis.evidence_summary
                 self.state.next_steps = synthesis.next_steps
                 self.state.pivot_recommendation = synthesis.pivot_recommendation
+                # Store confidence score
+                self.state.synthesis_confidence = synthesis.confidence_score
             else:
                 self.state.guardian_last_issues.append("Synthesis Crew returned no structured output")
                 self.state.phase = Phase.VALIDATED
@@ -982,13 +1059,19 @@ class InternalValidationFlow(Flow[ValidationState]):
                 inputs={
                     "task": "final_audit",
                     "full_state": self.state.dict()
-                }
+                },
+                output_pydantic=GovernanceCrewOutput
             )
 
-            if result and hasattr(result, 'pydantic') and result.pydantic:
-                qa_report = result.pydantic
+            # Process typed output from Governance Crew
+            if result.pydantic:
+                qa_report: GovernanceCrewOutput = result.pydantic
                 self.state.qa_reports.append(qa_report)
                 self.state.current_qa_status = qa_report.status
+                # Store governance metrics
+                self.state.framework_compliance = qa_report.framework_compliance
+                self.state.logical_consistency = qa_report.logical_consistency
+                self.state.completeness = qa_report.completeness
             else:
                 self.state.guardian_last_issues.append("Governance Crew returned no structured output for final audit")
                 self.state.current_qa_status = QAStatus.CONDITIONAL
@@ -1103,14 +1186,12 @@ def create_validation_flow(entrepreneur_input: str) -> InternalValidationFlow:
     Returns:
         Configured InternalValidationFlow ready to run
     """
-    # Initialize state with new StartupValidationState schema
-    initial_state = StartupValidationState(
-        project_id=f"val_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+    # Create flow with state values passed as kwargs
+    # CrewAI Flow expects state fields as direct kwargs, not an initial_state object
+    flow = InternalValidationFlow(
+        id=f"val_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
         entrepreneur_input=entrepreneur_input,
-        phase=Phase.IDEATION
+        phase=Phase.IDEATION.value  # Pass enum value for serialization
     )
-
-    # Create flow with initial state
-    flow = InternalValidationFlow(initial_state=initial_state)
 
     return flow
