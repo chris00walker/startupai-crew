@@ -1,12 +1,34 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2025-11-21"
+last_reviewed: "2025-11-26"
 ---
 
 # Cross-Repository Blockers
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
+
+## Marketing Promise Gap (Critical)
+
+The marketing site makes promises that require technical capabilities not yet built. This represents the **work to be done** to deliver on marketing promises.
+
+| Gap | Description | Impact |
+|-----|-------------|--------|
+| MVP Building | Marketing promises "working software in days" | No code generation capability exists |
+| Real Ad Spend | Marketing promises $450-525 ad budget execution | No Meta/Google Ads API integration |
+| Real User Testing | Marketing promises "test with real customers" | No analytics or experiment framework |
+| Unit Economics | Marketing promises CAC/LTV analysis | Finance Crew outputs are LLM-generated fiction |
+| Evidence-Based | Marketing promises data-driven validation | All crew outputs are synthetic, not real data |
+
+### Capabilities Required to Close Gap
+
+1. **MVP Generation**: Code scaffolding, template deployment, GitHub integration
+2. **Ad Platform Integration**: Meta Business API, Google Ads API for real campaigns
+3. **Analytics Integration**: Real user tracking, conversion measurement
+4. **Financial Modeling**: Connect to real cost/revenue data, not LLM generation
+5. **Web Research Tools**: Competitor research APIs, market data sources
+
+---
 
 ## This Repo Blocks
 
@@ -14,8 +36,9 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 
 | Blocker | Status | Description | Unblocks |
 |---------|--------|-------------|----------|
-| Phase 1 Completion | In Progress | Service Crew, Analysis Crew, Governance Crew (QA), Phase 1 Flow | Product Phase Alpha results display |
+| Phase 1 Completion | ⚠️ Partial | Flow works, outputs are synthetic | Product can display results (quality is fiction) |
 | Results → Supabase | Not Started | Persist to `entrepreneur_briefs`, `analysis_results` tables | Product app can display analysis results |
+| Real Analysis Tools | Not Started | Tools for web research, data retrieval | Outputs transition from synthetic to real |
 | Flywheel Learning Schema | Not Started | SQL for `learnings`, `patterns`, `outcomes`, `domain_expertise` tables | Learning tools can persist/query |
 | Resume/Webhook API | Not Started | `POST /resume` with `human_feedback` for HITL | Product approval UI |
 
@@ -62,4 +85,6 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 - Approval workflows: `docs/master-architecture/reference/approval-workflows.md`
 
 ---
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-11-26
+
+**Changes**: Added Marketing Promise Gap section documenting capabilities required to deliver on marketing claims. Updated Phase 1 status to reflect partial completion (flow works, outputs synthetic).
