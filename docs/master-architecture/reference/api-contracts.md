@@ -31,10 +31,12 @@ curl -X POST https://startupai-...crewai.com/kickoff \
   "kickoff_id": "uuid",
   "status": "running|completed|failed|paused",
   "current_phase": "desirability|feasibility|viability|complete",
+  "router_decision": "run_desirability_experiments|desirability_gate_passed|run_feasibility_validation|feasibility_gate_passed|run_viability_analysis|terminal_validated|terminal_killed",
+  "blocking_approval_required": false,
   "result": {
     "validation_report": {
       "evidence_strength": "strong|weak|none",
-      "pivot_recommendation": "segment_pivot|value_pivot|feature_pivot|no_pivot|kill",
+      "pivot_recommendation": "segment_pivot|value_pivot|feature_pivot|strategic_pivot|no_pivot|kill",
       "human_input_required": false,
       "next_steps": ["..."]
     },
@@ -54,6 +56,24 @@ curl -X POST https://startupai-...crewai.com/kickoff \
         "ltv_cac_ratio": 4.0,
         "unit_economics_status": "profitable|marginal|underwater"
       }
+    },
+    "desirability_gate": {
+      "passed": true,
+      "evidence": {
+        "problem_resonance": 0.65,
+        "zombie_ratio": 0.15,
+        "commitment_type": "skin_in_game"
+      }
+    },
+    "feasibility_gate": {
+      "passed": true,
+      "status": "green",
+      "constraints": []
+    },
+    "viability_gate": {
+      "passed": true,
+      "ltv_cac_ratio": 4.0,
+      "unit_economics_status": "profitable"
     }
   }
 }

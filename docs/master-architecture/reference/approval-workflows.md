@@ -71,11 +71,11 @@ def desirability_gate(self) -> str:
         self.state.human_input_reason = "Customer segment shows low interest"
         return "segment_pivot_required"
 
-    # VALUE PIVOT: High traffic, low commitment (zombie)
-    elif evidence.traffic_quality == "High" and zombie_ratio < 0.1:
+    # VALUE PIVOT: Good problem resonance but high zombie ratio (70%+ interested but not committing)
+    elif problem_resonance >= 0.3 and zombie_ratio >= 0.7:
         self.state.pivot_recommendation = PivotRecommendation.VALUE_PIVOT
         self.state.human_input_required = True
-        self.state.human_input_reason = "High traffic but low commitment"
+        self.state.human_input_reason = "Good problem resonance but high zombie ratio (70%+ not committing)"
         return "value_pivot_required"
 
 @router(test_feasibility)

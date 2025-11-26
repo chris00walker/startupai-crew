@@ -140,6 +140,78 @@ Evidence doesn't just validate canvases - it updates them:
 - **Strong evidence** → Auto-strengthens related canvas sections
 - **Weak evidence** → Suggests additional experiments
 
+## Innovation Physics Signal Validation Matrix
+
+### Evidence Signals and Routing Logic
+
+| Signal | Gate | Threshold | Router Decision | Canvas Update |
+|--------|------|-----------|-----------------|---------------|
+| **problem_resonance** | Desirability | < 0.3 | `SEGMENT_PIVOT` → Re-test with new audience | VPC Customer Profile → New segment |
+| **zombie_ratio** | Desirability | >= 0.7 | `VALUE_PIVOT` → Adjust value proposition | VPC Value Map → Revise pain relievers/gain creators |
+| **commitment_type** | Desirability | `skin_in_game` | `PROCEED` → Pass gate | BMC Revenue Streams → Validated pricing |
+| **feasibility_status** | Feasibility | `red_impossible` | `FEATURE_PIVOT` → Downgrade and re-test | VPC Products & Services → Remove impossible features |
+| **ltv_cac_ratio** | Viability | < 3.0 | `STRATEGIC_PIVOT` → Price↑ or Cost↓ | BMC Cost Structure / Revenue Streams → Adjust model |
+| **unit_economics_status** | Viability | `underwater` | `KILL` or pivot to new model | Terminal decision or full BMC rework |
+
+### Signal Computation and Display
+
+**Desirability Signals** (computed from experiment metrics):
+```typescript
+interface DesirabilitySignals {
+  problem_resonance: number;      // (clicks + signups) / impressions
+  zombie_ratio: number;            // (clicks - signups) / clicks
+  commitment_type: CommitmentType; // Derived from user actions
+  evidence_strength: EvidenceStrength; // Strong (>0.5) | Weak (0.1-0.5) | None (<0.1)
+}
+```
+
+**Canvas Validation Indicators**:
+- 🟢 **Green**: Evidence validates hypothesis (problem_resonance >= 0.5, zombie_ratio < 0.3)
+- 🟡 **Yellow**: Weak signal (problem_resonance 0.3-0.5, zombie_ratio 0.3-0.7)
+- 🔴 **Red**: Invalidated (problem_resonance < 0.3 or zombie_ratio >= 0.7)
+- ⚪ **Gray**: Untested
+
+**Router Decision Display** (in project status):
+```typescript
+interface RouterStatus {
+  current_phase: "desirability" | "feasibility" | "viability" | "validated" | "killed";
+  router_decision: string; // Last router decision
+  blocking_approval_required: boolean;
+  last_pivot_type?: PivotType;
+  gate_status: {
+    desirability?: { passed: boolean; evidence: DesirabilitySignals };
+    feasibility?: { passed: boolean; status: FeasibilityStatus };
+    viability?: { passed: boolean; ltv_cac_ratio: number };
+  };
+}
+```
+
+### Pivot Type Mapping to Canvas Sections
+
+| Pivot Type | Primary Canvas | Sections Updated | Evidence Required |
+|------------|----------------|------------------|-------------------|
+| **SEGMENT_PIVOT** | VPC | Customer Profile (Jobs/Pains/Gains) | problem_resonance < 0.3 |
+| **VALUE_PIVOT** | VPC | Value Map (Pain Relievers/Gain Creators) | zombie_ratio >= 0.7 |
+| **CHANNEL_PIVOT** | BMC | Channels, Customer Relationships | Channel engagement metrics |
+| **PRICE_PIVOT** | BMC | Revenue Streams | Pricing experiment results |
+| **COST_PIVOT** | BMC | Cost Structure, Key Partners | Unit economics analysis |
+| **MODEL_PIVOT** | BMC | All 9 blocks | Fundamental business model change |
+| **FEATURE_PIVOT** | VPC + BMC | Products & Services, Key Activities | feasibility_status = impossible |
+| **KILL** | All | Archive project | Terminal failure on any gate |
+
+### Implementation Notes
+
+**For Product App Dashboard**:
+1. **Signal Display**: Show real-time Innovation Physics metrics on project status page
+2. **Canvas Indicators**: Color-code VPC/BMC sections based on validation state
+3. **Router Breadcrumbs**: Visual flow showing which routers were triggered and why
+4. **Approval Queue**: HITL decisions for pivots with full evidence context
+
+**For CrewAI Integration**:
+- CrewAI computes signals and includes them in `/status` response (see `api-contracts.md`)
+- Product app receives signals via webhook or polling
+- UI updates validation indicators and triggers approval modals if `blocking_approval_required: true`
+
 ## Current Implementation Status
 
 **Infrastructure Complete (~55-60%)**:

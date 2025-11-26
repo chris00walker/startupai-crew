@@ -210,7 +210,7 @@ class InternalValidationFlow(Flow[ValidationState]):
         # Route back to Sage for new segment
 ```
 
-> **Full Implementation**: See `src/startupai/flows/internal_validation_flow.py` and `docs/INNOVATION_PHYSICS_README.md`
+> **Full Implementation**: See `src/startupai/flows/internal_validation_flow.py` and `docs/strategyzer-physics.md`
 
 ## File Structure
 

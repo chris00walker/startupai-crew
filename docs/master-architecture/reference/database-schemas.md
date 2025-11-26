@@ -150,7 +150,11 @@ CREATE TABLE evidence (
   supports_hypothesis BOOLEAN,
   confidence_score DECIMAL(3,2),
   embedding VECTOR(1536),  -- For semantic search
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Innovation Physics signal tracking
+  signal_type TEXT CHECK (signal_type IN ('problem_resonance', 'zombie_ratio', 'commitment_type', 'cac', 'ltv', 'feasibility_status')),
+  gate_type TEXT CHECK (gate_type IN ('desirability', 'feasibility', 'viability'))
 );
 ```
 
@@ -198,7 +202,39 @@ CREATE TABLE gate_scores (
   passed BOOLEAN,
   feedback TEXT,
   reviewed_by TEXT,  -- 'guardian', 'qa_agent', etc.
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Innovation Physics metrics
+  problem_resonance DECIMAL(3,2),  -- 0.00-1.00: fraction of visitors resonating with problem
+  zombie_ratio DECIMAL(3,2),       -- 0.00-1.00: fraction of interested-but-not-committed
+  commitment_type TEXT CHECK (commitment_type IN ('none', 'verbal_interest', 'low_stake', 'skin_in_game')),
+  evidence_strength TEXT CHECK (evidence_strength IN ('none', 'weak', 'strong')),
+  feasibility_status TEXT CHECK (feasibility_status IN ('unknown', 'green', 'orange_constrained', 'red_impossible')),
+  unit_economics_status TEXT CHECK (unit_economics_status IN ('unknown', 'profitable', 'marginal', 'underwater')),
+
+  -- Unit economics metrics (for viability gates)
+  cac_usd DECIMAL(10,2),
+  ltv_usd DECIMAL(10,2),
+  ltv_cac_ratio DECIMAL(5,2)
+);
+```
+
+### Flow Executions
+
+Tracks current state of validation flow execution for each project:
+
+```sql
+CREATE TABLE flow_executions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id) UNIQUE,  -- One active flow per project
+  current_phase TEXT NOT NULL CHECK (current_phase IN ('ideation', 'desirability', 'feasibility', 'viability', 'validated', 'killed')),
+  current_risk_axis TEXT CHECK (current_risk_axis IN ('desirability', 'feasibility', 'viability')),
+  router_decision TEXT,  -- Last router decision (e.g., "run_desirability_experiments", "terminal_validated")
+  blocking_approval_required BOOLEAN DEFAULT false,
+  last_pivot_type TEXT,
+  downgrade_active BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 

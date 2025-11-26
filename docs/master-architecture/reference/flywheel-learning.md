@@ -80,6 +80,179 @@ flowchart TB
 
 ---
 
+## Innovation Physics Learning Examples
+
+### How Innovation Physics Signals Feed the Flywheel
+
+Innovation Physics routing decisions create valuable learnings that improve future validation runs:
+
+#### Example 1: Zombie Ratio Pattern Learning
+
+**Validation Run #47 - B2B SaaS in Healthcare**:
+- **Evidence**: `problem_resonance: 0.72`, `zombie_ratio: 0.85` (85% interested but not committing)
+- **Router Decision**: `VALUE_PIVOT` triggered
+- **Human Decision**: Founder increased price 2x, added enterprise features
+- **Outcome**: Second desirability test showed `zombie_ratio: 0.15`, `strong_commitment` signal
+- **Learning Captured**:
+
+```json
+{
+  "learning_type": "pattern",
+  "founder": "compass",
+  "phase": "desirability",
+  "title": "High zombie ratio in B2B requires enterprise positioning",
+  "description": "When problem_resonance > 0.7 but zombie_ratio > 0.8 in B2B contexts, buyers show interest but won't commit. Pivot to higher price point with enterprise features to convert zombies to committed buyers.",
+  "context_abstract": "B2B SaaS in healthcare at early revenue stage",
+  "tags": ["zombie_ratio", "value_pivot", "b2b", "pricing"],
+  "pattern_type": "pivot_signal",
+  "situation": "Strong problem resonance (>0.7) but very high zombie ratio (>0.8) in B2B segment",
+  "approach": "Increase price 2x and add enterprise-grade features (SSO, audit logs, compliance)",
+  "outcome": "Zombie ratio dropped to 0.15; strong commitment signal achieved",
+  "confidence_score": 0.92
+}
+```
+
+**Future Retrieval**: When Compass sees `problem_resonance: 0.68` + `zombie_ratio: 0.82` in another B2B SaaS validation, the retrieval tool surfaces this pattern as relevant context.
+
+#### Example 2: Segment Pivot Outcome Tracking
+
+**Validation Run #63 - Consumer FinTech**:
+- **Evidence**: `problem_resonance: 0.18` (customers don't care about the problem)
+- **Router Decision**: `SEGMENT_PIVOT` required
+- **Human Decision**: Founder rejected pivot, insisted on original segment
+- **Outcome**: After 2 more experiments, still `problem_resonance < 0.2`, project killed
+- **Learning Captured**:
+
+```json
+{
+  "learning_type": "outcome",
+  "founder": "sage",
+  "phase": "desirability",
+  "title": "Rejecting segment pivot at problem_resonance < 0.2 leads to kill",
+  "description": "When Problem-Solution Filter triggers (problem_resonance < 0.3), rejecting segment pivot and retesting same audience yields no improvement. Pattern observed across 5 projects.",
+  "context_abstract": "Consumer fintech at pre-seed stage",
+  "tags": ["segment_pivot", "problem_resonance", "kill_decision"],
+  "recommendation_type": "pivot",
+  "recommendation_text": "Change customer segment - current audience doesn't care about problem",
+  "actual_outcome": "invalidated",
+  "what_worked": "N/A - pivot was rejected",
+  "what_failed": "Retesting same audience with low problem resonance",
+  "adjustment_made": "None - founder rejected recommendation, project killed after 3 cycles",
+  "evidence_strength": "strong",
+  "sample_size": 15000,
+  "confidence_score": 0.88
+}
+```
+
+**Future Retrieval**: When Sage sees `problem_resonance: 0.21` in a similar validation, the system surfaces this outcome to reinforce the pivot recommendation.
+
+#### Example 3: CAC/LTV Ratio Domain Expertise
+
+**Validation Run #89 - B2B Marketplace**:
+- **Evidence**: `cac_usd: 450`, `ltv_usd: 380`, `ltv_cac_ratio: 0.84`
+- **Router Decision**: `STRATEGIC_PIVOT` required (CAC > LTV)
+- **Human Decision**: Founder chose `COST_PIVOT` (reduce acquisition costs)
+- **Outcome**: Feature downgrade + organic growth channels reduced CAC to $180, LTV remained $380
+- **Learning Captured**:
+
+```json
+{
+  "learning_type": "domain",
+  "founder": "ledger",
+  "phase": "viability",
+  "title": "Two-sided marketplaces: CAC reduction via organic growth outperforms price increase",
+  "description": "In two-sided marketplaces, reducing CAC through organic channels (referrals, SEO) is more effective than increasing pricing. Pricing changes risk chicken-and-egg imbalance.",
+  "context_abstract": "B2B marketplace at early revenue stage",
+  "tags": ["marketplace", "cac_ltv", "cost_pivot", "unit_economics"],
+  "industry": "marketplace",
+  "business_model": "two-sided",
+  "insight_type": "market_dynamic",
+  "insight": "Two-sided marketplaces have natural CAC reduction opportunities through network effects and organic growth. Price increases risk supply/demand imbalance. Prioritize COST_PIVOT over PRICE_PIVOT.",
+  "geographic_scope": "US",
+  "temporal_relevance": "2024",
+  "evidence_basis": "5 marketplace validations with CAC > LTV; 4/5 succeeded with cost reduction, 0/1 with price increase",
+  "confidence_score": 0.85
+}
+```
+
+**Future Retrieval**: When Ledger evaluates unit economics for another marketplace and sees `ltv_cac_ratio < 1.0`, this domain expertise guides the recommendation toward cost reduction rather than pricing experiments.
+
+#### Example 4: Feasibility Downgrade Pattern
+
+**Validation Run #112 - SaaS AI Platform**:
+- **Evidence**: `feasibility_status: ORANGE_CONSTRAINED` (AI model too expensive to run profitably)
+- **Router Decision**: `FEATURE_PIVOT` (downgrade to lite version)
+- **Human Decision**: Approved downgrade; removed real-time AI, kept batch processing
+- **Outcome**: Downgraded version still had `problem_resonance: 0.61`, `zombie_ratio: 0.25` (customers accepted tradeoff)
+- **Learning Captured**:
+
+```json
+{
+  "learning_type": "pattern",
+  "founder": "forge",
+  "phase": "feasibility",
+  "title": "AI features: batch processing acceptable substitute for real-time",
+  "description": "When real-time AI features are infeasible due to compute costs, batch processing (results in 1-4 hours) maintains acceptable desirability for B2B use cases. Problem resonance drops <20% if batch SLA is clear.",
+  "context_abstract": "B2B SaaS with AI features at seed stage",
+  "tags": ["feasibility", "downgrade", "ai", "cost_optimization"],
+  "pattern_type": "experiment_design",
+  "situation": "AI feature too expensive for real-time execution; feasibility_status = ORANGE_CONSTRAINED",
+  "approach": "Downgrade to batch processing with clear SLA (1-4 hour results); test desirability with lite version",
+  "outcome": "Problem resonance remained strong (0.61); zombie ratio acceptable (0.25); customers accepted tradeoff when value prop focused on accuracy over speed",
+  "applicable_when": {
+    "feasibility_signal": "ORANGE_CONSTRAINED",
+    "cost_driver": "compute_intensive_ai",
+    "customer_segment": "B2B"
+  },
+  "counter_indicators": {
+    "use_case_requires_realtime": true,
+    "customer_segment": "B2C"
+  },
+  "confidence_score": 0.79
+}
+```
+
+**Future Retrieval**: When Forge encounters expensive AI features in feasibility assessment, this pattern suggests batch processing as a viable downgrade option.
+
+### Retrieval in Action
+
+When a new validation run starts, agents query relevant learnings:
+
+**Example Query** (Pulse running desirability experiments for B2B SaaS):
+```python
+learnings = LearningRetrievalTool()._run(
+    query="Desirability experiment patterns for B2B SaaS with high traffic but low conversion",
+    founder="pulse",
+    learning_type="pattern",
+    industry="B2B SaaS",
+    limit=5
+)
+```
+
+**Retrieved Learnings** (formatted for agent context):
+```markdown
+## Relevant Learnings from Past Validations
+
+### 1. High zombie ratio in B2B requires enterprise positioning
+**Pattern** | B2B SaaS in healthcare | Confidence: 0.92
+
+When problem_resonance > 0.7 but zombie_ratio > 0.8 in B2B contexts, buyers show interest but won't commit. Pivot to higher price point with enterprise features to convert zombies to committed buyers.
+
+**What Worked**: Increased price 2x and added enterprise-grade features (SSO, audit logs, compliance)
+**Result**: Zombie ratio dropped from 0.85 to 0.15; strong commitment signal achieved
+
+### 2. B2B landing pages: feature comparison tables outperform hero shots
+**Pattern** | B2B SaaS in various industries | Confidence: 0.84
+
+Landing pages with detailed feature comparison tables generate 2.3x higher signup rates than hero image + value prop for B2B audiences.
+
+### ... (3 more relevant patterns)
+```
+
+This context is automatically injected into Pulse's creative generation task, improving the quality of initial experiments.
+
+---
+
 ## Data Model
 
 ### Database Schema (Supabase PostgreSQL + pgvector)
