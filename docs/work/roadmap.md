@@ -1,10 +1,12 @@
 ---
 purpose: "Private technical source of truth for engineering roadmap"
 status: "active"
-last_reviewed: "2025-11-21"
+last_reviewed: "2025-11-26"
 ---
 
 # Roadmap
+
+> **Implementation Blueprint**: `docs/master-architecture/03-validation-spec.md` is the authoritative specification for all features listed below. Consult it for complete technical details, tool schemas, state architecture, and crew configurations.
 
 | Quarter | Theme | Key Deliverables |
 | --- | --- | --- |

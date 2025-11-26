@@ -45,7 +45,7 @@ StartupAI's architecture demonstrates strong conceptual foundations with the Inn
 
 3. **Model duplication risk**: Two parallel state schemas exist:
    - `ValidationState` in `state_schemas.py` (current implementation)
-   - `StartupValidationState` in `03-validation-spec.md` and `master-spec.md` (design docs)
+   - `StartupValidationState` in `docs/master-architecture/03-validation-spec.md` (authoritative spec)
 
    These have different field names and structures, creating confusion.
 
@@ -934,7 +934,7 @@ etl:
    ```
    This means importing the flow requires all crew dependencies to be valid.
 
-2. **State schema split across multiple files**: `state_schemas.py`, `03-validation-spec.md`, `master-spec.md` all define state differently.
+2. **State schema split across multiple files**: `state_schemas.py` and `docs/master-architecture/03-validation-spec.md` define state differently.
 
 #### 9.2 LLM Magic Without Explicitness
 
@@ -957,7 +957,7 @@ etl:
 
 #### 9.3 Schema Normalization Opportunities
 
-1. **Duplicate platform enums**: `Platform` defined in both `state_schemas.py` and `master-spec.md`
+1. **Duplicate platform enums**: `Platform` defined in both `state_schemas.py` and `docs/master-architecture/03-validation-spec.md`
 
 2. **Inconsistent naming**:
    - `ValidationState` vs `StartupValidationState`

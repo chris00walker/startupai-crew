@@ -26,7 +26,7 @@
 **Source of Truth**: `docs/master-architecture/`
 - `01-ecosystem.md` - Three-service overview
 - `02-organization.md` - 6 founders, 18 agents
-- `03-validation-spec.md` - Technical blueprint (implementation guide)
+- `03-validation-spec.md` - **AUTHORITATIVE BLUEPRINT** (complete implementation spec)
 - `04-status.md` - Honest assessment
 - `reference/api-contracts.md` - All API specifications
 - `reference/approval-workflows.md` - HITL patterns
@@ -143,7 +143,7 @@ All CrewAI flows use a single webhook endpoint with `flow_type` differentiation:
 
 Orchestrated with CrewAI Flows using `@listen` and `@router` decorators.
 
-**Full Details**: See `docs/architecture.md` and `docs/master-architecture/internal-validation-system-spec.md`
+**Full Details**: See `docs/master-architecture/03-validation-spec.md` (authoritative implementation blueprint)
 
 ## API Interface
 ### Input Format
@@ -243,7 +243,7 @@ export async function POST(req: Request) {
 2. Enhanced Governance Crew
 3. Flywheel learning capture
 
-**Detailed Plan**: See `docs/master-architecture/internal-validation-system-spec.md`
+**Detailed Plan**: See `docs/master-architecture/03-validation-spec.md`
 
 ## Troubleshooting
 ### "Repository wrong" error
