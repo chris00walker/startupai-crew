@@ -66,6 +66,21 @@ from startupai.tools.viability_approval import (
     analyze_viability,
     format_viability_for_dashboard,
 )
+from startupai.tools.flywheel_insights import (
+    FlywheelInsightsTool,
+    OutcomeTrackerTool,
+    StartupStage,
+    IndustryVertical,
+    PredictionType,
+    ValidationContext,
+    PatternLearning,
+    OutcomePrediction,
+    FlywheelInsight,
+    get_flywheel_insights,
+    capture_flywheel_pattern,
+    track_prediction,
+    record_prediction_outcome,
+)
 
 __all__ = [
     # Anonymization
@@ -124,4 +139,18 @@ __all__ = [
     "PivotRecommendation",
     "analyze_viability",
     "format_viability_for_dashboard",
+    # Flywheel Insights
+    "FlywheelInsightsTool",
+    "OutcomeTrackerTool",
+    "StartupStage",
+    "IndustryVertical",
+    "PredictionType",
+    "ValidationContext",
+    "PatternLearning",
+    "OutcomePrediction",
+    "FlywheelInsight",
+    "get_flywheel_insights",
+    "capture_flywheel_pattern",
+    "track_prediction",
+    "record_prediction_outcome",
 ]

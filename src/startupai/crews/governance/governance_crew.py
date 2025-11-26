@@ -19,6 +19,9 @@ from startupai.tools.anonymizer import AnonymizerTool
 from startupai.tools.guardian_review import GuardianReviewTool
 from startupai.tools.methodology_check import MethodologyCheckTool
 
+# Import enhanced Flywheel tools
+from startupai.tools.flywheel_insights import FlywheelInsightsTool, OutcomeTrackerTool
+
 
 @CrewBase
 class GovernanceCrew:
@@ -38,8 +41,8 @@ class GovernanceCrew:
     tasks_config = 'config/tasks.yaml'
 
     def __init__(self):
-        """Initialize crew with learning and HITL tools."""
-        # Flywheel learning tools
+        """Initialize crew with learning, HITL, and Flywheel tools."""
+        # Flywheel learning tools (basic)
         self._learning_capture_tool = LearningCaptureTool()
         self._learning_retrieval_tool = LearningRetrievalTool()
         self._anonymizer_tool = AnonymizerTool()
@@ -47,6 +50,10 @@ class GovernanceCrew:
         # HITL review tools
         self._guardian_review_tool = GuardianReviewTool()
         self._methodology_check_tool = MethodologyCheckTool()
+
+        # Enhanced Flywheel tools (Phase 2C)
+        self._flywheel_insights_tool = FlywheelInsightsTool()
+        self._outcome_tracker_tool = OutcomeTrackerTool()
 
     @agent
     def qa_auditor(self) -> Agent:
@@ -56,6 +63,7 @@ class GovernanceCrew:
                 self._learning_retrieval_tool,
                 self._guardian_review_tool,
                 self._methodology_check_tool,
+                self._flywheel_insights_tool,  # Phase 2C: Industry/stage context
             ],
             verbose=True
         )
@@ -79,6 +87,8 @@ class GovernanceCrew:
                 self._learning_capture_tool,
                 self._learning_retrieval_tool,
                 self._anonymizer_tool,
+                self._flywheel_insights_tool,  # Phase 2C: Pattern capture
+                self._outcome_tracker_tool,     # Phase 2C: Outcome tracking
             ],
             verbose=True
         )
@@ -117,6 +127,24 @@ class GovernanceCrew:
     def validate_methodology(self) -> Task:
         return Task(
             config=self.tasks_config['validate_methodology']
+        )
+
+    @task
+    def retrieve_similar_validations(self) -> Task:
+        return Task(
+            config=self.tasks_config['retrieve_similar_validations']
+        )
+
+    @task
+    def track_predictions(self) -> Task:
+        return Task(
+            config=self.tasks_config['track_predictions']
+        )
+
+    @task
+    def record_outcomes(self) -> Task:
+        return Task(
+            config=self.tasks_config['record_outcomes']
         )
 
     @crew

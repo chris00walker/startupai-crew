@@ -139,3 +139,80 @@ validate_methodology:
     - ready_for_next_phase: boolean
     - summary: human-readable assessment
   agent: compliance_monitor
+
+retrieve_similar_validations:
+  description: >
+    Retrieve insights from similar past validations for context:
+
+    Current Industry: {industry}
+    Current Stage: {stage}
+    Current Phase: {phase}
+    Business Description: {business_description}
+
+    Using the flywheel_insights tool, retrieve:
+    1. Industry-specific patterns and benchmarks
+    2. Stage-appropriate guidance and success criteria
+    3. Common mistakes to avoid at this phase
+    4. Typical pivots and their outcomes for similar startups
+    5. Recommendations based on accumulated learnings
+
+    This context helps make better predictions and recommendations.
+  expected_output: >
+    Cross-validation context containing:
+    - industry_patterns: typical metrics, pivots, warning signs
+    - stage_guidance: focus, key questions, success criteria
+    - recommendations: contextual suggestions
+    - similar_validations: relevant past cases (anonymized)
+    - confidence_factors: what to watch for
+  agent: qa_auditor
+
+track_predictions:
+  description: >
+    Record predictions at decision points for outcome tracking:
+
+    Validation ID: {validation_id}
+    Decision Point: {decision_point}
+    Current Evidence: {evidence}
+    Recommended Action: {recommended_action}
+
+    Using the outcome_tracker tool, record:
+    1. The prediction being made (proceed/pivot/kill)
+    2. Confidence level based on evidence strength
+    3. Reasoning for the prediction
+    4. Key assumptions that must hold
+    5. Expected outcome if prediction is correct
+
+    This enables the Flywheel to learn from outcomes over time.
+  expected_output: >
+    Prediction record containing:
+    - prediction_id: unique identifier for later outcome recording
+    - prediction_type: gate_decision, pivot_success, etc.
+    - predicted_outcome: what we expect to happen
+    - confidence: 0.0-1.0 based on evidence
+    - reasoning: why we made this prediction
+    - key_assumptions: what must be true
+  agent: accountability_tracker
+
+record_outcomes:
+  description: >
+    Record actual outcomes for past predictions:
+
+    Prediction ID: {prediction_id}
+    Time Since Prediction: {time_elapsed}
+    Actual Results: {actual_results}
+
+    Using the outcome_tracker tool, record:
+    1. The actual outcome that occurred
+    2. Whether it matched the prediction
+    3. Variance notes explaining any differences
+    4. Learnings from this prediction cycle
+
+    This feedback loop improves future prediction accuracy.
+  expected_output: >
+    Outcome record containing:
+    - prediction_id: which prediction this updates
+    - actual_outcome: what really happened
+    - was_correct: boolean match assessment
+    - variance_notes: explanation of differences
+    - learning_captured: insights from this cycle
+  agent: accountability_tracker

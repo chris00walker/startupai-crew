@@ -6,6 +6,42 @@ last_reviewed: "2025-11-26"
 
 # Recently Delivered
 
+## Phase 2C: Flywheel Learning System (2025-11-26)
+
+Enhanced learning system with industry/stage patterns and outcome tracking.
+
+### Flywheel Tools Implemented
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | FlywheelInsightsTool | `tools/flywheel_insights.py` - Industry/stage pattern retrieval, recommendations |
+| 2025-11-26 | OutcomeTrackerTool | `tools/flywheel_insights.py` - Prediction tracking with outcome feedback |
+
+### Models and Enums
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | StartupStage enum | ideation, problem_validated, solution_validated, pmf, scaling |
+| 2025-11-26 | IndustryVertical enum | saas_b2b, saas_b2c, marketplace, ecommerce, fintech, etc. |
+| 2025-11-26 | PredictionType enum | desirability_outcome, pivot_success, gate_decision, etc. |
+| 2025-11-26 | ValidationContext model | Rich context for cross-validation matching |
+| 2025-11-26 | PatternLearning model | Captured patterns with confidence scores |
+| 2025-11-26 | OutcomePrediction model | Predictions with outcome tracking |
+
+### Governance Crew Updates
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | FlywheelInsightsTool wired | qa_auditor + accountability_tracker agents |
+| 2025-11-26 | OutcomeTrackerTool wired | accountability_tracker agent |
+| 2025-11-26 | retrieve_similar_validations task | Cross-validation context retrieval |
+| 2025-11-26 | track_predictions task | Record predictions at decision points |
+| 2025-11-26 | record_outcomes task | Capture actual outcomes for feedback |
+
+### Test Coverage
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | Flywheel workflow tests | `tests/integration/test_flywheel_workflow.py` - 38 tests |
+
+---
+
 ## Phase 2B: HITL Viability Approval Workflow (2025-11-26)
 
 Human-in-the-loop workflow for unit economics decisions at viability gate.
