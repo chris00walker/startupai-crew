@@ -36,6 +36,11 @@ ENV/
 *.swo
 *~
 
+# Claude Code local settings
+.claude/settings.local.json
+**/settings.local.json
+.mcp.json
+
 # OS
 .DS_Store
 Thumbs.db
