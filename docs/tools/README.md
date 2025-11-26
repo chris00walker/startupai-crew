@@ -1,39 +1,188 @@
-# CrewAI Tools Documentation
+# StartupAI Tools
 
-This directory documents the planned custom tools for CrewAI agents.
+Custom tools extending CrewAI agent capabilities for the validation flow.
 
-## Current Status
+## Overview
 
-**Tools are not yet implemented.** The crew currently operates with pure LLM-based agents without custom tools.
+The tools package (`src/startupai/tools/`) provides specialized capabilities for research, analysis, MVP generation, and flywheel learning. All tools follow CrewAI's `BaseTool` pattern.
 
-## Planned Tools
+## Implemented Tools
 
-The following tools will be created in `src/startupai/tools/` when implemented:
-
-### web_search.py (Planned)
-**Purpose**: Web search capabilities for research tasks
-
-**Will be used by**:
-- Customer Researcher (segment research)
-- Competitor Analyst (market research)
-
----
-
-### analytics.py (Planned)
-**Purpose**: Analytics and data processing for experiment results
-
-**Will be used by**:
-- Social Media Analyst (engagement metrics)
-- Project Manager (evidence aggregation)
+| Tool | File | Purpose | Used By |
+|------|------|---------|---------|
+| **TavilySearchTool** | `web_search.py` | Web research via Tavily API | Analysis Crew |
+| **CompetitorResearchTool** | `web_search.py` | Competitor analysis and positioning | Analysis Crew |
+| **MarketResearchTool** | `web_search.py` | Market size and trends research | Analysis Crew |
+| **CustomerResearchTool** | `web_search.py` | Customer segment insights | Analysis Crew |
+| **IndustryBenchmarkTool** | `financial_data.py` | Industry benchmark data | Finance Crew |
+| **UnitEconomicsCalculatorTool** | `financial_data.py` | CAC/LTV calculations | Finance Crew |
+| **LandingPageGeneratorTool** | `landing_page.py` | A/B test landing page generation | Build Crew |
+| **CodeValidatorTool** | `code_validator.py` | HTML/accessibility/security validation | Build Crew |
+| **LearningCaptureTool** | `learning_capture.py` | Flywheel learning capture | All Crews |
+| **LearningRetrievalTool** | `learning_retrieval.py` | Flywheel learning retrieval | All Crews |
+| **AnonymizerTool** | `anonymizer.py` | PII anonymization for learnings | Learning Pipeline |
 
 ---
 
-### report_generator.py (Planned)
-**Purpose**: Generate structured reports from analysis results
+## Tool Categories
 
-**Will be used by**:
-- QA Agent (quality reports)
-- All crews (output formatting)
+### Web Research Tools (`web_search.py`)
+
+Powered by Tavily API for real-time web research.
+
+```python
+from startupai.tools import TavilySearchTool, web_search
+
+# As CrewAI tool
+tool = TavilySearchTool()
+
+# As standalone function
+results = web_search("B2B SaaS market trends 2024")
+```
+
+**Tools**:
+- `TavilySearchTool` - General web search
+- `CompetitorResearchTool` - Competitor analysis with positioning insights
+- `MarketResearchTool` - Market size, trends, and dynamics
+- `CustomerResearchTool` - Customer segment research
+
+**Environment**: Requires `TAVILY_API_KEY`
+
+---
+
+### Financial Data Tools (`financial_data.py`)
+
+Industry benchmarks and unit economics calculations.
+
+```python
+from startupai.tools import IndustryBenchmarkTool, get_industry_benchmarks
+
+# As CrewAI tool
+tool = IndustryBenchmarkTool()
+
+# As standalone function
+benchmarks = get_industry_benchmarks("B2B SaaS", "healthcare")
+```
+
+**Tools**:
+- `IndustryBenchmarkTool` - Retrieves industry benchmarks from domain_expertise table
+- `UnitEconomicsCalculatorTool` - Calculates CAC, LTV, LTV/CAC ratio
+
+**Database**: Queries `domain_expertise` table (20 rows seeded with industry data)
+
+---
+
+### MVP Generation Tools
+
+#### Landing Page Generator (`landing_page.py`)
+
+Generates Tailwind CSS landing page variants for A/B testing.
+
+```python
+from startupai.tools import LandingPageGeneratorTool, generate_landing_pages
+
+# As CrewAI tool
+tool = LandingPageGeneratorTool()
+
+# As standalone function
+variants = generate_landing_pages(
+    headline="Transform Your Business",
+    subheadline="AI-powered validation",
+    cta_text="Get Started",
+    style="modern"  # modern, corporate, startup, minimal
+)
+```
+
+**Output**: Complete HTML with Tailwind CSS, ready for deployment
+
+---
+
+#### Code Validator (`code_validator.py`)
+
+Validates generated HTML for deployment readiness.
+
+```python
+from startupai.tools import CodeValidatorTool, validate_html, is_deployment_ready
+
+# As CrewAI tool
+tool = CodeValidatorTool()
+
+# As standalone function
+result = validate_html(html_content)
+ready = is_deployment_ready(result)
+```
+
+**Checks**:
+- HTML syntax validation
+- WCAG 2.1 AA accessibility (alt text, form labels, color contrast)
+- Security vulnerabilities (XSS, unsafe URLs)
+- SEO requirements (title, meta description)
+- Best practices (DOCTYPE, charset, viewport)
+
+---
+
+### Flywheel Learning Tools
+
+#### Learning Capture (`learning_capture.py`)
+
+Captures anonymized learnings after validation phases.
+
+```python
+from startupai.tools import LearningCaptureTool
+
+tool = LearningCaptureTool()
+result = tool._run(
+    learning_type="pattern",  # pattern, outcome, domain
+    title="High zombie ratio in B2B requires enterprise positioning",
+    description="When problem_resonance > 0.7 but zombie_ratio > 0.8...",
+    context={"industry": "B2B SaaS", "stage": "seed"},
+    founder="compass",
+    phase="desirability",
+    tags=["zombie_ratio", "value_pivot"],
+    confidence_score=0.92
+)
+```
+
+---
+
+#### Learning Retrieval (`learning_retrieval.py`)
+
+Retrieves relevant learnings for agent context.
+
+```python
+from startupai.tools import LearningRetrievalTool
+
+tool = LearningRetrievalTool()
+learnings = tool._run(
+    query="Desirability patterns for B2B SaaS",
+    founder="pulse",
+    learning_type="pattern",
+    industry="B2B SaaS",
+    limit=5
+)
+```
+
+**Database**: Uses pgvector similarity search on `learnings` table
+
+---
+
+#### Anonymizer (`anonymizer.py`)
+
+Strips PII before storing learnings.
+
+```python
+from startupai.tools import AnonymizerTool, anonymize_text
+
+# As CrewAI tool
+tool = AnonymizerTool()
+
+# As standalone function
+clean_text = anonymize_text(
+    "John Smith at Acme Corp raised $5M",
+    entities={"John Smith": "founder", "Acme Corp": "company"}
+)
+# Output: "the founder at the company raised early-stage funding"
+```
 
 ---
 
@@ -41,64 +190,64 @@ The following tools will be created in `src/startupai/tools/` when implemented:
 
 ### Creating a New Tool
 
-1. Create `src/startupai/tools/` directory
-2. Create a new file for the tool
-3. Use the CrewAI tool decorator pattern:
+1. Create file in `src/startupai/tools/`
+2. Extend `BaseTool` or use `@tool` decorator:
 
 ```python
-from crewai_tools import tool
+from crewai.tools import BaseTool
+from pydantic import Field
 
-@tool("Tool Name")
-def tool_function(input_param: str) -> str:
-    """
-    Tool description for the agent to understand when to use it.
+class MyTool(BaseTool):
+    name: str = "my_tool"
+    description: str = "What this tool does and when to use it"
 
-    Args:
-        input_param: Description of input
-
-    Returns:
-        Description of output
-    """
-    # Implementation
-    return result
+    def _run(self, input_param: str) -> str:
+        """Execute the tool."""
+        return result
 ```
 
-4. Register the tool in the relevant agent's configuration
+3. Export from `__init__.py`
+4. Wire to relevant crew/agent
 
-### Tool Best Practices
+### Best Practices
 
 - **Clear descriptions**: Agents select tools based on descriptions
-- **Typed inputs/outputs**: Use type hints for reliability
-- **Error handling**: Return clear error messages
+- **Typed inputs/outputs**: Use Pydantic models for complex data
+- **Error handling**: Return clear error messages, don't crash
 - **Rate limiting**: Respect external API limits
 - **Caching**: Cache expensive operations where appropriate
+- **Testing**: Add tests in `tests/tools/`
 
-### Assigning Tools to Agents
+---
 
-Tools are assigned in `src/startupai/config/agents.yaml`:
+## Crew → Tool Mapping
 
-```yaml
-customer_researcher:
-  role: Customer Researcher
-  tools:
-    - web_search
-    - analytics
-```
+| Crew | Tools |
+|------|-------|
+| **Analysis Crew** | TavilySearchTool, CompetitorResearchTool, MarketResearchTool, CustomerResearchTool |
+| **Finance Crew** | IndustryBenchmarkTool, UnitEconomicsCalculatorTool |
+| **Build Crew** | LandingPageGeneratorTool, CodeValidatorTool |
+| **All Crews** | LearningCaptureTool, LearningRetrievalTool |
 
-## Implementation Priority
+---
 
-1. **report_generator.py** - Needed for all crews to produce structured output
-2. **web_search.py** - Needed for Analysis Crew research capabilities
-3. **analytics.py** - Needed for Growth Crew experiment analysis
+## Environment Variables
+
+| Variable | Required For | Description |
+|----------|--------------|-------------|
+| `TAVILY_API_KEY` | Web search tools | Tavily API key |
+| `SUPABASE_URL` | Learning tools | Supabase project URL |
+| `SUPABASE_KEY` | Learning tools | Supabase service role key |
+| `OPENAI_API_KEY` | Learning tools | For embedding generation |
 
 ---
 
 ## Related Documents
 
-- [02-organization.md](../master-architecture/02-organization.md) - Which agents will use which tools
-- [03-validation-spec.md](../master-architecture/03-validation-spec.md) - How tools fit in the flow
+- [`../master-architecture/03-validation-spec.md`](../master-architecture/03-validation-spec.md) - Authoritative technical spec
+- [`../master-architecture/reference/flywheel-learning.md`](../master-architecture/reference/flywheel-learning.md) - Learning system architecture
 
 ---
 
-**Last Updated**: November 21, 2025
-**Status**: Planning phase - tools not yet implemented
+**Last Updated**: 2025-11-26
+**Status**: 11 tools implemented and deployed
