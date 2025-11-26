@@ -115,3 +115,31 @@ validate_landing_pages:
     - recommended_fixes: list of suggested fixes for any issues
     - overall_status: PASS/FAIL indicating if variants can be deployed
   agent: prototype_designer
+
+deploy_landing_pages:
+  description: >
+    Deploy validated landing page variants to Netlify for live A/B testing:
+
+    Validated Landing Pages: {validated_landing_pages}
+    Project ID: {project_id}
+    Validation Results: {validation_results}
+
+    Using the landing_page_deploy tool, deploy each validated landing page
+    variant that passed code validation. Only deploy variants where
+    deployment_ready is True.
+
+    For each variant:
+    1. Ensure the HTML code passed validation
+    2. Deploy to Netlify using the deployment tool
+    3. Record the live URL for experiment tracking
+    4. Associate the URL with the variant ID for A/B analysis
+
+    Skip any variants that failed validation and note them in the output.
+  expected_output: >
+    Deployment results containing:
+    - deployed_variants: list of {variant_id, deployed_url, site_name, deploy_id}
+    - skipped_variants: list of variant IDs that were not deployed (with reasons)
+    - total_deployed: count of successfully deployed variants
+    - experiment_ready: boolean indicating if at least one variant is live
+    - urls_for_experiments: list of live URLs ready for ad campaigns
+  agent: prototype_designer

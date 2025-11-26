@@ -1,10 +1,48 @@
 ---
 purpose: "Private technical source of truth for recently delivered work"
 status: "active"
-last_reviewed: "2025-11-22"
+last_reviewed: "2025-11-26"
 ---
 
 # Recently Delivered
+
+## Phase 1B: Landing Page Deployment (2025-11-26)
+
+Build Crew now has full landing page pipeline for live A/B testing.
+
+### Tools Implemented
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | LandingPageDeploymentTool | `tools/landing_page_deploy.py` - Netlify API integration |
+| 2025-11-26 | deploy_landing_pages task | Build Crew task for deployment orchestration |
+
+### Build Crew Wiring
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | prototype_designer tools | All 3 tools wired: LandingPageGeneratorTool, CodeValidatorTool, LandingPageDeploymentTool |
+| 2025-11-26 | Integration tests | `tests/integration/test_build_crew.py` - 17 passing tests |
+
+---
+
+## Phase 1A: Results Persistence + Tool Wiring (2025-11-26)
+
+All crews have tools wired, results persist via webhook.
+
+### Tool Wiring
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | LearningCaptureTool to Governance | `governance_crew.py` - QA, compliance, accountability agents |
+| 2025-11-26 | TavilySearchTool to Analysis | Already implemented (verified) |
+| 2025-11-26 | IndustryBenchmarkTool to Finance | Already implemented (verified) |
+| 2025-11-26 | crewai_config.yaml created | Webhooks + pgvector memory configuration |
+
+### Verification
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-26 | Results persistence | persist_results() already in flow (verified) |
+| 2025-11-26 | Work tracking updated | in-progress.md, phases.md synced |
+
+---
 
 ## Phase 1: Innovation Physics Implementation (2025-11-22)
 

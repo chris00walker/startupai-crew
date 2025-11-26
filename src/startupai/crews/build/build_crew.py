@@ -2,6 +2,11 @@
 Build Crew - Led by Forge (CTO).
 Handles technical feasibility assessment, resource estimation,
 and MVP/landing page generation.
+
+Now equipped with full landing page pipeline:
+- Generation (LandingPageGeneratorTool)
+- Validation (CodeValidatorTool)
+- Deployment (LandingPageDeploymentTool)
 """
 
 from crewai import Agent, Crew, Process, Task
@@ -9,6 +14,7 @@ from crewai.project import CrewBase, agent, crew, task
 
 from startupai.tools.landing_page import LandingPageGeneratorTool
 from startupai.tools.code_validator import CodeValidatorTool
+from startupai.tools.landing_page_deploy import LandingPageDeploymentTool
 
 
 @CrewBase
@@ -18,15 +24,21 @@ class BuildCrew:
 
     This crew evaluates technical feasibility, designs prototypes,
     estimates development resources, and generates MVP/landing pages.
+
+    Now uses the full landing page pipeline for:
+    - Generating landing page variants (A/B testing)
+    - Validating code before deployment
+    - Deploying to Netlify for live experiments
     """
 
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
 
     def __init__(self):
-        """Initialize Build Crew with tools."""
+        """Initialize Build Crew with landing page tools."""
         self._landing_page_tool = LandingPageGeneratorTool()
         self._code_validator_tool = CodeValidatorTool()
+        self._landing_page_deploy_tool = LandingPageDeploymentTool()
 
     @agent
     def technical_feasibility_agent(self) -> Agent:
@@ -39,7 +51,11 @@ class BuildCrew:
     def prototype_designer(self) -> Agent:
         return Agent(
             config=self.agents_config['prototype_designer'],
-            tools=[self._landing_page_tool, self._code_validator_tool],
+            tools=[
+                self._landing_page_tool,
+                self._code_validator_tool,
+                self._landing_page_deploy_tool,
+            ],
             verbose=True
         )
 
@@ -78,6 +94,12 @@ class BuildCrew:
     def validate_landing_pages(self) -> Task:
         return Task(
             config=self.tasks_config['validate_landing_pages']
+        )
+
+    @task
+    def deploy_landing_pages(self) -> Task:
+        return Task(
+            config=self.tasks_config['deploy_landing_pages']
         )
 
     @crew

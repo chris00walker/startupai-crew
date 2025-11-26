@@ -36,15 +36,15 @@ Phase 1 is **complete** when all of the following are true:
 
 **Flywheel Learning (Phase 1):**
 - [ ] Supabase learning tables created (pgvector)
-- [ ] Anonymizer tool implemented
+- [x] Anonymizer tool implemented
 - [ ] PrivacyGuard tool implemented
-- [ ] LearningCaptureTool implemented
-- [ ] LearningRetrievalTool implemented
-- [ ] Learning capture integrated into Phase 1 Flow
+- [x] LearningCaptureTool implemented
+- [x] LearningRetrievalTool implemented
+- [x] Learning capture integrated into Phase 1 Flow
 
 **Integration Complete:**
 - [x] Deployed to CrewAI AMP and accessible via `/kickoff`
-- [ ] Results persist to Supabase ← **CRITICAL BLOCKER**
+- [x] Results persist to Supabase via webhook
 - [ ] Learnings persist to Supabase (learnings, patterns, outcomes tables)
 - [x] Product app can poll status via `/status/{id}`
 - [ ] Product app can retrieve and display results

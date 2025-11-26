@@ -100,6 +100,7 @@ SUPABASE_URL=https://xxx.supabase.co     # Supabase project URL
 SUPABASE_KEY=eyJ...                      # Supabase service role key
 STARTUPAI_WEBHOOK_URL=https://app.startupai.site/api/crewai/webhook
 STARTUPAI_WEBHOOK_BEARER_TOKEN=xxx       # Shared webhook auth token
+NETLIFY_ACCESS_TOKEN=xxx                 # Netlify personal access token for LP deployment
 ```
 
 ### CrewAI AMP Deployment (Dashboard → Environment Variables)
@@ -110,6 +111,7 @@ SUPABASE_URL=https://eqxropalhxjeyvfcoyxg.supabase.co
 SUPABASE_KEY=eyJ...                      # Supabase service role key (from dashboard)
 STARTUPAI_WEBHOOK_URL=https://app.startupai.site/api/crewai/webhook
 STARTUPAI_WEBHOOK_BEARER_TOKEN=startupai-webhook-secret-2024
+NETLIFY_ACCESS_TOKEN=xxx                 # Netlify personal access token for LP deployment
 ```
 
 **⚠️ CRITICAL**: `.env` files are NOT used by deployed crews. All environment variables must be set in the CrewAI AMP dashboard.

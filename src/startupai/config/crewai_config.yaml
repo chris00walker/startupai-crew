@@ -1,0 +1,79 @@
+# CrewAI AMP Configuration for StartupAI
+# Defines webhooks, memory, and crew configuration
+#
+# Environment variables required:
+# - SUPABASE_URL: Supabase project URL
+# - SUPABASE_KEY: Supabase service role key
+# - STARTUPAI_WEBHOOK_URL: Product app webhook base URL
+# - STARTUPAI_WEBHOOK_BEARER_TOKEN: Webhook authentication token
+
+# Webhook configuration for AMP events and HITL
+webhooks:
+  # Human-in-the-loop approvals (creative review, viability decisions)
+  humanInputWebhook: "${STARTUPAI_WEBHOOK_URL}/human-input"
+
+  # Task lifecycle events (start, complete, error)
+  taskWebhookUrl: "${STARTUPAI_WEBHOOK_URL}/task-events"
+
+  # Step-level progress events
+  stepWebhookUrl: "${STARTUPAI_WEBHOOK_URL}/step-events"
+
+  # Crew execution events (kickoff, complete)
+  crewWebhookUrl: "${STARTUPAI_WEBHOOK_URL}/crew-events"
+
+  # Results persistence on flow completion
+  resultsWebhook: "${STARTUPAI_WEBHOOK_URL}/results"
+
+# Memory configuration for Flywheel learning system
+memory:
+  default_store: supabase_vector_store
+
+  stores:
+    supabase_vector_store:
+      type: supabase_pgvector
+      url: "${SUPABASE_URL}"
+      api_key: "${SUPABASE_KEY}"
+      table: "startupai_learning"
+      embedding_model: "text-embedding-3-small"
+      index_name: "learning_embeddings"
+
+# Crew-level configuration
+# All crews use Supabase pgvector for external memory
+crews:
+  sage:
+    description: "Service Side - Customer research and VPC design"
+    external_memory: supabase_vector_store
+
+  pulse:
+    description: "Growth - Ad creative and desirability experiments"
+    external_memory: supabase_vector_store
+
+  forge:
+    description: "Build - Technical feasibility and MVP generation"
+    external_memory: supabase_vector_store
+
+  ledger:
+    description: "Finance - Unit economics and viability analysis"
+    external_memory: supabase_vector_store
+
+  guardian:
+    description: "Governance - QA, compliance, and learning capture"
+    external_memory: supabase_vector_store
+
+  compass:
+    description: "Synthesis - Decision coordination and HITL management"
+    external_memory: supabase_vector_store
+
+# Flow configuration
+flow:
+  name: "startup_validation"
+  version: "1.0.0"
+
+  # Terminal state handlers
+  on_validated: "persist_results"
+  on_killed: "persist_results"
+
+  # HITL pause points
+  hitl_pause_points:
+    - "await_creative_approval"
+    - "await_viability_decision"

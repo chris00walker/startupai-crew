@@ -39,6 +39,11 @@ from startupai.tools.code_validator import (
     validate_html,
     is_deployment_ready,
 )
+from startupai.tools.landing_page_deploy import (
+    LandingPageDeploymentTool,
+    DeploymentResult,
+    deploy_landing_page,
+)
 
 __all__ = [
     # Anonymization
@@ -74,4 +79,8 @@ __all__ = [
     "ValidationCategory",
     "validate_html",
     "is_deployment_ready",
+    # Landing Page Deployment
+    "LandingPageDeploymentTool",
+    "DeploymentResult",
+    "deploy_landing_page",
 ]

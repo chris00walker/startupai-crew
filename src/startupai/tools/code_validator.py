@@ -16,7 +16,7 @@ import json
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
-from html.parser import HTMLParser, HTMLParseError
+from html.parser import HTMLParser
 
 from crewai.tools import BaseTool
 from pydantic import Field, BaseModel
