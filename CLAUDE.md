@@ -83,7 +83,7 @@ crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 ## Deployment Configuration
 **Current Deployment**:
 - UUID: `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
-- Token: `f4cc39d92520` (stored in CrewAI dashboard)
+- Token: `<your-deployment-token>` (stored in CrewAI dashboard)
 - Public URL: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
 - Organization: StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
 - GitHub Repo: `chris00walker/startupai-crew`
@@ -168,17 +168,17 @@ Structured task outputs (not files):
 ```bash
 # Get deployment inputs schema
 curl https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/inputs \
-  -H "Authorization: Bearer f4cc39d92520"
+  -H "Authorization: Bearer <your-deployment-token>"
 
 # Kickoff workflow
 curl -X POST https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/kickoff \
-  -H "Authorization: Bearer f4cc39d92520" \
+  -H "Authorization: Bearer <your-deployment-token>" \
   -H "Content-Type: application/json" \
   -d '{"entrepreneur_input": "Business idea..."}'
 
 # Check status
 curl https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/status/{kickoff_id} \
-  -H "Authorization: Bearer f4cc39d92520"
+  -H "Authorization: Bearer <your-deployment-token>"
 ```
 
 ## Integration with Product App

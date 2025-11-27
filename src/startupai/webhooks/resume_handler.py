@@ -7,6 +7,8 @@ Parses /resume payloads from the product app for:
 
 The product app sends these payloads when a human makes a decision
 on a paused validation flow.
+
+Area 6 Enhancement: Rationale persistence via decision_log table.
 """
 
 import json
@@ -15,6 +17,20 @@ from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field, field_validator
+
+# Import decision logging for rationale persistence (Area 6)
+try:
+    from startupai.persistence.decision_log import (
+        DecisionLogger,
+        DecisionRecord,
+        DecisionType,
+        ActorType,
+        log_human_approval,
+        log_pivot_decision,
+    )
+    DECISION_LOG_AVAILABLE = True
+except ImportError:
+    DECISION_LOG_AVAILABLE = False
 
 
 # =======================================================================================
@@ -168,11 +184,19 @@ class ResumeHandler:
     - Validate the payload structure
     - Extract the appropriate decision data
     - Format the decision for flow state updates
+    - Persist decision rationale to decision_log table (Area 6)
     """
 
-    def __init__(self):
-        """Initialize the handler."""
+    def __init__(self, persist_decisions: bool = True):
+        """
+        Initialize the handler.
+
+        Args:
+            persist_decisions: Whether to persist decisions to decision_log table
+        """
         self._processed_payloads: List[Dict[str, Any]] = []
+        self._persist_decisions = persist_decisions and DECISION_LOG_AVAILABLE
+        self._decision_logger = DecisionLogger() if self._persist_decisions else None
 
     def parse_payload(self, raw_payload: Union[str, Dict[str, Any]]) -> ResumePayload:
         """
@@ -323,6 +347,75 @@ class ResumeHandler:
             "feedback": approval.feedback,
         }
 
+    def _persist_decision(
+        self,
+        payload: ResumePayload,
+        result: Dict[str, Any],
+    ) -> Optional[str]:
+        """
+        Persist decision to decision_log table for audit trail.
+
+        Args:
+            payload: The parsed resume payload
+            result: The processed result dict
+
+        Returns:
+            Decision log entry ID if persisted, None otherwise
+        """
+        if not self._persist_decisions or not self._decision_logger:
+            return None
+
+        try:
+            # Map approval types to decision types
+            decision_type_map = {
+                ApprovalType.CREATIVE_APPROVAL: DecisionType.CREATIVE_APPROVAL,
+                ApprovalType.VIABILITY_DECISION: DecisionType.VIABILITY_APPROVAL,
+                ApprovalType.SEGMENT_PIVOT: DecisionType.PIVOT_DECISION,
+                ApprovalType.VALUE_PIVOT: DecisionType.PIVOT_DECISION,
+                ApprovalType.DOWNGRADE_APPROVAL: DecisionType.HUMAN_APPROVAL,
+            }
+
+            decision_type = decision_type_map.get(
+                payload.approval_type, DecisionType.HUMAN_APPROVAL
+            )
+
+            # Extract decision and rationale based on type
+            if payload.approval_type == ApprovalType.CREATIVE_APPROVAL:
+                decision = result.get('status', 'unknown')
+                rationale = result.get('feedback') or result.get('revision_notes')
+            elif payload.approval_type == ApprovalType.VIABILITY_DECISION:
+                decision = result.get('choice', 'unknown')
+                rationale = result.get('rationale') or result.get('kill_reason')
+            else:
+                decision = 'approved' if result.get('approved') else 'rejected'
+                rationale = result.get('feedback')
+
+            # Create decision record
+            record = DecisionRecord(
+                project_id=payload.project_id or payload.kickoff_id,
+                decision_type=decision_type,
+                decision_point=f"resume_{payload.approval_type.value}",
+                decision=decision,
+                rationale=rationale,
+                actor_type=ActorType.HUMAN_FOUNDER,
+                actor_id=payload.user_id,
+                context_snapshot={
+                    'kickoff_id': payload.kickoff_id,
+                    'approval_type': payload.approval_type.value,
+                    'result_keys': list(result.keys()),
+                },
+            )
+
+            log_result = self._decision_logger.log_decision(record)
+            if log_result.is_success:
+                return log_result.data
+            return None
+
+        except Exception as e:
+            # Log but don't fail the main operation
+            print(f"Warning: Failed to persist decision: {e}")
+            return None
+
     def process(self, raw_payload: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
         """
         Process any resume payload and return the appropriate result.
@@ -350,12 +443,17 @@ class ResumeHandler:
             raise ValueError(f"No handler for approval type: {payload.approval_type}")
 
         result = handler(payload)
+
+        # Persist decision to decision_log (Area 6)
+        decision_log_id = self._persist_decision(payload, result)
+
         result["_meta"] = {
             "kickoff_id": payload.kickoff_id,
             "project_id": payload.project_id,
             "user_id": payload.user_id,
             "approval_type": payload.approval_type.value,
             "timestamp": payload.timestamp,
+            "decision_log_id": decision_log_id,  # Track persisted decision
         }
 
         return result

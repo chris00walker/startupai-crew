@@ -6,7 +6,7 @@ Custom tools extending CrewAI agent capabilities for the validation flow.
 
 The tools package (`src/startupai/tools/`) provides specialized capabilities for research, analysis, MVP generation, HITL workflows, flywheel learning, and privacy protection. All tools follow CrewAI's `BaseTool` pattern.
 
-## Implemented Tools (18 Total)
+## Implemented Tools (24+ Total)
 
 | Tool | File | Purpose | Used By |
 |------|------|---------|---------|
@@ -28,10 +28,201 @@ The tools package (`src/startupai/tools/`) provides specialized capabilities for
 | **LearningCaptureTool** | `learning_capture.py` | Flywheel learning capture | All Crews |
 | **LearningRetrievalTool** | `learning_retrieval.py` | Flywheel learning retrieval | All Crews |
 | **AnonymizerTool** | `anonymizer.py` | PII anonymization for learnings | Learning Pipeline |
+| **PolicyBandit** | `policy_bandit.py` | UCB bandit for policy A/B testing | Flow Orchestration |
+| **ExperimentConfigResolver** | `experiment_config_resolver.py` | Policy-based config resolution | Flow Orchestration |
+| **BudgetGuardrails** | `budget_guardrails.py` | Hard/soft budget enforcement | Governance Crew |
+| **DecisionLogger** | `persistence/decision_log.py` | Audit trail persistence | All Crews |
+| **BusinessModelClassifier** | `business_model_classifier.py` | Auto-classification of business type | Finance Crew |
+| **UnitEconomicsModels** | `unit_economics_models.py` | 10 model-specific CAC/LTV | Finance Crew |
 
 ---
 
 ## Tool Categories
+
+### Area 3: Policy Versioning Tools
+
+#### Policy Bandit (`policy_bandit.py`)
+
+UCB (Upper Confidence Bound) algorithm for A/B testing between policy versions.
+
+```python
+from startupai.tools import PolicyBandit, select_experiment_policy, record_experiment_outcome
+
+# Select policy using bandit algorithm
+policy, reason = select_experiment_policy("ad_creative")
+# policy: PolicyVersion.YAML_BASELINE or PolicyVersion.RETRIEVAL_V1
+
+# Record outcome after experiment completes
+record_experiment_outcome(
+    experiment_type="ad_creative",
+    policy_version=policy,
+    success_score=0.85,
+    metrics={"ctr": 0.032, "conversion": 0.018}
+)
+```
+
+**Features**:
+- UCB exploration/exploitation balance
+- Configurable exploration bonus
+- Per-experiment-type weight tracking
+- Database-backed weight persistence
+
+---
+
+#### Experiment Config Resolver (`experiment_config_resolver.py`)
+
+Resolves experiment configurations using policy-based selection.
+
+```python
+from startupai.tools import ExperimentConfigResolver, resolve_ad_config
+
+# Resolve config for ad creative experiment
+config = resolve_ad_config(state)
+# config.hook_types: ["problem-agitate-solve", "social-proof", ...]
+# config.tones: ["direct", "playful", "empathetic"]
+# config.policy_version: PolicyVersion.YAML_BASELINE
+```
+
+**Baseline Configs**:
+- `ad_creative` - Ad creative generation parameters
+- `landing_page` - Landing page design parameters
+- `interview_question` - Customer interview templates
+- `pricing_test` - Pricing experiment configs
+
+---
+
+### Area 6: Budget Guardrails Tools
+
+#### Budget Guardrails (`budget_guardrails.py`)
+
+Hard and soft budget enforcement with escalation.
+
+```python
+from startupai.tools import BudgetGuardrails, check_spend_allowed, record_budget_override
+
+# Check if spend is allowed
+result = check_spend_allowed(
+    project_id="proj_123",
+    requested_amount=100.0,
+    budget_total=500.0,
+    spent_to_date=420.0
+)
+# result.status: BudgetStatus.WARNING (at 84%)
+# result.allowed: True
+# result.escalation: EscalationInfo with contact details
+
+# Record human override of budget limit
+record_budget_override(
+    project_id="proj_123",
+    override_amount=150.0,
+    rationale="Critical experiment for PMF validation"
+)
+```
+
+**Thresholds**:
+- 80% - Warning (soft limit)
+- 120% - Kill (hard limit, requires override)
+- 150% - Critical (escalation to founder)
+
+---
+
+#### Decision Logger (`persistence/decision_log.py`)
+
+Persists decision rationales for audit trail and compliance.
+
+```python
+from startupai.persistence.decision_log import DecisionLogger, log_human_approval
+
+# Log a human approval decision
+log_human_approval(
+    project_id="proj_123",
+    decision_point="creative_approval",
+    decision="approved",
+    rationale="Landing page meets brand guidelines",
+    actor_id="user_456"
+)
+```
+
+**Decision Types**:
+- `CREATIVE_APPROVAL` - Landing page/ad approval
+- `VIABILITY_APPROVAL` - Unit economics decision
+- `PIVOT_DECISION` - Strategic pivot choice
+- `BUDGET_DECISION` - Budget override
+- `POLICY_SELECTION` - A/B test policy choice
+
+---
+
+### Area 7: Business Model Viability Tools
+
+#### Business Model Classifier (`business_model_classifier.py`)
+
+Auto-classifies business model type from state or description.
+
+```python
+from startupai.tools import BusinessModelClassifier, classify_from_state
+
+# Classify from validation state
+result = classify_from_state(state)
+# result.business_model_type: BusinessModelType.SAAS_B2B_SMB
+# result.confidence: 0.87
+# result.signals: {"recurring_revenue": True, "enterprise_sales": False, ...}
+```
+
+**Supported Types**:
+- `saas_b2b_smb` - SaaS B2B targeting SMB
+- `saas_b2b_midmarket` - SaaS B2B targeting mid-market
+- `saas_b2b_enterprise` - SaaS B2B targeting enterprise
+- `saas_b2c_freemium` - SaaS B2C with freemium model
+- `saas_b2c_subscription` - SaaS B2C subscription
+- `ecommerce_dtc` - E-commerce direct-to-consumer
+- `ecommerce_marketplace` - E-commerce marketplace
+- `fintech_b2b` - Fintech B2B
+- `fintech_b2c` - Fintech B2C
+- `consulting` - Consulting/services
+
+---
+
+#### Unit Economics Models (`unit_economics_models.py`)
+
+Business model-specific CAC/LTV calculations with industry benchmarks.
+
+```python
+from startupai.tools import get_model_for_type, calculate_model_unit_economics
+from startupai.tools import SaaSB2BSMBModel, BusinessModelType
+
+# Get model for specific business type
+model = get_model_for_type(BusinessModelType.SAAS_B2B_SMB)
+
+# Calculate unit economics
+input_data = UnitEconomicsInput(
+    avg_revenue_per_user=99.0,
+    churn_rate=0.05,
+    cac_paid=150.0,
+    cac_organic=50.0,
+    gross_margin=0.80
+)
+result = model.calculate_metrics(input_data)
+# result.ltv: 1584.0
+# result.cac: 100.0 (blended)
+# result.ltv_cac_ratio: 15.84
+# result.payback_months: 7.58
+```
+
+**10 Specialized Models**:
+| Model | Target LTV:CAC | Payback |
+|-------|----------------|---------|
+| SaaSB2BSMBModel | 3:1 | 12 months |
+| SaaSB2BMidMarketModel | 4:1 | 24 months |
+| SaaSB2BEnterpriseModel | 5:1 | 36 months |
+| SaaSB2CFreemiumModel | 2:1 | 6 months |
+| SaaSB2CSubscriptionModel | 2.5:1 | 8 months |
+| EcommerceDTCModel | 1.5:1 | 3 months |
+| EcommerceMarketplaceModel | 2:1 | 6 months |
+| FintechB2BModel | 4:1 | 24 months |
+| FintechB2CModel | 2:1 | 12 months |
+| ConsultingModel | 1.5:1 | Immediate |
+
+---
 
 ### Web Research Tools (`web_search.py`)
 
@@ -416,9 +607,10 @@ class MyTool(BaseTool):
 | Crew | Tools |
 |------|-------|
 | **Analysis Crew** | TavilySearchTool, CompetitorResearchTool, MarketResearchTool, CustomerResearchTool |
-| **Finance Crew** | IndustryBenchmarkTool, UnitEconomicsCalculatorTool, ViabilityApprovalTool |
+| **Finance Crew** | IndustryBenchmarkTool, UnitEconomicsCalculatorTool, ViabilityApprovalTool, BusinessModelClassifier, UnitEconomicsModels |
 | **Build Crew** | LandingPageGeneratorTool, CodeValidatorTool, LandingPageDeploymentTool |
-| **Governance Crew** | GuardianReviewTool, MethodologyCheckTool, FlywheelInsightsTool, OutcomeTrackerTool, PrivacyGuardTool, AnonymizerTool |
+| **Governance Crew** | GuardianReviewTool, MethodologyCheckTool, FlywheelInsightsTool, OutcomeTrackerTool, PrivacyGuardTool, AnonymizerTool, BudgetGuardrails |
+| **Flow Orchestration** | PolicyBandit, ExperimentConfigResolver, DecisionLogger |
 | **All Crews** | LearningCaptureTool, LearningRetrievalTool |
 
 ---
@@ -442,5 +634,5 @@ class MyTool(BaseTool):
 
 ---
 
-**Last Updated**: 2025-11-26
-**Status**: 18 tools implemented and deployed (Phase 2D complete)
+**Last Updated**: 2025-11-27
+**Status**: 24+ tools implemented and deployed (All 8 architectural areas complete)

@@ -47,6 +47,9 @@ class LearningCaptureTool(BaseTool):
         tags: Optional[List[str]] = None,
         confidence_score: Optional[float] = None,
         industry: Optional[str] = None,
+        policy_version: Optional[str] = None,
+        experiment_id: Optional[str] = None,
+        experiment_type: Optional[str] = None,
     ) -> str:
         """
         Capture a learning into the Flywheel system.
@@ -61,6 +64,9 @@ class LearningCaptureTool(BaseTool):
             tags: Optional tags for categorization
             confidence_score: Optional confidence in the learning (0-1)
             industry: Optional industry classification
+            policy_version: Optional policy version that generated this learning (Area 3)
+            experiment_id: Optional experiment ID for attribution
+            experiment_type: Optional experiment type (ad_creative, landing_page, etc.)
 
         Returns:
             Status message with learning ID
@@ -94,6 +100,10 @@ class LearningCaptureTool(BaseTool):
                 "embedding": embedding,
                 "confidence_score": confidence_score,
                 "created_at": datetime.now().isoformat(),
+                # Policy versioning fields (Area 3)
+                "policy_version": policy_version or "yaml_baseline",
+                "experiment_id": experiment_id,
+                "experiment_type": experiment_type,
             }
 
             client = get_supabase_client()
@@ -115,11 +125,15 @@ class LearningCaptureTool(BaseTool):
         tags: Optional[List[str]] = None,
         confidence_score: Optional[float] = None,
         industry: Optional[str] = None,
+        policy_version: Optional[str] = None,
+        experiment_id: Optional[str] = None,
+        experiment_type: Optional[str] = None,
     ) -> str:
         """Async version of _run."""
         return self._run(
             learning_type, title, description, context,
-            founder, phase, tags, confidence_score, industry
+            founder, phase, tags, confidence_score, industry,
+            policy_version, experiment_id, experiment_type
         )
 
     def _create_context_abstract(self, context: Dict[str, Any]) -> str:
@@ -180,6 +194,9 @@ def capture_pattern_learning(
     tags: Optional[List[str]] = None,
     confidence_score: Optional[float] = None,
     industry: Optional[str] = None,
+    policy_version: Optional[str] = None,
+    experiment_id: Optional[str] = None,
+    experiment_type: Optional[str] = None,
 ) -> str:
     """Convenience function to capture a pattern learning."""
     tool = LearningCaptureTool()
@@ -193,6 +210,9 @@ def capture_pattern_learning(
         tags=tags,
         confidence_score=confidence_score,
         industry=industry,
+        policy_version=policy_version,
+        experiment_id=experiment_id,
+        experiment_type=experiment_type,
     )
 
 
@@ -205,6 +225,9 @@ def capture_outcome_learning(
     tags: Optional[List[str]] = None,
     confidence_score: Optional[float] = None,
     industry: Optional[str] = None,
+    policy_version: Optional[str] = None,
+    experiment_id: Optional[str] = None,
+    experiment_type: Optional[str] = None,
 ) -> str:
     """Convenience function to capture an outcome learning."""
     tool = LearningCaptureTool()
@@ -218,4 +241,7 @@ def capture_outcome_learning(
         tags=tags,
         confidence_score=confidence_score,
         industry=industry,
+        policy_version=policy_version,
+        experiment_id=experiment_id,
+        experiment_type=experiment_type,
     )

@@ -30,15 +30,15 @@ features/
 
 ## Crew Status
 
-| Crew | Owner | Status | Phase |
-|------|-------|--------|-------|
-| Service | Sage (CSO) | Implemented | 1A |
-| Analysis | Sage (CSO) | Implemented | 1A |
-| Build | Forge (CTO) | Implemented | 1B |
-| Growth | Pulse (CGO) | Stub (ad APIs deferred) | - |
-| Finance | Ledger (CFO) | Implemented | 2B |
-| Synthesis | Compass (CPO) | Implemented | 1 |
-| Governance | Guardian (CGoO) | Implemented | 2A-2D |
+| Crew | Owner | Status | Phase | Notes |
+|------|-------|--------|-------|-------|
+| Service | Sage (CSO) | ✅ Complete | 1A | 3 agents, intake & brief capture |
+| Analysis | Sage (CSO) | ✅ Complete | 1A | 2 agents, TavilySearchTool for real research |
+| Build | Forge (CTO) | ✅ Complete | 1B | 3 agents, LandingPageGeneratorTool + Netlify deploy |
+| Growth | Pulse (CGO) | ✅ Complete | 2 | 3 agents (ad platform APIs deferred) |
+| Finance | Ledger (CFO) | ✅ Complete | 2B | 2 agents, UnitEconomicsCalculatorTool |
+| Synthesis | Compass (CPO) | ✅ Complete | 1 | 1 agent, pivot decision logic |
+| Governance | Guardian (CGoO) | ✅ Complete | 2A-2D | 3 agents, 8 tools (HITL, Flywheel, Privacy) |
 
 ## Ecosystem Context
 

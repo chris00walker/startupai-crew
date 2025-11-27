@@ -117,6 +117,53 @@ class Platform(str, Enum):
 
 
 # =======================================================================================
+# POLICY VERSIONING - For A/B testing of learning strategies
+# =======================================================================================
+
+class PolicyVersion(str, Enum):
+    """Policy versions for experiment config resolution"""
+    YAML_BASELINE = "yaml_baseline"      # Static YAML-based configuration
+    RETRIEVAL_V1 = "retrieval_v1"        # Retrieval-augmented configuration
+
+
+# =======================================================================================
+# BUSINESS MODEL TYPES - For model-specific viability calculations
+# =======================================================================================
+
+class BusinessModelType(str, Enum):
+    """Business model types for unit economics calculations"""
+    SAAS_B2B_SMB = "saas_b2b_smb"
+    SAAS_B2B_MIDMARKET = "saas_b2b_midmarket"
+    SAAS_B2B_ENTERPRISE = "saas_b2b_enterprise"
+    SAAS_B2C_FREEMIUM = "saas_b2c_freemium"
+    SAAS_B2C_SUBSCRIPTION = "saas_b2c_subscription"
+    ECOMMERCE_DTC = "ecommerce_dtc"
+    ECOMMERCE_MARKETPLACE = "ecommerce_marketplace"
+    FINTECH_B2B = "fintech_b2b"
+    FINTECH_B2C = "fintech_b2c"
+    CONSULTING = "consulting"
+    UNKNOWN = "unknown"
+
+
+# =======================================================================================
+# BUDGET ENFORCEMENT - For guardrails with hard/soft modes
+# =======================================================================================
+
+class EnforcementMode(str, Enum):
+    """Budget enforcement mode"""
+    HARD = "hard"       # Block execution if budget exceeded
+    SOFT = "soft"       # Warn but allow continuation
+
+
+class BudgetStatus(str, Enum):
+    """Current budget status"""
+    OK = "ok"                    # Within limits
+    WARNING = "warning"          # Approaching limits
+    EXCEEDED = "exceeded"        # Over limits but not kill level
+    KILL_TRIGGERED = "kill"      # Auto-kill threshold reached
+
+
+# =======================================================================================
 # ASSUMPTION TRACKING (preserved from original)
 # =======================================================================================
 
@@ -337,7 +384,8 @@ class FeasibilityArtifact(BaseModel):
 # =======================================================================================
 
 class ViabilityMetrics(BaseModel):
-    """Unit economics and financial viability"""
+    """Unit economics and financial viability with business model context"""
+    # Core metrics
     cac_usd: float = 0.0
     ltv_usd: float = 0.0
     ltv_cac_ratio: float = 0.0
@@ -345,6 +393,15 @@ class ViabilityMetrics(BaseModel):
     tam_annual_revenue_potential_usd: float = 0.0
     monthly_churn_pct: float = 0.0
     payback_months: float = 0.0
+
+    # Component breakdowns for business model-specific analysis
+    cac_breakdown: Dict[str, float] = Field(default_factory=dict)  # {marketing: 30, sales: 20, onboarding: 5}
+    ltv_breakdown: Dict[str, float] = Field(default_factory=dict)  # {subscription: 800, expansion: 150, services: 50}
+
+    # Business model context
+    business_model_type: Optional[BusinessModelType] = None
+    model_assumptions: Dict[str, Any] = Field(default_factory=dict)  # Assumptions used in calculation
+    benchmark_source: Optional[str] = None  # Which benchmark set was used for comparison
 
 
 # =======================================================================================
@@ -588,6 +645,22 @@ class StartupValidationState(BaseModel):
     framework_compliance: bool = False
     logical_consistency: bool = False
     completeness: bool = False
+
+    # =================== POLICY VERSIONING - Area 3 (3 fields) ===================
+    current_policy_version: PolicyVersion = PolicyVersion.YAML_BASELINE
+    experiment_config_source: Optional[str] = None  # "yaml" or "retrieval"
+    policy_selection_reason: Optional[str] = None  # Why this policy was chosen
+
+    # =================== BUDGET TRACKING - Area 6 (5 fields) ===================
+    daily_spend_usd: float = 0.0
+    campaign_spend_usd: float = 0.0
+    budget_status: BudgetStatus = BudgetStatus.OK
+    budget_escalation_triggered: bool = False
+    budget_kill_triggered: bool = False
+
+    # =================== BUSINESS MODEL - Area 7 (2 fields) ===================
+    business_model_type: Optional[BusinessModelType] = None
+    business_model_inferred_from: Optional[str] = None  # "revenue_model", "segment", "manual"
 
     # =================== VALIDATORS ===================
 

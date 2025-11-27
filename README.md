@@ -100,7 +100,7 @@ crewai run
 **Current Deployment:**
 - **UUID:** `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
 - **URL:** `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
-- **Token:** `f4cc39d92520`
+- **Token:** `<your-deployment-token>` (stored in CrewAI dashboard)
 - **Dashboard:** https://app.crewai.com/deployments
 
 ### Commands
@@ -154,17 +154,17 @@ crewai deploy logs --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
 ```bash
 # Get inputs schema
 curl https://startupai-...crewai.com/inputs \
-  -H "Authorization: Bearer f4cc39d92520"
+  -H "Authorization: Bearer <your-deployment-token>"
 
 # Kickoff workflow
 curl -X POST https://startupai-...crewai.com/kickoff \
-  -H "Authorization: Bearer f4cc39d92520" \
+  -H "Authorization: Bearer <your-deployment-token>" \
   -H "Content-Type: application/json" \
   -d '{"entrepreneur_input": "Business idea..."}'
 
 # Check status
 curl https://startupai-...crewai.com/status/{kickoff_id} \
-  -H "Authorization: Bearer f4cc39d92520"
+  -H "Authorization: Bearer <your-deployment-token>"
 ```
 
 ---
@@ -209,6 +209,11 @@ startupai-crew/
 
 - **Marketing Site:** [startupai.site](https://github.com/chris00walker/startupai.site) - Lead capture & transparency
 - **Product App:** [app.startupai.site](https://github.com/chris00walker/app.startupai.site) - Delivery portal
+
+**Development Ports (Canonical):**
+- **Marketing Site** (`startupai.site`): `localhost:3000`
+- **Product App** (`app.startupai.site`): `localhost:3001`
+- **This repo (CrewAI Backend)**: Deployed on CrewAI AMP (no local port needed)
 
 ---
 

@@ -1,0 +1,173 @@
+# ============================================
+# Budget Guardrails Configuration
+# ============================================
+# Configures budget enforcement for Growth Crew experiments (Area 6).
+# Supports both hard and soft enforcement modes with toggle.
+#
+# Hard mode: Blocks spend above limits
+# Soft mode: Warns and logs but allows override
+# ============================================
+
+# Global settings
+global:
+  # Default enforcement mode (can be overridden per project)
+  default_enforcement_mode: soft
+
+  # Enable guardrails globally
+  enabled: true
+
+  # Log all budget decisions to decision_log table
+  log_all_decisions: true
+
+# Threshold configurations
+thresholds:
+  # Warning threshold (triggers escalation notification)
+  warning:
+    percentage: 0.80  # 80% of budget
+    action: escalate
+    notification:
+      enabled: true
+      channels:
+        - structured_log
+        - webhook
+
+  # Kill switch threshold (stops all spend in hard mode, warns in soft mode)
+  kill_switch:
+    percentage: 1.20  # 120% of budget
+    action: kill
+    notification:
+      enabled: true
+      channels:
+        - structured_log
+        - webhook
+        - email_admin
+
+  # Critical threshold (always blocks, even in soft mode)
+  critical:
+    percentage: 1.50  # 150% of budget - hard stop regardless of mode
+    action: hard_stop
+    notification:
+      enabled: true
+      channels:
+        - structured_log
+        - webhook
+        - email_admin
+        - sms_alert
+
+# Budget tracking settings
+tracking:
+  # Refresh interval for spend data (seconds)
+  refresh_interval_seconds: 60
+
+  # Currency for all calculations
+  currency: USD
+
+  # Include pending transactions in current spend
+  include_pending: true
+
+  # Buffer for rate limiting (leave headroom)
+  rate_limit_buffer_pct: 0.05
+
+# Enforcement mode definitions
+enforcement_modes:
+  hard:
+    description: "Strictly block operations that would exceed budget"
+    blocks_on_warning: false
+    blocks_on_kill: true
+    blocks_on_critical: true
+    requires_override_for_continue: true
+    override_requires_human: true
+
+  soft:
+    description: "Warn and log but allow operations to proceed with rationale"
+    blocks_on_warning: false
+    blocks_on_kill: false
+    blocks_on_critical: true  # Critical always blocks
+    requires_override_for_continue: false
+    log_continue_rationale: true
+
+# Default budget limits (can be overridden per project in state)
+default_limits:
+  # Daily spend limit
+  daily_spend_usd: 100.0
+
+  # Campaign-level spend limit
+  campaign_spend_usd: 500.0
+
+  # Phase-level spend limit (per validation phase)
+  phase_spend_usd: 1000.0
+
+  # Project lifetime spend limit
+  project_spend_usd: 5000.0
+
+# Override authorization
+override_settings:
+  # Who can override in soft mode
+  soft_mode_override:
+    - guardian_agent
+    - human_founder
+
+  # Who can override in hard mode (more restrictive)
+  hard_mode_override:
+    - human_founder
+    - admin
+
+  # Maximum override amount (as multiplier of original limit)
+  max_override_multiplier: 1.5
+
+  # Require rationale for overrides
+  require_rationale: true
+
+  # Rationale minimum length (characters)
+  rationale_min_length: 50
+
+# Escalation settings
+escalation:
+  # How quickly to escalate (seconds after warning)
+  escalation_delay_seconds: 300  # 5 minutes
+
+  # Who receives escalation notifications
+  escalation_recipients:
+    - role: guardian_agent
+      delay_seconds: 0
+    - role: human_founder
+      delay_seconds: 300
+    - role: admin
+      delay_seconds: 600
+
+  # Escalation message template
+  message_template: |
+    Budget Alert: {project_name}
+    Current Spend: ${current_spend_usd}
+    Budget Limit: ${budget_limit_usd}
+    Utilization: {percentage}%
+    Threshold Triggered: {threshold_name}
+    Enforcement Mode: {enforcement_mode}
+
+    Action Required: {action_required}
+
+# Webhook configuration
+webhook:
+  # URL for budget alerts (uses STARTUPAI_WEBHOOK_URL if not set)
+  url_override: null
+
+  # Include in webhook payload
+  include_fields:
+    - project_id
+    - current_spend_usd
+    - budget_limit_usd
+    - percentage
+    - threshold_triggered
+    - enforcement_mode
+    - recommended_action
+
+# Testing/Development settings
+development:
+  # Reduce limits for testing
+  test_mode_limits_multiplier: 0.1
+
+  # Mock spend data source
+  use_mock_spend_data: false
+
+  # Disable notifications in development
+  disable_notifications: true

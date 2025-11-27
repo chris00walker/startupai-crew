@@ -76,7 +76,7 @@ crewai deploy list
 
 **Production Deployment Details:**
 - **UUID:** b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
-- **Token:** f4cc39d92520
+- **Token:** `<your-deployment-token>` (stored in CrewAI dashboard)
 - **Public API URL:** https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com
 - **Organization:** StartupAI (8f17470f-7841-4079-860d-de91ed5d1091)
 - **Status:** Online ✅
@@ -258,7 +258,7 @@ User → startupai.site (Marketing)
 ```bash
 curl -X POST \
   https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/inputs \
-  -H "Authorization: Bearer f4cc39d92520" \
+  -H "Authorization: Bearer <your-deployment-token>" \
   -H "Content-Type: application/json" \
   -d '{"strategic_question": "Should we expand?", "project_context": "B2B SaaS"}'
 ```
@@ -267,14 +267,14 @@ curl -X POST \
 ```bash
 curl -X POST \
   https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/kickoff \
-  -H "Authorization: Bearer f4cc39d92520"
+  -H "Authorization: Bearer <your-deployment-token>"
 ```
 
 **GET /status** - Check Execution Status
 ```bash
 curl -X GET \
   https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/status \
-  -H "Authorization: Bearer f4cc39d92520"
+  -H "Authorization: Bearer <your-deployment-token>"
 ```
 
 ## Important Conventions
@@ -316,8 +316,8 @@ curl -X GET \
 - **docs/environments.md** (451 lines) - Multi-environment setup guide (local/production)
 
 ### External References
-- **Product Platform:** `../app.startupai.site` - Next.js frontend that calls this crew
-- **Marketing Site:** `../startupai.site` - Marketing website
+- **Product Platform:** `app.startupai.site` - Next.js frontend that calls this crew
+- **Marketing Site:** `startupai.site` - Marketing website
 - **CrewAI Docs:** https://docs.crewai.com - Official CrewAI documentation
 - **CrewAI Dashboard:** https://app.crewai.com - Deployment management
 

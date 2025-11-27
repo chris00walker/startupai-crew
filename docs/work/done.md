@@ -1,10 +1,73 @@
 ---
 purpose: "Private technical source of truth for recently delivered work"
 status: "active"
-last_reviewed: "2025-11-26"
+last_reviewed: "2025-11-27"
 ---
 
 # Recently Delivered
+
+## Areas 3, 6, 7: Architectural Improvements Completion (2025-11-27)
+
+Final implementation of architectural improvements bringing the system to 100% complete.
+
+### Area 3: Policy Versioning & A/B Testing
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-27 | PolicyBandit | `tools/policy_bandit.py` - UCB algorithm for exploration/exploitation |
+| 2025-11-27 | PolicyVersion enum | yaml_baseline, retrieval_v1 in state_schemas.py |
+| 2025-11-27 | ExperimentConfigResolver | `tools/experiment_config_resolver.py` - Policy-based config resolution |
+| 2025-11-27 | BASELINE_CONFIGS | Static configs for ad_creative, landing_page, interview_question, pricing_test |
+| 2025-11-27 | evaluate_policies.py | `scripts/evaluate_policies.py` - Offline evaluation with Z-test, Cohen's d |
+| 2025-11-27 | experiment_outcomes table | Migration 004 - pgvector table for experiment results |
+| 2025-11-27 | policy_version column | Migration 005 - Added to learnings table |
+| 2025-11-27 | get_policy_weights() | SQL function for bandit weight retrieval |
+
+### Area 6: Budget Guardrails & Decision Logging
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-27 | BudgetGuardrails | `tools/budget_guardrails.py` - Hard/soft enforcement modes |
+| 2025-11-27 | BudgetCheckResult | Status: ok, warning, exceeded, kill |
+| 2025-11-27 | Thresholds | 80% warning, 120% kill, 150% critical |
+| 2025-11-27 | EscalationInfo | Escalation context for human review |
+| 2025-11-27 | DecisionLogger | `persistence/decision_log.py` - Audit trail persistence |
+| 2025-11-27 | DecisionRecord | Model with actor_type, rationale, context_snapshot |
+| 2025-11-27 | decision_log table | Migration 006 - Audit trail storage |
+| 2025-11-27 | budget_decisions_summary view | Aggregated budget decision metrics |
+| 2025-11-27 | override_audit view | Track human overrides for compliance |
+| 2025-11-27 | resume_handler update | Rationale persistence integrated into HITL flow |
+
+### Area 7: Business Model-Specific Viability
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-27 | BusinessModelClassifier | `tools/business_model_classifier.py` - Auto-classification from state |
+| 2025-11-27 | BusinessModelType enum | 11 types: saas_b2b_smb, saas_b2b_midmarket, saas_b2b_enterprise, saas_b2c_freemium, saas_b2c_subscription, ecommerce_dtc, ecommerce_marketplace, fintech_b2b, fintech_b2c, consulting, unknown |
+| 2025-11-27 | UnitEconomicsModel ABC | `tools/unit_economics_models.py` - Base class with standard interface |
+| 2025-11-27 | SaaSB2BSMBModel | 12-mo payback, 3:1 LTV:CAC target |
+| 2025-11-27 | SaaSB2BMidMarketModel | 24-mo payback, enterprise cycles |
+| 2025-11-27 | SaaSB2BEnterpriseModel | 36-mo payback, complex sales |
+| 2025-11-27 | SaaSB2CFreemiumModel | Viral mechanics, conversion optimization |
+| 2025-11-27 | SaaSB2CSubscriptionModel | Consumer subscription economics |
+| 2025-11-27 | EcommerceDTCModel | Direct-to-consumer with blended CAC |
+| 2025-11-27 | EcommerceMarketplaceModel | Take rate, GMV-based economics |
+| 2025-11-27 | FintechB2BModel | Enterprise financial services |
+| 2025-11-27 | FintechB2CModel | Product-led growth, compliance costs |
+| 2025-11-27 | ConsultingModel | Utilization rates, billable hours |
+| 2025-11-27 | MODEL_REGISTRY | Factory lookup by BusinessModelType |
+| 2025-11-27 | Industry benchmarks | Per-model benchmark data |
+
+### Tools Package Updates
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-27 | tools/__init__.py | Exports all Area 3, 6, 7 tools and models |
+| 2025-11-27 | Total tool count | 24+ tools (was 18) |
+
+### Config Files
+| Date | Item | Links / Notes |
+|------|------|---------------|
+| 2025-11-27 | policy_weights.yaml | `config/policy_weights.yaml` - Initial bandit weights |
+| 2025-11-27 | budget_guardrails.yaml | `config/budget_guardrails.yaml` - Threshold configuration |
+
+---
 
 ## Phase 2D: Privacy & Persistence Infrastructure (2025-11-26)
 
@@ -253,4 +316,4 @@ These items represent what currently works before the Flows rebuild:
 The current 6-agent workflow will be replaced by the 8-crew/18-agent Flows architecture. The baseline above represents what to maintain backward compatibility with during the transition.
 
 ---
-**Last Updated**: 2025-11-26
+**Last Updated**: 2025-11-27

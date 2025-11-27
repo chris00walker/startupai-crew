@@ -93,6 +93,55 @@ from startupai.tools.privacy_guard import (
     sanitize_for_flywheel,
     classify_sensitivity,
 )
+# Area 3: Policy Versioning
+from startupai.tools.policy_bandit import (
+    PolicyBandit,
+    PolicyWeight,
+    PolicySelectionResult,
+    select_experiment_policy,
+    record_experiment_outcome,
+)
+from startupai.tools.experiment_config_resolver import (
+    ExperimentConfigResolver,
+    ExperimentConfig,
+    ResolverResult,
+    resolve_ad_config,
+    resolve_landing_page_config,
+    create_ad_variant_from_config,
+    update_state_with_policy,
+)
+# Area 6: Budget Guardrails
+from startupai.tools.budget_guardrails import (
+    BudgetGuardrails,
+    BudgetCheckResult,
+    EscalationInfo,
+    check_spend_allowed,
+    record_budget_override,
+)
+# Area 7: Business Model Viability
+from startupai.tools.business_model_classifier import (
+    BusinessModelClassifier,
+    ClassificationResult,
+    ClassificationSignals,
+    classify_from_state,
+    update_state_with_classification,
+)
+from startupai.tools.unit_economics_models import (
+    UnitEconomicsModel,
+    UnitEconomicsInput,
+    BenchmarkData,
+    SaaSB2BSMBModel,
+    SaaSB2BMidMarketModel,
+    SaaSB2BEnterpriseModel,
+    EcommerceDTCModel,
+    EcommerceMarketplaceModel,
+    FintechB2BModel,
+    FintechB2CModel,
+    ConsultingModel,
+    MODEL_REGISTRY,
+    get_model_for_type,
+    calculate_unit_economics as calculate_model_unit_economics,
+)
 
 __all__ = [
     # Anonymization
@@ -176,4 +225,43 @@ __all__ = [
     "is_safe_for_storage",
     "sanitize_for_flywheel",
     "classify_sensitivity",
+    # Area 3: Policy Versioning
+    "PolicyBandit",
+    "PolicyWeight",
+    "PolicySelectionResult",
+    "select_experiment_policy",
+    "record_experiment_outcome",
+    "ExperimentConfigResolver",
+    "ExperimentConfig",
+    "ResolverResult",
+    "resolve_ad_config",
+    "resolve_landing_page_config",
+    "create_ad_variant_from_config",
+    "update_state_with_policy",
+    # Area 6: Budget Guardrails
+    "BudgetGuardrails",
+    "BudgetCheckResult",
+    "EscalationInfo",
+    "check_spend_allowed",
+    "record_budget_override",
+    # Area 7: Business Model Viability
+    "BusinessModelClassifier",
+    "ClassificationResult",
+    "ClassificationSignals",
+    "classify_from_state",
+    "update_state_with_classification",
+    "UnitEconomicsModel",
+    "UnitEconomicsInput",
+    "BenchmarkData",
+    "SaaSB2BSMBModel",
+    "SaaSB2BMidMarketModel",
+    "SaaSB2BEnterpriseModel",
+    "EcommerceDTCModel",
+    "EcommerceMarketplaceModel",
+    "FintechB2BModel",
+    "FintechB2CModel",
+    "ConsultingModel",
+    "MODEL_REGISTRY",
+    "get_model_for_type",
+    "calculate_model_unit_economics",
 ]

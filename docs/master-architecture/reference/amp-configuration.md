@@ -175,7 +175,7 @@ AMP shows costs but doesn't enforce budgets.
 
 **Base URL**: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
 
-**Bearer Token**: `f4cc39d92520` (stored in dashboard)
+**Bearer Token**: `<your-deployment-token>` (stored in dashboard)
 
 ### Endpoints
 

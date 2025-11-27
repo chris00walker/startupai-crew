@@ -1,7 +1,7 @@
 ---
 purpose: Database schema definitions for all services
-status: partially-implemented
-last_reviewed: 2025-11-26
+status: mostly-implemented
+last_reviewed: 2025-11-27
 ---
 
 # Database Schemas
@@ -247,6 +247,241 @@ CREATE TABLE flow_executions (
 );
 ```
 
+## Area 3: Policy Versioning Tables
+
+**Status**: ✅ Ready (migration 004, 005)
+
+### Experiment Outcomes
+
+Stores experiment outcomes for policy versioning and A/B testing (UCB bandit).
+
+```sql
+-- Migration 004: experiment_outcomes
+CREATE TABLE experiment_outcomes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL,
+  experiment_id TEXT NOT NULL,
+  experiment_type TEXT NOT NULL,  -- 'ad_creative', 'landing_page', 'pricing_test'
+  policy_version TEXT NOT NULL,   -- 'yaml_baseline', 'retrieval_v1'
+
+  -- Metrics
+  primary_metric TEXT,            -- Name of primary success metric
+  primary_value DECIMAL(10,4),    -- Value of primary metric
+  metrics JSONB,                  -- All metrics: {"ctr": 0.032, "conversion": 0.018}
+  success_score DECIMAL(5,4),     -- Normalized success score 0-1
+
+  -- Tracking
+  status TEXT DEFAULT 'running',  -- 'running', 'completed', 'cancelled'
+  started_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for policy performance queries
+CREATE INDEX idx_experiment_outcomes_policy ON experiment_outcomes(policy_version, experiment_type);
+CREATE INDEX idx_experiment_outcomes_status ON experiment_outcomes(status) WHERE status = 'completed';
+```
+
+### Policy Performance View
+
+```sql
+-- View for policy performance summary
+CREATE VIEW policy_performance_summary AS
+SELECT
+  experiment_type,
+  policy_version,
+  COUNT(*) as sample_count,
+  AVG(success_score) as avg_success,
+  STDDEV(success_score) as stddev_success,
+  MAX(completed_at) as last_completed
+FROM experiment_outcomes
+WHERE status = 'completed'
+GROUP BY experiment_type, policy_version;
+```
+
+### Policy Weights Function
+
+```sql
+-- UCB bandit weight calculation
+CREATE OR REPLACE FUNCTION get_policy_weights(
+  p_experiment_type TEXT,
+  p_min_samples INTEGER DEFAULT 10,
+  p_exploration_bonus DECIMAL DEFAULT 0.1
+)
+RETURNS TABLE(
+  policy_version TEXT,
+  weight DECIMAL,
+  sample_count INTEGER,
+  avg_success DECIMAL,
+  ucb_score DECIMAL
+) AS $$
+BEGIN
+  RETURN QUERY
+  WITH policy_stats AS (
+    SELECT
+      eo.policy_version,
+      COUNT(*)::INTEGER as samples,
+      AVG(eo.success_score) as mean_success,
+      STDDEV(eo.success_score) as std_success
+    FROM experiment_outcomes eo
+    WHERE eo.experiment_type = p_experiment_type
+      AND eo.status = 'completed'
+    GROUP BY eo.policy_version
+  ),
+  total AS (
+    SELECT SUM(samples) as total_samples FROM policy_stats
+  )
+  SELECT
+    ps.policy_version,
+    CASE
+      WHEN ps.samples < p_min_samples THEN 1.0  -- Explore under-sampled
+      ELSE ps.mean_success + p_exploration_bonus * SQRT(LN(t.total_samples) / ps.samples)
+    END as weight,
+    ps.samples as sample_count,
+    ps.mean_success as avg_success,
+    ps.mean_success + p_exploration_bonus * SQRT(LN(COALESCE(t.total_samples, 1)) / GREATEST(ps.samples, 1)) as ucb_score
+  FROM policy_stats ps
+  CROSS JOIN total t;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+### Learnings Policy Version Extension
+
+```sql
+-- Migration 005: Add policy_version to learnings table
+ALTER TABLE learnings
+ADD COLUMN policy_version TEXT,
+ADD COLUMN experiment_id TEXT,
+ADD COLUMN experiment_type TEXT;
+
+-- Index for policy-filtered learning retrieval
+CREATE INDEX idx_learnings_policy ON learnings(policy_version);
+```
+
+---
+
+## Area 6: Decision Logging Tables
+
+**Status**: ✅ Ready (migration 006)
+
+### Decision Log
+
+Stores decision rationales for audit trail and compliance.
+
+```sql
+-- Migration 006: decision_log
+CREATE TABLE decision_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID NOT NULL,
+
+  -- Decision context
+  decision_type TEXT NOT NULL,      -- 'creative_approval', 'viability_approval', 'pivot_decision', 'budget_decision', 'policy_selection'
+  decision_point TEXT NOT NULL,     -- Where in flow (e.g., 'creative_gate', 'viability_gate')
+  decision TEXT NOT NULL,           -- The actual decision made
+  rationale TEXT,                   -- Why this decision was made
+
+  -- Actor
+  actor_type TEXT NOT NULL,         -- 'ai_agent', 'human_founder', 'system'
+  actor_id TEXT,                    -- User ID or agent name
+
+  -- Context snapshot
+  context_snapshot JSONB,           -- State at decision time
+
+  -- Budget tracking (for budget decisions)
+  budget_total DECIMAL(10,2),
+  budget_spent DECIMAL(10,2),
+  budget_requested DECIMAL(10,2),
+
+  -- Audit
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX idx_decision_log_project ON decision_log(project_id);
+CREATE INDEX idx_decision_log_type ON decision_log(decision_type);
+CREATE INDEX idx_decision_log_actor ON decision_log(actor_type, actor_id);
+```
+
+### Budget Decisions View
+
+```sql
+-- View for budget decision summary
+CREATE VIEW budget_decisions_summary AS
+SELECT
+  project_id,
+  COUNT(*) as total_budget_decisions,
+  SUM(CASE WHEN decision = 'approved' THEN 1 ELSE 0 END) as approved_count,
+  SUM(CASE WHEN decision = 'rejected' THEN 1 ELSE 0 END) as rejected_count,
+  SUM(CASE WHEN decision = 'override' THEN 1 ELSE 0 END) as override_count,
+  MAX(budget_spent) as max_spent,
+  AVG(budget_spent / NULLIF(budget_total, 0)) as avg_utilization
+FROM decision_log
+WHERE decision_type = 'budget_decision'
+GROUP BY project_id;
+```
+
+### Override Audit View
+
+```sql
+-- View for tracking human overrides
+CREATE VIEW override_audit AS
+SELECT
+  dl.id,
+  dl.project_id,
+  dl.decision_type,
+  dl.decision,
+  dl.rationale,
+  dl.actor_id,
+  dl.budget_total,
+  dl.budget_spent,
+  dl.budget_requested,
+  dl.created_at
+FROM decision_log dl
+WHERE dl.actor_type = 'human_founder'
+  AND dl.decision IN ('override', 'approved_over_limit')
+ORDER BY dl.created_at DESC;
+```
+
+### Log Decision Function
+
+```sql
+-- Convenience function for logging decisions
+CREATE OR REPLACE FUNCTION log_decision(
+  p_project_id UUID,
+  p_decision_type TEXT,
+  p_decision_point TEXT,
+  p_decision TEXT,
+  p_rationale TEXT,
+  p_actor_type TEXT,
+  p_actor_id TEXT DEFAULT NULL,
+  p_context JSONB DEFAULT NULL,
+  p_budget_total DECIMAL DEFAULT NULL,
+  p_budget_spent DECIMAL DEFAULT NULL,
+  p_budget_requested DECIMAL DEFAULT NULL
+)
+RETURNS UUID AS $$
+DECLARE
+  v_id UUID;
+BEGIN
+  INSERT INTO decision_log (
+    project_id, decision_type, decision_point, decision, rationale,
+    actor_type, actor_id, context_snapshot,
+    budget_total, budget_spent, budget_requested
+  ) VALUES (
+    p_project_id, p_decision_type, p_decision_point, p_decision, p_rationale,
+    p_actor_type, p_actor_id, p_context,
+    p_budget_total, p_budget_spent, p_budget_requested
+  )
+  RETURNING id INTO v_id;
+
+  RETURN v_id;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+---
+
 ## Indexes
 
 Recommended indexes for performance:
@@ -278,6 +513,9 @@ CREATE INDEX idx_hypotheses_status ON hypotheses(status);
 - [../03-validation-spec.md](../03-validation-spec.md) - Authoritative technical blueprint
 
 ---
-**Last Updated**: 2025-11-26
+**Last Updated**: 2025-11-27
 
-**Latest Changes**: Updated implementation status indicators. Approval tables and most product app tables are now deployed.
+**Latest Changes**:
+- Added Area 3 tables: `experiment_outcomes`, `policy_performance_summary` view, `get_policy_weights()` function
+- Added Area 6 tables: `decision_log`, `budget_decisions_summary` view, `override_audit` view, `log_decision()` function
+- Added policy_version extension to learnings table (migration 005)

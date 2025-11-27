@@ -148,6 +148,114 @@ Authorization: Bearer {crew-token}
 
 ---
 
+## Area 3: Policy Versioning Patterns
+
+### Policy Selection (Internal)
+```python
+from startupai.tools import select_experiment_policy, record_experiment_outcome
+
+# Select policy for experiment
+policy, reason = select_experiment_policy("ad_creative")
+# Returns: (PolicyVersion.YAML_BASELINE, "UCB selection: exploration bonus")
+
+# Record outcome after experiment completes
+record_experiment_outcome(
+    experiment_type="ad_creative",
+    policy_version=policy,
+    success_score=0.85,
+    metrics={"ctr": 0.032, "conversion": 0.018}
+)
+```
+
+### Status Response with Policy Info
+```json
+{
+  "status": "completed",
+  "policy_version": "yaml_baseline",
+  "experiment_config_source": "yaml_baseline",
+  "policy_selection_reason": "UCB selection: yaml_baseline has higher confidence"
+}
+```
+
+---
+
+## Area 6: Budget Check Patterns
+
+### Budget Check (Internal)
+```python
+from startupai.tools import check_spend_allowed, record_budget_override
+
+# Pre-spend validation
+result = check_spend_allowed(
+    project_id="proj_123",
+    requested_amount=100.0,
+    budget_total=500.0,
+    spent_to_date=420.0
+)
+# result.status: BudgetStatus.WARNING
+# result.allowed: True
+# result.escalation: EscalationInfo with contact details
+
+# Record human override (if needed)
+record_budget_override(
+    project_id="proj_123",
+    override_amount=150.0,
+    rationale="Critical experiment for PMF validation"
+)
+```
+
+### Decision Logging (Audit Trail)
+```python
+from startupai.persistence.decision_log import log_human_approval
+
+log_human_approval(
+    project_id="proj_123",
+    decision_point="creative_approval",
+    decision="approved",
+    rationale="Landing page meets brand guidelines",
+    actor_id="user_456"
+)
+```
+
+---
+
+## Area 7: Business Model Classification Patterns
+
+### Classification (Internal)
+```python
+from startupai.tools import classify_from_state, get_model_for_type
+
+# Auto-classify business model
+result = classify_from_state(state)
+# result.business_model_type: BusinessModelType.SAAS_B2B_SMB
+# result.confidence: 0.87
+
+# Get model-specific unit economics calculator
+model = get_model_for_type(result.business_model_type)
+metrics = model.calculate_metrics(input_data)
+```
+
+### Viability Response with Model Info
+```json
+{
+  "viability_gate": {
+    "passed": true,
+    "business_model_type": "saas_b2b_smb",
+    "ltv_cac_ratio": 4.0,
+    "target_ltv_cac_ratio": 3.0,
+    "payback_months": 10,
+    "target_payback_months": 12,
+    "unit_economics_status": "profitable",
+    "model_specific_metrics": {
+      "target_arpu": 99.0,
+      "typical_churn": 0.05
+    }
+  }
+}
+```
+
+---
+
 ## Aspirational Contracts (NOT IMPLEMENTED)
 
 These were documented but do not exist yet:
@@ -172,6 +280,9 @@ These were documented but do not exist yet:
 | Metrics API | ❌ NOT IMPLEMENTED (marketing site feature) |
 
 ---
-**Last Updated**: 2025-11-26
+**Last Updated**: 2025-11-27
 
-**Latest Changes**: Updated implementation status - product app webhooks and approvals API now implemented. See `03-validation-spec.md` for authoritative technical details.
+**Latest Changes**:
+- Added Area 3 policy versioning patterns (policy selection, status response)
+- Added Area 6 budget check patterns (spend validation, decision logging)
+- Added Area 7 business model classification patterns (classification, viability response)

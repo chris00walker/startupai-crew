@@ -166,6 +166,58 @@ class Platform(str, Enum):
 
     GOOGLE\_DISPLAY \= "google\_display"
 
+### 2.1.1 Area 3: Policy Versioning Enums
+
+class PolicyVersion(str, Enum):
+    """Policy versions for A/B testing experiment configurations."""
+    YAML_BASELINE = "yaml_baseline"     # Static YAML-based configuration
+    RETRIEVAL_V1 = "retrieval_v1"       # Retrieval-augmented configuration
+
+### 2.1.2 Area 6: Budget Guardrails Enums
+
+class EnforcementMode(str, Enum):
+    """Budget enforcement modes."""
+    HARD = "hard"   # Block execution if budget exceeded
+    SOFT = "soft"   # Warn but allow continuation
+
+class BudgetStatus(str, Enum):
+    """Budget status for spend tracking."""
+    OK = "ok"               # Under budget
+    WARNING = "warning"     # 80%+ of budget
+    EXCEEDED = "exceeded"   # 100%+ of budget
+    KILL = "kill"           # 120%+ critical limit
+
+class DecisionType(str, Enum):
+    """Types of decisions logged for audit trail."""
+    CREATIVE_APPROVAL = "creative_approval"
+    VIABILITY_APPROVAL = "viability_approval"
+    PIVOT_DECISION = "pivot_decision"
+    BUDGET_DECISION = "budget_decision"
+    POLICY_SELECTION = "policy_selection"
+    HUMAN_APPROVAL = "human_approval"
+
+class ActorType(str, Enum):
+    """Actor types for decision attribution."""
+    AI_AGENT = "ai_agent"
+    HUMAN_FOUNDER = "human_founder"
+    SYSTEM = "system"
+
+### 2.1.3 Area 7: Business Model Viability Enums
+
+class BusinessModelType(str, Enum):
+    """Business model types for viability calculations."""
+    SAAS_B2B_SMB = "saas_b2b_smb"
+    SAAS_B2B_MIDMARKET = "saas_b2b_midmarket"
+    SAAS_B2B_ENTERPRISE = "saas_b2b_enterprise"
+    SAAS_B2C_FREEMIUM = "saas_b2c_freemium"
+    SAAS_B2C_SUBSCRIPTION = "saas_b2c_subscription"
+    ECOMMERCE_DTC = "ecommerce_dtc"
+    ECOMMERCE_MARKETPLACE = "ecommerce_marketplace"
+    FINTECH_B2B = "fintech_b2b"
+    FINTECH_B2C = "fintech_b2c"
+    CONSULTING = "consulting"
+    UNKNOWN = "unknown"
+
 ### 2.2 Supporting Models for Experiments & Artifacts
 
 class DesirabilityMetrics(BaseModel):
@@ -221,6 +273,13 @@ class ViabilityMetrics(BaseModel):
     monthly\_churn\_pct: float \= 0.0
 
     payback\_months: float \= 0.0
+
+    # Area 7 additions: Business model-specific breakdown
+    business_model_type: Optional[BusinessModelType] = None
+    cac_breakdown: Optional[Dict[str, float]] = None  # {"paid": 150, "organic": 50}
+    ltv_breakdown: Optional[Dict[str, float]] = None  # {"subscription": 800, "upsell": 200}
+    ltv_cac_ratio: float = 0.0
+    model_specific_metrics: Optional[Dict[str, Any]] = None  # Model-specific fields
 
 #### Phase 1 artifacts (ads, LPs, config, approvals)
 
