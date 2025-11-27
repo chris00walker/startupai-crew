@@ -249,7 +249,7 @@ CREATE TABLE flow_executions (
 
 ## Area 3: Policy Versioning Tables
 
-**Status**: ✅ Ready (migration 004, 005)
+**Status**: ✅ Deployed (migration 004, 005) - 2025-11-27
 
 ### Experiment Outcomes
 
@@ -363,7 +363,7 @@ CREATE INDEX idx_learnings_policy ON learnings(policy_version);
 
 ## Area 6: Decision Logging Tables
 
-**Status**: ✅ Ready (migration 006)
+**Status**: ✅ Deployed (migration 006) - 2025-11-27
 
 ### Decision Log
 
@@ -515,7 +515,11 @@ CREATE INDEX idx_hypotheses_status ON hypotheses(status);
 ---
 **Last Updated**: 2025-11-27
 
-**Latest Changes**:
+**Latest Changes (2025-11-27 - Migrations Deployed)**:
+- All CrewAI migrations deployed to Supabase: 001, 002, 004, 005, 006
+- Updated status indicators from "Ready" to "Deployed"
+
+**Previous Changes**:
 - Added Area 3 tables: `experiment_outcomes`, `policy_performance_summary` view, `get_policy_weights()` function
 - Added Area 6 tables: `decision_log`, `budget_decisions_summary` view, `override_audit` view, `log_decision()` function
 - Added policy_version extension to learnings table (migration 005)

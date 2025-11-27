@@ -8,7 +8,7 @@ Welcome to the StartupAI CrewAI Backend documentation. This repository contains 
 docs/
 ├── README.md                     # You are here
 ├── environments.md               # Local/production setup
-├── strategyzer-physics.md        # Non-linear routing logic (Innovation Physics)
+├── innovation-physics.md         # Non-linear routing logic (Innovation Physics)
 ├── master-architecture/          # Ecosystem source of truth
 │   ├── 00-introduction.md        # This repo's architecture & quick start
 │   ├── 01-ecosystem.md           # 3-service overview
@@ -76,7 +76,7 @@ Other documents reference these sources - they don't duplicate the content.
 | Understand the 3-service architecture | [01-ecosystem.md](./master-architecture/01-ecosystem.md) |
 | See all founders and agents | [02-organization.md](./master-architecture/02-organization.md) |
 | Build a crew or flow | [03-validation-spec.md](./master-architecture/03-validation-spec.md) |
-| Understand router and pivot logic | [strategyzer-physics.md](./strategyzer-physics.md) |
+| Understand router and pivot logic | [innovation-physics.md](./innovation-physics.md) |
 | Set up my development environment | [environments.md](./environments.md) |
 | Integrate with CrewAI API | [reference/api-contracts.md](./master-architecture/reference/api-contracts.md) |
 | Implement approval UI | [reference/approval-workflows.md](./master-architecture/reference/approval-workflows.md) |
@@ -95,6 +95,6 @@ Other documents reference these sources - they don't duplicate the content.
 This repository (startupai-crew) is **upstream** of both - changes here unblock downstream work.
 
 ---
-**Last Updated**: 2025-11-26
+**Last Updated**: 2025-11-27
 
-**Latest Changes**: Fixed filename reference (INNOVATION_PHYSICS_README.md → strategyzer-physics.md).
+**Latest Changes**: Renamed `strategyzer-physics.md` → `innovation-physics.md` for clarity.

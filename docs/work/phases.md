@@ -36,17 +36,24 @@ Phase 1 is **complete** when all of the following are true:
 - [x] Pivot history tracking for Flywheel
 
 **Flywheel Learning (Phase 1):**
-- [ ] Supabase learning tables created (pgvector) - BLOCKED: needs migration in product app
+- [x] Supabase learning tables created (pgvector) - ✅ All tables deployed (learnings, patterns, outcomes, domain_expertise)
 - [x] Anonymizer tool implemented
 - [x] PrivacyGuard tool implemented (40 integration tests)
 - [x] LearningCaptureTool implemented
 - [x] LearningRetrievalTool implemented
 - [x] Learning capture integrated into Phase 1 Flow
 
+**Database Migrations (All Deployed 2025-11-27):**
+- [x] flow_executions table (001)
+- [x] validation_events table (002)
+- [x] experiment_outcomes table (004) - Area 3 policy versioning
+- [x] policy_version column on learnings (005)
+- [x] decision_log table (006) - Area 6 budget guardrails
+
 **Integration Complete:**
 - [x] Deployed to CrewAI AMP and accessible via `/kickoff`
 - [x] Results persist to Supabase via webhook
-- [ ] Learnings persist to Supabase (learnings, patterns, outcomes tables)
+- [x] Learnings persist to Supabase (learnings, patterns, outcomes tables) - ✅ Tables deployed
 - [x] Product app can poll status via `/status/{id}`
 - [ ] Product app can retrieve and display results
 

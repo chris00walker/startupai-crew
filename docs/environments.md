@@ -72,7 +72,7 @@ startupai-crew/
 │       │   └── governance/
 │       └── main.py                     # Entry point
 ├── docs/
-│   ├── strategyzer-physics.md          # Strategyzer methodology & router logic
+│   ├── innovation-physics.md           # Strategyzer methodology & router logic
 │   └── master-architecture/            # Ecosystem source of truth
 └── pyproject.toml                      # Python dependencies
 ```

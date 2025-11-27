@@ -219,7 +219,7 @@ This document provides an unvarnished view of what works, what's broken, and wha
 | From | To | Status | Issue |
 |------|-----|--------|-------|
 | CrewAI → Supabase | Results storage | ✅ Implemented | `_persist_to_supabase()` via webhook |
-| CrewAI → Supabase | Flywheel tables | ✅ Migrations ready | experiment_outcomes, decision_log tables (migrations 004-006) |
+| CrewAI → Supabase | Flywheel tables | ✅ Migrations deployed | flow_executions, validation_events, experiment_outcomes, decision_log (migrations 001-006) |
 | Marketing ← CrewAI | Activity feed | Missing | Public API doesn't exist |
 | Marketing ← CrewAI | Metrics API | Missing | Public API doesn't exist |
 | Product ← CrewAI | Status polling | Implemented | No UI to display |
@@ -280,14 +280,17 @@ This document provides an unvarnished view of what works, what's broken, and wha
 ## Last Updated
 2025-11-27
 
-**Latest Changes (2025-11-27 - Areas 3, 6, 7 Complete)**:
+**Latest Changes (2025-11-27 - Migrations Deployed)**:
+- **Database migrations deployed to Supabase**: flow_executions (001), validation_events (002), experiment_outcomes (004), policy_version (005), decision_log (006)
+- All CrewAI-specific tables now live and ready for use
+
+**Changes (2025-11-27 - Areas 3, 6, 7 Complete)**:
 - **UPDATE**: Completion from "~80% functional" to "~95% functional"
 - **Added Area 3 tools**: PolicyBandit, ExperimentConfigResolver for policy versioning & A/B testing
 - **Added Area 6 tools**: BudgetGuardrails, DecisionLogger for budget enforcement & audit trail
 - **Added Area 7 tools**: BusinessModelClassifier, 10 UnitEconomicsModels for business-specific viability
 - Updated tool count from 18 to 24+
 - Added "Recently Completed" section for Areas 3, 6, 7
-- Updated integration status: Flywheel migrations now ready (004-006)
 
 **Previous Changes (2025-11-26 - Post-Audit)**:
 - **MAJOR CORRECTION**: Updated completion from "30% functional" to "~80% functional"

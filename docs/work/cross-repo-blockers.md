@@ -90,13 +90,16 @@ The marketing site makes promises that require technical capabilities. Status af
 ---
 **Last Updated**: 2025-11-27
 
+**Changes (2025-11-27 - Migrations Deployed)**:
+- **Database migrations deployed**: flow_executions (001), validation_events (002), experiment_outcomes (004), policy_version (005), decision_log (006)
+- All CrewAI-specific tables now live in Supabase
+
 **Changes (2025-11-27)**:
 - **Areas 3, 6, 7 Complete**: All 8 architectural improvements now 100% implemented
 - Added Area 3 tools: PolicyBandit, ExperimentConfigResolver
 - Added Area 6 tools: BudgetGuardrails, DecisionLogger
 - Added Area 7 tools: BusinessModelClassifier, 10 UnitEconomicsModels
 - Tool count increased from 18 to 24+
-- Migrations ready: experiment_outcomes (004), policy_version (005), decision_log (006)
 - Flywheel learning tables: ✅ Done (learnings, patterns, outcomes, domain_expertise)
 - Product app can now build results display UI (webhook persistence working)
 - Marketing site can build transparency features (data available in Supabase)

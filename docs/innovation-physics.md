@@ -1,12 +1,18 @@
 # Innovation Physics Implementation
 
+---
+purpose: Maps Strategyzer Innovation Physics principles to StartupAI implementation
+status: reference
+last_reviewed: 2025-11-27
+---
+
 ## Overview
 
-This document describes how Innovation Physics principles (Strategyzer methodologies) are integrated into the StartupAI validation engine. It is **fully aligned** with the complete architecture specification in `draft-architecture.md`.
+This document describes how Innovation Physics principles (Strategyzer methodologies) are integrated into the StartupAI validation engine. It is **fully aligned** with the complete architecture specification in `03-validation-spec.md`.
 
 **Relationship to Other Docs:**
-- `draft-architecture.md`: Complete technical specification (state, crews, tools, routers)
-- `strategyzer-physics.md` (this doc): Innovation Physics principles mapped to implementation
+- `03-validation-spec.md`: Complete technical specification (state, crews, tools, routers)
+- `innovation-physics.md` (this doc): Innovation Physics principles mapped to implementation
 
 This implementation transforms the StartupAI CrewAI Flow from a linear validation process into a dynamic, evidence-driven system where routing decisions are based on computed metrics (`problem_resonance`, `zombie_ratio`, `unit_economics_status`) rather than sequential steps.
 
@@ -63,38 +69,48 @@ This implementation transforms the StartupAI CrewAI Flow from a linear validatio
   3. `KILL`: Terminate project
 - **Resume**: `/resume` endpoint writes `pending_pivot_type` and routes accordingly
 
-## File Structure (Aligned with Draft Architecture)
+## File Structure
 
 ```
 src/startupai/
 ├── flows/
 │   ├── __init__.py
-│   ├── state_schemas.py           # Complete state with Innovation Physics metrics
-│   │                              # - StartupValidationState (with problem_resonance, zombie_ratio)
-│   │                              # - All enums (Phase, Signals, PivotType, etc.)
-│   │                              # - Artifact models (AdVariant, LandingPageVariant, etc.)
-│   └── internal_validation_flow.py # StartupValidationFlow with @router logic
+│   ├── state_schemas.py              # Complete state with Innovation Physics metrics
+│   │                                 # - StartupValidationState (with problem_resonance, zombie_ratio)
+│   │                                 # - All enums (Phase, Signals, PivotType, etc.)
+│   │                                 # - Artifact models (AdVariant, LandingPageVariant, etc.)
+│   ├── internal_validation_flow.py   # StartupValidationFlow with @router logic
+│   └── consultant_onboarding_flow.py # Consultant onboarding flow
 │
 ├── crews/
 │   ├── service/                   # Sage (S1, S2, S3)
-│   │   └── sage_crew.py           # VPC design, segment/value pivots
+│   │   └── service_crew.py        # VPC design, segment/value pivots
 │   ├── analysis/                  # Pulse (P1, P2, P3)
-│   │   └── pulse_crew.py          # Desirability experiments, evidence computation
+│   │   └── analysis_crew.py       # Desirability experiments, evidence computation
 │   ├── build/                     # Forge (F1, F2, F3)
-│   │   └── forge_crew.py          # Feasibility, MVP build, downgrade protocol
-│   ├── growth/                    # Future: market expansion
+│   │   └── build_crew.py          # Feasibility, MVP build, downgrade protocol
+│   ├── growth/                    # Growth (market expansion)
+│   │   └── growth_crew.py         # Ad campaigns, communications
 │   ├── synthesis/                 # Compass (C1, C2, C3)
-│   │   └── compass_crew.py        # HITL approvals, pivot synthesis
+│   │   └── synthesis_crew.py      # HITL approvals, pivot synthesis
 │   ├── finance/                   # Ledger (L1, L2, L3)
-│   │   └── ledger_crew.py         # Viability, unit economics
+│   │   └── finance_crew.py        # Viability, unit economics
 │   └── governance/                # Guardian (G1, G2, G3)
-│       └── guardian_crew.py       # QA, creative review, audit
+│       └── governance_crew.py     # QA, creative review, audit
 │
-├── tools/                         # Shared tools across crews
-│   ├── copywriting_tool.py        # Ad/LP generation
-│   ├── experiment_deploy_tool.py  # Multi-platform deployment
-│   ├── analytics_tool.py          # Metrics collection
+├── tools/                         # 24+ shared tools across crews
+│   ├── tavily_search_tool.py      # Real web research
+│   ├── landing_page_generator.py  # LP generation
+│   ├── landing_page_deployment.py # Netlify deployment
+│   ├── policy_bandit.py           # A/B policy selection (Area 3)
+│   ├── budget_guardrails.py       # Budget enforcement (Area 6)
+│   ├── unit_economics_models.py   # 10 business models (Area 7)
 │   └── ...
+│
+├── persistence/                   # State & event persistence
+│   ├── state_repository.py        # Supabase state storage
+│   ├── events.py                  # ValidationEvent tracking
+│   └── decision_log.py            # Decision audit trail
 │
 └── main.py                        # Entry point / kickoff
 ```
@@ -103,14 +119,14 @@ src/startupai/
 
 The `StartupValidationState` carries these Innovation Physics signals (aligned with complete architecture):
 
-### Core Signals (from draft-architecture.md)
+### Core Signals (from 03-validation-spec.md)
 - **Phase**: IDEATION, DESIRABILITY, FEASIBILITY, VIABILITY, VALIDATED, KILLED
 - **current_risk_axis**: DESIRABILITY, FEASIBILITY, VIABILITY
 - **desirability_signal**: NO_SIGNAL, NO_INTEREST, WEAK_INTEREST, STRONG_COMMITMENT
 - **feasibility_signal**: UNKNOWN, GREEN, ORANGE_CONSTRAINED, RED_IMPOSSIBLE
 - **viability_signal**: UNKNOWN, PROFITABLE, UNDERWATER, ZOMBIE_MARKET
 
-### Innovation Physics Evidence Metrics (per prompt-alignment.md)
+### Innovation Physics Evidence Metrics
 - **evidence_strength**: EvidenceStrength.NONE, WEAK, STRONG
 - **commitment_type**: CommitmentType.NONE, VERBAL_INTEREST, LOW_STAKE, SKIN_IN_GAME
 - **problem_resonance**: float (0.0-1.0) - fraction of visitors resonating with problem
@@ -125,7 +141,7 @@ The `StartupValidationState` carries these Innovation Physics signals (aligned w
 
 ## Router Logic
 
-The flow uses `@router` decorators implementing Innovation Physics filters (from prompt-alignment.md):
+The flow uses `@router` decorators implementing Innovation Physics filters:
 
 ### Desirability Router (Problem-Solution & Product-Market Filters)
 
@@ -215,7 +231,7 @@ def route_after_viability(self):
 
 ## Evidence Computation (Innovation Physics Metrics)
 
-The system computes Innovation Physics metrics from raw experiment data (from prompt-alignment.md):
+The system computes Innovation Physics metrics from raw experiment data:
 
 ```python
 def compute_desirability_evidence(aggregate: DesirabilityMetrics) -> dict:
@@ -273,7 +289,7 @@ When pivots are triggered, the system sets `human_input_required=True` with a sp
 
 ## Compass Synthesis & HITL Integration
 
-The `CompassCrew` manages two types of human-in-the-loop approvals (from draft-architecture.md):
+The `CompassCrew` (Synthesis Crew) manages two types of human-in-the-loop approvals:
 
 ### 1. Creative Approval (Desirability Phase)
 - **Trigger**: Guardian QA flags creatives for human review
@@ -328,26 +344,44 @@ python src/startupai/main.py
 7. **Multi-Platform Experiments**: `PlatformBudgetConfig` per platform (Meta, TikTok, LinkedIn, Google) with targeted budgets/audiences
 8. **Creative Approval Workflow**: Guardian auto-QA + optional HITL for ads/landing pages before deployment
 
-## Implementation Status & Next Steps
+## Implementation Status
 
-### Completed Architecture (draft-architecture.md)
-- ✅ Complete state schema with Innovation Physics metrics
+### ✅ Fully Implemented (as of 2025-11-27)
+
+**Architecture:**
+- ✅ Complete state schema with Innovation Physics metrics (`state_schemas.py`)
 - ✅ All enums and artifact models (AdVariant, LandingPageVariant, etc.)
 - ✅ Flow router logic with problem_resonance/zombie_ratio filters
 - ✅ HITL approval workflows (creative + viability)
 - ✅ Multi-platform experiment configuration
-- ✅ Crew/agent manifest (18 agents across 6 crews)
+- ✅ 8 crews / 18 agents fully implemented
 
-### Remaining Implementation Work (prompt-alignment.md)
-1. Apply enum/field additions to actual Python modules in `src/startupai/flows/`
-2. Implement `compute_desirability_evidence()` helper function
-3. Update `PulseCrew.kickoff()` to compute and propagate Innovation Physics metrics
-4. Update Flow routers (`route_after_desirability`, etc.) with threshold logic
-5. Wire `human_input_required` synchronization with `HumanApprovalStatus`
-6. Implement tool stubs: `CopywritingTool`, `ExperimentDeployTool`, `AnalyticsTool`, etc.
-7. Build Flywheel learning capture (Guardian's `LearningCaptureTool`)
-8. Deploy to CrewAI AMP and test `/resume` webhooks
+**Tools (24+ implemented):**
+- ✅ Research tools: TavilySearchTool, CompetitorResearchTool, MarketResearchTool
+- ✅ Build tools: LandingPageGeneratorTool, CodeValidatorTool, LandingPageDeploymentTool
+- ✅ HITL tools: GuardianReviewTool, ViabilityApprovalTool
+- ✅ Flywheel tools: LearningCaptureTool, LearningRetrievalTool, OutcomeTrackerTool
+- ✅ Area 3: PolicyBandit, ExperimentConfigResolver (policy versioning)
+- ✅ Area 6: BudgetGuardrails, DecisionLogger (budget enforcement)
+- ✅ Area 7: BusinessModelClassifier, 10 UnitEconomicsModels
+
+**Deployment:**
+- ✅ Deployed to CrewAI AMP
+- ✅ `/resume` webhooks working
+- ✅ Database migrations deployed (flow_executions, validation_events, experiment_outcomes, decision_log)
+
+### ⚠️ Not Yet Integrated
+- ❌ Ad platform APIs (Meta Business, Google Ads) - no real ad spend
+- ❌ Real-time analytics integration (PostHog/GA)
 
 ---
 
 **Innovation Physics Mantra**: Evidence drives iteration, not intuition.
+
+---
+
+**Last Updated**: 2025-11-27
+**Related Documents**:
+- `03-validation-spec.md` - Authoritative technical specification
+- `approval-workflows.md` - HITL approval patterns
+- `flywheel-learning.md` - Learning system architecture
