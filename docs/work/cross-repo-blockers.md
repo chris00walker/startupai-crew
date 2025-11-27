@@ -8,25 +8,25 @@ last_reviewed: "2025-11-26"
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
 
-## Marketing Promise Gap (Critical)
+## Marketing Promise Gap (Updated 2025-11-26)
 
-The marketing site makes promises that require technical capabilities not yet built. This represents the **work to be done** to deliver on marketing promises.
+The marketing site makes promises that require technical capabilities. Status after code audit:
 
-| Gap | Description | Impact |
+| Gap | Description | Status |
 |-----|-------------|--------|
-| MVP Building | Marketing promises "working software in days" | No code generation capability exists |
-| Real Ad Spend | Marketing promises $450-525 ad budget execution | No Meta/Google Ads API integration |
-| Real User Testing | Marketing promises "test with real customers" | No analytics or experiment framework |
-| Unit Economics | Marketing promises CAC/LTV analysis | Finance Crew outputs are LLM-generated fiction |
-| Evidence-Based | Marketing promises data-driven validation | All crew outputs are synthetic, not real data |
+| MVP Building | Marketing promises "working software in days" | ⚠️ LandingPageGeneratorTool + Netlify deploy exist; full app scaffold pending |
+| Real Ad Spend | Marketing promises $450-525 ad budget execution | ❌ No Meta/Google Ads API integration |
+| Real User Testing | Marketing promises "test with real customers" | ❌ No analytics or experiment framework |
+| Unit Economics | Marketing promises CAC/LTV analysis | ⚠️ UnitEconomicsCalculatorTool exists; may need real data sources |
+| Evidence-Based | Marketing promises data-driven validation | ⚠️ TavilySearchTool provides real web research |
 
 ### Capabilities Required to Close Gap
 
-1. **MVP Generation**: Code scaffolding, template deployment, GitHub integration
-2. **Ad Platform Integration**: Meta Business API, Google Ads API for real campaigns
-3. **Analytics Integration**: Real user tracking, conversion measurement
-4. **Financial Modeling**: Connect to real cost/revenue data, not LLM generation
-5. **Web Research Tools**: Competitor research APIs, market data sources
+1. **MVP Generation**: ✅ LandingPageGeneratorTool exists; full app scaffolding pending
+2. **Ad Platform Integration**: ❌ Meta Business API, Google Ads API not connected
+3. **Analytics Integration**: ❌ Real user tracking, conversion measurement pending
+4. **Financial Modeling**: ⚠️ Tools exist; may need real cost/revenue data sources
+5. **Web Research Tools**: ✅ TavilySearchTool + 4 research tools implemented
 
 ---
 
@@ -36,17 +36,17 @@ The marketing site makes promises that require technical capabilities not yet bu
 
 | Blocker | Status | Description | Unblocks |
 |---------|--------|-------------|----------|
-| Phase 1 Completion | ⚠️ Partial | Flow works, outputs are synthetic | Product can display results (quality is fiction) |
-| Results → Supabase | Not Started | Persist to `entrepreneur_briefs`, `analysis_results` tables | Product app can display analysis results |
-| Real Analysis Tools | Not Started | Tools for web research, data retrieval | Outputs transition from synthetic to real |
-| Flywheel Learning Schema | Not Started | SQL for `learnings`, `patterns`, `outcomes`, `domain_expertise` tables | Learning tools can persist/query |
-| Resume/Webhook API | Not Started | `POST /resume` with `human_feedback` for HITL | Product approval UI |
+| Phase 2D Completion | ✅ Complete | Flow works with 18 tools, @persist(), HITL | Product can display results |
+| Results → Supabase | ✅ Implemented | `_persist_to_supabase()` webhook in flow | Product app can display analysis results |
+| Real Analysis Tools | ✅ Implemented | TavilySearchTool, CompetitorResearchTool, etc. | Real web research available |
+| Flywheel Learning Schema | ❌ Not Started | SQL for `learnings`, `patterns`, `outcomes`, `domain_expertise` tables | Learning tools can persist/query |
+| Resume/Webhook API | ✅ Implemented | `webhooks/resume_handler.py` with 5 approval types | Product approval UI |
 
-**Specific API Endpoints Needed:**
-- `POST /kickoff` - Already working
-- `GET /status/{id}` - Already working
-- `POST /resume` - For approval workflows (per `reference/approval-workflows.md`)
-- Webhook to `https://app.startupai.site/api/approvals/webhook` - Push notifications
+**Specific API Endpoints Status:**
+- `POST /kickoff` - ✅ Working
+- `GET /status/{id}` - ✅ Working
+- `POST /resume` - ✅ Implemented (`webhooks/resume_handler.py`)
+- Webhook notifications - ✅ Implemented (creative approval, viability decision)
 
 **Flywheel Learning Tables Needed:**
 - Schema: See `docs/master-architecture/reference/flywheel-learning.md`
@@ -72,9 +72,10 @@ The marketing site makes promises that require technical capabilities not yet bu
 
 ## Coordination Notes
 
-- **Phase 1 Complete** criteria defined in `phases.md`
-- Results persistence mechanism TBD (webhook vs polling)
+- **Phase 2D Complete** - All code criteria met (see `phases.md`)
+- Results persistence mechanism: ✅ Webhook implemented (`_persist_to_supabase()`)
 - Activity Feed API added to `backlog.md` per marketing dependency
+- Flywheel tables still need migration in product app
 
 ## Cross-Repo Links
 
@@ -87,4 +88,10 @@ The marketing site makes promises that require technical capabilities not yet bu
 ---
 **Last Updated**: 2025-11-26
 
-**Changes**: Added Marketing Promise Gap section documenting capabilities required to deliver on marketing claims. Updated Phase 1 status to reflect partial completion (flow works, outputs synthetic).
+**Changes (2025-11-26 - Post-Audit)**:
+- **MAJOR CORRECTION**: Updated multiple blockers from "Not Started" to "Implemented"
+- Results → Supabase: ✅ `_persist_to_supabase()` webhook exists
+- Resume/Webhook API: ✅ `webhooks/resume_handler.py` with 5 approval types
+- Real Analysis Tools: ✅ TavilySearchTool + 4 research tools implemented
+- Phase status updated from "Phase 1 Partial" to "Phase 2D Complete"
+- Only remaining blocker for Product App: Flywheel learning tables migration

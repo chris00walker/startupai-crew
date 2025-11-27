@@ -12,8 +12,8 @@ This document provides an unvarnished view of what works, what's broken, and wha
 
 | Service | Overall Status | Completion | Reality Check |
 |---------|---------------|------------|---------------|
-| AI Founders Core (startupai-crew) | Flow works, outputs synthetic | 30% functional | Produces plausible fiction |
-| Marketing Site (startupai.site) | Functional, static | 90% | Promises far exceed delivery |
+| AI Founders Core (startupai-crew) | Flow works, 18 tools implemented | ~80% functional | TavilySearch for real web research; financial tools exist |
+| Marketing Site (startupai.site) | Functional, static | 90% | Ad platform APIs (Meta/Google) not connected |
 | Product App (app.startupai.site) | Partial, migration in progress | 65-70% | Can display results when available |
 
 ---
@@ -24,21 +24,21 @@ This document provides an unvarnished view of what works, what's broken, and wha
 
 | Marketing Promise | Technical Reality |
 |-------------------|-------------------|
-| "Build your MVP, test with real customers" | No MVP generation capability, no ad integration |
-| "Real ad spend ($450-525)" | No Meta/Google Ads API integration |
-| "Unit economics analysis (CAC/LTV)" | Finance Crew generates fictional numbers |
-| "2-week validation cycles" | Flow runs in minutes, outputs are synthetic |
-| "Evidence-based validation" | Evidence is LLM-generated, not real data |
-| "6 AI Founders team" | Agents exist but are pure LLM stubs |
+| "Build your MVP, test with real customers" | ⚠️ LandingPageGeneratorTool + Netlify deploy exist; full MVP scaffold pending; no ad integration |
+| "Real ad spend ($450-525)" | ❌ No Meta/Google Ads API integration |
+| "Unit economics analysis (CAC/LTV)" | ⚠️ UnitEconomicsCalculatorTool + IndustryBenchmarkTool exist; may need real data sources |
+| "2-week validation cycles" | ⚠️ Flow runs in minutes; tools exist but quality depends on Tavily data |
+| "Evidence-based validation" | ⚠️ TavilySearchTool provides real web research; analysis quality TBD |
+| "6 AI Founders team" | ✅ 8 crews / 18 agents with 18 specialized tools |
 
 ### Capabilities Required for Marketing Parity
 
-1. **MVP Generation**: Code scaffolding tools, template deployment, GitHub integration
-2. **Ad Platform Integration**: Meta Business API, Google Ads API for real campaigns
-3. **Real Analytics**: User tracking, conversion measurement, A/B testing
-4. **Financial Modeling**: Connect to real cost/revenue data sources
-5. **Web Research Tools**: Competitor research APIs, market data sources
-6. **Results Persistence**: Store outputs to Supabase for frontend display
+1. **MVP Generation**: ✅ LandingPageGeneratorTool exists; full app scaffolding pending
+2. **Ad Platform Integration**: ❌ Meta Business API, Google Ads API not connected
+3. **Real Analytics**: ❌ User tracking, conversion measurement, A/B testing pending
+4. **Financial Modeling**: ⚠️ UnitEconomicsCalculatorTool exists; may need real data sources
+5. **Web Research Tools**: ✅ TavilySearchTool + 4 research tools implemented
+6. **Results Persistence**: ✅ Webhook to Supabase implemented via `_persist_to_supabase()`
 
 ---
 
@@ -53,20 +53,28 @@ This document provides an unvarnished view of what works, what's broken, and wha
 - REST API (kickoff, status) responds correctly
 - GitHub auto-deploy configured
 
-### Phase 1 Implementation Status (NEW)
+### Implementation Status (Phase 2D Complete)
 
 | Component | Status | Notes |
 |-----------|--------|-------|
 | `state_schemas.py` | ✅ Complete | All signals implemented (EvidenceStrength, CommitmentType, etc.) |
-| `internal_validation_flow.py` | ✅ Complete | Non-linear routers with pivot logic |
-| Service Crew | ✅ Stub | Ready for LLM tool integration |
-| Analysis Crew | ✅ Stub | Ready for LLM tool integration |
-| Build Crew | ✅ Stub | Ready for LLM tool integration |
-| Growth Crew | ✅ Stub | Ready for LLM tool integration |
+| `internal_validation_flow.py` | ✅ Complete | Non-linear routers with pivot logic, 9 @persist() checkpoints |
+| Service Crew | ✅ Complete | 3 agents for intake/brief |
+| Analysis Crew | ✅ Complete | 2 agents with TavilySearchTool for real web research |
+| Build Crew | ✅ Complete | 3 agents with LandingPageGeneratorTool + Netlify deploy |
+| Growth Crew | ✅ Complete | 3 agents (ad APIs deferred) |
 | Synthesis Crew | ✅ Complete | Full task definitions with pivot logic |
-| Finance Crew | ✅ Stub | Ready for LLM tool integration |
-| Governance Crew | ✅ Stub | Ready for LLM tool integration |
+| Finance Crew | ✅ Complete | 2 agents with UnitEconomicsCalculatorTool |
+| Governance Crew | ✅ Complete | 3 agents with 8 tools (HITL, Flywheel, Privacy) |
 | `main.py` | ✅ Complete | Entry point for flow execution |
+
+**Tools Implemented (18 total):**
+- Research: TavilySearchTool, CompetitorResearchTool, MarketResearchTool, CustomerResearchTool
+- Financial: IndustryBenchmarkTool, UnitEconomicsCalculatorTool
+- Build: LandingPageGeneratorTool, CodeValidatorTool, LandingPageDeploymentTool
+- HITL: GuardianReviewTool, MethodologyCheckTool, ViabilityApprovalTool
+- Flywheel: LearningCaptureTool, LearningRetrievalTool, FlywheelInsightsTool, OutcomeTrackerTool
+- Privacy: AnonymizerTool, PrivacyGuardTool
 
 ### Innovation Physics Signals Implemented
 - `evidence_strength`: STRONG, WEAK, NONE
@@ -80,24 +88,33 @@ This document provides an unvarnished view of what works, what's broken, and wha
 - Base URL: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
 
 ### What's Limited (Honest Assessment)
-- **All crews produce synthetic data**: No real research, just LLM generation
-- **No external tools**: Agents cannot search web, access APIs, or retrieve real data
-- **Pure hallucination risk**: CAC/LTV, competitor data, market sizes are all fictional
+- **Ad platform integration**: Meta/Google Ads APIs not connected - cannot run real ad campaigns
+- **Analytics integration**: No PostHog/GA integration for real experiment tracking
+- **Learning tables**: Flywheel tables not yet created in Supabase (needs migration)
 - **Token usage**: ~100K tokens per run ($2-5 per analysis)
 - **No streaming**: Users wait without progress updates
-- **No automated storage**: Results stay in CrewAI, not Supabase
+- **Public APIs**: Activity Feed and Metrics APIs for marketing site not implemented
 
 ### What Doesn't Exist
-- Activity feed API for marketing site
-- Webhook notifications
-- Real-time progress events
-- Automated result storage to Supabase
+- Activity Feed API for marketing site (`GET /api/v1/public/activity`)
+- Metrics API for marketing site (`GET /api/v1/public/metrics`)
+- Meta Business API integration
+- Google Ads API integration
+- Real A/B experiment tracking
+
+### What DOES Exist (Corrected)
+- ✅ TavilySearchTool for real web research
+- ✅ Webhook notifications for HITL workflows (creative approval, viability)
+- ✅ Result storage to Supabase via `_persist_to_supabase()`
+- ✅ Resume handler for HITL approvals (`webhooks/resume_handler.py`)
+- ✅ State persistence via `@persist()` decorators (9 checkpoints)
 
 ### Configuration Status
 | Item | Status |
 |------|--------|
-| `config/agents.yaml` | Complete (6 agents) |
-| `config/tasks.yaml` | Complete (6 tasks) |
+| Crew configs | Complete (8 crews with 18 agents total) |
+| Task configs | Complete (per-crew task definitions) |
+| Tools | 18 tools implemented and wired to agents |
 | Environment vars | Set in CrewAI dashboard |
 | Authentication | Bearer token working |
 
@@ -199,8 +216,10 @@ This document provides an unvarnished view of what works, what's broken, and wha
 ### Broken/Missing Integrations
 | From | To | Status | Issue |
 |------|-----|--------|-------|
-| CrewAI → Supabase | Results storage | Missing | Results stay in CrewAI |
-| Marketing ← CrewAI | Activity feed | Missing | API doesn't exist |
+| CrewAI → Supabase | Results storage | ✅ Implemented | `_persist_to_supabase()` via webhook |
+| CrewAI → Supabase | Flywheel tables | Missing | Tables not yet created in Supabase |
+| Marketing ← CrewAI | Activity feed | Missing | Public API doesn't exist |
+| Marketing ← CrewAI | Metrics API | Missing | Public API doesn't exist |
 | Product ← CrewAI | Status polling | Implemented | No UI to display |
 
 ### Environment Variable Sync
@@ -217,15 +236,15 @@ This document provides an unvarnished view of what works, what's broken, and wha
 ## Critical Blockers
 
 ### 1. No End-to-End Analysis Flow
-**Issue**: User completes onboarding → CrewAI runs → Results stored... where?
+**Issue**: User completes onboarding → CrewAI runs → Results stored → UI displays... where?
 
-**Current state**: Results stay in CrewAI AMP, not in Supabase. No UI to retrieve and display them.
+**Current state**: Results storage implemented via `_persist_to_supabase()` webhook. Missing: Product app UI to display results.
 
 **Required**:
-- API route to poll CrewAI status
-- Background job or webhook to retrieve results
-- Store results in `entrepreneur_briefs` or new table
-- UI to display analysis results
+- ✅ API route to poll CrewAI status (implemented)
+- ✅ Webhook to persist results (implemented)
+- ✅ Store results in `reports` and `evidence` tables (webhook does this)
+- ❌ UI to display analysis results (product app needs this)
 
 ### 2. Marketing Site Cannot Show Agent Activity
 **Issue**: Core value proposition is transparency, but no transparency mechanism exists.
@@ -260,10 +279,19 @@ This document provides an unvarnished view of what works, what's broken, and wha
 ## Last Updated
 2025-11-26
 
-**Latest Changes**:
-- Added Marketing vs Reality Gap analysis documenting critical discrepancies
-- Updated status completion percentages to reflect actual functionality
-- Documented capabilities required for marketing parity
-- Made "What's Limited" section more explicit about synthetic data outputs
+**Latest Changes (2025-11-26 - Post-Audit)**:
+- **MAJOR CORRECTION**: Updated completion from "30% functional" to "~80% functional"
+- Corrected crew status from "Stub" to "Complete" with tools wired
+- Added "What DOES Exist" section documenting implemented capabilities
+- Fixed critical discrepancies table to reflect actual tool implementations
+- Updated integration status to show `_persist_to_supabase()` works
+- Corrected configuration status to show 18 agents and 18 tools
+
+**Audit Finding**: Documentation was severely out of date. Many features marked as "Not Started" were actually implemented:
+- TavilySearchTool for real web research
+- Webhook notifications for HITL
+- Result storage to Supabase
+- @persist() decorators (9 checkpoints)
+- Resume handler for HITL approvals
 
 This document should be updated whenever significant changes occur to any service.
