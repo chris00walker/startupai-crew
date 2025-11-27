@@ -12,7 +12,13 @@
       "WebFetch(domain:ai-sdk.dev)",
       "WebFetch(domain:platform.openai.com)",
       "WebFetch(domain:startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com)",
-      "WebFetch(domain:blog.crewai.com)"
+      "WebFetch(domain:blog.crewai.com)",
+      "mcp__netlify__netlify-coding-rules",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__list_extensions",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__search_docs"
     ],
     "deny": [
       "Bash(rm:*)",
