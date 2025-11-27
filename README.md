@@ -173,32 +173,33 @@ curl https://startupai-...crewai.com/status/{kickoff_id} \
 
 ```
 startupai-crew/
-├── src/
-│   └── startupai/
-│       ├── __init__.py
-│       ├── crew.py                 # Crew definition
-│       └── config/                 # Agent/task YAML configs
-│           ├── agents.yaml
-│           └── tasks.yaml
+├── src/startupai/
+│   ├── flows/                      # CrewAI Flows orchestration
+│   │   ├── internal_validation_flow.py
+│   │   └── state_schemas.py
+│   ├── crews/                      # 8 specialized crews
+│   │   ├── service/
+│   │   ├── analysis/
+│   │   ├── governance/
+│   │   ├── build/
+│   │   ├── growth/
+│   │   ├── synthesis/
+│   │   └── finance/
+│   └── tools/                      # 18 tools (see docs/tools/README.md)
+│       ├── web_search.py           # Tavily-powered research
+│       ├── financial_data.py       # Industry benchmarks
+│       ├── landing_page.py         # Landing page generation
+│       ├── guardian_review.py      # HITL creative review
+│       ├── viability_approval.py   # HITL viability decisions
+│       ├── flywheel_insights.py    # Cross-validation learning
+│       ├── privacy_guard.py        # PII/compliance protection
+│       └── ...
+├── tests/integration/              # 152 integration tests
 ├── docs/
-│   ├── README.md                   # Documentation index
-│   ├── environments.md             # Environment setup
 │   ├── master-architecture/        # ECOSYSTEM SOURCE OF TRUTH
-│   │   ├── 00-introduction.md
-│   │   ├── 01-ecosystem.md         # Three-service overview
-│   │   ├── 02-organization.md      # 6 founders, 18 agents
-│   │   ├── 03-validation-spec.md   # Technical blueprint
-│   │   ├── 04-status.md            # Current state assessment
-│   │   └── reference/              # API contracts, approval workflows
 │   ├── tools/                      # Tool documentation
 │   └── work/                       # Work tracking
-│       ├── backlog.md
-│       ├── in-progress.md
-│       ├── done.md
-│       ├── phases.md
-│       └── roadmap.md
 ├── CLAUDE.md                       # AI context
-├── README.md                       # This file
 └── pyproject.toml                  # Dependencies
 ```
 
@@ -245,24 +246,30 @@ crewai deploy list
 
 ---
 
-## Current Limitations
+## Current Status
 
-> **Important:** Phase 1 flow orchestration is functional, but all crew outputs are LLM-generated synthetic data. See [04-status.md](docs/master-architecture/04-status.md) for the full marketing vs reality gap analysis.
+> **Phase 2D Complete:** Core validation flow with HITL workflows, flywheel learning, and privacy protection. See [04-status.md](docs/master-architecture/04-status.md) for detailed status.
 
-**What Works:**
-- Flow orchestration with 3-phase gated validation
-- State management with 70-field schema
-- CrewAI AMP deployment responding to API calls
+**Implemented (Phases 1A-2D):**
+- Flow orchestration with 3-phase gated validation (Innovation Physics routers)
+- State management with `@persist()` decorators at 9 checkpoints
+- 18 tools implemented (research, financial, build, HITL, flywheel, privacy)
+- Real web research (TavilySearchTool)
+- Real financial analysis (IndustryBenchmarkTool, UnitEconomicsCalculatorTool)
+- Landing page generation + Netlify deployment
+- HITL creative approval workflow (GuardianReviewTool)
+- HITL viability decision workflow (ViabilityApprovalTool)
+- Flywheel learning system (FlywheelInsightsTool, OutcomeTrackerTool)
+- Privacy protection (PrivacyGuardTool with GDPR/CCPA/HIPAA checks)
+- 152 integration tests passing
 
 **Not Yet Implemented:**
-- Real market research (web search, data APIs)
-- Real competitor analysis
-- Real financial modeling (CAC/LTV from actual data)
-- MVP code generation
-- Ad platform integration
+- Real ad platform integration (Meta/Google APIs) - deferred
+- Real experiment tracking and analytics
+- Production webhook integration with product app
 
 ---
 
-**Status:** Phase 1 partial - flow works, outputs synthetic
+**Status:** Phase 2D complete - ~75% overall
 **Last Updated:** November 26, 2025
 **License:** Proprietary - StartupAI Platform

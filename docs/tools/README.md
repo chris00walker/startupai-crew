@@ -4,9 +4,9 @@ Custom tools extending CrewAI agent capabilities for the validation flow.
 
 ## Overview
 
-The tools package (`src/startupai/tools/`) provides specialized capabilities for research, analysis, MVP generation, and flywheel learning. All tools follow CrewAI's `BaseTool` pattern.
+The tools package (`src/startupai/tools/`) provides specialized capabilities for research, analysis, MVP generation, HITL workflows, flywheel learning, and privacy protection. All tools follow CrewAI's `BaseTool` pattern.
 
-## Implemented Tools
+## Implemented Tools (18 Total)
 
 | Tool | File | Purpose | Used By |
 |------|------|---------|---------|
@@ -18,6 +18,13 @@ The tools package (`src/startupai/tools/`) provides specialized capabilities for
 | **UnitEconomicsCalculatorTool** | `financial_data.py` | CAC/LTV calculations | Finance Crew |
 | **LandingPageGeneratorTool** | `landing_page.py` | A/B test landing page generation | Build Crew |
 | **CodeValidatorTool** | `code_validator.py` | HTML/accessibility/security validation | Build Crew |
+| **LandingPageDeploymentTool** | `landing_page_deploy.py` | Netlify deployment integration | Build Crew |
+| **GuardianReviewTool** | `guardian_review.py` | Auto-QA for creatives (HITL) | Governance Crew |
+| **MethodologyCheckTool** | `methodology_check.py` | VPC/BMC structure validation | Governance Crew |
+| **ViabilityApprovalTool** | `viability_approval.py` | Unit economics analysis (HITL) | Finance Crew |
+| **FlywheelInsightsTool** | `flywheel_insights.py` | Industry/stage pattern retrieval | Governance Crew |
+| **OutcomeTrackerTool** | `flywheel_insights.py` | Prediction tracking with feedback | Governance Crew |
+| **PrivacyGuardTool** | `privacy_guard.py` | PII detection, compliance, sanitization | Governance Crew |
 | **LearningCaptureTool** | `learning_capture.py` | Flywheel learning capture | All Crews |
 | **LearningRetrievalTool** | `learning_retrieval.py` | Flywheel learning retrieval | All Crews |
 | **AnonymizerTool** | `anonymizer.py` | PII anonymization for learnings | Learning Pipeline |
@@ -121,7 +128,191 @@ ready = is_deployment_ready(result)
 
 ---
 
+#### Landing Page Deployment (`landing_page_deploy.py`)
+
+Deploys landing pages to Netlify for live A/B testing.
+
+```python
+from startupai.tools import LandingPageDeploymentTool, deploy_landing_page
+
+# As CrewAI tool
+tool = LandingPageDeploymentTool()
+
+# As standalone function
+result = deploy_landing_page(
+    html_content="<html>...</html>",
+    site_name="my-startup-test",
+    netlify_token="..."
+)
+# Returns: DeploymentResult with url, deploy_id, etc.
+```
+
+**Environment**: Requires `NETLIFY_TOKEN`
+
+---
+
+### HITL (Human-in-the-Loop) Tools
+
+#### Guardian Review (`guardian_review.py`)
+
+Auto-QA for landing pages and ad creatives before deployment.
+
+```python
+from startupai.tools import GuardianReviewTool, review_landing_page, ReviewDecision
+
+# As CrewAI tool
+tool = GuardianReviewTool()
+
+# As standalone function
+result = review_landing_page(
+    artifact_id="lp_1",
+    html_content="<html>...",
+    business_context={"business_idea": "..."}
+)
+# result.decision: AUTO_APPROVED, NEEDS_HUMAN_REVIEW, REJECTED
+```
+
+**Checks**:
+- Compliance issues (medical claims, financial promises)
+- Brand safety (profanity, controversial content)
+- Accessibility requirements
+- Legal disclaimers
+
+---
+
+#### Methodology Check (`methodology_check.py`)
+
+Validates VPC (Value Proposition Canvas) and BMC (Business Model Canvas) structure.
+
+```python
+from startupai.tools import MethodologyCheckTool, check_vpc, check_bmc
+
+# As CrewAI tool
+tool = MethodologyCheckTool()
+
+# As standalone function
+result = check_vpc(vpc_data)  # Returns MethodologyCheckResult
+result = check_bmc(bmc_data)
+```
+
+**Validates**:
+- Required sections present
+- Cross-section consistency
+- Completeness scoring
+
+---
+
+#### Viability Approval (`viability_approval.py`)
+
+Analyzes unit economics and generates pivot recommendations for human decision.
+
+```python
+from startupai.tools import ViabilityApprovalTool, analyze_viability
+
+# As CrewAI tool
+tool = ViabilityApprovalTool()
+
+# As standalone function
+result = analyze_viability(
+    cac=150.0,
+    ltv=300.0,
+    gross_margin=0.70,
+    monthly_churn=0.05
+)
+# result.status: PROFITABLE, MARGINAL, UNDERWATER
+# result.pivot_options: List of recommended pivots
+```
+
+**Output**: `ViabilityApprovalResult` with status, confidence, pivot recommendations
+
+---
+
 ### Flywheel Learning Tools
+
+#### Flywheel Insights (`flywheel_insights.py`)
+
+Retrieves industry/stage patterns and cross-validation learnings.
+
+```python
+from startupai.tools import FlywheelInsightsTool, get_flywheel_insights
+
+# As CrewAI tool
+tool = FlywheelInsightsTool()
+
+# As standalone function
+insights = get_flywheel_insights(
+    industry="saas_b2b",
+    stage="problem_validated"
+)
+```
+
+**Features**:
+- Industry-specific patterns (SaaS B2B, marketplace, fintech, etc.)
+- Stage-specific guidance (ideation → PMF → scaling)
+- Cross-validation context retrieval
+
+---
+
+#### Outcome Tracker (`flywheel_insights.py`)
+
+Tracks predictions and outcomes for model improvement.
+
+```python
+from startupai.tools import OutcomeTrackerTool, track_prediction, record_prediction_outcome
+
+# As CrewAI tool
+tool = OutcomeTrackerTool()
+
+# As standalone function
+prediction_id = track_prediction(
+    validation_id="val_123",
+    prediction_type="desirability_outcome",
+    predicted_outcome="proceed",
+    confidence=0.85
+)
+
+# Later, record actual outcome
+record_prediction_outcome(
+    prediction_id=prediction_id,
+    actual_outcome="proceed",
+    variance_notes="Matched prediction"
+)
+```
+
+**Database**: Uses `predictions` table (pgvector) for outcome tracking
+
+---
+
+### Privacy & Compliance Tools
+
+#### Privacy Guard (`privacy_guard.py`)
+
+PII detection, compliance checking, and content sanitization.
+
+```python
+from startupai.tools import PrivacyGuardTool, check_privacy, sanitize_for_flywheel
+
+# As CrewAI tool
+tool = PrivacyGuardTool()
+
+# Check content for privacy violations
+result = check_privacy("Contact john@example.com for details")
+# result.is_safe: False
+# result.violations: [PrivacyViolation(type="email", ...)]
+
+# Sanitize for Flywheel storage
+clean = sanitize_for_flywheel("Email: john@test.com")
+# Returns: "Email: [EMAIL]"
+```
+
+**Features**:
+- PII detection (email, phone, SSN, credit cards, API keys)
+- Compliance framework checks (GDPR, CCPA, HIPAA)
+- Sensitivity classification (PUBLIC, INTERNAL, CONFIDENTIAL, RESTRICTED)
+- Cross-validation privacy boundaries
+- Audit trail generation
+
+---
 
 #### Learning Capture (`learning_capture.py`)
 
@@ -216,7 +407,7 @@ class MyTool(BaseTool):
 - **Error handling**: Return clear error messages, don't crash
 - **Rate limiting**: Respect external API limits
 - **Caching**: Cache expensive operations where appropriate
-- **Testing**: Add tests in `tests/tools/`
+- **Testing**: Add tests in `tests/integration/`
 
 ---
 
@@ -225,8 +416,9 @@ class MyTool(BaseTool):
 | Crew | Tools |
 |------|-------|
 | **Analysis Crew** | TavilySearchTool, CompetitorResearchTool, MarketResearchTool, CustomerResearchTool |
-| **Finance Crew** | IndustryBenchmarkTool, UnitEconomicsCalculatorTool |
-| **Build Crew** | LandingPageGeneratorTool, CodeValidatorTool |
+| **Finance Crew** | IndustryBenchmarkTool, UnitEconomicsCalculatorTool, ViabilityApprovalTool |
+| **Build Crew** | LandingPageGeneratorTool, CodeValidatorTool, LandingPageDeploymentTool |
+| **Governance Crew** | GuardianReviewTool, MethodologyCheckTool, FlywheelInsightsTool, OutcomeTrackerTool, PrivacyGuardTool, AnonymizerTool |
 | **All Crews** | LearningCaptureTool, LearningRetrievalTool |
 
 ---
@@ -236,9 +428,10 @@ class MyTool(BaseTool):
 | Variable | Required For | Description |
 |----------|--------------|-------------|
 | `TAVILY_API_KEY` | Web search tools | Tavily API key |
-| `SUPABASE_URL` | Learning tools | Supabase project URL |
-| `SUPABASE_KEY` | Learning tools | Supabase service role key |
+| `SUPABASE_URL` | Learning/Flywheel tools | Supabase project URL |
+| `SUPABASE_KEY` | Learning/Flywheel tools | Supabase service role key |
 | `OPENAI_API_KEY` | Learning tools | For embedding generation |
+| `NETLIFY_TOKEN` | Deployment tool | Netlify API token |
 
 ---
 
@@ -250,4 +443,4 @@ class MyTool(BaseTool):
 ---
 
 **Last Updated**: 2025-11-26
-**Status**: 11 tools implemented and deployed
+**Status**: 18 tools implemented and deployed (Phase 2D complete)

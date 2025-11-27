@@ -24,9 +24,17 @@ src/startupai/crews/analysis/
 └── analysis_crew.py
 ```
 
+## Tools
+
+- **TavilySearchTool** - Real-time web research via Tavily API
+- **CompetitorResearchTool** - Competitor analysis with positioning
+- **MarketResearchTool** - Market size and trends
+- **CustomerResearchTool** - Customer segment insights
+
 ## Status
 
-Not started - See `docs/work/in-progress.md`
+**Implemented** - Phase 1A complete (TavilySearchTool wired for real web research)
 
 ---
-**Spec**: `docs/master-architecture/03-validation-spec.md` (Phase 1 section)
+**Spec**: `docs/master-architecture/03-validation-spec.md`
+**Last Updated**: 2025-11-26
