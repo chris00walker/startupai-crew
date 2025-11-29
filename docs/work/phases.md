@@ -55,7 +55,35 @@ Phase 1 is **complete** when all of the following are true:
 - [x] Results persist to Supabase via webhook
 - [x] Learnings persist to Supabase (learnings, patterns, outcomes tables) - ✅ Tables deployed
 - [x] Product app can poll status via `/status/{id}`
+- [x] Product app has webhook receiver at `/api/crewai/webhook`
 - [ ] Product app can retrieve and display results
+- [ ] **PRODUCT APP CALLS founder_validation FLOW** ❌ NOT WIRED
+
+### ⚠️ CRITICAL INTEGRATION GAP
+
+**Status:** Backend founder_validation flow is fully implemented and deployed, but the product app does NOT call it.
+
+**Current Behavior:**
+- Product app (`/frontend/src/app/api/onboarding/complete/route.ts:619-672`) calls a generic `$CREWAI_API_URL` endpoint
+- No `flow_type: 'founder_validation'` parameter passed
+- Falls back to `generateStrategicAnalysis()` mock data if CrewAI call fails
+- Users see mock recommendations, not actual AI validation
+
+**What Needs to Happen:**
+1. Product app must extract `entrepreneur_input` from onboarding brief
+2. Product app must call `POST /kickoff` with:
+   - `flow_type: "founder_validation"` ← **MISSING**
+   - `entrepreneur_input: "..."`
+   - `project_id: UUID`
+   - `user_id: UUID`
+   - `session_id: UUID`
+3. Product app must store `kickoff_id` from response
+4. Product app must poll `GET /status/{kickoff_id}` until completion
+5. Product app must display results from `crewai_validation_states` table
+
+**Blocked By:** Product App team - needs to implement flow_type routing in `/onboarding/complete` route
+
+**Unblocks:** Real founder validation results for users (currently returns mock data)
 
 **Validation Complete:**
 - [ ] Tested with StartupAI's own business context
@@ -64,8 +92,10 @@ Phase 1 is **complete** when all of the following are true:
 - [ ] Anonymization verified (no PII in learnings)
 
 **Handoff Ready:**
-- [ ] Product app unblocked for Phase Alpha results display
-- [ ] Documentation updated in master-architecture/
+- [ ] Product app updates `/onboarding/complete` to call founder_validation flow (see CRITICAL INTEGRATION GAP above)
+- [ ] Product app receives and stores results from webhook
+- [ ] Product app displays validation results from `crewai_validation_states` table
+- [ ] Documentation updated in master-architecture/ with actual integration status
 
 **Cross-Repo Unblocks:**
 - Product App: Phase Alpha results display

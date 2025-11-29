@@ -45,10 +45,19 @@ The marketing site makes promises that require technical capabilities. Status af
 | Resume/Webhook API | ✅ Implemented | `webhooks/resume_handler.py` with 5 approval types | Product approval UI |
 
 **Specific API Endpoints Status:**
-- `POST /kickoff` - ✅ Working
-- `GET /status/{id}` - ✅ Working
+- `POST /kickoff` - ✅ Working (CrewAI AMP endpoint)
+- `GET /status/{id}` - ✅ Working (CrewAI AMP endpoint)
 - `POST /resume` - ✅ Implemented (`webhooks/resume_handler.py`)
 - Webhook notifications - ✅ Implemented (creative approval, viability decision)
+
+**⚠️ CRITICAL: Product App Integration Gap**
+- Backend founder_validation flow: ✅ Fully implemented and deployed
+- Product app calls founder_validation: ❌ NOT WIRED
+- Current product app behavior: Calls generic `$CREWAI_API_URL` endpoint with no `flow_type` parameter
+- Fallback: Returns mock data from `generateStrategicAnalysis()` if CrewAI call fails
+- Users experience: Mock validation results, not real AI analysis
+- See `phases.md` "CRITICAL INTEGRATION GAP" section for details
+- Blocker owner: Product App team - must update `/api/onboarding/complete` route
 
 **Flywheel Learning Tables Needed:**
 - Schema: See `docs/master-architecture/reference/flywheel-learning.md`
