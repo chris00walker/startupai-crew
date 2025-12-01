@@ -1,10 +1,12 @@
 ---
 purpose: "Private technical source of truth for CrewAI Flows engineering work tracking"
 status: "active"
-last_reviewed: "2025-11-21"
+last_reviewed: "2025-12-01"
 ---
 
 # Work Tracking
+
+**Current Status:** Phase 2D complete (~85% overall). All 8 crews implemented with 18 tools. See [phases.md](./phases.md) for details.
 
 - Planning cadence: bi-weekly sprint planning + monthly roadmap review.
 - Tracking tools: GitHub Projects (`startupai-crew` board) and linear issue labels.

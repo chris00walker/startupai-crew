@@ -1,7 +1,9 @@
 # Historical Design Prompts
 
+> **HISTORICAL REFERENCE ONLY** - These prompts were used during initial architecture design (Nov 2025). For current implementation, see [`../master-architecture/`](../master-architecture/).
+
 **Status**: Archived / Historical Reference
-**Last Updated**: 2025-11-27 (Areas 3, 6, 7 completion)
+**Last Updated**: 2025-12-01
 
 ## Purpose
 

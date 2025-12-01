@@ -627,12 +627,54 @@ class MyTool(BaseTool):
 
 ---
 
+## Troubleshooting
+
+### "Tavily API key not found"
+```bash
+# Check .env file includes:
+TAVILY_API_KEY=tvly-...
+
+# Deployed: Set in CrewAI Dashboard → Environment Variables
+```
+
+### "Supabase connection failed"
+```bash
+# Verify credentials:
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-service-role-key
+
+# Test connection:
+uv run python -c "from startupai.tools.learning_capture import LearningCaptureTool; print('OK')"
+```
+
+### "Tool execution timeout"
+- Web research tools have 30s default timeout
+- Increase with `TOOL_TIMEOUT_SECONDS=60` environment variable
+- For long operations, check CrewAI logs: `crewai deploy logs --uuid <uuid>`
+
+### "Landing page deployment failed"
+```bash
+# Verify Netlify token:
+NETLIFY_TOKEN=your-token
+
+# Test manually:
+curl -H "Authorization: Bearer $NETLIFY_TOKEN" https://api.netlify.com/api/v1/sites
+```
+
+### "Flywheel learning not persisting"
+- Check Supabase RLS policies allow writes
+- Verify `flywheel_learnings` table exists
+- Check embedding dimensions match (1536 for OpenAI)
+
+---
+
 ## Related Documents
 
 - [`../master-architecture/03-validation-spec.md`](../master-architecture/03-validation-spec.md) - Authoritative technical spec
 - [`../master-architecture/reference/flywheel-learning.md`](../master-architecture/reference/flywheel-learning.md) - Learning system architecture
+- [Environment Setup](../CLAUDE.md) - Environment variable reference
 
 ---
 
-**Last Updated**: 2025-11-27
+**Last Updated**: 2025-12-01
 **Status**: 24+ tools implemented and deployed (All 8 architectural areas complete)

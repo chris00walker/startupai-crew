@@ -1,7 +1,7 @@
 ---
 purpose: "Feature-specific documentation for crew and flow implementations"
 status: "active"
-last_reviewed: "2025-11-26"
+last_reviewed: "2025-12-01"
 ---
 
 # Features
@@ -30,15 +30,17 @@ features/
 
 ## Crew Status
 
-| Crew | Owner | Status | Phase | Notes |
-|------|-------|--------|-------|-------|
-| Service | Sage (CSO) | ✅ Complete | 1A | 3 agents, intake & brief capture |
-| Analysis | Sage (CSO) | ✅ Complete | 1A | 2 agents, TavilySearchTool for real research |
-| Build | Forge (CTO) | ✅ Complete | 1B | 3 agents, LandingPageGeneratorTool + Netlify deploy |
-| Growth | Pulse (CGO) | ✅ Complete | 2 | 3 agents (ad platform APIs deferred) |
-| Finance | Ledger (CFO) | ✅ Complete | 2B | 2 agents, UnitEconomicsCalculatorTool |
-| Synthesis | Compass (CPO) | ✅ Complete | 1 | 1 agent, pivot decision logic |
-| Governance | Guardian (CGoO) | ✅ Complete | 2A-2D | 3 agents, 8 tools (HITL, Flywheel, Privacy) |
+| Crew | Owner | Status | Completed | Notes |
+|------|-------|--------|-----------|-------|
+| Service | Sage (CSO) | ✅ Complete | Nov 2025 | 3 agents, intake & brief capture |
+| Analysis | Sage (CSO) | ✅ Complete | Nov 2025 | 2 agents, TavilySearchTool for real research |
+| Build | Forge (CTO) | ✅ Complete | Nov 2025 | 3 agents, LandingPageGeneratorTool + Netlify deploy |
+| Growth | Pulse (CGO) | ✅ Complete | Nov 2025 | 3 agents (ad platform APIs deferred) |
+| Finance | Ledger (CFO) | ✅ Complete | Nov 2025 | 2 agents, UnitEconomicsCalculatorTool |
+| Synthesis | Compass (CPO) | ✅ Complete | Nov 2025 | 1 agent, pivot decision logic |
+| Governance | Guardian (CGoO) | ✅ Complete | Nov 2025 | 3 agents, 8 tools (HITL, Flywheel, Privacy) |
+
+*Last verified: 2025-12-01*
 
 ## Ecosystem Context
 

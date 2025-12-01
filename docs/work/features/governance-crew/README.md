@@ -92,4 +92,4 @@ tests/integration/
 
 ---
 **Spec**: `docs/master-architecture/03-validation-spec.md`
-**Last Updated**: 2025-11-26
+**Last Updated**: 2025-12-01

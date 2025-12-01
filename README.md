@@ -100,7 +100,7 @@ crewai run
 **Current Deployment:**
 - **UUID:** `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
 - **URL:** `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
-- **Token:** `<your-deployment-token>` (stored in CrewAI dashboard)
+- **Token:** Get from [CrewAI Dashboard](https://app.crewai.com/deployments) → Your Deployment → Settings
 - **Dashboard:** https://app.crewai.com/deployments
 
 ### Commands
@@ -275,6 +275,6 @@ crewai deploy list
 
 ---
 
-**Status:** Phase 2D complete - ~80% overall
-**Last Updated:** November 26, 2025
+**Status:** Phase 2D complete (~85% overall)
+**Last Updated:** 2025-12-01
 **License:** Proprietary - StartupAI Platform

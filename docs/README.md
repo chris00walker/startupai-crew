@@ -95,6 +95,6 @@ Other documents reference these sources - they don't duplicate the content.
 This repository (startupai-crew) is **upstream** of both - changes here unblock downstream work.
 
 ---
-**Last Updated**: 2025-11-27
+**Last Updated**: 2025-12-01
 
-**Latest Changes**: Renamed `strategyzer-physics.md` → `innovation-physics.md` for clarity.
+**Latest Changes**: README updates across ecosystem, standardized crew documentation.
