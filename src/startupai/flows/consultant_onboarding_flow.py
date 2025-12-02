@@ -128,8 +128,7 @@ class ConsultantOnboardingFlow(Flow[ConsultantOnboardingState]):
                     "services": self.state.practice_data.services,
                     "tools": self.state.practice_data.tools_used,
                     "pain_points": self.state.practice_data.pain_points,
-                },
-                output_pydantic=PracticeAnalysisOutput
+                }
             )
 
             if result.pydantic:
@@ -204,8 +203,7 @@ White Label Interest: {'Yes' if pd.white_label_enabled else 'No'}
                     "practice_analysis": self.state.practice_analysis,
                     "practice_data": self.state.practice_data.model_dump(),
                     "conversation_summary": self.state.conversation_summary,
-                },
-                output_pydantic=ConsultantRecommendationsOutput
+                }
             )
 
             if result.pydantic:

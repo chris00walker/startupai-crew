@@ -239,6 +239,25 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 **Known Issue**: `ExperimentConfigResolver.resolve()` ignores `force_policy` parameter - always returns `YAML_BASELINE` instead of the forced policy. Test failure in `test_area_improvements.py::test_resolve_with_forced_policy`. Fix required before A/B testing can work.
 
+### CrewAI AMP Memory Caching Issue
+> CrewAI AMP deployment returns cached `consultant_onboarding` results instead of executing `founder_validation` flow.
+
+**Why deprioritized**: Requires CrewAI team support to resolve.
+
+**Known Issue (2025-12-02)**:
+- When calling AMP with `flow_type: "founder_validation"`, the API returns cached `consultant_onboarding` results
+- Status response shows `"source":"memory"` indicating cached data, not fresh execution
+- The `/inputs` endpoint shows only `ConsultantOnboardingState` fields, not `ValidationState`
+- Possible causes:
+  1. AMP caches results by some key that matches across flow types
+  2. AMP is defaulting to the wrong flow when discovering schemas
+  3. Memory persistence from earlier successful `consultant_onboarding` runs
+- Workarounds attempted:
+  - Using unique user_id/project_id/session_id combinations (didn't help)
+  - Multiple redeployments (didn't clear cache)
+  - `crewai reset-memories --all` only works locally, not on AMP
+- **Next steps**: Contact CrewAI support or wait for cache expiration
+
 ### Business Model-Specific Viability
 > UnitEconomicsModel library for DTC, marketplace, SaaS, etc.
 

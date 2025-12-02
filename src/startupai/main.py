@@ -60,6 +60,11 @@ def kickoff(inputs: dict = None):
     # Determine flow type
     flow_type = inputs.get("flow_type", "founder_validation")
 
+    # Debug logging for flow routing
+    print(f"[ROUTING] Received flow_type: '{flow_type}'")
+    print(f"[ROUTING] Full inputs keys: {list(inputs.keys())}")
+    print(f"[ROUTING] Routing to: {'consultant_onboarding' if flow_type == 'consultant_onboarding' else 'founder_validation'}")
+
     # Verify OpenAI API key is set
     if not os.getenv("OPENAI_API_KEY"):
         return {

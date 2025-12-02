@@ -127,8 +127,7 @@ class InternalValidationFlow(Flow[ValidationState]):
         try:
             # Service Crew captures the entrepreneur input
             result = ServiceCrew().crew().kickoff(
-                inputs={"entrepreneur_input": self.state.entrepreneur_input},
-                output_pydantic=ServiceCrewOutput
+                inputs={"entrepreneur_input": self.state.entrepreneur_input}
             )
 
             # Parse the brief from Service Crew with typed output
@@ -195,8 +194,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                             "segment": segment,
                             "business_idea": self.state.business_idea,
                             "assumptions": [a.dict() for a in self.state.assumptions]
-                        },
-                        output_pydantic=AnalysisCrewOutput
+                        }
                     )
 
                     # Store customer profile and value map with typed output
@@ -223,8 +221,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                         "task": "competitor_analysis",
                         "business_idea": self.state.business_idea,
                         "segments": self.state.target_segments
-                    },
-                    output_pydantic=CompetitorAnalysisOutput
+                    }
                 )
                 if comp_result.pydantic:
                     self.state.competitor_report = comp_result.pydantic
@@ -273,8 +270,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()},
                     "assumptions": [a.dict() for a in self.state.get_critical_assumptions()],
                     "competitor_analysis": self.state.competitor_report.dict() if self.state.competitor_report else None
-                },
-                output_pydantic=GrowthCrewOutput
+                }
             )
 
             # Store desirability evidence with typed output
@@ -642,8 +638,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "current_segment": self.state.target_segments[0],
                 "evidence": self.state.desirability_evidence.dict(),
                 "business_idea": self.state.business_idea
-            },
-            output_pydantic=SegmentPivotOutput
+            }
         )
 
         # Update state with new segment from typed output
@@ -691,8 +686,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "customer_profile": self.state.customer_profiles[self.state.target_segments[0]].dict(),
                 "evidence": self.state.desirability_evidence.dict(),
                 "zombie_ratio": self.state.calculate_zombie_ratio()
-            },
-            output_pydantic=ValuePropIterationOutput
+            }
         )
 
         # Update value proposition from typed output
@@ -722,8 +716,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "previous_evidence": self.state.desirability_evidence.dict() if self.state.desirability_evidence else {},
                     "customer_profiles": {k: v.dict() for k, v in self.state.customer_profiles.items()},
                     "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()}
-                },
-                output_pydantic=GrowthCrewOutput
+                }
             )
 
             # Update evidence with typed output
@@ -762,8 +755,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()},
                     "desirability_evidence": self.state.desirability_evidence.dict() if self.state.desirability_evidence else {},
                     "technical_requirements": self._extract_technical_requirements()
-                },
-                output_pydantic=BuildCrewOutput
+                }
             )
 
             # Store feasibility evidence with typed output
@@ -901,8 +893,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                     k for k, v in self.state.feasibility_evidence.core_features_feasible.items()
                     if v == FeasibilityStatus.RED_IMPOSSIBLE
                 ]
-            },
-            output_pydantic=DowngradeOutput
+            }
         )
 
         # Update value maps with downgraded version from typed output
@@ -934,8 +925,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "original_value_maps": {k: v.dict() for k, v in self.state.value_maps.items()},
                 "degradation_impact": self.state.feasibility_evidence.downgrade_impact,
                 "customer_profiles": {k: v.dict() for k, v in self.state.customer_profiles.items()}
-            },
-            output_pydantic=DegradationTestOutput
+            }
         )
 
         # Compare acceptance of degraded version from typed output
@@ -971,8 +961,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "desirability_evidence": self.state.desirability_evidence.dict() if self.state.desirability_evidence else {},
                     "feasibility_evidence": self.state.feasibility_evidence.dict() if self.state.feasibility_evidence else {},
                     "market_size": self._estimate_market_size()
-                },
-                output_pydantic=FinanceCrewOutput
+                }
             )
 
             # Store viability evidence with typed output
@@ -1320,8 +1309,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "pivot_history": self.state.pivot_history,
                 "current_cac": self.state.viability_evidence.cac,
                 "current_ltv": self.state.viability_evidence.ltv
-            },
-            output_pydantic=PivotDecisionOutput
+            }
         )
 
         # Get pivot decision from typed output
@@ -1372,8 +1360,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "new_price_multiplier": new_price_multiplier,
                 "customer_profiles": {k: v.dict() for k, v in self.state.customer_profiles.items()},
                 "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()}
-            },
-            output_pydantic=PricingTestOutput
+            }
         )
 
         # Update viability evidence with new pricing from typed output
@@ -1402,8 +1389,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "current_features": list(self.state.feasibility_evidence.core_features_feasible.keys()),
                 "cost_reduction_target": 0.4,  # 40% cost reduction target
                 "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()}
-            },
-            output_pydantic=DowngradeOutput
+            }
         )
 
         # Update cost structure from typed output
@@ -1434,8 +1420,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "current_cac": self.state.viability_evidence.cac if self.state.viability_evidence else 0,
                     "current_ltv": self.state.viability_evidence.ltv if self.state.viability_evidence else 0,
                     "current_margin": self.state.viability_evidence.gross_margin if self.state.viability_evidence else 0
-                },
-                output_pydantic=OptimizedMetricsOutput
+                }
             )
 
             # Apply optimizations from typed output
@@ -1476,8 +1461,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                     "full_state": self.state.dict(),
                     "phase": self.state.phase.value,
                     "pivot_history": self.state.pivot_history
-                },
-                output_pydantic=SynthesisCrewOutput
+                }
             )
 
             # Extract recommendation from typed output
@@ -1542,8 +1526,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                 inputs={
                     "task": "final_audit",
                     "full_state": self.state.dict()
-                },
-                output_pydantic=GovernanceCrewOutput
+                }
             )
 
             # Process typed output from Governance Crew

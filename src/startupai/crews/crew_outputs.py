@@ -4,11 +4,19 @@ Pydantic Output Models for CrewAI Crews.
 These models define structured outputs for each crew, enabling type-safe
 data flow from crews to the validation flow.
 
-Usage:
-    result = ServiceCrew().crew().kickoff(
-        inputs={...},
-        output_pydantic=ServiceCrewOutput
-    )
+Usage (set output_pydantic on the Task, not on kickoff):
+    # In the crew's task definition:
+    @task
+    def capture_entrepreneur_brief(self) -> Task:
+        return Task(
+            config=self.tasks_config['capture_entrepreneur_brief'],
+            output_pydantic=ServiceCrewOutput
+        )
+
+    # Then kickoff normally:
+    result = ServiceCrew().crew().kickoff(inputs={...})
+    if result.pydantic:
+        output: ServiceCrewOutput = result.pydantic
 """
 
 from typing import List, Optional, Dict, Any, Literal
