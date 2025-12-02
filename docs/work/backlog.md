@@ -239,6 +239,50 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 **Known Issue**: `ExperimentConfigResolver.resolve()` ignores `force_policy` parameter - always returns `YAML_BASELINE` instead of the forced policy. Test failure in `test_area_improvements.py::test_resolve_with_forced_policy`. Fix required before A/B testing can work.
 
+### ServiceCrew Multi-Task Template Variable Issue
+> ServiceCrew includes both `capture_entrepreneur_brief` and `segment_pivot_analysis` tasks, but they require different template variables.
+
+**Why deprioritized**: Blocking issue for local testing, but needs architectural decision.
+
+**Known Issue (2025-12-02)**:
+- `ServiceCrew` has two `@task` decorated methods that get auto-included via `self.tasks`
+- `capture_entrepreneur_brief` needs only `{entrepreneur_input}`
+- `segment_pivot_analysis` needs `{current_segment}`, `{evidence}`, `{business_idea}`
+- When running intake, CrewAI tries to interpolate ALL task templates, causing:
+  ```
+  ValueError: Missing required template variable 'current_segment' not found in inputs dictionary
+  ```
+- Error occurs even though `segment_pivot_analysis` isn't needed for intake
+
+**Recommended Fix**: Create separate crew methods for each use case:
+```python
+@crew
+def intake_crew(self) -> Crew:
+    """Crew for initial entrepreneur brief capture."""
+    return Crew(
+        agents=[self.founder_onboarding_agent()],
+        tasks=[self.capture_entrepreneur_brief()],
+        process=Process.sequential,
+        verbose=True
+    )
+
+@crew
+def pivot_crew(self) -> Crew:
+    """Crew for segment pivot analysis."""
+    return Crew(
+        agents=[self.founder_onboarding_agent()],
+        tasks=[self.segment_pivot_analysis()],
+        process=Process.sequential,
+        verbose=True
+    )
+```
+
+Then update `founder_validation_flow.py` to call `ServiceCrew().intake_crew().kickoff()` for intake.
+
+**Alternative approaches**:
+1. Split into separate crew classes (`ServiceIntakeCrew`, `ServicePivotCrew`)
+2. Pass all variables with empty defaults (less clean)
+
 ### CrewAI AMP Memory Caching Issue
 > CrewAI AMP deployment returns cached `consultant_onboarding` results instead of executing `founder_validation` flow.
 
