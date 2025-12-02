@@ -1724,7 +1724,11 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "business_idea": self.state.business_idea,
                 "validation_outcome": self.state.final_recommendation,
                 "evidence_summary": self.state.evidence_summary,
-                "pivot_recommendation": self.state.pivot_recommendation.value if self.state.pivot_recommendation else None,
+                "pivot_recommendation": (
+                    self.state.pivot_recommendation.value
+                    if hasattr(self.state.pivot_recommendation, 'value')
+                    else self.state.pivot_recommendation
+                ) if self.state.pivot_recommendation else None,
                 "next_steps": self.state.next_steps
             },
             "value_proposition_canvas": {
