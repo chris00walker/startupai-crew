@@ -8,10 +8,20 @@ import pytest
 from typing import Dict, Any
 from datetime import datetime
 from unittest.mock import Mock, patch
+from dotenv import load_dotenv
+import os
+from pathlib import Path
+
+# Load environment variables for tests
+# 1. First load from ~/.secrets/startupai (shared secrets via direnv pattern)
+# 2. Then load from local .env (project-specific overrides)
+secrets_file = Path.home() / ".secrets" / "startupai"
+if secrets_file.exists():
+    load_dotenv(secrets_file)
+load_dotenv()  # Load local .env (won't override existing vars)
 
 # Add src to path
 import sys
-from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from startupai.flows.state_schemas import (
