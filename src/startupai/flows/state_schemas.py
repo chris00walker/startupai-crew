@@ -414,6 +414,7 @@ class DesirabilityEvidence(BaseModel):
     conversion_rate: float = 0.0    # Signup/click rate
     commitment_depth: CommitmentType = CommitmentType.NONE
     zombie_ratio: float = 0.0       # High interest but no commitment
+    traffic_quality: Literal["High", "Medium", "Low"] = "Low"  # Quality of traffic from campaigns
     experiments: List[Dict[str, Any]] = Field(default_factory=list)
     key_learnings: List[str] = Field(default_factory=list)
     tested_segments: List[str] = Field(default_factory=list)

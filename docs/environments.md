@@ -190,7 +190,67 @@ eval "$(direnv hook bash)"  # add to ~/.bashrc
 
 ## 🧪 Testing
 
-### Test Locally Before Deployment
+### Pytest Test Suite
+
+The project has comprehensive pytest coverage for flows, persistence, events, and decision logging.
+
+```bash
+# Run all tests (304+ tests)
+make test
+
+# Run with verbose output
+make test-v
+
+# Run with coverage report
+make test-cov
+
+# Quick smoke test (fastest tests)
+make smoke
+```
+
+**Targeted Test Commands:**
+```bash
+# Flow routing tests (gate routers)
+make test-flows
+
+# Persistence layer tests
+make test-persistence
+
+# Schema validation tests
+make test-schemas
+```
+
+### Integration Tests
+
+Integration tests require `OPENAI_API_KEY` because they instantiate actual CrewAI crews:
+
+```bash
+# Ensure .env has OPENAI_API_KEY
+cat .env | grep OPENAI_API_KEY
+
+# Run all tests including integration
+uv run python -m pytest tests/ -v
+
+# Integration tests will be SKIPPED if OPENAI_API_KEY is not set
+```
+
+**Note:** 10 integration tests are skipped without `OPENAI_API_KEY`. These test tool wiring to crews/agents and are safe to run locally with your API key.
+
+### CrewAI Quality Benchmarks
+
+Use `crewai test` for quality scoring (requires OpenAI API):
+
+```bash
+# Quick benchmark (3 iterations)
+make benchmark
+
+# Full benchmark (5 iterations)
+make benchmark-full
+```
+
+This runs the crew multiple times and scores outputs 0-10 for quality regression detection.
+
+### Test Crew Locally Before Deployment
 ```bash
 # 1. Ensure .env exists with OPENAI_API_KEY
 cat .env | grep OPENAI_API_KEY
@@ -490,8 +550,8 @@ AGENTUITY_AGENT_URL=https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6
 
 ---
 
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-12-02
 **Repository:** startupai-crew
-**Environment Version:** 1.1.0
+**Environment Version:** 1.2.0
 **Platform:** CrewAI AMP (Cloud-Hosted)
 **Deployment UUID:** b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b

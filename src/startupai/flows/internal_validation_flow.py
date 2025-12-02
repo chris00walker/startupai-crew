@@ -819,15 +819,15 @@ class InternalValidationFlow(Flow[ValidationState]):
         # Check if any core features are impossible
         impossible_count = sum(
             1 for status in evidence.core_features_feasible.values()
-            if status == FeasibilityStatus.IMPOSSIBLE
+            if status == FeasibilityStatus.RED_IMPOSSIBLE
         )
 
         if impossible_count > 0:
-            self.state.feasibility_status = FeasibilityStatus.IMPOSSIBLE
+            self.state.feasibility_status = FeasibilityStatus.RED_IMPOSSIBLE
         elif evidence.downgrade_required:
-            self.state.feasibility_status = FeasibilityStatus.CONSTRAINED
+            self.state.feasibility_status = FeasibilityStatus.ORANGE_CONSTRAINED
         else:
-            self.state.feasibility_status = FeasibilityStatus.POSSIBLE
+            self.state.feasibility_status = FeasibilityStatus.GREEN
 
         # Timestamp tracked via persistence layer
 
@@ -843,7 +843,7 @@ class InternalValidationFlow(Flow[ValidationState]):
         print("\n🚦 Feasibility Gate - Evaluating technical reality...")
 
         # DOWNGRADE PROTOCOL - CRITICAL LOGIC
-        if self.state.feasibility_status == FeasibilityStatus.IMPOSSIBLE:
+        if self.state.feasibility_status == FeasibilityStatus.RED_IMPOSSIBLE:
             print("❌ DOWNGRADE PROTOCOL TRIGGERED: Core feature technically impossible")
             print("   → Must route back to Pulse (Growth Crew) to re-test desirability")
             print("   → Customers must validate the downgraded value proposition")
@@ -851,19 +851,19 @@ class InternalValidationFlow(Flow[ValidationState]):
             self.state.human_input_required = True
             self.state.human_input_reason = (
                 f"Core features are technically impossible: "
-                f"{', '.join([k for k, v in self.state.feasibility_evidence.core_features_feasible.items() if v == FeasibilityStatus.IMPOSSIBLE])}. "
+                f"{', '.join([k for k, v in self.state.feasibility_evidence.core_features_feasible.items() if v == FeasibilityStatus.RED_IMPOSSIBLE])}. "
                 "Should we test a downgraded value proposition?"
             )
             return "downgrade_and_retest"
 
         # CONSTRAINED BUT POSSIBLE
-        elif self.state.feasibility_status == FeasibilityStatus.CONSTRAINED:
+        elif self.state.feasibility_status == FeasibilityStatus.ORANGE_CONSTRAINED:
             print("⚠️ Feasibility constrained - can build degraded version")
             print("   → Testing if degraded version maintains desirability")
             return "test_degraded_desirability"
 
         # FULLY FEASIBLE
-        elif self.state.feasibility_status == FeasibilityStatus.POSSIBLE:
+        elif self.state.feasibility_status == FeasibilityStatus.GREEN:
             print("✅ Feasibility VALIDATED - Can build as promised")
             self.state.phase = Phase.VIABILITY
             self.state.retry_count = 0
@@ -899,7 +899,7 @@ class InternalValidationFlow(Flow[ValidationState]):
                 "feasibility_evidence": self.state.feasibility_evidence.dict(),
                 "impossible_features": [
                     k for k, v in self.state.feasibility_evidence.core_features_feasible.items()
-                    if v == FeasibilityStatus.IMPOSSIBLE
+                    if v == FeasibilityStatus.RED_IMPOSSIBLE
                 ]
             },
             output_pydantic=DowngradeOutput

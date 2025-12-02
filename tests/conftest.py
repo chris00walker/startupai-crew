@@ -174,6 +174,109 @@ def mock_openai_embeddings():
 
 
 # ===========================================================================
+# CREW MOCK FIXTURES
+# ===========================================================================
+
+@pytest.fixture
+def mock_service_crew():
+    """Mock ServiceCrew for testing without execution."""
+    with patch("startupai.flows.internal_validation_flow.ServiceCrew") as mock:
+        crew_instance = Mock()
+        crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
+        mock.return_value = crew_instance
+        yield mock
+
+
+@pytest.fixture
+def mock_analysis_crew():
+    """Mock AnalysisCrew for testing without execution."""
+    with patch("startupai.flows.internal_validation_flow.AnalysisCrew") as mock:
+        crew_instance = Mock()
+        crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
+        mock.return_value = crew_instance
+        yield mock
+
+
+@pytest.fixture
+def mock_governance_crew():
+    """Mock GovernanceCrew for testing without execution."""
+    with patch("startupai.flows.internal_validation_flow.GovernanceCrew") as mock:
+        crew_instance = Mock()
+        crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
+        mock.return_value = crew_instance
+        yield mock
+
+
+@pytest.fixture
+def mock_build_crew():
+    """Mock BuildCrew for testing without execution."""
+    with patch("startupai.flows.internal_validation_flow.BuildCrew") as mock:
+        crew_instance = Mock()
+        crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
+        mock.return_value = crew_instance
+        yield mock
+
+
+@pytest.fixture
+def mock_growth_crew():
+    """Mock GrowthCrew for testing without execution."""
+    with patch("startupai.flows.internal_validation_flow.GrowthCrew") as mock:
+        crew_instance = Mock()
+        crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
+        mock.return_value = crew_instance
+        yield mock
+
+
+@pytest.fixture
+def mock_synthesis_crew():
+    """Mock SynthesisCrew for testing without execution."""
+    with patch("startupai.flows.internal_validation_flow.SynthesisCrew") as mock:
+        crew_instance = Mock()
+        crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
+        mock.return_value = crew_instance
+        yield mock
+
+
+@pytest.fixture
+def mock_finance_crew():
+    """Mock FinanceCrew for testing without execution."""
+    with patch("startupai.flows.internal_validation_flow.FinanceCrew") as mock:
+        crew_instance = Mock()
+        crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
+        mock.return_value = crew_instance
+        yield mock
+
+
+@pytest.fixture
+def mock_all_crews(
+    mock_service_crew,
+    mock_analysis_crew,
+    mock_governance_crew,
+    mock_build_crew,
+    mock_growth_crew,
+    mock_synthesis_crew,
+    mock_finance_crew,
+):
+    """
+    Composite fixture that mocks all crews at once.
+
+    Usage:
+        def test_flow_with_mocked_crews(mock_all_crews):
+            # All crews are mocked, flow can execute without LLM calls
+            pass
+    """
+    return {
+        "service": mock_service_crew,
+        "analysis": mock_analysis_crew,
+        "governance": mock_governance_crew,
+        "build": mock_build_crew,
+        "growth": mock_growth_crew,
+        "synthesis": mock_synthesis_crew,
+        "finance": mock_finance_crew,
+    }
+
+
+# ===========================================================================
 # UTILITY FUNCTIONS
 # ===========================================================================
 

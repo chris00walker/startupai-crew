@@ -15,6 +15,14 @@ help:
 	@echo "Testing:"
 	@echo "  make test       - Run all tests"
 	@echo "  make test-v     - Run tests with verbose output"
+	@echo "  make test-cov   - Run tests with coverage report"
+	@echo "  make test-flows - Run flow routing tests only"
+	@echo "  make test-persistence - Run persistence layer tests"
+	@echo "  make smoke      - Quick smoke test (fastest tests)"
+	@echo ""
+	@echo "Benchmarks (requires OpenAI API key):"
+	@echo "  make benchmark  - CrewAI quality benchmark (3 iterations)"
+	@echo "  make benchmark-full - Extended benchmark (5 iterations)"
 	@echo ""
 	@echo "Developer Tools:"
 	@echo "  make seed       - Create demo project (in-memory)"
@@ -50,7 +58,33 @@ test-v:
 	uv run python -m pytest tests/ -v --tb=long
 
 test-cov:
-	uv run python -m pytest tests/ -v --cov=startupai --cov-report=html
+	uv run python -m pytest tests/ -v --cov=startupai --cov-report=html --cov-report=term-missing
+
+# Targeted test commands
+test-flows:
+	uv run python -m pytest tests/test_flow_routing.py tests/test_routing_logic.py -v --tb=short
+
+test-persistence:
+	uv run python -m pytest tests/test_persistence_repository.py -v --tb=short
+
+test-schemas:
+	uv run python -m pytest tests/test_state_schemas.py -v --tb=short
+
+# Quick smoke test (fastest tests only)
+smoke:
+	uv run python -m pytest tests/test_state_schemas.py tests/test_routing_logic.py -v --tb=short
+
+# ============================================
+# Quality Benchmarks (CrewAI - uses OpenAI API)
+# ============================================
+
+benchmark:
+	@echo "Running CrewAI quality benchmarks (3 iterations)..."
+	crewai test -n 3 -m gpt-4o
+
+benchmark-full:
+	@echo "Running CrewAI quality benchmarks (5 iterations)..."
+	crewai test -n 5 -m gpt-4o
 
 # ============================================
 # Developer Tools
