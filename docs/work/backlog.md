@@ -300,7 +300,19 @@ Then update `founder_validation_flow.py` to call `ServiceCrew().intake_crew().ki
   - Using unique user_id/project_id/session_id combinations (didn't help)
   - Multiple redeployments (didn't clear cache)
   - `crewai reset-memories --all` only works locally, not on AMP
-- **Next steps**: Contact CrewAI support or wait for cache expiration
+  - Renamed `InternalValidationFlow` → `FounderValidationFlow` (didn't help)
+
+**Test Results (2025-12-02 20:13 UTC)**:
+- Deployment successful: "Crew is Online" at 20:12:12
+- Kickoff ID: `20e6f916-605a-4342-b9c0-571904bf2666`
+- Result: ❌ Still returns cached `consultant_onboarding` data
+- `/inputs` endpoint: Still shows only `ConsultantOnboardingState` fields
+- Response includes `consultant_id`, `practice_analysis` instead of validation results
+
+**Next steps**:
+1. Contact CrewAI support about AMP schema detection/caching
+2. Consider creating a fresh deployment with a new UUID
+3. Fix ServiceCrew multi-task issue (above) before local testing can work
 
 ### Business Model-Specific Viability
 > UnitEconomicsModel library for DTC, marketplace, SaaS, etc.
