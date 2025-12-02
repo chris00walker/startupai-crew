@@ -237,6 +237,8 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 **Why deprioritized**: Need production traffic before A/B testing makes sense.
 
+**Known Issue**: `ExperimentConfigResolver.resolve()` ignores `force_policy` parameter - always returns `YAML_BASELINE` instead of the forced policy. Test failure in `test_area_improvements.py::test_resolve_with_forced_policy`. Fix required before A/B testing can work.
+
 ### Business Model-Specific Viability
 > UnitEconomicsModel library for DTC, marketplace, SaaS, etc.
 
@@ -298,9 +300,10 @@ When choosing what to validate next, ask:
 ---
 
 ## Last Updated
-2025-11-27
+2025-12-02
 
 **Latest Changes**:
+- Added known issue for `force_policy` bug in ExperimentConfigResolver
 - Updated with Phase 1-3 completion status
 - Marked completed hypotheses (Multi-crew, Tools, HITL backend)
 - Updated blocking issues and next priorities
