@@ -1,6 +1,12 @@
 """CrewAI Flows for StartupAI validation system."""
 
-from .internal_validation_flow import InternalValidationFlow, create_validation_flow
+from .founder_validation_flow import (
+    FounderValidationFlow,
+    create_founder_validation_flow,
+    # Backwards compatibility aliases
+    InternalValidationFlow,
+    create_validation_flow,
+)
 from .consultant_onboarding_flow import (
     ConsultantOnboardingFlow,
     create_consultant_onboarding_flow,
@@ -18,9 +24,13 @@ from .state_schemas import (
 )
 
 __all__ = [
-    # Founder validation flow
+    # Founder validation flow (primary names)
+    "FounderValidationFlow",
+    "create_founder_validation_flow",
+    # Backwards compatibility aliases
     "InternalValidationFlow",
     "create_validation_flow",
+    # State schemas
     "ValidationState",
     "ValidationPhase",
     "EvidenceStrength",

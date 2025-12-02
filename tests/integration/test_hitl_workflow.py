@@ -670,19 +670,19 @@ class TestHITLIntegration:
 # ===========================================================================
 
 class TestCreativeApprovalFlowNode:
-    """Tests for the creative approval flow node in InternalValidationFlow."""
+    """Tests for the creative approval flow node in FounderValidationFlow."""
 
     def test_flow_has_creative_approval_methods(self):
-        """Test that InternalValidationFlow has creative approval methods."""
-        from startupai.flows.internal_validation_flow import InternalValidationFlow
+        """Test that FounderValidationFlow has creative approval methods."""
+        from startupai.flows.founder_validation_flow import FounderValidationFlow
 
         # Check methods exist
-        assert hasattr(InternalValidationFlow, 'review_creatives_for_deployment')
-        assert hasattr(InternalValidationFlow, 'creative_approval_gate')
-        assert hasattr(InternalValidationFlow, 'pause_for_creative_approval')
-        assert hasattr(InternalValidationFlow, 'proceed_with_approved_creatives')
-        assert hasattr(InternalValidationFlow, 'handle_rejected_creatives')
-        assert hasattr(InternalValidationFlow, '_handle_creative_resume')
+        assert hasattr(FounderValidationFlow, 'review_creatives_for_deployment')
+        assert hasattr(FounderValidationFlow, 'creative_approval_gate')
+        assert hasattr(FounderValidationFlow, 'pause_for_creative_approval')
+        assert hasattr(FounderValidationFlow, 'proceed_with_approved_creatives')
+        assert hasattr(FounderValidationFlow, 'handle_rejected_creatives')
+        assert hasattr(FounderValidationFlow, '_handle_creative_resume')
 
     def test_state_has_creative_fields(self):
         """Test that ValidationState has creative review fields."""
@@ -704,11 +704,11 @@ class TestCreativeApprovalFlowNode:
 
     def test_handle_creative_resume(self):
         """Test the _handle_creative_resume method."""
-        from startupai.flows.internal_validation_flow import InternalValidationFlow
+        from startupai.flows.founder_validation_flow import FounderValidationFlow
         from startupai.flows.state_schemas import StartupValidationState
 
         # Create a flow with initial state
-        flow = InternalValidationFlow(
+        flow = FounderValidationFlow(
             entrepreneur_input="Test business idea",
             project_id="test_project",
             user_id="test_user",
@@ -739,9 +739,9 @@ class TestCreativeApprovalFlowNode:
 
     def test_handle_creative_resume_with_rejection(self):
         """Test handling creative rejection with feedback."""
-        from startupai.flows.internal_validation_flow import InternalValidationFlow
+        from startupai.flows.founder_validation_flow import FounderValidationFlow
 
-        flow = InternalValidationFlow(
+        flow = FounderValidationFlow(
             entrepreneur_input="Test business idea",
             project_id="test_project",
         )

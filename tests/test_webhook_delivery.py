@@ -26,7 +26,7 @@ from startupai.flows.state_schemas import (
     QAReport,
     PivotType,
 )
-from startupai.flows.internal_validation_flow import InternalValidationFlow
+from startupai.flows.founder_validation_flow import FounderValidationFlow
 
 
 # ===========================================================================
@@ -143,7 +143,7 @@ def complete_validated_state() -> StartupValidationState:
 def mock_flow(complete_validated_state):
     """Create a mock flow instance with the validated state."""
     # Create flow without calling __init__ to avoid CrewAI dependencies
-    flow = object.__new__(InternalValidationFlow)
+    flow = object.__new__(FounderValidationFlow)
     flow._state = complete_validated_state
     return flow
 
@@ -151,7 +151,7 @@ def mock_flow(complete_validated_state):
 @pytest.fixture
 def mock_httpx_client():
     """Mock httpx.Client for testing HTTP calls."""
-    with patch("startupai.flows.internal_validation_flow.httpx.Client") as mock_client_class:
+    with patch("startupai.flows.founder_validation_flow.httpx.Client") as mock_client_class:
         mock_client = MagicMock()
         mock_response = Mock()
         mock_response.status_code = 200
@@ -359,7 +359,7 @@ class TestWebhookErrorHandling:
 
     def test_handles_timeout_gracefully(self, mock_flow):
         """Verify timeout errors are handled gracefully."""
-        with patch("startupai.flows.internal_validation_flow.httpx.Client") as mock_client_class:
+        with patch("startupai.flows.founder_validation_flow.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.post.side_effect = httpx.TimeoutException("Connection timed out")
             mock_client.__enter__ = Mock(return_value=mock_client)
@@ -377,7 +377,7 @@ class TestWebhookErrorHandling:
 
     def test_handles_connection_error(self, mock_flow):
         """Verify connection errors are handled gracefully."""
-        with patch("startupai.flows.internal_validation_flow.httpx.Client") as mock_client_class:
+        with patch("startupai.flows.founder_validation_flow.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_client.post.side_effect = httpx.RequestError("Connection failed")
             mock_client.__enter__ = Mock(return_value=mock_client)
@@ -395,7 +395,7 @@ class TestWebhookErrorHandling:
 
     def test_handles_non_200_response(self, mock_flow):
         """Verify non-200 responses are handled correctly."""
-        with patch("startupai.flows.internal_validation_flow.httpx.Client") as mock_client_class:
+        with patch("startupai.flows.founder_validation_flow.httpx.Client") as mock_client_class:
             mock_client = MagicMock()
             mock_response = Mock()
             mock_response.status_code = 500

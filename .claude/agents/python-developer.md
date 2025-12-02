@@ -26,7 +26,7 @@ You are a Python Development Expert specializing in the StartupAI CrewAI backend
 ```
 src/startupai/
 ├── flows/                      # CrewAI Flows
-│   ├── internal_validation_flow.py
+│   ├── founder_validation_flow.py
 │   └── state_schemas.py
 ├── crews/                      # 8 specialized crews
 │   ├── service/
@@ -153,7 +153,7 @@ def match_evidence(
 
 **Class Docstrings**:
 ```python
-class InternalValidationFlow(Flow[ValidationFlowState]):
+class FounderValidationFlow(Flow[ValidationFlowState]):
     """Orchestrates the 8-crew/18-agent validation workflow.
 
     This flow implements the three-gate validation system:
@@ -168,7 +168,7 @@ class InternalValidationFlow(Flow[ValidationFlowState]):
         max_iterations: Maximum iteration cycles per gate (default: 3)
 
     Example:
-        >>> flow = InternalValidationFlow()
+        >>> flow = FounderValidationFlow()
         >>> result = flow.kickoff(entrepreneur_input="Business idea...")
         >>> print(result.final_recommendation)
         "proceed"
@@ -430,12 +430,12 @@ def test_gate_evaluation(gate_name, mock_governance_crew):
 **Unit Tests**:
 ```python
 # tests/unit/test_flows.py
-from startupai.flows.internal_validation_flow import InternalValidationFlow
+from startupai.flows.founder_validation_flow import FounderValidationFlow
 from startupai.flows.state_schemas import ValidationFlowState
 
 def test_kickoff_initializes_state(sample_entrepreneur_input):
     """Test that kickoff properly initializes flow state."""
-    flow = InternalValidationFlow()
+    flow = FounderValidationFlow()
     flow.state = ValidationFlowState(entrepreneur_input=sample_entrepreneur_input)
 
     result = flow.kickoff()
@@ -445,7 +445,7 @@ def test_kickoff_initializes_state(sample_entrepreneur_input):
 
 def test_evaluate_gate_with_approved_status():
     """Test router logic when gate is approved."""
-    flow = InternalValidationFlow()
+    flow = FounderValidationFlow()
     inputs = {
         "gate_decision": {
             "status": "approved",
@@ -460,7 +460,7 @@ def test_evaluate_gate_with_approved_status():
 
 def test_evaluate_gate_with_rejected_status():
     """Test router logic when gate is rejected."""
-    flow = InternalValidationFlow()
+    flow = FounderValidationFlow()
     inputs = {
         "gate_decision": {
             "status": "rejected",
@@ -675,7 +675,7 @@ uv run ruff format --check src/
 uv run mypy src/
 
 # Type check specific file
-uv run mypy src/startupai/flows/internal_validation_flow.py
+uv run mypy src/startupai/flows/founder_validation_flow.py
 
 # Ignore missing imports
 uv run mypy --ignore-missing-imports src/

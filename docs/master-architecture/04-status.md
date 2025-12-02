@@ -58,7 +58,7 @@ This document provides an unvarnished view of what works, what's broken, and wha
 | Component | Status | Notes |
 |-----------|--------|-------|
 | `state_schemas.py` | ✅ Complete | All signals implemented (EvidenceStrength, CommitmentType, etc.) |
-| `internal_validation_flow.py` | ✅ Complete | Non-linear routers with pivot logic, 9 @persist() checkpoints |
+| `founder_validation_flow.py` | ✅ Complete | Non-linear routers with pivot logic, 9 @persist() checkpoints |
 | Service Crew | ✅ Complete | 3 agents for intake/brief |
 | Analysis Crew | ✅ Complete | 2 agents with TavilySearchTool for real web research |
 | Build Crew | ✅ Complete | 3 agents with LandingPageGeneratorTool + Netlify deploy |

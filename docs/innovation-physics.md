@@ -79,7 +79,7 @@ src/startupai/
 │   │                                 # - StartupValidationState (with problem_resonance, zombie_ratio)
 │   │                                 # - All enums (Phase, Signals, PivotType, etc.)
 │   │                                 # - Artifact models (AdVariant, LandingPageVariant, etc.)
-│   ├── internal_validation_flow.py   # StartupValidationFlow with @router logic
+│   ├── founder_validation_flow.py   # StartupValidationFlow with @router logic
 │   └── consultant_onboarding_flow.py # Consultant onboarding flow
 │
 ├── crews/

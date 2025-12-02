@@ -91,7 +91,7 @@ Privacy protection for Flywheel data and flow state persistence.
 ### Flow Persistence
 | Date | Item | Links / Notes |
 |------|------|---------------|
-| 2025-11-26 | @persist() decorators | 9 checkpoint methods in internal_validation_flow.py |
+| 2025-11-26 | @persist() decorators | 9 checkpoint methods in founder_validation_flow.py |
 | 2025-11-26 | Checkpoint methods | intake, analysis, desirability, creative HITL, feasibility, viability HITL, final |
 
 ### Governance Crew Updates
@@ -253,7 +253,7 @@ The non-linear validation flow with evidence-driven routing is now complete.
 | Date | Item | Links / Notes |
 |------|------|---------------|
 | 2025-11-22 | State schemas complete | `state_schemas.py` - All Innovation Physics signals (EvidenceStrength, CommitmentType, FeasibilityStatus, UnitEconomicsStatus, PivotRecommendation) |
-| 2025-11-22 | Internal validation flow complete | `internal_validation_flow.py` - Non-linear routers with pivot logic |
+| 2025-11-22 | Internal validation flow complete | `founder_validation_flow.py` - Non-linear routers with pivot logic |
 | 2025-11-22 | All 7 crew stubs ready | Service, Analysis, Build, Growth, Finance, Governance, Synthesis |
 | 2025-11-22 | Synthesis Crew fully implemented | Complete task definitions with pivot decision logic |
 | 2025-11-22 | Main entry point | `main.py` - Flow execution demonstration |

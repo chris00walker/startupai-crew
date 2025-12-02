@@ -61,7 +61,7 @@ startupai-crew/
 │   └── startupai/
 │       ├── flows/                      # Innovation Physics orchestration
 │       │   ├── state_schemas.py        # Validation signals & state
-│       │   └── internal_validation_flow.py  # Non-linear routers
+│       │   └── founder_validation_flow.py  # Non-linear routers
 │       ├── crews/                      # 8 specialized crews
 │       │   ├── service/
 │       │   ├── analysis/

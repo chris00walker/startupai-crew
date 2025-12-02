@@ -16,10 +16,10 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 from startupai.flows import (
-    create_validation_flow,
-    InternalValidationFlow,
-    create_consultant_onboarding_flow,
+    FounderValidationFlow,
+    create_founder_validation_flow,
     ConsultantOnboardingFlow,
+    create_consultant_onboarding_flow,
 )
 
 
@@ -105,9 +105,9 @@ def _run_founder_validation(inputs: dict):
     if user_id:
         print(f"👤 User: {user_id}")
 
-    # Create the validation flow with context for persistence
-    print("\n🚀 Initializing validation flow with Innovation Physics logic...")
-    flow = create_validation_flow(
+    # Create the founder validation flow with context for persistence
+    print("\n🚀 Initializing founder validation flow with Innovation Physics logic...")
+    flow = create_founder_validation_flow(
         entrepreneur_input=entrepreneur_input,
         project_id=project_id,
         user_id=user_id,
@@ -249,9 +249,9 @@ def plot():
         entrepreneur_input=""
     )
 
-    flow = InternalValidationFlow(initial_state=initial_state)
-    flow.plot("startupai_validation_flow")
-    print("✅ Flow visualization saved to startupai_validation_flow.png")
+    flow = FounderValidationFlow(initial_state=initial_state)
+    flow.plot("founder_validation_flow")
+    print("✅ Flow visualization saved to founder_validation_flow.png")
 
 
 # For local testing

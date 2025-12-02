@@ -58,7 +58,7 @@ class ValidationState(BaseModel):
     gate_status: str = "pending"  # pending, approved, rejected
     pivot_recommendation: str | None = None
 
-class InternalValidationFlow(Flow[ValidationState]):
+class FounderValidationFlow(Flow[ValidationState]):
     @start()
     def kickoff(self):
         """Entry point for the flow"""
@@ -266,7 +266,7 @@ class ServiceCrew:
 
 **Gate Evaluation Router**:
 ```python
-class InternalValidationFlow(Flow[ValidationFlowState]):
+class FounderValidationFlow(Flow[ValidationFlowState]):
     # ... other methods ...
 
     @router(run_governance_crew)

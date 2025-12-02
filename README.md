@@ -175,7 +175,7 @@ curl https://startupai-...crewai.com/status/{kickoff_id} \
 startupai-crew/
 ├── src/startupai/
 │   ├── flows/                      # CrewAI Flows orchestration
-│   │   ├── internal_validation_flow.py
+│   │   ├── founder_validation_flow.py
 │   │   └── state_schemas.py
 │   ├── crews/                      # 8 specialized crews
 │   │   ├── service/

@@ -89,7 +89,7 @@
    - Database integration ready
 
 3. **Checkpointing**: Flow uses `@persist()` decorators
-   - 9 checkpoints placed throughout `internal_validation_flow.py`
+   - 9 checkpoints placed throughout `founder_validation_flow.py`
    - State recovery capability built-in
 
 **Grade**: ✅ A+ (100%)

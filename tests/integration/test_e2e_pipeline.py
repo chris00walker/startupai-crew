@@ -22,7 +22,7 @@ from startupai.flows.state_schemas import (
     PivotType,
     QAReport,
 )
-from startupai.flows.internal_validation_flow import InternalValidationFlow
+from startupai.flows.founder_validation_flow import FounderValidationFlow
 from startupai.webhooks.contracts import (
     FounderValidationPayload,
     validate_founder_validation_payload,
@@ -59,7 +59,7 @@ def mock_httpx_with_capture(webhook_capture):
     """Mock httpx.Client that captures webhook calls."""
     captured, capture_post = webhook_capture
 
-    with patch("startupai.flows.internal_validation_flow.httpx.Client") as mock_client_class:
+    with patch("startupai.flows.founder_validation_flow.httpx.Client") as mock_client_class:
         mock_client = MagicMock()
         mock_client.post = capture_post
         mock_client.__enter__ = Mock(return_value=mock_client)
@@ -151,7 +151,7 @@ class TestE2EPipeline:
     ):
         """Verify completed flow delivers webhook to product app."""
         # Create flow with validated state
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = e2e_validated_state
 
         with patch.dict("os.environ", {
@@ -171,7 +171,7 @@ class TestE2EPipeline:
         self, e2e_validated_state, mock_httpx_with_capture
     ):
         """Verify webhook payload matches contract schema."""
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = e2e_validated_state
 
         with patch.dict("os.environ", {
@@ -196,7 +196,7 @@ class TestE2EPipeline:
         self, e2e_validated_state, mock_httpx_with_capture
     ):
         """Verify all three evidence phases are in payload."""
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = e2e_validated_state
 
         with patch.dict("os.environ", {
@@ -217,7 +217,7 @@ class TestE2EPipeline:
         self, e2e_validated_state, mock_httpx_with_capture
     ):
         """Verify fields needed for gate_scores table are present."""
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = e2e_validated_state
 
         with patch.dict("os.environ", {
@@ -250,7 +250,7 @@ class TestE2EPipeline:
         self, e2e_validated_state, mock_httpx_with_capture
     ):
         """Verify validation report has expected structure."""
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = e2e_validated_state
 
         with patch.dict("os.environ", {
@@ -274,7 +274,7 @@ class TestE2EPipeline:
         self, e2e_validated_state, mock_httpx_with_capture
     ):
         """Verify QA report is included in payload."""
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = e2e_validated_state
 
         with patch.dict("os.environ", {
@@ -296,7 +296,7 @@ class TestE2EPayloadSerialization:
 
     def test_payload_is_json_serializable(self, e2e_validated_state):
         """Verify payload can be JSON serialized."""
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = e2e_validated_state
 
         deliverables = flow._generate_final_deliverables()
@@ -321,7 +321,7 @@ class TestE2EPayloadSerialization:
 
     def test_enum_values_serialized_correctly(self, e2e_validated_state):
         """Verify enum values are serialized as strings."""
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = e2e_validated_state
 
         deliverables = flow._generate_final_deliverables()
@@ -345,7 +345,7 @@ class TestE2EEdgeCases:
         state.final_recommendation = "IN_PROGRESS"
         state.next_steps = []
 
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = state
 
         with patch.dict("os.environ", {
@@ -376,7 +376,7 @@ class TestE2EEdgeCases:
         state.final_recommendation = "PROCEED"
         state.next_steps = ["Build MVP"]
 
-        flow = object.__new__(InternalValidationFlow)
+        flow = object.__new__(FounderValidationFlow)
         flow._state = state
 
         with patch.dict("os.environ", {

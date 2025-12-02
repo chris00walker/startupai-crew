@@ -41,15 +41,15 @@ def mock_flow():
     Note: We use _state directly because CrewAI Flow's state property is read-only.
     This allows us to inject test state without triggering the full flow execution.
     """
-    with patch('startupai.flows.internal_validation_flow.ServiceCrew'), \
-         patch('startupai.flows.internal_validation_flow.AnalysisCrew'), \
-         patch('startupai.flows.internal_validation_flow.GovernanceCrew'), \
-         patch('startupai.flows.internal_validation_flow.BuildCrew'), \
-         patch('startupai.flows.internal_validation_flow.GrowthCrew'), \
-         patch('startupai.flows.internal_validation_flow.SynthesisCrew'), \
-         patch('startupai.flows.internal_validation_flow.FinanceCrew'):
-        from startupai.flows.internal_validation_flow import InternalValidationFlow
-        flow = InternalValidationFlow.__new__(InternalValidationFlow)
+    with patch('startupai.flows.founder_validation_flow.ServiceCrew'), \
+         patch('startupai.flows.founder_validation_flow.AnalysisCrew'), \
+         patch('startupai.flows.founder_validation_flow.GovernanceCrew'), \
+         patch('startupai.flows.founder_validation_flow.BuildCrew'), \
+         patch('startupai.flows.founder_validation_flow.GrowthCrew'), \
+         patch('startupai.flows.founder_validation_flow.SynthesisCrew'), \
+         patch('startupai.flows.founder_validation_flow.FinanceCrew'):
+        from startupai.flows.founder_validation_flow import FounderValidationFlow
+        flow = FounderValidationFlow.__new__(FounderValidationFlow)
         # Initialize minimal attributes without triggering __init__
         flow._state = None
         yield flow

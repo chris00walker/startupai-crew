@@ -163,7 +163,7 @@ class ValidationState(BaseModel):
 The flow uses **non-linear routing** where evidence signals determine the path:
 
 ```python
-class InternalValidationFlow(Flow[ValidationState]):
+class FounderValidationFlow(Flow[ValidationState]):
 
     @start()
     def intake_entrepreneur_input(self):
@@ -210,7 +210,7 @@ class InternalValidationFlow(Flow[ValidationState]):
         # Route back to Sage for new segment
 ```
 
-> **Full Implementation**: See `src/startupai/flows/internal_validation_flow.py` and `docs/innovation-physics.md`
+> **Full Implementation**: See `src/startupai/flows/founder_validation_flow.py` and `docs/innovation-physics.md`
 
 ## File Structure
 
@@ -218,7 +218,7 @@ class InternalValidationFlow(Flow[ValidationState]):
 src/startupai/
 ├── flows/
 │   ├── __init__.py
-│   ├── internal_validation_flow.py
+│   ├── founder_validation_flow.py
 │   └── state_schemas.py
 │
 ├── crews/

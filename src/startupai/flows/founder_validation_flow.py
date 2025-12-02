@@ -1,8 +1,10 @@
 """
-Internal Validation Flow with Innovation Physics Logic.
+Founder Validation Flow with Innovation Physics Logic.
 
-This flow implements the specific decision trees from Strategyzer methodologies,
-enforcing non-linear iteration based on evidence signals.
+This flow validates founder business ideas through three gated phases:
+Desirability, Feasibility, and Viability. It implements the specific
+decision trees from Strategyzer methodologies, enforcing non-linear
+iteration based on evidence signals.
 """
 
 from typing import Dict, Any, Optional, List
@@ -100,14 +102,14 @@ from startupai.webhooks.resume_handler import (
 )
 
 
-class InternalValidationFlow(Flow[ValidationState]):
+class FounderValidationFlow(Flow[ValidationState]):
     """
-    The master flow orchestrating 8 crews through the Innovation Physics logic.
+    The founder validation flow orchestrating 8 crews through Innovation Physics logic.
 
-    Key Innovation Physics Rules:
-    1. Desirability: Problem-Solution Filter and Product-Market Filter
-    2. Feasibility: Downgrade Protocol (can't build = re-test desirability)
-    3. Viability: Unit Economics Trigger (CAC > LTV = strategic pivot)
+    This flow validates business ideas submitted by founders through three phases:
+    - Desirability: Problem-Solution Filter and Product-Market Filter
+    - Feasibility: Downgrade Protocol (can't build = re-test desirability)
+    - Viability: Unit Economics Trigger (CAC > LTV = strategic pivot)
     """
 
     # ===========================================================================
@@ -1838,15 +1840,15 @@ class InternalValidationFlow(Flow[ValidationState]):
 # FLOW INITIALIZATION
 # ===========================================================================
 
-def create_validation_flow(
+def create_founder_validation_flow(
     entrepreneur_input: str,
     project_id: Optional[str] = None,
     user_id: Optional[str] = None,
     session_id: Optional[str] = None,
     kickoff_id: Optional[str] = None,
-) -> InternalValidationFlow:
+) -> FounderValidationFlow:
     """
-    Factory function to create and initialize a validation flow.
+    Factory function to create and initialize a founder validation flow.
 
     Args:
         entrepreneur_input: The raw business idea and context from the entrepreneur
@@ -1856,14 +1858,14 @@ def create_validation_flow(
         kickoff_id: CrewAI kickoff ID (for status tracking)
 
     Returns:
-        Configured InternalValidationFlow ready to run
+        Configured FounderValidationFlow ready to run
     """
     # Generate a unique validation ID
     validation_id = f"val_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     # Create flow with state values passed as kwargs
     # CrewAI Flow expects state fields as direct kwargs, not an initial_state object
-    flow = InternalValidationFlow(
+    flow = FounderValidationFlow(
         id=validation_id,
         entrepreneur_input=entrepreneur_input,
         phase=Phase.IDEATION.value,  # Pass enum value for serialization
@@ -1874,3 +1876,8 @@ def create_validation_flow(
     )
 
     return flow
+
+
+# Backwards compatibility alias
+create_validation_flow = create_founder_validation_flow
+InternalValidationFlow = FounderValidationFlow

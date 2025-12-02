@@ -271,19 +271,19 @@ class TestResumeHandlerViability:
 # ===========================================================================
 
 class TestViabilityFlowNode:
-    """Tests for viability approval flow nodes in InternalValidationFlow."""
+    """Tests for viability approval flow nodes in FounderValidationFlow."""
 
     def test_flow_has_viability_approval_methods(self):
-        """Test that InternalValidationFlow has viability approval methods."""
-        from startupai.flows.internal_validation_flow import InternalValidationFlow
+        """Test that FounderValidationFlow has viability approval methods."""
+        from startupai.flows.founder_validation_flow import FounderValidationFlow
 
         # Check methods exist
-        assert hasattr(InternalValidationFlow, 'pause_for_viability_decision')
-        assert hasattr(InternalValidationFlow, '_notify_viability_approval_needed')
-        assert hasattr(InternalValidationFlow, '_handle_viability_resume')
-        assert hasattr(InternalValidationFlow, '_execute_price_pivot')
-        assert hasattr(InternalValidationFlow, '_execute_cost_pivot')
-        assert hasattr(InternalValidationFlow, '_execute_kill')
+        assert hasattr(FounderValidationFlow, 'pause_for_viability_decision')
+        assert hasattr(FounderValidationFlow, '_notify_viability_approval_needed')
+        assert hasattr(FounderValidationFlow, '_handle_viability_resume')
+        assert hasattr(FounderValidationFlow, '_execute_price_pivot')
+        assert hasattr(FounderValidationFlow, '_execute_cost_pivot')
+        assert hasattr(FounderValidationFlow, '_execute_kill')
 
     def test_state_has_viability_fields(self):
         """Test that ValidationState has viability HITL fields."""
@@ -301,7 +301,7 @@ class TestViabilityFlowNode:
 
     def test_handle_price_pivot_resume(self):
         """Test the _handle_viability_resume method with price pivot."""
-        from startupai.flows.internal_validation_flow import InternalValidationFlow
+        from startupai.flows.founder_validation_flow import FounderValidationFlow
         from startupai.flows.state_schemas import (
             StartupValidationState,
             ViabilityEvidence,
@@ -309,7 +309,7 @@ class TestViabilityFlowNode:
         )
 
         # Create flow with viability evidence
-        flow = InternalValidationFlow(
+        flow = FounderValidationFlow(
             entrepreneur_input="Test business idea",
             project_id="test_project",
         )
@@ -339,10 +339,10 @@ class TestViabilityFlowNode:
 
     def test_handle_cost_pivot_resume(self):
         """Test the _handle_viability_resume method with cost pivot."""
-        from startupai.flows.internal_validation_flow import InternalValidationFlow
+        from startupai.flows.founder_validation_flow import FounderValidationFlow
         from startupai.flows.state_schemas import ViabilityEvidence
 
-        flow = InternalValidationFlow(
+        flow = FounderValidationFlow(
             entrepreneur_input="Test business idea",
             project_id="test_project",
         )
@@ -371,10 +371,10 @@ class TestViabilityFlowNode:
 
     def test_handle_kill_resume(self):
         """Test the _handle_viability_resume method with kill decision."""
-        from startupai.flows.internal_validation_flow import InternalValidationFlow
+        from startupai.flows.founder_validation_flow import FounderValidationFlow
         from startupai.flows.state_schemas import Phase
 
-        flow = InternalValidationFlow(
+        flow = FounderValidationFlow(
             entrepreneur_input="Test business idea",
             project_id="test_project",
         )

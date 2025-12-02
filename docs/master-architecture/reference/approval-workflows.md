@@ -60,7 +60,7 @@ Certain AI decisions require human approval before proceeding. This document con
 The flow routers trigger approvals when evidence indicates a strategic pivot:
 
 ```python
-# From internal_validation_flow.py
+# From founder_validation_flow.py
 
 @router(test_desirability)
 def desirability_gate(self) -> str:

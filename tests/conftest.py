@@ -190,7 +190,7 @@ def mock_openai_embeddings():
 @pytest.fixture
 def mock_service_crew():
     """Mock ServiceCrew for testing without execution."""
-    with patch("startupai.flows.internal_validation_flow.ServiceCrew") as mock:
+    with patch("startupai.flows.founder_validation_flow.ServiceCrew") as mock:
         crew_instance = Mock()
         crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
         mock.return_value = crew_instance
@@ -200,7 +200,7 @@ def mock_service_crew():
 @pytest.fixture
 def mock_analysis_crew():
     """Mock AnalysisCrew for testing without execution."""
-    with patch("startupai.flows.internal_validation_flow.AnalysisCrew") as mock:
+    with patch("startupai.flows.founder_validation_flow.AnalysisCrew") as mock:
         crew_instance = Mock()
         crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
         mock.return_value = crew_instance
@@ -210,7 +210,7 @@ def mock_analysis_crew():
 @pytest.fixture
 def mock_governance_crew():
     """Mock GovernanceCrew for testing without execution."""
-    with patch("startupai.flows.internal_validation_flow.GovernanceCrew") as mock:
+    with patch("startupai.flows.founder_validation_flow.GovernanceCrew") as mock:
         crew_instance = Mock()
         crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
         mock.return_value = crew_instance
@@ -220,7 +220,7 @@ def mock_governance_crew():
 @pytest.fixture
 def mock_build_crew():
     """Mock BuildCrew for testing without execution."""
-    with patch("startupai.flows.internal_validation_flow.BuildCrew") as mock:
+    with patch("startupai.flows.founder_validation_flow.BuildCrew") as mock:
         crew_instance = Mock()
         crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
         mock.return_value = crew_instance
@@ -230,7 +230,7 @@ def mock_build_crew():
 @pytest.fixture
 def mock_growth_crew():
     """Mock GrowthCrew for testing without execution."""
-    with patch("startupai.flows.internal_validation_flow.GrowthCrew") as mock:
+    with patch("startupai.flows.founder_validation_flow.GrowthCrew") as mock:
         crew_instance = Mock()
         crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
         mock.return_value = crew_instance
@@ -240,7 +240,7 @@ def mock_growth_crew():
 @pytest.fixture
 def mock_synthesis_crew():
     """Mock SynthesisCrew for testing without execution."""
-    with patch("startupai.flows.internal_validation_flow.SynthesisCrew") as mock:
+    with patch("startupai.flows.founder_validation_flow.SynthesisCrew") as mock:
         crew_instance = Mock()
         crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
         mock.return_value = crew_instance
@@ -250,7 +250,7 @@ def mock_synthesis_crew():
 @pytest.fixture
 def mock_finance_crew():
     """Mock FinanceCrew for testing without execution."""
-    with patch("startupai.flows.internal_validation_flow.FinanceCrew") as mock:
+    with patch("startupai.flows.founder_validation_flow.FinanceCrew") as mock:
         crew_instance = Mock()
         crew_instance.kickoff.return_value = {"status": "success", "output": "mocked"}
         mock.return_value = crew_instance
