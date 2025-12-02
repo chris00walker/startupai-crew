@@ -1,7 +1,7 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2025-11-26"
+last_reviewed: "2025-12-02"
 ---
 
 # Cross-Repository Blockers
@@ -97,7 +97,7 @@ The marketing site makes promises that require technical capabilities. Status af
 - Approval workflows: `docs/master-architecture/reference/approval-workflows.md`
 
 ---
-**Last Updated**: 2025-11-27
+**Last Updated**: 2025-12-02
 
 **Changes (2025-11-27 - Migrations Deployed)**:
 - **Database migrations deployed**: flow_executions (001), validation_events (002), experiment_outcomes (004), policy_version (005), decision_log (006)
@@ -121,3 +121,9 @@ The marketing site makes promises that require technical capabilities. Status af
 - Flywheel Learning Tables: ✅ Migration complete in product app
 - Phase status updated from "Phase 1 Partial" to "Phase 2D Complete"
 - No remaining blockers for Product App - ready for E2E testing
+
+**Changes (2025-12-02 - Integration Test Added)**:
+- **E2E Integration Test**: `webhook-to-dashboard.integration.test.ts` added to product app
+- Tests verify: webhook → 5 tables persistence → dashboard hooks can query data
+- Validates complete flow: reports, evidence, crewai_validation_states, projects, public_activity_log
+- Dashboard hooks confirmed: useCrewAIState, useInnovationSignals, useVPCData already existed
