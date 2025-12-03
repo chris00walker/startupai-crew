@@ -51,6 +51,22 @@ uv run pytest                   # Run tests
 crewai run                      # Test CrewAI workflow locally
 ```
 
+## CrewAI Python Patterns Reference
+
+For CrewAI-specific Python patterns, consult `docs/crewai-documentation/`:
+
+| Pattern | Doc Reference |
+|---------|---------------|
+| State schemas (Pydantic) | `guides/mastering-flow-state-management.md` |
+| Testing crews | `core-concepts/testing.md` |
+| Training patterns | `core-concepts/training.md` |
+| CLI commands | `core-concepts/cli.md` |
+| Tool creation | `core-concepts/tools.md` |
+
+**Index**: `docs/crewai-documentation/INDEX.md` - Full topic lookup
+
+When implementing CrewAI code, verify patterns against documentation for API accuracy.
+
 ## Python Coding Standards
 
 ### 1. Type Hints (Always)

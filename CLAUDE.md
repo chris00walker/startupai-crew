@@ -31,6 +31,22 @@
 - `reference/api-contracts.md` - All API specifications
 - `reference/approval-workflows.md` - HITL patterns
 
+### CrewAI Documentation
+**Location**: `docs/crewai-documentation/` (34 files, comprehensive reference)
+**Index**: `docs/crewai-documentation/INDEX.md` - Topic-to-file mapping
+
+Key references for development:
+| Topic | Doc File |
+|-------|----------|
+| Flows (`@start`, `@listen`, `@router`) | `core-concepts/flows.md` |
+| State management (Pydantic, persistence) | `guides/mastering-flow-state-management.md` |
+| Agents (role, goal, backstory) | `core-concepts/agents.md` |
+| Tasks (`output_pydantic`, context) | `core-concepts/tasks.md` |
+| Crews (Process types) | `core-concepts/crews.md` |
+| Testing | `core-concepts/testing.md` |
+
+**Usage**: Consult these docs before implementing CrewAI patterns for authoritative API reference.
+
 ## Directory Structure
 ```
 src/startupai/

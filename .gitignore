@@ -55,5 +55,8 @@ Thumbs.db
 output/
 *.log
 
+# External documentation (pulled from docs.crewai.com)
+docs/crewai-documentation/
+
 # UV lock
 # Keep uv.lock tracked for reproducible builds

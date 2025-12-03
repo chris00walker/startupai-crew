@@ -42,6 +42,25 @@ Finance (Ledger - CFO)
 
 **Master Architecture**: `docs/master-architecture/03-validation-spec.md` (authoritative blueprint)
 
+## CrewAI Documentation Reference
+
+**IMPORTANT**: Before providing guidance on CrewAI patterns, consult the local documentation at `docs/crewai-documentation/` for authoritative API reference.
+
+**Index**: `docs/crewai-documentation/INDEX.md` - Start here for topic lookup
+
+| Topic | Trigger Keywords | Doc File |
+|-------|-----------------|----------|
+| Flow orchestration | `@start`, `@listen`, `@router`, `or_()`, `and_()` | `core-concepts/flows.md` |
+| State management | state, persistence, Pydantic state, `@persist` | `guides/mastering-flow-state-management.md` |
+| Agent configuration | role, goal, backstory, memory, delegation | `core-concepts/agents.md` |
+| Task design | `output_pydantic`, expected_output, context, guardrails | `core-concepts/tasks.md` |
+| Crew setup | `Process.sequential`, `Process.hierarchical`, manager | `core-concepts/crews.md` |
+| Tool creation | `@tool` decorator, custom tools | `core-concepts/tools.md` |
+| Memory systems | short-term, long-term, entity memory | `core-concepts/memory.md` |
+| Testing | unit tests, integration tests | `core-concepts/testing.md` |
+
+**Workflow**: When working on CrewAI patterns, read the relevant doc file first to ensure API accuracy.
+
 ## CrewAI Flows Architecture
 
 ### 1. Flow Structure
