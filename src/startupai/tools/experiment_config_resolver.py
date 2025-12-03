@@ -217,6 +217,9 @@ class ExperimentConfigResolver:
         except Exception as e:
             # Fallback to baseline on error
             config = self._resolve_baseline(experiment_type)
+            # Still apply forced policy if provided
+            if force_policy:
+                config.policy_version = force_policy
             return ToolResult.partial(
                 data=ResolverResult(
                     config=config,
