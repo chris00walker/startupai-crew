@@ -117,7 +117,11 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
     - "founder_validation" (default): Full business idea validation
     - "consultant_onboarding": Consultant practice analysis
     """
-    
+
+    def __init__(self, **kwargs):
+        """Initialize flow with tracing enabled for debugging."""
+        super().__init__(tracing=True, **kwargs)
+
     @start()
     def dispatch(self):
         """
