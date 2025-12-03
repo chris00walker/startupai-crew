@@ -3,18 +3,31 @@
 Main entry point for StartupAI CrewAI Flows.
 
 This module provides the required entry points for CrewAI AMP deployment:
-- kickoff(inputs): Main execution entry point (supports multiple flow types)
+- kickoff(inputs): Main execution entry point (uses unified flow dispatcher)
 - plot(): Flow visualization generator
 
-Supported Flow Types:
+IMPORTANT: This module uses the StartupAIUnifiedFlow as the single entry point.
+The unified flow routes to sub-flows based on the 'flow_type' input:
 - "founder_validation" (default): Full business idea validation
 - "consultant_onboarding": Consultant practice analysis and recommendations
+
+Flow Discovery:
+CrewAI AMP auto-discovers Flow classes. The unified flow (in a_unified_flow.py)
+is named to be discovered FIRST alphabetically, ensuring it's the primary flow.
 """
 
 import os
 from datetime import datetime
 from dotenv import load_dotenv
 
+# Import the unified flow as the primary entry point
+from startupai.flows import (
+    StartupAIUnifiedFlow,
+    UnifiedFlowState,
+    create_unified_flow,
+)
+
+# Legacy imports for backwards compatibility
 from startupai.flows import (
     FounderValidationFlow,
     create_founder_validation_flow,
@@ -27,13 +40,14 @@ def kickoff(inputs: dict = None):
     """
     Main entry point for CrewAI AMP deployment.
 
-    This function is called when the flow is triggered via the AMP API.
-    It supports multiple flow types via the 'flow_type' input parameter.
+    This function uses the StartupAIUnifiedFlow as a dispatcher to route
+    to the appropriate sub-flow based on the 'flow_type' input parameter.
 
     Args:
         inputs: Dictionary containing flow inputs.
 
         For founder_validation (default):
+            - flow_type: "founder_validation" (optional, this is the default)
             - entrepreneur_input: The business idea description (required)
             - project_id: UUID of project in product app (optional)
             - user_id: UUID of user in product app (optional)
@@ -48,7 +62,7 @@ def kickoff(inputs: dict = None):
             - conversation_summary: Optional summary of onboarding chat
 
     Returns:
-        Flow execution result
+        Flow execution result (dict with 'result', 'status', 'error' fields)
     """
     # Load environment variables (for local development)
     load_dotenv()
@@ -57,26 +71,54 @@ def kickoff(inputs: dict = None):
     if inputs is None:
         inputs = {}
 
-    # Determine flow type
+    # Extract flow_type for logging
     flow_type = inputs.get("flow_type", "founder_validation")
 
-    # Debug logging for flow routing
-    print(f"[ROUTING] Received flow_type: '{flow_type}'")
-    print(f"[ROUTING] Full inputs keys: {list(inputs.keys())}")
-    print(f"[ROUTING] Routing to: {'consultant_onboarding' if flow_type == 'consultant_onboarding' else 'founder_validation'}")
+    # Debug logging
+    print(f"\n{'='*80}")
+    print("STARTUPAI MAIN.PY - ENTRY POINT")
+    print(f"{'='*80}")
+    print(f"[MAIN] Received flow_type: '{flow_type}'")
+    print(f"[MAIN] Input keys: {list(inputs.keys())}")
 
     # Verify OpenAI API key is set
     if not os.getenv("OPENAI_API_KEY"):
-        return {
+        error_result = {
             "error": "OPENAI_API_KEY not found in environment variables",
-            "status": "failed"
+            "status": "failed",
+            "result": {}
+        }
+        print(f"[MAIN] ERROR: {error_result['error']}")
+        return error_result
+
+    # Create and run the unified flow
+    # The unified flow handles all routing internally
+    print(f"[MAIN] Creating StartupAIUnifiedFlow with inputs...")
+
+    try:
+        flow = StartupAIUnifiedFlow(**inputs)
+        result = flow.kickoff()
+
+        print(f"[MAIN] Flow completed with status: {flow.state.status}")
+
+        # Return the full state as result for AMP
+        return {
+            "result": flow.state.result,
+            "status": flow.state.status,
+            "error": flow.state.error,
+            "completed_at": flow.state.completed_at,
+            "flow_type": flow_type,
         }
 
-    # Route to appropriate flow
-    if flow_type == "consultant_onboarding":
-        return _run_consultant_onboarding(inputs)
-    else:
-        return _run_founder_validation(inputs)
+    except Exception as e:
+        error_result = {
+            "error": str(e),
+            "status": "failed",
+            "result": {},
+            "flow_type": flow_type,
+        }
+        print(f"[MAIN] ERROR: {e}")
+        return error_result
 
 
 def _run_founder_validation(inputs: dict):
@@ -238,10 +280,19 @@ def plot():
 
     This function is called by `crewai flow plot` command to generate
     a visual representation of the flow structure.
+
+    Generates visualizations for:
+    1. Unified flow (primary entry point)
+    2. Founder validation flow (sub-flow)
     """
+    # Plot the unified flow (primary entry point)
+    unified_flow = StartupAIUnifiedFlow()
+    unified_flow.plot("startupai_unified_flow")
+    print("Flow visualization saved to startupai_unified_flow.html")
+
+    # Also plot the founder validation flow for reference
     from startupai.flows.state_schemas import ValidationState
 
-    # Create flow instance for plotting
     initial_state = ValidationState(
         id="plot_preview",
         timestamp_created=datetime.now(),
@@ -249,33 +300,63 @@ def plot():
         entrepreneur_input=""
     )
 
-    flow = FounderValidationFlow(initial_state=initial_state)
-    flow.plot("founder_validation_flow")
-    print("✅ Flow visualization saved to founder_validation_flow.png")
+    founder_flow = FounderValidationFlow(initial_state=initial_state)
+    founder_flow.plot("founder_validation_flow")
+    print("Flow visualization saved to founder_validation_flow.html")
 
 
 # For local testing
 if __name__ == "__main__":
-    # Example input for local testing
-    test_inputs = {
-        "entrepreneur_input": """
-        StartupAI is an AI-powered startup validation platform that helps founders and
-        innovation consultants validate their business ideas in hours instead of weeks.
+    import sys
 
-        Target Customers:
-        1. Early-stage founders who need to validate ideas quickly before building
-        2. Innovation consultants who want to deliver faster, data-driven validation
+    # Check for command line arguments
+    if len(sys.argv) > 1 and sys.argv[1] == "--consultant":
+        # Test consultant onboarding flow
+        test_inputs = {
+            "flow_type": "consultant_onboarding",
+            "user_id": "test-user-123",
+            "session_id": "test-session-456",
+            "practice_data": {
+                "company_name": "Test Consulting",
+                "practice_size": "solo",
+                "industries": ["SaaS", "Fintech"],
+                "services": ["Strategy", "Lean Startup"],
+            },
+            "conversation_summary": "Test consultant onboarding flow.",
+        }
+        print("\nTesting CONSULTANT ONBOARDING flow...")
+    else:
+        # Test founder validation flow (default)
+        test_inputs = {
+            "flow_type": "founder_validation",
+            "entrepreneur_input": """
+            StartupAI is an AI-powered startup validation platform that helps founders and
+            innovation consultants validate their business ideas in hours instead of weeks.
 
-        Problem Statement:
-        Traditional validation takes 2-4 weeks and costs $3-10K through consultants,
-        or requires 80+ hours using a complex tool stack. Founders often build products
-        nobody wants because they skip proper validation.
+            Target Customers:
+            1. Early-stage founders who need to validate ideas quickly before building
+            2. Innovation consultants who want to deliver faster, data-driven validation
 
-        Our Solution:
-        An AI-powered platform with 8 specialized crews that conduct customer research,
-        competitive analysis, and validation experiments automatically.
-        """
-    }
+            Problem Statement:
+            Traditional validation takes 2-4 weeks and costs $3-10K through consultants,
+            or requires 80+ hours using a complex tool stack. Founders often build products
+            nobody wants because they skip proper validation.
+
+            Our Solution:
+            An AI-powered platform with 8 specialized crews that conduct customer research,
+            competitive analysis, and validation experiments automatically.
+            """,
+            "project_id": "test-project-789",
+            "user_id": "test-user-123",
+        }
+        print("\nTesting FOUNDER VALIDATION flow...")
 
     result = kickoff(test_inputs)
-    print("\nFinal Result:", result)
+    print("\n" + "=" * 80)
+    print("FINAL RESULT:")
+    print("=" * 80)
+    print(f"Status: {result.get('status')}")
+    print(f"Error: {result.get('error')}")
+    print(f"Flow Type: {result.get('flow_type')}")
+    if result.get('result'):
+        print(f"Result Keys: {list(result.get('result', {}).keys())}")

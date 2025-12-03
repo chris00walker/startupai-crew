@@ -1,5 +1,26 @@
-"""CrewAI Flows for StartupAI validation system."""
+"""CrewAI Flows for StartupAI validation system.
 
+IMPORTANT: The unified flow (StartupAIUnifiedFlow) is imported FIRST and is
+the PRIMARY flow for CrewAI AMP deployment. It routes to sub-flows based on
+the 'flow_type' input parameter.
+
+Sub-flows (FounderValidationFlow, ConsultantOnboardingFlow) should NOT be
+instantiated directly by CrewAI AMP - they are called internally by the
+unified flow dispatcher.
+"""
+
+# UNIFIED FLOW - Primary entry point for CrewAI AMP
+# This MUST be imported first to ensure it's discovered first by AMP
+from .a_unified_flow import (
+    StartupAIUnifiedFlow,
+    UnifiedFlowState,
+    FlowType,
+    create_unified_flow,
+    kickoff as unified_kickoff,
+    plot as unified_plot,
+)
+
+# Sub-flows (internal use only - called by unified flow)
 from .founder_validation_flow import (
     FounderValidationFlow,
     create_founder_validation_flow,
@@ -13,6 +34,8 @@ from .consultant_onboarding_flow import (
     ConsultantOnboardingState,
     ConsultantPracticeData,
 )
+
+# State schemas
 from .state_schemas import (
     ValidationState,
     ValidationPhase,
@@ -24,7 +47,14 @@ from .state_schemas import (
 )
 
 __all__ = [
-    # Founder validation flow (primary names)
+    # UNIFIED FLOW - Primary for AMP
+    "StartupAIUnifiedFlow",
+    "UnifiedFlowState",
+    "FlowType",
+    "create_unified_flow",
+    "unified_kickoff",
+    "unified_plot",
+    # Founder validation flow (sub-flow)
     "FounderValidationFlow",
     "create_founder_validation_flow",
     # Backwards compatibility aliases
@@ -38,7 +68,7 @@ __all__ = [
     "FeasibilityStatus",
     "UnitEconomicsStatus",
     "PivotRecommendation",
-    # Consultant onboarding flow
+    # Consultant onboarding flow (sub-flow)
     "ConsultantOnboardingFlow",
     "create_consultant_onboarding_flow",
     "ConsultantOnboardingState",
