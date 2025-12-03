@@ -11,6 +11,7 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 import traceback
 import os
+import uuid
 import httpx
 from crewai.flow.flow import Flow, start, listen, router
 from crewai.flow.persistence import persist
@@ -45,6 +46,13 @@ from startupai.flows.state_schemas import (
     # Flow control
     RouterDecision,
     QAStatus,
+    # Assumption types for conversion from crew outputs
+    Assumption as StateAssumption,
+    AssumptionCategory,
+    AssumptionStatus,
+    # For type conversion from crew outputs
+    CustomerProfile,
+    ValueMap,
 )
 
 # Import crews (these will be created separately)
@@ -102,6 +110,144 @@ from startupai.webhooks.resume_handler import (
 )
 
 
+def convert_crew_assumption_to_state(crew_assumption) -> StateAssumption:
+    """Convert crew_outputs.Assumption to state_schemas.Assumption.
+
+    The LLM returns assumptions with:
+    - assumption (str): The assumption statement
+    - category (str): "Desirability", "Feasibility", "Viability"
+    - criticality (str): "Critical", "High", "Medium", "Low"
+
+    State schema expects:
+    - id (str): Unique identifier
+    - statement (str): The assumption text
+    - category (AssumptionCategory): Enum value
+    - priority (int): 1-10 scale
+    - evidence_needed (str): What evidence validates/invalidates
+    - status (AssumptionStatus): UNTESTED, TESTED, etc.
+    """
+    # Map criticality string to priority int (1=most critical, 10=least)
+    criticality_to_priority = {
+        "critical": 1,
+        "high": 3,
+        "medium": 5,
+        "low": 7,
+    }
+
+    # Map category string to enum (handle case variations)
+    category_map = {
+        "desirability": AssumptionCategory.DESIRABILITY,
+        "feasibility": AssumptionCategory.FEASIBILITY,
+        "viability": AssumptionCategory.VIABILITY,
+    }
+
+    # Extract values with defaults for robustness
+    if hasattr(crew_assumption, 'assumption'):
+        statement = crew_assumption.assumption
+    elif hasattr(crew_assumption, 'statement'):
+        statement = crew_assumption.statement
+    else:
+        statement = str(crew_assumption)
+
+    # Get category (handle both enum and string)
+    raw_category = getattr(crew_assumption, 'category', 'desirability')
+    if hasattr(raw_category, 'value'):
+        raw_category = raw_category.value
+    category = category_map.get(str(raw_category).lower(), AssumptionCategory.DESIRABILITY)
+
+    # Get priority from criticality
+    raw_criticality = getattr(crew_assumption, 'criticality', 'medium')
+    if hasattr(raw_criticality, 'value'):
+        raw_criticality = raw_criticality.value
+    priority = criticality_to_priority.get(str(raw_criticality).lower(), 5)
+
+    return StateAssumption(
+        id=f"asm_{uuid.uuid4().hex[:8]}",
+        statement=statement,
+        category=category,
+        priority=priority,
+        evidence_needed=f"Test whether: {statement[:100]}...",
+        status=AssumptionStatus.UNTESTED,
+    )
+
+
+def convert_analysis_profile_to_state(crew_profile, segment_name: str) -> CustomerProfile:
+    """
+    Convert AnalysisCustomerProfile from crew_outputs to CustomerProfile for state.
+
+    Crew output uses:
+      - CustomerJob: {job, job_type, importance}
+      - CustomerPain: {pain, severity}
+      - CustomerGain: {gain, importance}
+
+    State expects:
+      - CustomerJob: {functional, emotional, social, importance}
+      - pains: List[str]
+      - gains: List[str]
+    """
+    from startupai.flows.state_schemas import CustomerJob as StateCustomerJob
+
+    # Group crew jobs by type and create state CustomerJob objects
+    functional_jobs = [j.job for j in crew_profile.jobs if j.job_type == "functional"]
+    emotional_jobs = [j.job for j in crew_profile.jobs if j.job_type == "emotional"]
+    social_jobs = [j.job for j in crew_profile.jobs if j.job_type == "social"]
+
+    # Create state CustomerJob objects - combine jobs of same type
+    state_jobs = []
+    max_len = max(len(functional_jobs), len(emotional_jobs), len(social_jobs), 1)
+    for i in range(max_len):
+        state_jobs.append(StateCustomerJob(
+            functional=functional_jobs[i] if i < len(functional_jobs) else "",
+            emotional=emotional_jobs[i] if i < len(emotional_jobs) else "",
+            social=social_jobs[i] if i < len(social_jobs) else "",
+            importance=crew_profile.jobs[0].importance if crew_profile.jobs else 5,
+        ))
+
+    # Extract pains and gains as strings
+    pains = [p.pain for p in crew_profile.pains]
+    gains = [g.gain for g in crew_profile.gains]
+
+    # Build intensity/importance dicts
+    pain_intensity = {p.pain: p.severity for p in crew_profile.pains}
+    gain_importance = {g.gain: g.importance for g in crew_profile.gains}
+
+    return CustomerProfile(
+        segment_name=segment_name,
+        jobs=state_jobs,
+        pains=pains,
+        gains=gains,
+        pain_intensity=pain_intensity,
+        gain_importance=gain_importance,
+    )
+
+
+def convert_analysis_value_map_to_state(crew_value_map) -> ValueMap:
+    """
+    Convert AnalysisValueMap from crew_outputs to ValueMap for state.
+
+    Crew output uses:
+      - pain_relievers: List[str]
+      - gain_creators: List[str]
+      - products_services: List[str]
+
+    State expects:
+      - pain_relievers: Dict[str, str]  (Pain -> How we relieve it)
+      - gain_creators: Dict[str, str]   (Gain -> How we create it)
+      - products_services: List[str]
+      - differentiators: List[str]
+    """
+    # Convert lists to dicts - use item as both key and value
+    pain_relievers = {pr: f"Solution addresses: {pr}" for pr in crew_value_map.pain_relievers}
+    gain_creators = {gc: f"Solution creates: {gc}" for gc in crew_value_map.gain_creators}
+
+    return ValueMap(
+        products_services=crew_value_map.products_services,
+        pain_relievers=pain_relievers,
+        gain_creators=gain_creators,
+        differentiators=[],  # Not in crew output, default to empty
+    )
+
+
 class FounderValidationFlow(Flow[ValidationState]):
     """
     The founder validation flow orchestrating 8 crews through Innovation Physics logic.
@@ -137,7 +283,10 @@ class FounderValidationFlow(Flow[ValidationState]):
                 output: ServiceCrewOutput = result.pydantic
                 self.state.business_idea = output.business_idea
                 self.state.target_segments = output.target_segments
-                self.state.assumptions = output.assumptions
+                # Convert crew_outputs.Assumption to state_schemas.Assumption
+                self.state.assumptions = [
+                    convert_crew_assumption_to_state(a) for a in output.assumptions
+                ]
                 # Store additional fields from typed output
                 if output.problem_statement:
                     self.state.problem_statement = output.problem_statement
@@ -189,21 +338,34 @@ class FounderValidationFlow(Flow[ValidationState]):
 
         try:
             # Analyze each target segment
+            # Note: All template vars for all tasks must be provided since CrewAI runs ALL tasks
             for segment in self.state.target_segments:
                 try:
                     result = AnalysisCrew().crew().kickoff(
                         inputs={
+                            # For analyze_customer_segment and analyze_competitors
                             "segment": segment,
+                            "segments": self.state.target_segments,
                             "business_idea": self.state.business_idea,
-                            "assumptions": [a.dict() for a in self.state.assumptions]
+                            "assumptions": [a.dict() if hasattr(a, 'dict') else a for a in self.state.assumptions],
+                            # For iterate_value_proposition (placeholders)
+                            "current_value_map": {},
+                            "customer_profile": {},
+                            "evidence": {},
+                            "zombie_ratio": 0.0,
                         }
                     )
 
                     # Store customer profile and value map with typed output
                     if result.pydantic:
                         output: AnalysisCrewOutput = result.pydantic
-                        self.state.customer_profiles[segment] = output.customer_profile
-                        self.state.value_maps[segment] = output.value_map
+                        # Convert crew output types to state types
+                        self.state.customer_profiles[segment] = convert_analysis_profile_to_state(
+                            output.customer_profile, segment
+                        )
+                        self.state.value_maps[segment] = convert_analysis_value_map_to_state(
+                            output.value_map
+                        )
                         # Store fit score and insights
                         if output.fit_score:
                             self.state.segment_fit_scores[segment] = output.fit_score
@@ -220,9 +382,17 @@ class FounderValidationFlow(Flow[ValidationState]):
             try:
                 comp_result = AnalysisCrew().crew().kickoff(
                     inputs={
+                        # For analyze_customer_segment and analyze_competitors
                         "task": "competitor_analysis",
+                        "segment": self.state.target_segments[0] if self.state.target_segments else "",
+                        "segments": self.state.target_segments,
                         "business_idea": self.state.business_idea,
-                        "segments": self.state.target_segments
+                        "assumptions": [a.dict() if hasattr(a, 'dict') else a for a in self.state.assumptions],
+                        # For iterate_value_proposition (placeholders)
+                        "current_value_map": {},
+                        "customer_profile": {},
+                        "evidence": {},
+                        "zombie_ratio": 0.0,
                     }
                 )
                 if comp_result.pydantic:
@@ -266,12 +436,24 @@ class FounderValidationFlow(Flow[ValidationState]):
 
         try:
             # Growth Crew runs desirability experiments
+            # Note: All template vars for all tasks must be provided since CrewAI runs ALL tasks
+            customer_profiles_dict = {k: v.dict() for k, v in self.state.customer_profiles.items()}
+            value_maps_dict = {k: v.dict() for k, v in self.state.value_maps.items()}
             result = GrowthCrew().crew().kickoff(
                 inputs={
-                    "customer_profiles": {k: v.dict() for k, v in self.state.customer_profiles.items()},
-                    "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()},
+                    # For test_desirability
+                    "customer_profiles": customer_profiles_dict,
+                    "value_maps": value_maps_dict,
                     "assumptions": [a.dict() for a in self.state.get_critical_assumptions()],
-                    "competitor_analysis": self.state.competitor_report.dict() if self.state.competitor_report else None
+                    "competitor_analysis": self.state.competitor_report.dict() if self.state.competitor_report else {},
+                    # For test_pricing (placeholders for when task runs)
+                    "current_price": 0.0,
+                    "new_price_multiplier": 1.0,
+                    # For test_degraded (placeholders)
+                    "original_value_maps": value_maps_dict,
+                    "degradation_impact": {},
+                    # For refine_experiments (placeholders)
+                    "previous_evidence": {},
                 }
             )
 
@@ -680,30 +862,59 @@ class FounderValidationFlow(Flow[ValidationState]):
 
         print("\n🔄 Iterating Value Proposition...")
 
+        # Get segment safely, defaulting to first segment
+        segment = self.state.target_segments[0] if self.state.target_segments else "default_segment"
+
+        # Get current value map and customer profile with fallbacks
+        current_value_map = {}
+        if segment in self.state.value_maps:
+            current_value_map = self.state.value_maps[segment].dict()
+
+        customer_profile = {}
+        if segment in self.state.customer_profiles:
+            customer_profile = self.state.customer_profiles[segment].dict()
+
+        evidence_dict = {}
+        if self.state.desirability_evidence:
+            evidence_dict = self.state.desirability_evidence.dict()
+
         # Analysis Crew redesigns value proposition
+        # Note: All template vars for all tasks must be provided since CrewAI runs ALL tasks
         result = AnalysisCrew().crew().kickoff(
             inputs={
+                # For analyze_customer_segment and analyze_competitors
+                "segment": segment,
+                "segments": self.state.target_segments,
+                "business_idea": self.state.business_idea,
+                "assumptions": [a.dict() if hasattr(a, 'dict') else a for a in self.state.assumptions],
+                # For iterate_value_proposition
                 "task": "value_iteration",
-                "current_value_map": self.state.value_maps[self.state.target_segments[0]].dict(),
-                "customer_profile": self.state.customer_profiles[self.state.target_segments[0]].dict(),
-                "evidence": self.state.desirability_evidence.dict(),
+                "current_value_map": current_value_map,
+                "customer_profile": customer_profile,
+                "evidence": evidence_dict,
                 "zombie_ratio": self.state.calculate_zombie_ratio()
             }
         )
 
         # Update value proposition from typed output
-        output: ValuePropIterationOutput = result.pydantic
-        self.state.value_maps[self.state.target_segments[0]] = output.new_value_map
-        self.state.add_pivot_to_history(
-            PivotRecommendation.VALUE_PIVOT,
-            f"High traffic but low commitment (zombie ratio: {self.state.calculate_zombie_ratio():.1%})"
-        )
+        if result.pydantic:
+            output: ValuePropIterationOutput = result.pydantic
+            if output.new_value_map and segment:
+                self.state.value_maps[segment] = output.new_value_map
+            self.state.add_pivot_to_history(
+                PivotRecommendation.VALUE_PIVOT,
+                f"High traffic but low commitment (zombie ratio: {self.state.calculate_zombie_ratio():.1%})"
+            )
 
-        # Reset evidence and retest
-        self.state.desirability_evidence = None
+            # Reset evidence and retest
+            self.state.desirability_evidence = None
 
-        print("✅ Value proposition updated, retesting desirability...")
-        self.test_desirability()
+            print("✅ Value proposition updated, retesting desirability...")
+            self.test_desirability()
+        else:
+            error_msg = "Value iteration returned no structured output"
+            self.state.guardian_last_issues.append(error_msg)
+            print(f"⚠️ {error_msg}")
 
     @listen("refine_and_retest_desirability")
     def refine_desirability_tests(self):
@@ -711,13 +922,27 @@ class FounderValidationFlow(Flow[ValidationState]):
         print(f"\n🔧 Refining desirability tests (attempt {self.state.retry_count}/{self.state.max_retries})...")
 
         try:
+            # Note: All template vars for all tasks must be provided since CrewAI runs ALL tasks
+            customer_profiles_dict = {k: v.dict() for k, v in self.state.customer_profiles.items()}
+            value_maps_dict = {k: v.dict() for k, v in self.state.value_maps.items()}
+
             # Growth Crew refines and retests
             result = GrowthCrew().crew().kickoff(
                 inputs={
+                    # For test_desirability
+                    "customer_profiles": customer_profiles_dict,
+                    "value_maps": value_maps_dict,
+                    "assumptions": [a.dict() for a in self.state.get_critical_assumptions()],
+                    "competitor_analysis": self.state.competitor_report.dict() if self.state.competitor_report else {},
+                    # For test_pricing (placeholders)
+                    "current_price": 0.0,
+                    "new_price_multiplier": 1.0,
+                    # For test_degraded (placeholders)
+                    "original_value_maps": value_maps_dict,
+                    "degradation_impact": {},
+                    # For refine_experiments
                     "task": "refine_experiments",
                     "previous_evidence": self.state.desirability_evidence.dict() if self.state.desirability_evidence else {},
-                    "customer_profiles": {k: v.dict() for k, v in self.state.customer_profiles.items()},
-                    "value_maps": {k: v.dict() for k, v in self.state.value_maps.items()}
                 }
             )
 

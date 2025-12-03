@@ -132,11 +132,11 @@ class LandingPageDeploymentTool(BaseTool):
             variant_id = data.get("variant_id", "default")
             custom_site_name = data.get("site_name")
 
-            # Get Netlify token
-            netlify_token = os.environ.get("NETLIFY_ACCESS_TOKEN")
+            # Get Netlify token (accept either NETLIFY_ACCESS_TOKEN or NETLIFY_AUTH_TOKEN)
+            netlify_token = os.environ.get("NETLIFY_ACCESS_TOKEN") or os.environ.get("NETLIFY_AUTH_TOKEN")
             if not netlify_token:
                 return self._format_error(
-                    "NETLIFY_ACCESS_TOKEN environment variable not set",
+                    "NETLIFY_ACCESS_TOKEN or NETLIFY_AUTH_TOKEN environment variable not set",
                     "MISSING_TOKEN"
                 )
 
@@ -541,12 +541,13 @@ Please check your input and try again.
         # Re-run to get actual result (simplified - in production would cache)
         try:
             data = json.loads(input_data)
-            netlify_token = os.environ.get("NETLIFY_ACCESS_TOKEN")
+            # Accept either NETLIFY_ACCESS_TOKEN or NETLIFY_AUTH_TOKEN
+            netlify_token = os.environ.get("NETLIFY_ACCESS_TOKEN") or os.environ.get("NETLIFY_AUTH_TOKEN")
 
             if not netlify_token:
                 return DeploymentResult(
                     success=False,
-                    error_message="NETLIFY_ACCESS_TOKEN not set",
+                    error_message="NETLIFY_ACCESS_TOKEN or NETLIFY_AUTH_TOKEN not set",
                     error_code="MISSING_TOKEN",
                     variant_id=variant_id,
                 )
