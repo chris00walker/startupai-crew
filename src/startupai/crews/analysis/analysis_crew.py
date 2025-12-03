@@ -8,6 +8,12 @@ Now equipped with real web search tools for market research!
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from startupai.crews.crew_outputs import (
+    AnalysisCrewOutput,
+    CompetitorAnalysisOutput,
+    ValuePropIterationOutput,
+)
+
 # Import web research tools
 from startupai.tools.web_search import (
     TavilySearchTool,
@@ -69,19 +75,22 @@ class AnalysisCrew:
     @task
     def analyze_customer_segment(self) -> Task:
         return Task(
-            config=self.tasks_config['analyze_customer_segment']
+            config=self.tasks_config['analyze_customer_segment'],
+            output_pydantic=AnalysisCrewOutput
         )
 
     @task
     def analyze_competitors(self) -> Task:
         return Task(
-            config=self.tasks_config['analyze_competitors']
+            config=self.tasks_config['analyze_competitors'],
+            output_pydantic=CompetitorAnalysisOutput
         )
 
     @task
     def iterate_value_proposition(self) -> Task:
         return Task(
-            config=self.tasks_config['iterate_value_proposition']
+            config=self.tasks_config['iterate_value_proposition'],
+            output_pydantic=ValuePropIterationOutput
         )
 
     @crew
@@ -91,5 +100,6 @@ class AnalysisCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
-            verbose=True
+            verbose=True,
+            max_rpm=10
         )

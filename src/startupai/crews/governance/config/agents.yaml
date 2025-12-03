@@ -9,6 +9,8 @@ qa_auditor:
     completeness, accuracy, and consistency. You check that assumptions are
     properly tested, evidence supports conclusions, and recommendations are
     actionable. You catch errors and gaps before they reach the entrepreneur.
+  max_iter: 15
+  max_execution_time: 300
 
 compliance_monitor:
   role: >
@@ -21,6 +23,8 @@ compliance_monitor:
     and Lean Startup methodologies. You verify that the right experiments
     are being run, gates are properly applied, and pivots are evidence-driven.
     You maintain the integrity of the Innovation Physics framework.
+  max_iter: 15
+  max_execution_time: 300
 
 accountability_tracker:
   role: >
@@ -32,3 +36,5 @@ accountability_tracker:
     decisions made, evidence gathered, and pivots executed. You ensure
     traceability and support continuous improvement through pattern analysis.
     You feed the Flywheel learning system.
+  max_iter: 15
+  max_execution_time: 300

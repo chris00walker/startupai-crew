@@ -6,6 +6,12 @@ Handles experiment design and customer signal analysis.
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from startupai.crews.crew_outputs import (
+    GrowthCrewOutput,
+    PricingTestOutput,
+    DegradationTestOutput,
+)
+
 
 @CrewBase
 class GrowthCrew:
@@ -43,25 +49,29 @@ class GrowthCrew:
     @task
     def test_desirability(self) -> Task:
         return Task(
-            config=self.tasks_config['test_desirability']
+            config=self.tasks_config['test_desirability'],
+            output_pydantic=GrowthCrewOutput
         )
 
     @task
     def test_pricing(self) -> Task:
         return Task(
-            config=self.tasks_config['test_pricing']
+            config=self.tasks_config['test_pricing'],
+            output_pydantic=PricingTestOutput
         )
 
     @task
     def test_degraded(self) -> Task:
         return Task(
-            config=self.tasks_config['test_degraded']
+            config=self.tasks_config['test_degraded'],
+            output_pydantic=DegradationTestOutput
         )
 
     @task
     def refine_experiments(self) -> Task:
         return Task(
-            config=self.tasks_config['refine_experiments']
+            config=self.tasks_config['refine_experiments'],
+            output_pydantic=GrowthCrewOutput
         )
 
     @crew
@@ -71,5 +81,6 @@ class GrowthCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
-            verbose=True
+            verbose=True,
+            max_rpm=10
         )

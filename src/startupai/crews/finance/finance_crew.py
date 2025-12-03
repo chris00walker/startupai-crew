@@ -10,6 +10,8 @@ Now equipped with:
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from startupai.crews.crew_outputs import FinanceCrewOutput, OptimizedMetricsOutput
+
 # Import financial tools
 from startupai.tools.financial_data import (
     IndustryBenchmarkTool,
@@ -85,13 +87,15 @@ class FinanceCrew:
     @task
     def analyze_viability(self) -> Task:
         return Task(
-            config=self.tasks_config['analyze_viability']
+            config=self.tasks_config['analyze_viability'],
+            output_pydantic=FinanceCrewOutput
         )
 
     @task
     def optimize_economics(self) -> Task:
         return Task(
-            config=self.tasks_config['optimize_economics']
+            config=self.tasks_config['optimize_economics'],
+            output_pydantic=OptimizedMetricsOutput
         )
 
     @task
@@ -113,5 +117,6 @@ class FinanceCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
-            verbose=True
+            verbose=True,
+            max_rpm=10
         )

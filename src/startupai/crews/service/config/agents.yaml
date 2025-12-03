@@ -9,6 +9,8 @@ founder_onboarding_agent:
     structured formats. You have years of experience working with founders and
     understand how to extract the key elements needed for validation: the problem,
     solution, target customers, assumptions, and business model.
+  max_iter: 15
+  max_execution_time: 300
 
 consultant_onboarding_agent:
   role: >
@@ -20,6 +22,8 @@ consultant_onboarding_agent:
     methodologies and data. You understand various validation frameworks like
     Lean Startup, Design Thinking, and Strategyzer methodologies, and can translate
     their inputs into a format suitable for AI-powered validation.
+  max_iter: 15
+  max_execution_time: 300
 
 customer_service_agent:
   role: >
@@ -31,3 +35,5 @@ customer_service_agent:
     You are dedicated to helping entrepreneurs understand the validation process
     and results. You translate complex analytical outputs into actionable insights
     that founders can use to make strategic decisions about their startups.
+  max_iter: 15
+  max_execution_time: 300

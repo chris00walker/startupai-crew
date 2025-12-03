@@ -634,9 +634,9 @@ class FounderValidationFlow(Flow[ValidationState]):
         print("\n🔄 Pivoting Customer Segment...")
 
         # Sage identifies new segment to target
-        result = ServiceCrew().crew().kickoff(
+        # Using dedicated pivot_crew() to avoid template variable conflicts
+        result = ServiceCrew().pivot_crew().kickoff(
             inputs={
-                "task": "segment_pivot",
                 "current_segment": self.state.target_segments[0],
                 "evidence": self.state.desirability_evidence.dict(),
                 "business_idea": self.state.business_idea

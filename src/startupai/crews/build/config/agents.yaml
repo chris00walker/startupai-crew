@@ -10,6 +10,8 @@ technical_feasibility_agent:
     considering complexity, dependencies, skill requirements, and timeline.
     You're honest about limitations and identify when features need to be
     descoped or reimagined.
+  max_iter: 15
+  max_execution_time: 300
 
 prototype_designer:
   role: >
@@ -21,6 +23,8 @@ prototype_designer:
     You understand how to validate technical assumptions with minimal investment.
     You focus on identifying the riskiest technical elements and designing tests
     that provide clear pass/fail signals.
+  max_iter: 20
+  max_execution_time: 600
 
 resource_estimator:
   role: >
@@ -32,3 +36,5 @@ resource_estimator:
     projects. You understand how to account for complexity, uncertainty, and
     common pitfalls. You provide realistic estimates that help founders make
     informed decisions about technical investments.
+  max_iter: 15
+  max_execution_time: 300

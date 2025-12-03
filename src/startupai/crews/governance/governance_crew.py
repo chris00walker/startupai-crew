@@ -10,6 +10,8 @@ Now equipped with:
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from startupai.crews.crew_outputs import GovernanceCrewOutput
+
 # Import learning tools for Flywheel system
 from startupai.tools.learning_capture import LearningCaptureTool
 from startupai.tools.learning_retrieval import LearningRetrievalTool
@@ -104,13 +106,15 @@ class GovernanceCrew:
     @task
     def quality_review(self) -> Task:
         return Task(
-            config=self.tasks_config['quality_review']
+            config=self.tasks_config['quality_review'],
+            output_pydantic=GovernanceCrewOutput
         )
 
     @task
     def final_audit(self) -> Task:
         return Task(
-            config=self.tasks_config['final_audit']
+            config=self.tasks_config['final_audit'],
+            output_pydantic=GovernanceCrewOutput
         )
 
     @task
@@ -174,5 +178,6 @@ class GovernanceCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
-            verbose=True
+            verbose=True,
+            max_rpm=10
         )

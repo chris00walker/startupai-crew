@@ -11,6 +11,8 @@ from crewai.project import CrewBase, agent, task, crew
 import yaml
 from pathlib import Path
 
+from startupai.crews.crew_outputs import SynthesisCrewOutput, PivotDecisionOutput
+
 
 class SynthesisCrew(CrewBase):
     """
@@ -52,7 +54,8 @@ class SynthesisCrew(CrewBase):
         return Task(
             description=config.get("description", ""),
             expected_output=config.get("expected_output", ""),
-            agent=self.project_manager()
+            agent=self.project_manager(),
+            output_pydantic=SynthesisCrewOutput
         )
 
     @task
@@ -62,7 +65,8 @@ class SynthesisCrew(CrewBase):
         return Task(
             description=config.get("description", ""),
             expected_output=config.get("expected_output", ""),
-            agent=self.project_manager()
+            agent=self.project_manager(),
+            output_pydantic=PivotDecisionOutput
         )
 
     @task
@@ -72,7 +76,8 @@ class SynthesisCrew(CrewBase):
         return Task(
             description=config.get("description", ""),
             expected_output=config.get("expected_output", ""),
-            agent=self.project_manager()
+            agent=self.project_manager(),
+            output_pydantic=SynthesisCrewOutput
         )
 
     @task
@@ -99,5 +104,6 @@ class SynthesisCrew(CrewBase):
                 self.experiment_design_task()
             ],
             verbose=True,
-            process="sequential"  # Tasks run in order as needed
+            process="sequential",  # Tasks run in order as needed
+            max_rpm=10
         )

@@ -8,6 +8,8 @@ unit_economics_analyst:
     how to calculate customer acquisition cost (CAC), lifetime value (LTV), and
     other key metrics. You focus on the fundamental question: can this business
     make money? You're rigorous about assumptions and conservative in estimates.
+  max_iter: 15
+  max_execution_time: 300
 
 financial_modeler:
   role: >
@@ -19,6 +21,8 @@ financial_modeler:
     profitability. You focus on key assumptions, sensitivity analysis, and
     identifying the metrics that matter most. You communicate complex financial
     concepts in terms founders can act on.
+  max_iter: 20
+  max_execution_time: 600
 
 funding_strategist:
   role: >
@@ -30,3 +34,5 @@ funding_strategist:
     at different stages. You help founders understand how much runway they need,
     when to raise, and how to present their metrics. You focus on the intersection
     of business metrics and fundraising strategy.
+  max_iter: 15
+  max_execution_time: 300

@@ -9,6 +9,8 @@ experiment_designer:
     how to design experiments that test assumptions quickly and cheaply. You focus
     on behavioral signals over verbal feedback, knowing that what customers do
     matters more than what they say.
+  max_iter: 15
+  max_execution_time: 300
 
 signal_analyst:
   role: >
@@ -21,6 +23,8 @@ signal_analyst:
     signals. You're skilled at distinguishing genuine interest (skin in the game)
     from false positives (verbal interest without commitment). You identify
     zombie metrics that look good but don't indicate real traction.
+  max_iter: 15
+  max_execution_time: 300
 
 channel_strategist:
   role: >
@@ -32,3 +36,5 @@ channel_strategist:
     organic, viral, and partnership. You understand how to test channels
     quickly and identify which ones can scale efficiently. You focus on
     unit economics and sustainable growth.
+  max_iter: 15
+  max_execution_time: 300

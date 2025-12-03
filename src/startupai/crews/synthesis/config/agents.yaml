@@ -25,6 +25,8 @@ project_manager:
     Your recommendations are always specific, actionable, and based on evidence strength.
     You understand when to pivot, when to persevere, and when to kill projects that have
     no viable path forward.
+  max_iter: 20
+  max_execution_time: 600
 
 # Additional supporting agents could be added here as the system scales
 # For Phase 1-2, the Project Manager handles all synthesis tasks

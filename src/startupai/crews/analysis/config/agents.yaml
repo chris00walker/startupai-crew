@@ -10,6 +10,8 @@ customer_researcher:
     customers are trying to accomplish (jobs), what frustrates them (pains),
     and what would delight them (gains). You synthesize research into actionable
     customer profiles that drive product decisions.
+  max_iter: 15
+  max_execution_time: 300
 
 competitor_analyst:
   role: >
@@ -23,3 +25,5 @@ competitor_analyst:
     create positioning maps that reveal market gaps and help startups find their
     unique differentiation. You focus on evidence-based analysis rather than
     assumptions.
+  max_iter: 15
+  max_execution_time: 300

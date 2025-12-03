@@ -12,6 +12,8 @@ Now equipped with full landing page pipeline:
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from startupai.crews.crew_outputs import BuildCrewOutput, DowngradeOutput
+
 from startupai.tools.landing_page import LandingPageGeneratorTool
 from startupai.tools.code_validator import CodeValidatorTool
 from startupai.tools.landing_page_deploy import LandingPageDeploymentTool
@@ -69,19 +71,22 @@ class BuildCrew:
     @task
     def assess_feasibility(self) -> Task:
         return Task(
-            config=self.tasks_config['assess_feasibility']
+            config=self.tasks_config['assess_feasibility'],
+            output_pydantic=BuildCrewOutput
         )
 
     @task
     def design_downgrade(self) -> Task:
         return Task(
-            config=self.tasks_config['design_downgrade']
+            config=self.tasks_config['design_downgrade'],
+            output_pydantic=DowngradeOutput
         )
 
     @task
     def reduce_scope(self) -> Task:
         return Task(
-            config=self.tasks_config['reduce_scope']
+            config=self.tasks_config['reduce_scope'],
+            output_pydantic=DowngradeOutput
         )
 
     @task
@@ -109,5 +114,6 @@ class BuildCrew:
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
-            verbose=True
+            verbose=True,
+            max_rpm=10
         )
