@@ -172,28 +172,31 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
         return flow_type
     
     @listen("founder_validation")
-    def run_founder_validation(self):
+    async def run_founder_validation(self):
         """
         Execute the founder validation flow.
-        
+
         Imports and runs FounderValidationFlow with the provided inputs.
         Stores the result in self.state.result.
+
+        Note: This method is async because nested flows must use kickoff_async()
+        when called from within an already-running async event loop.
         """
         print("\n>>> Executing FOUNDER VALIDATION flow")
-        
+
         # Validate required inputs
         if not self.state.entrepreneur_input:
             self.state.error = "Missing required input: entrepreneur_input"
             self.state.status = "failed"
             print(f"[ERROR] {self.state.error}")
             return
-        
+
         try:
             # Import sub-flow (late import to avoid circular deps)
             from startupai.flows._founder_validation_flow import (
                 create_founder_validation_flow
             )
-            
+
             # Create and run the sub-flow
             flow = create_founder_validation_flow(
                 entrepreneur_input=self.state.entrepreneur_input,
@@ -202,24 +205,25 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
                 session_id=self.state.session_id,
                 kickoff_id=self.state.kickoff_id,
             )
-            
+
             print("[FOUNDER] Starting validation flow kickoff...")
-            result = flow.kickoff()
-            
+            # Use kickoff_async() for nested flows to avoid asyncio.run() conflict
+            result = await flow.kickoff_async()
+
             # Store result
             if isinstance(result, dict):
                 self.state.result = result
             else:
                 self.state.result = {"raw": str(result)}
-            
+
             self.state.status = "success"
             self.state.completed_at = datetime.now().isoformat()
-            
+
             print(f"\n{'='*80}")
             print("[FOUNDER] Validation completed successfully!")
             print(f"[FOUNDER] Result keys: {list(self.state.result.keys())}")
             print(f"{'='*80}\n")
-            
+
         except Exception as e:
             self.state.error = f"Founder validation failed: {str(e)}"
             self.state.status = "failed"
@@ -227,34 +231,37 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
             traceback.print_exc()
     
     @listen("consultant_onboarding")
-    def run_consultant_onboarding(self):
+    async def run_consultant_onboarding(self):
         """
         Execute the consultant onboarding flow.
-        
+
         Imports and runs ConsultantOnboardingFlow with the provided inputs.
         Stores the result in self.state.result.
+
+        Note: This method is async because nested flows must use kickoff_async()
+        when called from within an already-running async event loop.
         """
         print("\n>>> Executing CONSULTANT ONBOARDING flow")
-        
+
         # Validate required inputs
         if not self.state.user_id:
             self.state.error = "Missing required input: user_id"
             self.state.status = "failed"
             print(f"[ERROR] {self.state.error}")
             return
-        
+
         if not self.state.session_id:
             self.state.error = "Missing required input: session_id"
             self.state.status = "failed"
             print(f"[ERROR] {self.state.error}")
             return
-        
+
         try:
             # Import sub-flow (late import to avoid circular deps)
             from startupai.flows._consultant_onboarding_flow import (
                 create_consultant_onboarding_flow
             )
-            
+
             # Create and run the sub-flow
             flow = create_consultant_onboarding_flow(
                 user_id=self.state.user_id,
@@ -262,24 +269,25 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
                 practice_data=self.state.practice_data,
                 conversation_summary=self.state.conversation_summary,
             )
-            
+
             print("[CONSULTANT] Starting onboarding flow kickoff...")
-            result = flow.kickoff()
-            
+            # Use kickoff_async() for nested flows to avoid asyncio.run() conflict
+            result = await flow.kickoff_async()
+
             # Store result
             if isinstance(result, dict):
                 self.state.result = result
             else:
                 self.state.result = {"raw": str(result)}
-            
+
             self.state.status = "success"
             self.state.completed_at = datetime.now().isoformat()
-            
+
             print(f"\n{'='*80}")
             print("[CONSULTANT] Onboarding completed successfully!")
             print(f"[CONSULTANT] Result keys: {list(self.state.result.keys())}")
             print(f"{'='*80}\n")
-            
+
         except Exception as e:
             self.state.error = f"Consultant onboarding failed: {str(e)}"
             self.state.status = "failed"
