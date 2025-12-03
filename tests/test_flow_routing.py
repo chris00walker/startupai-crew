@@ -48,7 +48,7 @@ def mock_flow():
          patch('startupai.flows.founder_validation_flow.GrowthCrew'), \
          patch('startupai.flows.founder_validation_flow.SynthesisCrew'), \
          patch('startupai.flows.founder_validation_flow.FinanceCrew'):
-        from startupai.flows.founder_validation_flow import FounderValidationFlow
+        from startupai.flows._founder_validation_flow import FounderValidationFlow
         flow = FounderValidationFlow.__new__(FounderValidationFlow)
         # Initialize minimal attributes without triggering __init__
         flow._state = None

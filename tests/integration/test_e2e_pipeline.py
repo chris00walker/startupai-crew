@@ -22,7 +22,7 @@ from startupai.flows.state_schemas import (
     PivotType,
     QAReport,
 )
-from startupai.flows.founder_validation_flow import FounderValidationFlow
+from startupai.flows._founder_validation_flow import FounderValidationFlow
 from startupai.webhooks.contracts import (
     FounderValidationPayload,
     validate_founder_validation_payload,

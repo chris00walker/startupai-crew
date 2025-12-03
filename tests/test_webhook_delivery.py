@@ -26,7 +26,7 @@ from startupai.flows.state_schemas import (
     QAReport,
     PivotType,
 )
-from startupai.flows.founder_validation_flow import FounderValidationFlow
+from startupai.flows._founder_validation_flow import FounderValidationFlow
 
 
 # ===========================================================================

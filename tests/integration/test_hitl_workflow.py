@@ -674,7 +674,7 @@ class TestCreativeApprovalFlowNode:
 
     def test_flow_has_creative_approval_methods(self):
         """Test that FounderValidationFlow has creative approval methods."""
-        from startupai.flows.founder_validation_flow import FounderValidationFlow
+        from startupai.flows._founder_validation_flow import FounderValidationFlow
 
         # Check methods exist
         assert hasattr(FounderValidationFlow, 'review_creatives_for_deployment')
@@ -704,7 +704,7 @@ class TestCreativeApprovalFlowNode:
 
     def test_handle_creative_resume(self):
         """Test the _handle_creative_resume method."""
-        from startupai.flows.founder_validation_flow import FounderValidationFlow
+        from startupai.flows._founder_validation_flow import FounderValidationFlow
         from startupai.flows.state_schemas import StartupValidationState
 
         # Create a flow with initial state
@@ -739,7 +739,7 @@ class TestCreativeApprovalFlowNode:
 
     def test_handle_creative_resume_with_rejection(self):
         """Test handling creative rejection with feedback."""
-        from startupai.flows.founder_validation_flow import FounderValidationFlow
+        from startupai.flows._founder_validation_flow import FounderValidationFlow
 
         flow = FounderValidationFlow(
             entrepreneur_input="Test business idea",
