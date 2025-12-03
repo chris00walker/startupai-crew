@@ -6,14 +6,15 @@ This module provides the required entry points for CrewAI AMP deployment:
 - kickoff(inputs): Main execution entry point (uses unified flow dispatcher)
 - plot(): Flow visualization generator
 
-IMPORTANT: This module uses the StartupAIUnifiedFlow as the single entry point.
-The unified flow routes to sub-flows based on the 'flow_type' input:
+IMPORTANT: This module uses AMPEntryFlow as the single entry point.
+The flow is named to come FIRST alphabetically in CrewAI AMP's flow discovery.
+It routes to sub-flows based on the 'flow_type' input:
 - "founder_validation" (default): Full business idea validation
 - "consultant_onboarding": Consultant practice analysis and recommendations
 
 Flow Discovery:
-CrewAI AMP auto-discovers Flow classes. The unified flow (in a_unified_flow.py)
-is named to be discovered FIRST alphabetically, ensuring it's the primary flow.
+CrewAI AMP auto-discovers Flow classes alphabetically. AMPEntryFlow comes
+before ConsultantOnboardingFlow and FounderValidationFlow, ensuring it's primary.
 """
 
 import os
@@ -21,16 +22,21 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # Import the unified flow as the primary entry point
+# AMPEntryFlow is named to come first alphabetically
 from startupai.flows import (
-    StartupAIUnifiedFlow,
+    AMPEntryFlow,
+    StartupAIUnifiedFlow,  # Backward compatibility alias
     UnifiedFlowState,
     create_unified_flow,
 )
 
-# Legacy imports for backwards compatibility
-from startupai.flows import (
+# Legacy imports for backwards compatibility (import directly from underscore-prefixed files
+# to avoid re-exporting Flow classes which would cause AMP to discover them)
+from startupai.flows._founder_validation_flow import (
     FounderValidationFlow,
     create_founder_validation_flow,
+)
+from startupai.flows._consultant_onboarding_flow import (
     ConsultantOnboardingFlow,
     create_consultant_onboarding_flow,
 )
@@ -93,10 +99,10 @@ def kickoff(inputs: dict = None):
 
     # Create and run the unified flow
     # The unified flow handles all routing internally
-    print(f"[MAIN] Creating StartupAIUnifiedFlow with inputs...")
+    print(f"[MAIN] Creating AMPEntryFlow with inputs...")
 
     try:
-        flow = StartupAIUnifiedFlow(**inputs)
+        flow = AMPEntryFlow(**inputs)
         result = flow.kickoff()
 
         print(f"[MAIN] Flow completed with status: {flow.state.status}")
@@ -286,7 +292,7 @@ def plot():
     2. Founder validation flow (sub-flow)
     """
     # Plot the unified flow (primary entry point)
-    unified_flow = StartupAIUnifiedFlow()
+    unified_flow = AMPEntryFlow()
     unified_flow.plot("startupai_unified_flow")
     print("Flow visualization saved to startupai_unified_flow.html")
 

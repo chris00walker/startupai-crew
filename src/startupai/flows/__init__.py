@@ -1,18 +1,15 @@
 """CrewAI Flows for StartupAI validation system.
 
-IMPORTANT: The unified flow (StartupAIUnifiedFlow) is imported FIRST and is
-the PRIMARY flow for CrewAI AMP deployment. It routes to sub-flows based on
-the 'flow_type' input parameter.
-
-Sub-flows (FounderValidationFlow, ConsultantOnboardingFlow) should NOT be
-instantiated directly by CrewAI AMP - they are called internally by the
-unified flow dispatcher.
+IMPORTANT: Only AMPEntryFlow is exported for CrewAI AMP deployment.
+Sub-flows are NOT exported to prevent AMP from discovering them.
+They are called internally via late imports in AMPEntryFlow.
 """
 
-# UNIFIED FLOW - Primary entry point for CrewAI AMP
-# This MUST be imported first to ensure it's discovered first by AMP
+# UNIFIED FLOW - ONLY entry point for CrewAI AMP
+# This is the ONLY Flow class that should be discovered by AMP
 from .a_unified_flow import (
-    StartupAIUnifiedFlow,
+    AMPEntryFlow,
+    StartupAIUnifiedFlow,  # Backward compatibility alias
     UnifiedFlowState,
     FlowType,
     create_unified_flow,
@@ -20,22 +17,7 @@ from .a_unified_flow import (
     plot as unified_plot,
 )
 
-# Sub-flows (internal use only - called by unified flow)
-from .founder_validation_flow import (
-    FounderValidationFlow,
-    create_founder_validation_flow,
-    # Backwards compatibility aliases
-    InternalValidationFlow,
-    create_validation_flow,
-)
-from .consultant_onboarding_flow import (
-    ConsultantOnboardingFlow,
-    create_consultant_onboarding_flow,
-    ConsultantOnboardingState,
-    ConsultantPracticeData,
-)
-
-# State schemas
+# State schemas (NOT Flow classes, safe to export)
 from .state_schemas import (
     ValidationState,
     ValidationPhase,
@@ -46,21 +28,22 @@ from .state_schemas import (
     PivotRecommendation,
 )
 
+# NOTE: Sub-flows are NOT exported here to prevent CrewAI AMP discovery.
+# They are imported directly in a_unified_flow.py when needed.
+# If you need to use them directly (e.g., for testing), import from:
+#   from startupai.flows._founder_validation_flow import FounderValidationFlow
+#   from startupai.flows._consultant_onboarding_flow import ConsultantOnboardingFlow
+
 __all__ = [
-    # UNIFIED FLOW - Primary for AMP
-    "StartupAIUnifiedFlow",
+    # UNIFIED FLOW - Only entry point for AMP
+    "AMPEntryFlow",
+    "StartupAIUnifiedFlow",  # Backward compatibility alias
     "UnifiedFlowState",
     "FlowType",
     "create_unified_flow",
     "unified_kickoff",
     "unified_plot",
-    # Founder validation flow (sub-flow)
-    "FounderValidationFlow",
-    "create_founder_validation_flow",
-    # Backwards compatibility aliases
-    "InternalValidationFlow",
-    "create_validation_flow",
-    # State schemas
+    # State schemas (not Flow classes)
     "ValidationState",
     "ValidationPhase",
     "EvidenceStrength",
@@ -68,9 +51,4 @@ __all__ = [
     "FeasibilityStatus",
     "UnitEconomicsStatus",
     "PivotRecommendation",
-    # Consultant onboarding flow (sub-flow)
-    "ConsultantOnboardingFlow",
-    "create_consultant_onboarding_flow",
-    "ConsultantOnboardingState",
-    "ConsultantPracticeData",
 ]

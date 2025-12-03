@@ -103,15 +103,19 @@ class UnifiedFlowState(BaseModel):
     )
 
 
-class StartupAIUnifiedFlow(Flow[UnifiedFlowState]):
+class AMPEntryFlow(Flow[UnifiedFlowState]):
     """
-    Unified dispatcher flow for StartupAI.
-    
-    IMPORTANT: This is the ONLY Flow class that CrewAI AMP should discover
-    and instantiate. It routes to sub-flows based on the 'flow_type' input.
-    
-    The 'A_' prefix in the filename ensures alphabetical discovery priority,
-    and this class is named to clearly indicate its dispatcher role.
+    Primary entry point flow for CrewAI AMP deployment.
+
+    CRITICAL: This class is named 'AMPEntryFlow' to ensure it's discovered
+    FIRST alphabetically before other flows (ConsultantOnboarding, Founder...).
+
+    CrewAI AMP auto-discovers Flow subclasses and picks one as primary.
+    By naming this class with 'AMP' prefix, we ensure it comes first.
+
+    This flow routes to sub-flows based on the 'flow_type' input parameter:
+    - "founder_validation" (default): Full business idea validation
+    - "consultant_onboarding": Consultant practice analysis
     """
     
     @persist()
@@ -177,7 +181,7 @@ class StartupAIUnifiedFlow(Flow[UnifiedFlowState]):
         
         try:
             # Import sub-flow (late import to avoid circular deps)
-            from startupai.flows.founder_validation_flow import (
+            from startupai.flows._founder_validation_flow import (
                 create_founder_validation_flow
             )
             
@@ -238,7 +242,7 @@ class StartupAIUnifiedFlow(Flow[UnifiedFlowState]):
         
         try:
             # Import sub-flow (late import to avoid circular deps)
-            from startupai.flows.consultant_onboarding_flow import (
+            from startupai.flows._consultant_onboarding_flow import (
                 create_consultant_onboarding_flow
             )
             
@@ -288,21 +292,25 @@ class StartupAIUnifiedFlow(Flow[UnifiedFlowState]):
 def create_unified_flow(
     flow_type: str = "founder_validation",
     **kwargs
-) -> StartupAIUnifiedFlow:
+) -> AMPEntryFlow:
     """
     Create a unified flow instance.
-    
+
     Args:
         flow_type: "founder_validation" or "consultant_onboarding"
         **kwargs: Flow-specific inputs
-    
+
     Returns:
-        Configured StartupAIUnifiedFlow ready to run
+        Configured AMPEntryFlow ready to run
     """
-    return StartupAIUnifiedFlow(
+    return AMPEntryFlow(
         flow_type=flow_type,
         **kwargs
     )
+
+
+# Backward compatibility alias
+StartupAIUnifiedFlow = AMPEntryFlow
 
 
 # =============================================================================
@@ -313,25 +321,25 @@ def create_unified_flow(
 def kickoff(inputs: dict = None):
     """
     Main entry point for CrewAI AMP deployment.
-    
+
     This function is called when the flow is triggered via the AMP API
     or via `crewai run`.
     """
     if inputs is None:
         inputs = {}
-    
+
     flow_type = inputs.pop("flow_type", "founder_validation")
-    
-    flow = StartupAIUnifiedFlow(
+
+    flow = AMPEntryFlow(
         flow_type=flow_type,
         **inputs
     )
-    
+
     return flow.kickoff()
 
 
 def plot(filename: str = "startupai_unified_flow"):
     """Generate flow visualization."""
-    flow = StartupAIUnifiedFlow()
+    flow = AMPEntryFlow()
     flow.plot(filename)
     print(f"Flow visualization saved to {filename}.html")
