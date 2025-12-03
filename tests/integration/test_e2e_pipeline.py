@@ -59,7 +59,7 @@ def mock_httpx_with_capture(webhook_capture):
     """Mock httpx.Client that captures webhook calls."""
     captured, capture_post = webhook_capture
 
-    with patch("startupai.flows.founder_validation_flow.httpx.Client") as mock_client_class:
+    with patch("startupai.flows._founder_validation_flow.httpx.Client") as mock_client_class:
         mock_client = MagicMock()
         mock_client.post = capture_post
         mock_client.__enter__ = Mock(return_value=mock_client)
