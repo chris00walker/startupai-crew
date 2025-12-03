@@ -108,6 +108,55 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 ## Priority 1: Core Value Delivery
 
+### CRITICAL: Wire `output_pydantic` to Task Definitions
+
+> **Status**: ⚠️ BLOCKING - Typed outputs are broken
+
+**Problem**: The entire typed output system is non-functional. Flow code assumes `result.pydantic` returns typed data, but without `output_pydantic` on task definitions, it's always `None`.
+
+**Evidence** (`founder_validation_flow.py:136-147`):
+```python
+if result.pydantic:
+    output: ServiceCrewOutput = result.pydantic  # Always None!
+    self.state.business_idea = output.business_idea
+```
+
+This silently fails - the fallback `else` branch runs instead, losing all structured data benefits.
+
+**Scope**:
+- 14 Pydantic models defined in `crew_outputs.py` are NEVER USED
+- 34 tasks across 7 crews need `output_pydantic` added
+- Commit `d39d74c` documented the fix pattern but didn't implement it
+
+**Fix Required**:
+```python
+# Current (broken):
+@task
+def capture_entrepreneur_brief(self) -> Task:
+    return Task(config=self.tasks_config['capture_entrepreneur_brief'])
+
+# Required (working):
+@task
+def capture_entrepreneur_brief(self) -> Task:
+    return Task(
+        config=self.tasks_config['capture_entrepreneur_brief'],
+        output_pydantic=ServiceCrewOutput
+    )
+```
+
+**Files to modify**:
+- `src/startupai/crews/service/service_crew.py`
+- `src/startupai/crews/analysis/analysis_crew.py`
+- `src/startupai/crews/build/build_crew.py`
+- `src/startupai/crews/growth/growth_crew.py`
+- `src/startupai/crews/synthesis/synthesis_crew.py`
+- `src/startupai/crews/finance/finance_crew.py`
+- `src/startupai/crews/governance/governance_crew.py`
+
+**Testing**: Can validate locally with `crewai run` once ServiceCrew multi-task template issue is also fixed.
+
+---
+
 ### Hypothesis: Users Complete Analysis ⏳ IN PROGRESS
 
 > **If** we provide an end-to-end flow from onboarding to analysis results display,
@@ -239,6 +288,48 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 **Known Issue**: `ExperimentConfigResolver.resolve()` ignores `force_policy` parameter - always returns `YAML_BASELINE` instead of the forced policy. Test failure in `test_area_improvements.py::test_resolve_with_forced_policy`. Fix required before A/B testing can work.
 
+### CrewAI Configuration Audit Findings (2025-12-02)
+> Configuration audit against CrewAI documentation revealed several issues affecting typed outputs and safety.
+
+**Why deprioritized**: Remaining issues can wait until AMP caching is resolved and production traffic validates need.
+
+**Critical Issues**:
+
+1. **Missing `output_pydantic` on ALL 34 Tasks** → **MOVED TO PRIORITY 1**
+
+2. **SynthesisCrew Pattern Deviation**
+   - File: `src/startupai/crews/synthesis/synthesis_crew.py`
+   - Missing `@CrewBase` decorator (line 15)
+   - Uses manual YAML loading via `_load_config()` instead of class attributes
+   - Uses `config.get("role", "...")` instead of `config=self.agents_config['key']`
+   - **Fix**: Refactor to match ServiceCrew pattern (correct reference)
+
+**Important Issues**:
+
+3. **Missing Agent Safety Limits** (all 18 agents)
+   - No `max_iter` (agents could loop indefinitely)
+   - No `max_execution_time` (no timeout protection)
+   - **Fix**: Add `max_iter=15, max_execution_time=300` to all Agent() definitions
+
+4. **Missing Crew Rate Limits** (all 7 crews)
+   - No `max_rpm` configured
+   - Risk of hitting API rate limits during high-volume runs
+   - **Fix**: Add `max_rpm=10` to all Crew() definitions
+
+5. **No Task-Level Guardrails** (all 34 tasks)
+   - Governance Crew's 11 QA tasks are ideal candidates
+   - Could enforce enum values, score ranges, structure validation
+   - **Fix**: Add `guardrail` field to critical tasks in YAML configs
+
+**Async Opportunity**:
+- `analyze_customer_segments()` runs AnalysisCrew sequentially per segment
+- Could use `kickoff_for_each_async()` for parallel segment analysis
+- Location: `founder_validation_flow.py` lines 181-252
+
+**Full Audit Report**: `~/.claude/plans/agile-imagining-dragonfly.md`
+
+---
+
 ### ServiceCrew Multi-Task Template Variable Issue
 > ServiceCrew includes both `capture_entrepreneur_brief` and `segment_pivot_analysis` tasks, but they require different template variables.
 
@@ -365,6 +456,10 @@ When choosing what to validate next, ask:
 | Results Persistence to Supabase | ✅ Complete | 100% |
 | Developer Experience (Makefile, scripts, tests) | ✅ Complete | 100% |
 | Tool Contracts (ToolResult envelope) | ✅ Complete | 100% |
+| **Task `output_pydantic` wiring** | 🔴 PRIORITY 1 - Blocking typed outputs | 0% |
+| **SynthesisCrew @CrewBase pattern** | ⚠️ Deviation from standard | 0% |
+| **Agent safety limits (max_iter, timeout)** | ❌ Not configured | 0% |
+| **Crew rate limits (max_rpm)** | ❌ Not configured | 0% |
 | Product App Results Display UI | ❌ Pending | 0% |
 | Product App Approval UI | ❌ Pending | 0% |
 | Flywheel Database Tables | ❌ Pending Migration | 0% |
@@ -378,8 +473,16 @@ When choosing what to validate next, ask:
 2025-12-02
 
 **Latest Changes**:
+- **Added CrewAI Configuration Audit findings** (5 issues: 2 critical, 3 important)
+- Updated implementation status table with audit gaps
 - Added known issue for `force_policy` bug in ExperimentConfigResolver
 - Updated with Phase 1-3 completion status
 - Marked completed hypotheses (Multi-crew, Tools, HITL backend)
 - Updated blocking issues and next priorities
 - Added implementation status summary table
+
+**Audit Summary** (2025-12-02):
+- Full report: `~/.claude/plans/agile-imagining-dragonfly.md`
+- 🔴 **PRIORITY 1**: `output_pydantic` not wired to tasks (14 models defined but unused)
+- Deprioritized: SynthesisCrew `@CrewBase` pattern deviation
+- Deprioritized: No agent safety limits, no crew rate limits, no task guardrails
