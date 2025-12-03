@@ -1,48 +1,38 @@
+#!/usr/bin/env python
 """
-Unified Entry Flow for CrewAI AMP deployment.
+CrewAI AMP Entry Point for StartupAI Flows.
 
-CRITICAL: This file is named 'a_unified_flow.py' to ensure it is discovered
-FIRST by CrewAI AMP's alphabetical flow discovery. This is the ONLY flow
-that AMP should instantiate and run.
+This is the PRIMARY entry point for CrewAI AMP deployment.
+Following the standard CrewAI template pattern, this file must be at the project root.
 
-The flow routes to the appropriate sub-flow based on the 'flow_type' input:
+The StartupAIFlow class defined here is the ONLY Flow that CrewAI AMP should discover
+and use. It routes to sub-flows internally based on the 'flow_type' input:
 - "founder_validation" (default): Full business idea validation
-- "consultant_onboarding": Consultant practice analysis
-
-Architecture:
-    /kickoff {flow_type: "founder_validation", ...}
-        |
-        v
-    StartupAIUnifiedFlow.dispatch()
-        |
-        +--[founder_validation]--> FounderValidationFlow.kickoff()
-        |
-        +--[consultant_onboarding]--> ConsultantOnboardingFlow.kickoff()
+- "consultant_onboarding": Consultant practice analysis and recommendations
 """
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, Field
-from crewai.flow.flow import Flow, start, listen, router
-from crewai.flow.persistence import persist
-import traceback
+from crewai.flow.flow import Flow, start, listen
+from dotenv import load_dotenv
 import os
+import traceback
 
 
 class FlowType(str, Enum):
-    """Supported flow types for routing"""
+    """Supported flow types for routing."""
     FOUNDER_VALIDATION = "founder_validation"
     CONSULTANT_ONBOARDING = "consultant_onboarding"
 
 
-class UnifiedFlowState(BaseModel):
+class StartupAIFlowState(BaseModel):
     """
-    Unified state schema covering ALL inputs for all flow types.
+    Unified state schema for all StartupAI flows.
     
     CrewAI AMP uses this schema to generate the /inputs endpoint.
-    All fields from both FounderValidation and ConsultantOnboarding
-    are included to support both flow types.
+    All fields support both founder_validation and consultant_onboarding flows.
     """
     # === FLOW ROUTING ===
     flow_type: str = Field(
@@ -103,39 +93,32 @@ class UnifiedFlowState(BaseModel):
     )
 
 
-class AMPEntryFlow(Flow[UnifiedFlowState]):
+class StartupAIFlow(Flow[StartupAIFlowState]):
     """
     Primary entry point flow for CrewAI AMP deployment.
-
-    CRITICAL: This class is named 'AMPEntryFlow' to ensure it's discovered
-    FIRST alphabetically before other flows (ConsultantOnboarding, Founder...).
-
-    CrewAI AMP auto-discovers Flow subclasses and picks one as primary.
-    By naming this class with 'AMP' prefix, we ensure it comes first.
-
-    This flow routes to sub-flows based on the 'flow_type' input parameter:
-    - "founder_validation" (default): Full business idea validation
-    - "consultant_onboarding": Consultant practice analysis
+    
+    This is the ONLY Flow class that should be discovered by CrewAI AMP.
+    It routes to sub-flows internally based on the 'flow_type' input.
     """
     
     @start()
     def dispatch(self):
         """
-        Entry point: Initialize state for flow routing.
-
-        This method sets up the flow state. The @router decorator on
-        route_to_subflow() handles the actual routing based on flow_type.
+        Entry point: Route to appropriate sub-flow based on flow_type.
         """
+        # Load environment variables
+        load_dotenv()
+        
         flow_type = self.state.flow_type
         self.state.status = "running"
-
+        
         print(f"\n{'='*80}")
-        print("STARTUPAI UNIFIED FLOW - DISPATCHER")
+        print("STARTUPAI FLOW - ENTRY POINT")
         print(f"{'='*80}")
         print(f"[DISPATCH] Flow Type: {flow_type}")
         print(f"[DISPATCH] Timestamp: {datetime.now().isoformat()}")
         print(f"[DISPATCH] Kickoff ID: {self.state.kickoff_id}")
-
+        
         # Log key inputs for debugging
         if flow_type == "founder_validation":
             input_len = len(self.state.entrepreneur_input or "")
@@ -143,20 +126,9 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
             print(f"[DISPATCH] Project ID: {self.state.project_id}")
         elif flow_type == "consultant_onboarding":
             print(f"[DISPATCH] Practice Data Keys: {list(self.state.practice_data.keys())}")
-
+        
         print(f"{'='*80}\n")
-
-    @router(dispatch)
-    def route_to_subflow(self):
-        """
-        Router: Emit the flow_type label for @listen handlers.
-
-        CRITICAL: Per CrewAI documentation, @listen("string_label") handlers
-        only respond to labels emitted by @router() decorated methods,
-        NOT to return values from @start() methods.
-        """
-        flow_type = self.state.flow_type
-
+        
         # Validate flow_type
         valid_types = [ft.value for ft in FlowType]
         if flow_type not in valid_types:
@@ -164,38 +136,37 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
             print(f"[ERROR] {error_msg}")
             self.state.error = error_msg
             self.state.status = "failed"
-            return "error"
-
-        # Return flow_type as routing label - this triggers @listen("founder_validation") etc.
-        print(f"[ROUTER] Routing to: {flow_type}")
+            return
+        
+        # Verify OpenAI API key is set
+        if not os.getenv("OPENAI_API_KEY"):
+            self.state.error = "OPENAI_API_KEY not found in environment variables"
+            self.state.status = "failed"
+            print(f"[ERROR] {self.state.error}")
+            return
+        
+        # Route to appropriate sub-flow
+        print(f"[DISPATCH] Routing to: {flow_type}")
         return flow_type
     
     @listen("founder_validation")
-    async def run_founder_validation(self):
-        """
-        Execute the founder validation flow.
-
-        Imports and runs FounderValidationFlow with the provided inputs.
-        Stores the result in self.state.result.
-
-        Note: This method is async because nested flows must use kickoff_async()
-        when called from within an already-running async event loop.
-        """
+    def run_founder_validation(self):
+        """Execute the founder validation flow."""
         print("\n>>> Executing FOUNDER VALIDATION flow")
-
+        
         # Validate required inputs
         if not self.state.entrepreneur_input:
             self.state.error = "Missing required input: entrepreneur_input"
             self.state.status = "failed"
             print(f"[ERROR] {self.state.error}")
             return
-
+        
         try:
             # Import sub-flow (late import to avoid circular deps)
-            from startupai.flows._founder_validation_flow import (
+            from startupai.flows.founder_validation_flow import (
                 create_founder_validation_flow
             )
-
+            
             # Create and run the sub-flow
             flow = create_founder_validation_flow(
                 entrepreneur_input=self.state.entrepreneur_input,
@@ -204,25 +175,24 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
                 session_id=self.state.session_id,
                 kickoff_id=self.state.kickoff_id,
             )
-
+            
             print("[FOUNDER] Starting validation flow kickoff...")
-            # Use kickoff_async() for nested flows to avoid asyncio.run() conflict
-            result = await flow.kickoff_async()
-
+            result = flow.kickoff()
+            
             # Store result
             if isinstance(result, dict):
                 self.state.result = result
             else:
                 self.state.result = {"raw": str(result)}
-
+            
             self.state.status = "success"
             self.state.completed_at = datetime.now().isoformat()
-
+            
             print(f"\n{'='*80}")
             print("[FOUNDER] Validation completed successfully!")
             print(f"[FOUNDER] Result keys: {list(self.state.result.keys())}")
             print(f"{'='*80}\n")
-
+            
         except Exception as e:
             self.state.error = f"Founder validation failed: {str(e)}"
             self.state.status = "failed"
@@ -230,37 +200,29 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
             traceback.print_exc()
     
     @listen("consultant_onboarding")
-    async def run_consultant_onboarding(self):
-        """
-        Execute the consultant onboarding flow.
-
-        Imports and runs ConsultantOnboardingFlow with the provided inputs.
-        Stores the result in self.state.result.
-
-        Note: This method is async because nested flows must use kickoff_async()
-        when called from within an already-running async event loop.
-        """
+    def run_consultant_onboarding(self):
+        """Execute the consultant onboarding flow."""
         print("\n>>> Executing CONSULTANT ONBOARDING flow")
-
+        
         # Validate required inputs
         if not self.state.user_id:
             self.state.error = "Missing required input: user_id"
             self.state.status = "failed"
             print(f"[ERROR] {self.state.error}")
             return
-
+        
         if not self.state.session_id:
             self.state.error = "Missing required input: session_id"
             self.state.status = "failed"
             print(f"[ERROR] {self.state.error}")
             return
-
+        
         try:
             # Import sub-flow (late import to avoid circular deps)
-            from startupai.flows._consultant_onboarding_flow import (
+            from startupai.flows.consultant_onboarding_flow import (
                 create_consultant_onboarding_flow
             )
-
+            
             # Create and run the sub-flow
             flow = create_consultant_onboarding_flow(
                 user_id=self.state.user_id,
@@ -268,94 +230,73 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
                 practice_data=self.state.practice_data,
                 conversation_summary=self.state.conversation_summary,
             )
-
+            
             print("[CONSULTANT] Starting onboarding flow kickoff...")
-            # Use kickoff_async() for nested flows to avoid asyncio.run() conflict
-            result = await flow.kickoff_async()
-
+            result = flow.kickoff()
+            
             # Store result
             if isinstance(result, dict):
                 self.state.result = result
             else:
                 self.state.result = {"raw": str(result)}
-
+            
             self.state.status = "success"
             self.state.completed_at = datetime.now().isoformat()
-
+            
             print(f"\n{'='*80}")
             print("[CONSULTANT] Onboarding completed successfully!")
             print(f"[CONSULTANT] Result keys: {list(self.state.result.keys())}")
             print(f"{'='*80}\n")
-
+            
         except Exception as e:
             self.state.error = f"Consultant onboarding failed: {str(e)}"
             self.state.status = "failed"
             print(f"[ERROR] {self.state.error}")
             traceback.print_exc()
-    
-    @listen("error")
-    def handle_error(self):
-        """Handle routing/validation errors."""
-        print(f"\n[ERROR HANDLER] Flow error: {self.state.error}")
-        self.state.status = "failed"
-        self.state.completed_at = datetime.now().isoformat()
 
-
-# =============================================================================
-# FACTORY FUNCTIONS
-# =============================================================================
-
-def create_unified_flow(
-    flow_type: str = "founder_validation",
-    **kwargs
-) -> AMPEntryFlow:
-    """
-    Create a unified flow instance.
-
-    Args:
-        flow_type: "founder_validation" or "consultant_onboarding"
-        **kwargs: Flow-specific inputs
-
-    Returns:
-        Configured AMPEntryFlow ready to run
-    """
-    return AMPEntryFlow(
-        flow_type=flow_type,
-        **kwargs
-    )
-
-
-# Backward compatibility alias
-StartupAIUnifiedFlow = AMPEntryFlow
-
-
-# =============================================================================
-# MAIN.PY COMPATIBILITY
-# =============================================================================
-# These functions match the expected interface for main.py
 
 def kickoff(inputs: dict = None):
     """
     Main entry point for CrewAI AMP deployment.
-
-    This function is called when the flow is triggered via the AMP API
-    or via `crewai run`.
+    
+    This function follows the standard CrewAI template pattern.
     """
     if inputs is None:
         inputs = {}
+    
+    flow = StartupAIFlow(**inputs)
+    result = flow.kickoff()
+    
+    # Return the full state as result for AMP
+    return {
+        "result": flow.state.result,
+        "status": flow.state.status,
+        "error": flow.state.error,
+        "completed_at": flow.state.completed_at,
+        "flow_type": flow.state.flow_type,
+    }
 
-    flow_type = inputs.pop("flow_type", "founder_validation")
 
-    flow = AMPEntryFlow(
-        flow_type=flow_type,
-        **inputs
-    )
-
-    return flow.kickoff()
-
-
-def plot(filename: str = "startupai_unified_flow"):
+def plot():
     """Generate flow visualization."""
-    flow = AMPEntryFlow()
-    flow.plot(filename)
-    print(f"Flow visualization saved to {filename}.html")
+    flow = StartupAIFlow()
+    flow.plot("startupai_flow")
+    print("Flow visualization saved to startupai_flow.html")
+
+
+if __name__ == "__main__":
+    # Test with founder validation by default
+    test_inputs = {
+        "flow_type": "founder_validation",
+        "entrepreneur_input": """
+        Test idea: AI-powered meal planning app that helps busy professionals 
+        eat healthier by generating personalized meal plans based on their 
+        dietary preferences, schedule, and local grocery availability.
+        """,
+        "project_id": "test-project-789",
+        "user_id": "test-user-123",
+    }
+    
+    print("\nTesting StartupAI Flow...")
+    result = kickoff(test_inputs)
+    print(f"\nResult: {result}")

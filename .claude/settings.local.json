@@ -18,7 +18,12 @@
       "mcp__supabase__list_extensions",
       "mcp__supabase__apply_migration",
       "mcp__supabase__execute_sql",
-      "mcp__supabase__search_docs"
+      "mcp__supabase__search_docs",
+      "mcp__supabase__list_migrations",
+      "Skill(frontend-design)",
+      "Skill(quality-gate)",
+      "WebFetch(domain:startupai.site)",
+      "Skill(crewai-docs)"
     ],
     "deny": [
       "Bash(rm:*)",
