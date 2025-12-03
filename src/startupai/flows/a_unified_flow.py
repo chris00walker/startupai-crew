@@ -122,23 +122,21 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
     @start()
     def dispatch(self):
         """
-        Entry point: Dispatch to appropriate sub-flow based on flow_type.
-        
-        This method:
-        1. Validates the flow_type input
-        2. Returns the flow_type as a routing label
-        3. Triggers the corresponding @listen handler
+        Entry point: Initialize state for flow routing.
+
+        This method sets up the flow state. The @router decorator on
+        route_to_subflow() handles the actual routing based on flow_type.
         """
         flow_type = self.state.flow_type
         self.state.status = "running"
-        
+
         print(f"\n{'='*80}")
         print("STARTUPAI UNIFIED FLOW - DISPATCHER")
         print(f"{'='*80}")
         print(f"[DISPATCH] Flow Type: {flow_type}")
         print(f"[DISPATCH] Timestamp: {datetime.now().isoformat()}")
         print(f"[DISPATCH] Kickoff ID: {self.state.kickoff_id}")
-        
+
         # Log key inputs for debugging
         if flow_type == "founder_validation":
             input_len = len(self.state.entrepreneur_input or "")
@@ -146,9 +144,20 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
             print(f"[DISPATCH] Project ID: {self.state.project_id}")
         elif flow_type == "consultant_onboarding":
             print(f"[DISPATCH] Practice Data Keys: {list(self.state.practice_data.keys())}")
-        
+
         print(f"{'='*80}\n")
-        
+
+    @router(dispatch)
+    def route_to_subflow(self):
+        """
+        Router: Emit the flow_type label for @listen handlers.
+
+        CRITICAL: Per CrewAI documentation, @listen("string_label") handlers
+        only respond to labels emitted by @router() decorated methods,
+        NOT to return values from @start() methods.
+        """
+        flow_type = self.state.flow_type
+
         # Validate flow_type
         valid_types = [ft.value for ft in FlowType]
         if flow_type not in valid_types:
@@ -157,9 +166,9 @@ class AMPEntryFlow(Flow[UnifiedFlowState]):
             self.state.error = error_msg
             self.state.status = "failed"
             return "error"
-        
-        # Return flow_type as routing label
-        print(f"[DISPATCH] Routing to: {flow_type}")
+
+        # Return flow_type as routing label - this triggers @listen("founder_validation") etc.
+        print(f"[ROUTER] Routing to: {flow_type}")
         return flow_type
     
     @listen("founder_validation")
