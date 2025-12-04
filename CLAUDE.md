@@ -85,22 +85,22 @@ crewai login                    # One-time setup per machine
 crewai run                      # Test workflow locally (requires OPENAI_API_KEY in .env)
 
 # Deployment
-crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
-crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
-crewai deploy logs --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy status --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
+crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
+crewai deploy logs --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # Git workflow
 git add .
 git commit -m "Update agents/tasks"
 git push origin main
-crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 ```
 
 ## Deployment Configuration
 **Current Deployment**:
-- UUID: `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
-- Token: `<your-deployment-token>` (stored in CrewAI dashboard)
-- Public URL: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
+- UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
+- Token: `db9f9f4c1a7a` (stored in CrewAI dashboard)
+- Public URL: `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
 - Organization: StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
 - GitHub Repo: `chris00walker/startupai-crew`
 - Branch: `main`
@@ -183,18 +183,18 @@ Structured task outputs (not files):
 ### API Endpoints
 ```bash
 # Get deployment inputs schema
-curl https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/inputs \
-  -H "Authorization: Bearer <your-deployment-token>"
+curl https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/inputs \
+  -H "Authorization: Bearer db9f9f4c1a7a"
 
 # Kickoff workflow
-curl -X POST https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/kickoff \
-  -H "Authorization: Bearer <your-deployment-token>" \
+curl -X POST https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/kickoff \
+  -H "Authorization: Bearer db9f9f4c1a7a" \
   -H "Content-Type: application/json" \
   -d '{"entrepreneur_input": "Business idea..."}'
 
 # Check status
-curl https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/status/{kickoff_id} \
-  -H "Authorization: Bearer <your-deployment-token>"
+curl https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/status/{kickoff_id} \
+  -H "Authorization: Bearer db9f9f4c1a7a"
 ```
 
 ## Integration with Product App
@@ -205,9 +205,9 @@ curl https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/sta
 // Product app API route
 export async function POST(req: Request) {
   const { entrepreneur_input } = await req.json();
-  
+
   const response = await fetch(
-    'https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/kickoff',
+    'https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/kickoff',
     {
       method: 'POST',
       headers: {
@@ -217,7 +217,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({ entrepreneur_input })
     }
   );
-  
+
   return response.json();
 }
 ```
@@ -277,8 +277,21 @@ export async function POST(req: Request) {
 **Fix**: Copy `.env.example` to `.env` and add API key
 
 ### Deployment push fails
-**Cause**: Wrong deployment UUID or expired token  
+**Cause**: Wrong deployment UUID or expired token
 **Fix**: Run `crewai deploy list` to verify UUID
+
+### AMP returns `source: memory` without executing
+**Cause**: AMP infrastructure-level caching returns cached results before code runs
+**Status**: KNOWN ISSUE - awaiting CrewAI support response
+**Symptoms**:
+- `/kickoff` returns immediately with `{"state":"SUCCESS","result":"founder_validation","source":"memory"}`
+- Dashboard Traces show "Waiting for events to load..." (flow never executes)
+- Happens even with unique `cache_buster` in request body
+**Workarounds attempted** (code-level - all deployed):
+- Added `execution_id` with uuid4() default to state model
+- Added `cache_buster` field injected in kickoff()
+- Set `cache=False` on all 18 agents across 7 crew files
+**Next step**: Contact CrewAI support about disabling AMP memory/caching at infrastructure level
 
 ## Related Repositories
 - Marketing Site: `startupai.site` (lead capture)
@@ -346,7 +359,7 @@ Agents are automatically invoked based on context and trigger words in their des
 - CrewAI Docs: https://docs.crewai.com
 
 ---
-**Last Updated**: 2025-11-21
+**Last Updated**: 2025-12-03
 **Maintainer**: Chris Walker
 **Status**: Rebuilding to 8-crew/18-agent Flows architecture
 **Critical Note**: This is the BRAIN of the StartupAI ecosystem
