@@ -287,7 +287,7 @@ These items represent what currently works before the Flows rebuild:
 | Date | Item | Links / Notes |
 |------|------|---------------|
 | 2025-11-20 | 6-agent workflow executing | onboarding_agent, customer_researcher, competitor_analyst, value_designer, validation_agent, qa_agent |
-| 2025-11-20 | CrewAI AMP deployment live | UUID: `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`, Bearer token configured |
+| 2025-11-20 | CrewAI AMP deployment live | UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`, Bearer token configured |
 | 2025-11-20 | REST API functional | `/inputs`, `/kickoff`, `/status` endpoints responding |
 | 2025-11-20 | GitHub auto-deploy | `chris00walker/startupai-crew` main branch |
 

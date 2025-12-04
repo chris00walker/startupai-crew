@@ -19,7 +19,7 @@
 set -e
 
 # Configuration
-CREWAI_URL="https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com"
+CREWAI_URL="https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com"
 CREWAI_TOKEN="${CREW_CONTRACT_BEARER:-f4cc39d92520}"
 WEBHOOK_URL="https://app-startupai-site.netlify.app/api/crewai/webhook"
 WEBHOOK_TOKEN="${STARTUPAI_WEBHOOK_BEARER_TOKEN:-startupai-webhook-secret-2024}"

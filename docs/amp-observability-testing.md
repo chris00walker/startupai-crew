@@ -331,7 +331,7 @@ sleep 30
 
 # 3. Trigger test scenario via API
 RESPONSE=$(curl -s -X POST \
-  "https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/kickoff" \
+  "https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/kickoff" \
   -H "Authorization: Bearer $CREW_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -347,7 +347,7 @@ echo "Triggered validation run: $KICKOFF_ID"
 # 4. Poll for completion (max 5 minutes)
 for i in {1..30}; do
   STATUS=$(curl -s \
-    "https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/status/$KICKOFF_ID" \
+    "https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/status/$KICKOFF_ID" \
     -H "Authorization: Bearer $CREW_TOKEN" | jq -r '.status')
 
   if [ "$STATUS" == "completed" ]; then

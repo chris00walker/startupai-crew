@@ -103,7 +103,7 @@ simulate:
 # Deployment (CrewAI AMP)
 # ============================================
 
-DEPLOY_UUID := b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+DEPLOY_UUID := 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 deploy:
 	crewai deploy push --uuid $(DEPLOY_UUID)

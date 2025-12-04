@@ -41,7 +41,7 @@ crewai run --input "Analyze startup idea: SaaS for developers"
 crewai deploy push
 
 # Or deploy with specific UUID
-crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # Check deployment status
 crewai deploy status
@@ -127,9 +127,9 @@ OPENAI_API_KEY=sk-your-actual-key-here
 **URL:** https://app.crewai.com/deployments
 
 **Current Deployment:**
-- **UUID:** `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
+- **UUID:** `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
 - **Token:** `<your-deployment-token>` (stored in CrewAI dashboard)
-- **Public API:** `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
+- **Public API:** `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
 - **Status:** 🟢 Online
 - **Organization:** StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
 
@@ -176,7 +176,7 @@ eval "$(direnv hook bash)"  # add to ~/.bashrc
 
 **Set via Dashboard:**
 1. Visit: https://app.crewai.com/deployments
-2. Click deployment: `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
+2. Click deployment: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
 3. Go to: Settings → Environment Variables
 4. Add: `OPENAI_API_KEY` = `sk-your-key`
 5. Save and redeploy
@@ -274,7 +274,7 @@ crewai deploy push
 # Public API URL: https://startupai-...crewai.com
 
 # 3. Test via curl
-curl -X POST https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com \
+curl -X POST https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com \
   -H "Content-Type: application/json" \
   -d '{"startup": "SaaS for developers"}'
 
@@ -527,7 +527,7 @@ const response = await fetch(AGENTUITY_AGENT_URL, {
 **Environment Variable:**
 ```bash
 # app.startupai.site/frontend/.env.local
-AGENTUITY_AGENT_URL=https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com
+AGENTUITY_AGENT_URL=https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com
 ```
 
 ### Marketing Site (startupai.site)
@@ -554,4 +554,4 @@ AGENTUITY_AGENT_URL=https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6
 **Repository:** startupai-crew
 **Environment Version:** 1.2.0
 **Platform:** CrewAI AMP (Cloud-Hosted)
-**Deployment UUID:** b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+**Deployment UUID:** 6b1e5c4d-e708-4921-be55-08fcb0d1e94b

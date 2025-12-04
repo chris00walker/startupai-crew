@@ -187,7 +187,7 @@ pytest tests/
 crewai test -n 3 -m gpt-4o-mini
 
 # 3. Deploy to AMP
-crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # 4. Run post-deploy validation
 ./scripts/post_deploy_validation.sh

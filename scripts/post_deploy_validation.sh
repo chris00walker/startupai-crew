@@ -20,8 +20,8 @@
 set -e
 
 # Configuration
-CREW_UUID="${CREW_UUID:-b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b}"
-CREW_BASE_URL="https://startupai-${CREW_UUID//-/}-4f4192a6.crewai.com"
+CREW_UUID="${CREW_UUID:-6b1e5c4d-e708-4921-be55-08fcb0d1e94b}"
+CREW_BASE_URL="https://startupai-${CREW_UUID//-/}-922bcddb.crewai.com"
 MAX_WAIT_SECONDS=300
 POLL_INTERVAL=10
 

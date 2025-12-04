@@ -173,7 +173,7 @@ AMP shows costs but doesn't enforce budgets.
 
 ### Production Deployment
 
-**Base URL**: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
+**Base URL**: `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
 
 **Bearer Token**: `<your-deployment-token>` (stored in dashboard)
 
@@ -216,13 +216,13 @@ curl https://[base-url]/status/{kickoff_id} \
 crewai login
 
 # Check deployment status
-crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy status --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # Push new version
-crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # View logs
-crewai deploy logs --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy logs --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # Local testing (requires .env with OPENAI_API_KEY)
 crewai run
@@ -285,3 +285,4 @@ crewai run
 | Date | Change | Author |
 |------|--------|--------|
 | 2025-11-21 | Initial configuration reference | Claude + Chris |
+| 2025-12-04 | Update deployment UUID and URL | Claude + Chris |

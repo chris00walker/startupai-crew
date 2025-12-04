@@ -87,8 +87,8 @@ This document provides an unvarnished view of what works, what's broken, and wha
 - `pivot_recommendation`: 7 pivot types including KILL
 
 **Deployment Details**:
-- UUID: `b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b`
-- Base URL: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
+- UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
+- Base URL: `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
 
 ### What's Limited (Honest Assessment)
 - **Ad platform integration**: Meta/Google Ads APIs not connected - cannot run real ad campaigns

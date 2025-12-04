@@ -21,7 +21,7 @@
       "OPENAI_API_KEY",
       "crewai.com",
       "Bearer",
-      "b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b",
+      "6b1e5c4d-e708-4921-be55-08fcb0d1e94b",
       "f4cc39d92520"
     ]
   },
@@ -62,7 +62,7 @@
     "package_manager": "uv",
     "python_version": "3.11+",
     "purpose": "Fortune 500-quality strategic business analysis",
-    "deployment_uuid": "b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b",
+    "deployment_uuid": "6b1e5c4d-e708-4921-be55-08fcb0d1e94b",
     "organization": "StartupAI (8f17470f-7841-4079-860d-de91ed5d1091)",
     "critical_note": "CrewAI AMP is a FUNDAMENTAL building block, not deprecated"
   },
@@ -102,7 +102,7 @@
   },
 
   "deployment": {
-    "endpoint": "https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com",
+    "endpoint": "https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com",
     "bearer_token": "[REDACTED - stored in CrewAI dashboard]",
     "github_repo": "chris00walker/startupai-crew",
     "branch": "main"

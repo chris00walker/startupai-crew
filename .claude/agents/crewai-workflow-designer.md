@@ -560,13 +560,13 @@ crewai run
 
 ```bash
 # Check deployment status
-crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy status --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # Deploy updated flow
-crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # View logs
-crewai deploy logs --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy logs --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 ```
 
 ### 3. Environment Variables
@@ -585,7 +585,7 @@ STARTUPAI_WEBHOOK_BEARER_TOKEN=xxx
 
 **Kickoff from Product App**:
 ```bash
-curl -X POST https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/kickoff \
+curl -X POST https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/kickoff \
   -H "Authorization: Bearer f4cc39d92520" \
   -H "Content-Type: application/json" \
   -d '{"entrepreneur_input": "Business idea..."}'

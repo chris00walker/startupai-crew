@@ -4,7 +4,7 @@ All API endpoints, webhooks, and payloads for StartupAI services.
 
 ## CrewAI AMP Endpoints
 
-**Base URL**: `https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com`
+**Base URL**: `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
 
 ### Working Endpoints
 
@@ -280,7 +280,7 @@ These were documented but do not exist yet:
 | Metrics API | ❌ NOT IMPLEMENTED (marketing site feature) |
 
 ---
-**Last Updated**: 2025-11-27
+**Last Updated**: 2025-12-04
 
 **Latest Changes**:
 - Added Area 3 policy versioning patterns (policy selection, status response)

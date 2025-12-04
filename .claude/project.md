@@ -62,22 +62,22 @@ pytest tests/
 crewai deploy create
 
 # Subsequent deployments (push code to production)
-crewai deploy push --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # Check deployment status
-crewai deploy status --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy status --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # View logs
-crewai deploy logs --uuid b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+crewai deploy logs --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 # List all deployments
 crewai deploy list
 ```
 
 **Production Deployment Details:**
-- **UUID:** b4d5c1dd-27e2-4163-b9fb-a18ca06ca13b
+- **UUID:** 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 - **Token:** `<your-deployment-token>` (stored in CrewAI dashboard)
-- **Public API URL:** https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com
+- **Public API URL:** https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com
 - **Organization:** StartupAI (8f17470f-7841-4079-860d-de91ed5d1091)
 - **Status:** Online ✅
 - **Dashboard:** https://app.crewai.com/deployments
@@ -237,7 +237,7 @@ const response = await fetch(AGENTUITY_AGENT_URL, {
 
 **Environment Variable in app.startupai.site:**
 ```bash
-AGENTUITY_AGENT_URL=https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com
+AGENTUITY_AGENT_URL=https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com
 ```
 
 ### Microservices Architecture
@@ -257,7 +257,7 @@ User → startupai.site (Marketing)
 **POST /inputs** - Submit Input
 ```bash
 curl -X POST \
-  https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/inputs \
+  https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/inputs \
   -H "Authorization: Bearer <your-deployment-token>" \
   -H "Content-Type: application/json" \
   -d '{"strategic_question": "Should we expand?", "project_context": "B2B SaaS"}'
@@ -266,14 +266,14 @@ curl -X POST \
 **POST /kickoff** - Start Crew Execution
 ```bash
 curl -X POST \
-  https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/kickoff \
+  https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/kickoff \
   -H "Authorization: Bearer <your-deployment-token>"
 ```
 
 **GET /status** - Check Execution Status
 ```bash
 curl -X GET \
-  https://startupai-b4d5c1dd-27e2-4163-b9fb-a18ca06ca-4f4192a6.crewai.com/status \
+  https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/status \
   -H "Authorization: Bearer <your-deployment-token>"
 ```
 
