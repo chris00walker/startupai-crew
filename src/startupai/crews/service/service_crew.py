@@ -25,6 +25,7 @@ class ServiceCrew:
     def founder_onboarding_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['founder_onboarding_agent'],
+            cache=False,
             verbose=True
         )
 
@@ -32,6 +33,7 @@ class ServiceCrew:
     def consultant_onboarding_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['consultant_onboarding_agent'],
+            cache=False,
             verbose=True
         )
 
@@ -39,6 +41,7 @@ class ServiceCrew:
     def customer_service_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['customer_service_agent'],
+            cache=False,
             verbose=True
         )
 

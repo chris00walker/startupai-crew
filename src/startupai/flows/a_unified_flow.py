@@ -23,6 +23,7 @@ Architecture:
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 from enum import Enum
+from uuid import uuid4
 from pydantic import BaseModel, Field
 from crewai.flow.flow import Flow, start, listen, router
 from crewai.flow.persistence import persist
@@ -39,11 +40,21 @@ class FlowType(str, Enum):
 class UnifiedFlowState(BaseModel):
     """
     Unified state schema covering ALL inputs for all flow types.
-    
+
     CrewAI AMP uses this schema to generate the /inputs endpoint.
     All fields from both FounderValidation and ConsultantOnboarding
     are included to support both flow types.
     """
+    # === CACHE BYPASS ===
+    execution_id: str = Field(
+        default_factory=lambda: str(uuid4()),
+        description="Unique ID per execution to bypass AMP caching"
+    )
+    _cache_buster: Optional[str] = Field(
+        default=None,
+        description="Cache buster added by kickoff() to bypass input hash caching"
+    )
+
     # === FLOW ROUTING ===
     flow_type: str = Field(
         default="founder_validation",
@@ -347,6 +358,9 @@ def kickoff(inputs: dict = None):
     """
     if inputs is None:
         inputs = {}
+
+    # Add cache buster to bypass AMP input hash caching
+    inputs["_cache_buster"] = str(uuid4())
 
     flow_type = inputs.pop("flow_type", "founder_validation")
 

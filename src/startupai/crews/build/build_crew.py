@@ -46,6 +46,7 @@ class BuildCrew:
     def technical_feasibility_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['technical_feasibility_agent'],
+            cache=False,
             verbose=True
         )
 
@@ -58,6 +59,7 @@ class BuildCrew:
                 self._code_validator_tool,
                 self._landing_page_deploy_tool,
             ],
+            cache=False,
             verbose=True
         )
 
@@ -65,6 +67,7 @@ class BuildCrew:
     def resource_estimator(self) -> Agent:
         return Agent(
             config=self.agents_config['resource_estimator'],
+            cache=False,
             verbose=True
         )
 

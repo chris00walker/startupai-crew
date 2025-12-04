@@ -57,6 +57,7 @@ class AnalysisCrew:
                 self._customer_research_tool,
                 self._market_research_tool,
             ],
+            cache=False,
             verbose=True
         )
 
@@ -69,6 +70,7 @@ class AnalysisCrew:
                 self._competitor_research_tool,
                 self._market_research_tool,
             ],
+            cache=False,
             verbose=True
         )
 

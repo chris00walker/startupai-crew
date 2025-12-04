@@ -73,6 +73,7 @@ class GovernanceCrew:
                 self._methodology_check_tool,
                 self._flywheel_insights_tool,  # Phase 2C: Industry/stage context
             ],
+            cache=False,
             verbose=True
         )
 
@@ -85,6 +86,7 @@ class GovernanceCrew:
                 self._methodology_check_tool,
                 self._privacy_guard_tool,  # Privacy protection
             ],
+            cache=False,
             verbose=True
         )
 
@@ -100,6 +102,7 @@ class GovernanceCrew:
                 self._outcome_tracker_tool,     # Phase 2C: Outcome tracking
                 self._privacy_guard_tool,       # Privacy protection before storage
             ],
+            cache=False,
             verbose=True
         )
 

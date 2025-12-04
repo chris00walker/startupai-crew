@@ -44,6 +44,7 @@ class SynthesisCrew(CrewBase):
             role=config.get("role", "Project Manager"),
             goal=config.get("goal", "Synthesize evidence and make strategic decisions"),
             backstory=config.get("backstory", "Expert in startup validation and pivot decisions"),
+            cache=False,
             verbose=True
         )
 

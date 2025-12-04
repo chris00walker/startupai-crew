@@ -29,6 +29,7 @@ class GrowthCrew:
     def experiment_designer(self) -> Agent:
         return Agent(
             config=self.agents_config['experiment_designer'],
+            cache=False,
             verbose=True
         )
 
@@ -36,6 +37,7 @@ class GrowthCrew:
     def signal_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config['signal_analyst'],
+            cache=False,
             verbose=True
         )
 
@@ -43,6 +45,7 @@ class GrowthCrew:
     def channel_strategist(self) -> Agent:
         return Agent(
             config=self.agents_config['channel_strategist'],
+            cache=False,
             verbose=True
         )
 

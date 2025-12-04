@@ -58,6 +58,7 @@ class FinanceCrew:
                 self._calculator_tool,
                 self._viability_approval_tool,
             ],
+            cache=False,
             verbose=True
         )
 
@@ -70,6 +71,7 @@ class FinanceCrew:
                 self._calculator_tool,
                 self._market_research_tool,
             ],
+            cache=False,
             verbose=True
         )
 
@@ -81,6 +83,7 @@ class FinanceCrew:
                 self._web_search_tool,
                 self._market_research_tool,
             ],
+            cache=False,
             verbose=True
         )
 
