@@ -50,7 +50,7 @@ class UnifiedFlowState(BaseModel):
         default_factory=lambda: str(uuid4()),
         description="Unique ID per execution to bypass AMP caching"
     )
-    _cache_buster: Optional[str] = Field(
+    cache_buster: Optional[str] = Field(
         default=None,
         description="Cache buster added by kickoff() to bypass input hash caching"
     )
@@ -360,7 +360,7 @@ def kickoff(inputs: dict = None):
         inputs = {}
 
     # Add cache buster to bypass AMP input hash caching
-    inputs["_cache_buster"] = str(uuid4())
+    inputs["cache_buster"] = str(uuid4())
 
     flow_type = inputs.pop("flow_type", "founder_validation")
 
