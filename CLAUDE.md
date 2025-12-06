@@ -2,10 +2,10 @@
 
 ## Project Identity
 **Name**: StartupAI AI Founders Engine
-**Purpose**: 8-crew/18-agent validation engine with CrewAI Flows
-**Framework**: CrewAI Flows (Python)
+**Purpose**: 3-Crew/19-Agent validation engine with HITL checkpoints
+**Framework**: CrewAI Crews (type="crew") - migrated from Flows
 **Deployment**: CrewAI AMP Platform
-**Status**: Rebuilding to Flows architecture
+**Status**: 3-Crew architecture ready for deployment
 
 ## Critical Context
 **⚠️ IMPORTANT**: This repository is the **brain of the StartupAI ecosystem**. It powers the 6 AI Founders team that delivers Fortune 500-quality strategic analysis.
@@ -14,13 +14,22 @@
 ```
 [Product App] → [Onboarding: Vercel AI SDK] → Collects business data
                                     ↓
-                          [CrewAI Flows Engine]
-                     8 Crews / 18 Specialist Agents
+                          [3-Crew Pipeline]
+  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+  │ CREW 1: INTAKE  │──▶│ CREW 2: VALID.  │──▶│ CREW 3: DECIDE  │
+  │ (4 agents, 1HITL)│   │ (12 agents, 5HITL)│  │ (3 agents, 1HITL)│
+  └─────────────────┘   └─────────────────┘   └─────────────────┘
                                     ↓
                        [Structured Reports → Supabase]
                                     ↓
                           [Product App Displays Results]
 ```
+
+### Why 3 Crews (Not Flows)
+AMP handles `type = "crew"` reliably but has issues with `type = "flow"`. The 3-Crew design:
+- Preserves gated validation phases (Desirability → Feasibility → Viability)
+- Enables conditional routing via task `context` dependencies
+- Supports HITL approval workflows at 7 checkpoints
 
 ### Master Architecture
 **Source of Truth**: `docs/master-architecture/`
@@ -49,26 +58,30 @@ Key references for development:
 
 ## Directory Structure
 ```
-src/startupai/
-├── flows/                      # CrewAI Flows orchestration
-│   ├── founder_validation_flow.py
-│   └── state_schemas.py
-├── crews/                      # 8 specialized crews
-│   ├── service/
-│   ├── analysis/
-│   ├── governance/
-│   ├── build/
-│   ├── growth/
-│   ├── synthesis/
-│   └── finance/
-└── tools/                      # Shared tools
+# CREW 1: INTAKE (this repo, deployed to AMP)
+src/intake_crew/
+├── __init__.py
+├── crew.py                     # 4 agents: S1, S2, S3, G1
+├── main.py                     # Entry point
+└── config/
+    ├── agents.yaml             # Agent definitions
+    └── tasks.yaml              # 6 tasks (1 HITL)
+
+# CREWS 2 & 3 (require separate repos for AMP deployment)
+startupai-crews/
+├── crew-2-validation/          # 12 agents, 21 tasks (5 HITL)
+└── crew-3-decision/            # 3 agents, 5 tasks (1 HITL)
+
+# Archived Flow architecture
+archive/flow-architecture/      # Original Flow-based code
 
 docs/
+├── 3-crew-deployment.md        # Deployment guide
 ├── architecture.md             # This repo's architecture
 ├── environments.md             # Environment setup
 └── master-architecture/        # ECOSYSTEM SOURCE OF TRUTH
 
-pyproject.toml                  # Dependencies
+pyproject.toml                  # type = "crew" for AMP
 uv.lock                         # Locked dependencies
 ```
 
@@ -97,15 +110,26 @@ crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 ```
 
 ## Deployment Configuration
-**Current Deployment**:
-- UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
-- Token: `db9f9f4c1a7a` (stored in CrewAI dashboard)
-- Public URL: `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
-- Organization: StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
-- GitHub Repo: `chris00walker/startupai-crew`
-- Branch: `main`
 
+### 3-Crew Deployments
+| Crew | Repository | Status | Notes |
+|------|------------|--------|-------|
+| Crew 1: Intake | `startupai-crew` (this) | Ready to deploy | `type = "crew"` at root |
+| Crew 2: Validation | Needs separate repo | Code ready | Copy `startupai-crews/crew-2-validation/` |
+| Crew 3: Decision | Needs separate repo | Code ready | Copy `startupai-crews/crew-3-decision/` |
+
+### Previous Deployment IDs (from earlier attempts)
+- Crew 1: `7a73e75d-b611-4780-8f99-a05fca9b44bb` (Token: `13a07597a155`)
+- Crew 2: `06d6a951-67ef-4936-b6d8-6fcaf5801b68` (Token: `6e274e9be0db`)
+- Crew 3: `5a4330ef-0394-441d-bc2f-d458fde7ec06` (Token: `b07cee1f4637`)
+
+**Note**: May need recreation after restructure.
+
+**Organization**: StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
 **Dashboard**: https://app.crewai.com/deployments
+
+### Deployment Guide
+See `docs/3-crew-deployment.md` for full deployment instructions.
 
 ## Environment Variables
 ### Local Development (`.env`)
@@ -149,17 +173,28 @@ All CrewAI flows use a single webhook endpoint with `flow_type` differentiation:
 | **Guardian** | CGO | Governance, accountability |
 | **Ledger** | CFO | Finance, viability |
 
-### 8 Crews / 18 Agents
-**Service Side**: Service Crew (Sage)
-**Commercial Side**: Analysis, Build, Growth, Synthesis, Finance Crews
-**Governance**: Governance Crew (Guardian)
+### 3 Crews / 19 Agents
+**Crew 1 (Intake)**: 4 agents - Sage S1/S2/S3, Guardian G1
+**Crew 2 (Validation)**: 12 agents - Pulse P1/P2/P3, Forge F1/F2/F3, Ledger L1/L2/L3, Guardian G1/G2/G3
+**Crew 3 (Decision)**: 3 agents - Compass C1/C2/C3
+
+### 7 HITL Checkpoints
+| Crew | Checkpoint | Purpose |
+|------|------------|---------|
+| 1 | `approve_intake_to_validation` | Gate: Intake → Validation |
+| 2 | `approve_campaign_launch` | Ad creative approval |
+| 2 | `approve_spend_increase` | Budget approval |
+| 2 | `approve_desirability_gate` | Gate: Desirability → Feasibility |
+| 2 | `approve_feasibility_gate` | Gate: Feasibility → Viability |
+| 2 | `approve_viability_gate` | Gate: Viability → Decision |
+| 3 | `request_human_decision` | Final pivot/proceed decision |
 
 ### Gated Validation Flow
 ```
-[Test Cycles] → DESIRABILITY GATE → [Test Cycles] → FEASIBILITY GATE → [Test Cycles] → VIABILITY GATE
+CREW 1 → [HITL] → CREW 2: Desirability → [HITL] → Feasibility → [HITL] → Viability → [HITL] → CREW 3 → [HITL]
 ```
 
-Orchestrated with CrewAI Flows using `@listen` and `@router` decorators.
+Orchestrated with `InvokeCrewAIAutomationTool` for crew-to-crew chaining.
 
 **Full Details**: See `docs/master-architecture/03-validation-spec.md` (authoritative implementation blueprint)
 
@@ -359,7 +394,13 @@ Agents are automatically invoked based on context and trigger words in their des
 - CrewAI Docs: https://docs.crewai.com
 
 ---
-**Last Updated**: 2025-12-03
+**Last Updated**: 2025-12-05
 **Maintainer**: Chris Walker
-**Status**: Rebuilding to 8-crew/18-agent Flows architecture
+**Status**: 3-Crew architecture complete, ready for AMP deployment
 **Critical Note**: This is the BRAIN of the StartupAI ecosystem
+
+### Migration Notes (2025-12-05)
+- Migrated from `type = "flow"` to `type = "crew"` (AMP compatibility)
+- Flow-based code archived to `archive/flow-architecture/`
+- Crew 1 at root level, Crews 2 & 3 require separate repos
+- See `docs/3-crew-deployment.md` for deployment steps

@@ -23,7 +23,10 @@
       "Skill(frontend-design)",
       "Skill(quality-gate)",
       "WebFetch(domain:startupai.site)",
-      "Skill(crewai-docs)"
+      "Skill(crewai-docs)",
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:community.crewai.com)",
+      "Skill(crewai-integration-check)"
     ],
     "deny": [
       "Bash(rm:*)",

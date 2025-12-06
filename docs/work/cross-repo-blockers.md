@@ -1,12 +1,21 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2025-12-02"
+last_reviewed: "2025-12-05"
 ---
 
 # Cross-Repository Blockers
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
+
+## Architecture Change Notice (2025-12-05)
+
+**MAJOR**: Migrated from Flow to 3-Crew architecture. See ADR-001.
+
+**Impact on Cross-Repo:**
+- This repo now hosts **Crew 1 (Intake)** only
+- Crews 2 & 3 require **new GitHub repositories**
+- Product App will call Crew 1's `/kickoff` endpoint (same API, different internal structure)
 
 ## Marketing Promise Gap (Updated 2025-11-26)
 
@@ -38,31 +47,31 @@ The marketing site makes promises that require technical capabilities. Status af
 
 | Blocker | Status | Description | Unblocks |
 |---------|--------|-------------|----------|
-| Phase 2D + Areas 3,6,7 | ✅ Complete | Flow works with 24+ tools, Areas 3/6/7 100% complete | Product can display results |
-| Results → Supabase | ✅ Implemented | `_persist_to_supabase()` webhook in flow | Product app can display analysis results |
-| Real Analysis Tools | ✅ Implemented | TavilySearchTool, CompetitorResearchTool, etc. | Real web research available |
-| Flywheel Learning Schema | ✅ Done | SQL for `learnings`, `patterns`, `outcomes`, `domain_expertise` tables | Learning tools can persist/query |
-| Resume/Webhook API | ✅ Implemented | `webhooks/resume_handler.py` with 5 approval types | Product approval UI |
+| 3-Crew Architecture | ⚠️ Pending | Code complete, needs AMP deployment | Product can call Crew 1 |
+| Crew 1 Deployment | ⚠️ Pending | Requires `crewai login` and deploy | Product can trigger validation |
+| Crews 2 & 3 Repos | ⚠️ Pending | Need separate GitHub repos | Full pipeline works |
+| Crew Chaining | ⚠️ Pending | `InvokeCrewAIAutomationTool` config | End-to-end validation |
 
-**Specific API Endpoints Status:**
-- `POST /kickoff` - ✅ Working (CrewAI AMP endpoint)
-- `GET /status/{id}` - ✅ Working (CrewAI AMP endpoint)
-- `POST /resume` - ✅ Implemented (`webhooks/resume_handler.py`)
-- Webhook notifications - ✅ Implemented (creative approval, viability decision)
+**New API Endpoints (after 3-Crew deployment):**
+- `POST /kickoff` - Will be Crew 1 entry point
+- `GET /status/{id}` - Standard AMP endpoint
+- HITL webhooks - 7 checkpoints across 3 crews
 
-**⚠️ CRITICAL: Product App Integration Gap**
-- Backend founder_validation flow: ✅ Fully implemented and deployed
-- Product app calls founder_validation: ❌ NOT WIRED
-- Current product app behavior: Calls generic `$CREWAI_API_URL` endpoint with no `flow_type` parameter
-- Fallback: Returns mock data from `generateStrategicAnalysis()` if CrewAI call fails
-- Users experience: Mock validation results, not real AI analysis
-- See `phases.md` "CRITICAL INTEGRATION GAP" section for details
-- Blocker owner: Product App team - must update `/api/onboarding/complete` route
+**⚠️ CRITICAL: Deployment Required**
+- 3-Crew code: ✅ Complete (19 agents, 32 tasks, 7 HITL)
+- Crew 1 at repo root: ✅ Done
+- Crews 2 & 3 repos: ❌ Not created
+- AMP deployment: ❌ Pending `crewai login`
+- Blocker owner: This repo - must complete Phase 0 deployment
 
-**Flywheel Learning Tables Needed:**
+**Previous Flow Integration (DEPRECATED):**
+The previous Flow-based integration is archived. Product App should wait for 3-Crew deployment before updating integration.
+
+**Flywheel Learning Tables:**
 - Schema: See `docs/master-architecture/reference/flywheel-learning.md`
 - Requires pgvector extension enabled in Supabase
 - Tables: `learnings`, `patterns`, `outcomes`, `domain_expertise`
+- Status: ✅ Tables exist, will be used by Crew 2 (Validation) once deployed
 
 ### Marketing Site (`startupai.site`)
 
@@ -97,7 +106,15 @@ The marketing site makes promises that require technical capabilities. Status af
 - Approval workflows: `docs/master-architecture/reference/approval-workflows.md`
 
 ---
-**Last Updated**: 2025-12-02
+**Last Updated**: 2025-12-05
+
+**Changes (2025-12-05 - Flow to 3-Crew Migration)**:
+- **MAJOR**: Architecture migrated from Flow to 3-Crew
+- All existing blockers now superseded by 3-Crew deployment blockers
+- Product App should wait for 3-Crew deployment before integration changes
+- Added Architecture Change Notice section
+- Updated blocker table to reflect deployment-pending status
+- See ADR-001 for full decision record
 
 **Changes (2025-11-27 - Migrations Deployed)**:
 - **Database migrations deployed**: flow_executions (001), validation_events (002), experiment_outcomes (004), policy_version (005), decision_log (006)

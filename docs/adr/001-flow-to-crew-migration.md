@@ -1,0 +1,144 @@
+# ADR-001: Migration from Flow Architecture to 3-Crew Architecture
+
+**Status**: Accepted
+**Date**: 2025-12-05
+**Decision Makers**: Chris Walker, Claude AI Assistant
+**Context**: CrewAI AMP deployment compatibility
+
+## Summary
+
+Migrate StartupAI from a single `type = "flow"` project to a 3-Crew architecture using `type = "crew"` projects, due to AMP platform compatibility issues with Flow-based deployments.
+
+## Context
+
+### The Problem
+
+The original StartupAI architecture used CrewAI Flows with:
+- `type = "flow"` in `pyproject.toml`
+- `@start`, `@listen`, and `@router` decorators for orchestration
+- 8 crews with 18 agents in a single monolithic flow
+- State management via Pydantic models and `@persist()` decorators
+
+**AMP Deployment Issue**: When deployed to CrewAI AMP, the platform:
+1. Incorrectly parsed `type = "flow"` projects expecting 14 YAML inputs instead of Flow's `kickoff(inputs)` pattern
+2. Returned `source: memory` without executing code (infrastructure-level caching issue)
+3. Dashboard traces showed "Waiting for events to load..." indicating the flow never executed
+
+### Debugging Attempts (All Failed)
+
+Code-level workarounds attempted:
+- Added `execution_id` with `uuid4()` default to state model
+- Added `cache_buster` field injected in `kickoff()`
+- Set `cache=False` on all 18 agents across 7 crew files
+- Disabled agent caching at instantiation
+
+**Conclusion**: The issue was at the AMP infrastructure level, not in our code. Per CrewAI support feedback, AMP handles `type = "crew"` projects reliably but has known issues with `type = "flow"`.
+
+## Decision
+
+Migrate from Flow architecture to a 3-Crew Workflow-Stage Architecture:
+
+```
+┌─────────────────────┐     ┌─────────────────────┐     ┌────────────────────┐
+│   CREW 1: INTAKE    │────▶│ CREW 2: VALIDATION  │────▶│ CREW 3: DECISION   │
+│   4 agents, 1 HITL  │     │   12 agents, 5 HITL │     │   3 agents, 1 HITL │
+└─────────────────────┘     └─────────────────────┘     └────────────────────┘
+```
+
+### Agent Distribution
+
+| Crew | Agents | Purpose |
+|------|--------|---------|
+| Crew 1: Intake | S1 (FounderOnboarding), S2 (CustomerResearch), S3 (ValueDesigner), G1 (QA) | Parse input, research, create VPC, QA gate |
+| Crew 2: Validation | P1-P3 (Pulse), F1-F3 (Forge), L1-L3 (Ledger), G1-G3 (Guardian) | Desirability, Feasibility, Viability phases |
+| Crew 3: Decision | C1 (ProductPM), C2 (HumanApproval), C3 (RoadmapWriter) | Synthesize, decide, document |
+
+### HITL Checkpoint Distribution
+
+| Crew | Checkpoint | Purpose |
+|------|------------|---------|
+| 1 | `approve_intake_to_validation` | Gate: Intake → Validation |
+| 2 | `approve_campaign_launch` | Ad creative approval |
+| 2 | `approve_spend_increase` | Budget approval |
+| 2 | `approve_desirability_gate` | Gate: Desirability → Feasibility |
+| 2 | `approve_feasibility_gate` | Gate: Feasibility → Viability |
+| 2 | `approve_viability_gate` | Gate: Viability → Decision |
+| 3 | `request_human_decision` | Final pivot/proceed decision |
+
+### Orchestration Pattern
+
+Replace Flow's `@listen`/`@router` decorators with:
+1. **Task `context` arrays** for sequencing within a crew
+2. **`InvokeCrewAIAutomationTool`** for crew-to-crew chaining via AMP API calls
+
+### Repository Structure
+
+AMP deploys from git repo root, so each crew requires its own repository:
+
+| Crew | Repository | Status |
+|------|------------|--------|
+| Crew 1: Intake | `startupai-crew` (this repo) | Ready - at root level |
+| Crew 2: Validation | New repo required | Code at `startupai-crews/crew-2-validation/` |
+| Crew 3: Decision | New repo required | Code at `startupai-crews/crew-3-decision/` |
+
+## Consequences
+
+### Positive
+
+1. **AMP Compatibility**: `type = "crew"` projects work reliably on AMP
+2. **Simpler Debugging**: Each crew is independently testable and deployable
+3. **HITL Integration**: `human_input: true` on tasks works correctly in AMP
+4. **Clearer Boundaries**: Explicit API contracts between crews
+5. **Parallel Development**: Crews can be developed/deployed independently
+
+### Negative
+
+1. **Multi-Repo Complexity**: 3 repos instead of 1 monorepo
+2. **Coordination Overhead**: Cross-crew changes require multi-repo updates
+3. **Lost Flow Features**:
+   - No `@persist()` state recovery within crews
+   - No `@router` conditional branching
+   - State passed via API, not shared memory
+4. **Deployment Complexity**: 3 separate deployments to manage
+
+### Neutral
+
+1. **Agent Count**: 19 agents (vs original 18) - added G1 to Crew 1 for QA
+2. **Task Count**: 32 tasks total across 3 crews
+3. **Token Usage**: Similar - may be slightly higher due to API overhead
+
+## Migration Path
+
+1. **Phase 1** (Complete): Create 3 crew codebases in `startupai-crews/`
+2. **Phase 2** (Complete): Move Crew 1 (Intake) to repo root with `type = "crew"`
+3. **Phase 3** (Complete): Archive Flow code to `archive/flow-architecture/`
+4. **Phase 4** (Pending): Create separate repos for Crews 2 & 3
+5. **Phase 5** (Pending): Deploy all crews to AMP
+6. **Phase 6** (Pending): Configure `InvokeCrewAIAutomationTool` for chaining
+
+## Alternatives Considered
+
+### 1. Fix Flow Deployment Issues
+**Rejected**: Issue is at AMP infrastructure level, not in our code. Would require CrewAI platform changes.
+
+### 2. Single Large Crew
+**Rejected**: 19 agents in one crew would be unwieldy. Task sequencing via `context` would become complex.
+
+### 3. Wait for AMP Flow Support
+**Rejected**: No timeline from CrewAI. Would block all progress.
+
+### 4. Self-Host CrewAI
+**Rejected**: Loses AMP benefits (managed infrastructure, HITL, monitoring). Requires significant DevOps.
+
+## Related Documents
+
+- `docs/3-crew-deployment.md` - Deployment guide
+- `docs/master-architecture/03-validation-spec.md` - Original architecture spec
+- `docs/master-architecture/04-status.md` - Current implementation status
+- `.claude/plans/cryptic-marinating-goose.md` - Detailed implementation plan
+
+## Changelog
+
+| Date | Change |
+|------|--------|
+| 2025-12-05 | Initial decision and implementation |

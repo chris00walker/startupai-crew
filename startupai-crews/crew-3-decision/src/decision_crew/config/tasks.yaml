@@ -1,0 +1,143 @@
+---
+# CREW 3: DECISION & SYNTHESIS - 5 Tasks (including 1 HITL)
+# Final phase: Synthesize evidence, get human decision, document
+
+synthesize_evidence:
+  description: >
+    Analyze all validation signals from Crew 2 and synthesize a comprehensive
+    evidence summary:
+
+    INPUTS TO ANALYZE:
+    1. Desirability Signal - Customer interest level (NO_INTEREST/WEAK_INTEREST/STRONG_COMMITMENT)
+    2. Feasibility Assessment - Technical status (GREEN/YELLOW/RED)
+    3. Viability Metrics - Unit economics (PROFITABLE/MARGINAL/UNDERWATER)
+    4. Learnings - Key findings and surprises
+
+    SYNTHESIS OUTPUT:
+    1. Overall Validation Status - Combined assessment
+    2. Strengths - What the data supports
+    3. Weaknesses - What the data questions
+    4. Key Insights - Non-obvious findings
+    5. Initial Recommendation - Based purely on evidence
+  expected_output: >
+    A JSON object with: validation_status (PROCEED/PIVOT/KILL),
+    desirability_summary, feasibility_summary, viability_summary,
+    strengths (array), weaknesses (array), key_insights (array),
+    evidence_based_recommendation, confidence_level (HIGH/MEDIUM/LOW)
+  agent: product_pm_agent
+
+propose_pivot_proceed_options:
+  description: >
+    Based on the evidence synthesis, generate specific options for the human:
+
+    OPTION TYPES TO CONSIDER:
+    1. PROCEED - Move forward with current plan
+       - When: Strong signals across D/F/V
+       - Risk: Usually lowest
+
+    2. SEGMENT_PIVOT - Try a different customer segment
+       - When: Low desirability but good product
+       - Requires: Re-run Crew 1 with new segment
+
+    3. VALUE_PIVOT - Change the value proposition
+       - When: Zombie ratio high (interested but not converting)
+       - Requires: Re-run Crew 2 desirability phase
+
+    4. PRICE_PIVOT - Adjust pricing model
+       - When: Good D/F but unit economics underwater
+       - Requires: Re-run viability analysis
+
+    5. COST_PIVOT - Reduce implementation scope
+       - When: Good D but feasibility is RED/YELLOW
+       - Requires: Re-run feasibility with reduced scope
+
+    6. KILL - Stop this validation
+       - When: Multiple signals are negative
+       - Saves resources for better ideas
+
+    For each relevant option, provide rationale and next steps.
+  expected_output: >
+    A JSON object with: recommended_option, options (array of objects with
+    option_type, rationale, next_steps, risk_level, confidence),
+    comparison_matrix, critical_questions_for_human
+  agent: product_pm_agent
+  context:
+    - synthesize_evidence
+
+# HITL: Human makes the final decision
+request_human_decision:
+  description: >
+    Present the evidence synthesis and options to the human for final decision:
+
+    PRESENTATION FORMAT:
+    1. Executive Summary - 3-sentence validation status
+    2. Evidence Overview - Key metrics at a glance
+    3. Options Comparison - Side-by-side with tradeoffs
+    4. Recommendation - AI's suggested path with rationale
+    5. Critical Questions - What the human should consider
+
+    CAPTURE:
+    - Decision (which option)
+    - Rationale (why this choice)
+    - Additional context
+    - Next priorities
+
+    Wait for human input before proceeding.
+  expected_output: >
+    Human decision with: chosen_option, decision_rationale,
+    additional_context, priority_guidance
+  agent: human_approval_agent
+  human_input: true
+  context:
+    - propose_pivot_proceed_options
+
+document_decision:
+  description: >
+    Create a comprehensive decision document for the audit trail:
+
+    DOCUMENT SECTIONS:
+    1. Decision Summary - What was decided and why
+    2. Evidence Base - Full data that informed the decision
+    3. Options Considered - All alternatives and why they weren't chosen
+    4. Risk Assessment - Known risks and mitigations
+    5. Success Criteria - How we'll know if this was right
+    6. Timestamps - When each phase completed
+
+    Store to Supabase for persistence and future reference.
+  expected_output: >
+    A JSON object with: decision_id, decision_summary,
+    chosen_option, alternatives_considered (array),
+    evidence_summary, risk_assessment, success_criteria,
+    timestamps, stored_location
+  agent: roadmap_writer_agent
+  context:
+    - request_human_decision
+
+update_roadmap:
+  description: >
+    Translate the decision into actionable roadmap updates:
+
+    IF PROCEED:
+    - Define MVP scope and milestones
+    - Identify first sprint priorities
+    - Set key metrics to track
+
+    IF PIVOT:
+    - Define pivot hypothesis
+    - Specify what changes in next iteration
+    - Set validation goals for pivot
+
+    IF KILL:
+    - Document lessons learned
+    - Archive project artifacts
+    - Suggest resource reallocation
+
+    Output structured roadmap update for product app integration.
+  expected_output: >
+    A JSON object with: roadmap_action (proceed/pivot/kill),
+    next_milestones (array with title, description, success_criteria),
+    sprint_priorities (array), metrics_to_track (array),
+    resource_requirements, timeline_estimate
+  agent: roadmap_writer_agent
+  context:
+    - document_decision

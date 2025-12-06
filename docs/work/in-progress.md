@@ -1,14 +1,61 @@
 ---
 purpose: "Private technical source of truth for active work"
 status: "active"
-last_reviewed: "2025-12-03"
+last_reviewed: "2025-12-05"
 ---
 
 # In Progress
 
-## E2E Flow Verification (🔄 In Progress)
+## Architecture Change Notice (2025-12-05)
 
-Live flow testing with real API calls. Fixing runtime bugs discovered during execution.
+**MAJOR**: The Flow-based architecture has been replaced with a 3-Crew architecture.
+- **ADR**: See `docs/adr/001-flow-to-crew-migration.md`
+- **Reason**: AMP platform has issues with `type = "flow"` projects
+- All previous Flow-related work is now archived
+
+---
+
+## Phase 0: 3-Crew AMP Deployment (Active)
+
+Deploy the new 3-Crew architecture to CrewAI AMP.
+
+### Current Status
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Crew 1 code | ✅ Complete | `src/intake_crew/` at repo root |
+| Crew 2 code | ✅ Complete | `startupai-crews/crew-2-validation/` |
+| Crew 3 code | ✅ Complete | `startupai-crews/crew-3-decision/` |
+| pyproject.toml | ✅ Updated | `type = "crew"` |
+| CrewAI login | ⚠️ Pending | Session expired, needs re-auth |
+| Crew 1 deployment | ⚠️ Pending | Blocked on login |
+| Crews 2 & 3 repos | ⚠️ Pending | Need separate GitHub repos |
+
+### Next Steps
+
+1. Run `crewai login` to authenticate
+2. Run `crewai deploy push` for Crew 1
+3. Create `startupai-crew-validation` repo for Crew 2
+4. Create `startupai-crew-decision` repo for Crew 3
+5. Configure `InvokeCrewAIAutomationTool` for crew chaining
+
+### Architecture Summary
+
+```
+Crew 1: Intake (4 agents, 6 tasks, 1 HITL)
+    ↓ InvokeCrewAIAutomationTool
+Crew 2: Validation (12 agents, 21 tasks, 5 HITL)
+    ↓ InvokeCrewAIAutomationTool
+Crew 3: Decision (3 agents, 5 tasks, 1 HITL)
+```
+
+---
+
+## E2E Flow Verification (Archived - Flow Architecture)
+
+**Status**: Superseded by 3-Crew architecture.
+
+The bugs fixed below were for the Flow architecture which is now archived. The new 3-Crew architecture will need its own testing once deployed.
 
 ### Bugs Fixed (2025-12-03)
 
@@ -259,6 +306,14 @@ Next priorities (future phases):
 4. **Update phases.md** checkboxes to match
 
 ---
-**Last Updated**: 2025-12-03
+**Last Updated**: 2025-12-05
 
-**Latest Changes**: E2E flow verification in progress. Fixed 7 runtime bugs discovered during live testing: Assumption schema mismatch, AnalysisCrew/GrowthCrew template variables, pivot_value_proposition KeyError, refine_desirability_tests vars, Netlify token name compatibility, and CustomerProfile/ValueMap type mismatch. All 178 unit tests pass. Listener errors resolved with type conversion functions.
+**Latest Changes (2025-12-05 - Flow to 3-Crew Migration)**:
+- **MAJOR**: Architecture migrated from Flow to 3-Crew
+- Created 3 crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)
+- Crew 1 (Intake) restructured to repo root with `type = "crew"`
+- Crews 2 & 3 code ready, need separate GitHub repos
+- All Flow-related work archived to `archive/flow-architecture/`
+- See ADR-001 for full decision record
+
+**Previous Changes (2025-12-03)**: E2E flow verification (now archived). Fixed 7 runtime bugs discovered during live testing. All 178 unit tests pass.

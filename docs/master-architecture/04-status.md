@@ -1,18 +1,25 @@
 ---
 purpose: Honest assessment of current implementation status
 status: active
-last_reviewed: 2025-12-01
+last_reviewed: 2025-12-05
 ---
 
 # StartupAI Current State - Honest Assessment
 
 This document provides an unvarnished view of what works, what's broken, and what doesn't exist across the three services.
 
+## Architecture Change Notice (2025-12-05)
+
+**MAJOR CHANGE**: Migrated from Flow-based architecture to 3-Crew architecture.
+- **Reason**: AMP platform has issues with `type = "flow"` projects
+- **ADR**: See `docs/adr/001-flow-to-crew-migration.md` for full decision record
+- **Old code**: Archived to `archive/flow-architecture/`
+
 ## Status Summary
 
 | Service | Overall Status | Completion | Reality Check |
 |---------|---------------|------------|---------------|
-| AI Founders Core (startupai-crew) | Flow works, 24+ tools implemented | ~95% functional | 100% of 8 architectural areas complete |
+| AI Founders Core (startupai-crew) | 3-Crew architecture ready, pending deployment | ~70% functional | Code complete, needs AMP deployment |
 | Marketing Site (startupai.site) | Functional, static | 90% | Ad platform APIs (Meta/Google) not connected |
 | Product App (app.startupai.site) | Dashboards functional, integration working | ~80-85% | Full UI + CrewAI integration ready |
 
@@ -44,51 +51,80 @@ This document provides an unvarnished view of what works, what's broken, and wha
 
 ## AI Founders Core (`startupai-crew`)
 
+### Architecture Status (2025-12-05)
+
+**Current**: 3-Crew Architecture (migrated from Flows)
+**Reason**: AMP `type = "flow"` issues - see ADR-001
+
+| Crew | Agents | Tasks | HITL | Repository Status |
+|------|--------|-------|------|-------------------|
+| Crew 1: Intake | 4 | 6 | 1 | ✅ At repo root, ready to deploy |
+| Crew 2: Validation | 12 | 21 | 5 | ⚠️ Code ready, needs separate repo |
+| Crew 3: Decision | 3 | 5 | 1 | ⚠️ Code ready, needs separate repo |
+
 ### What Works
-- **Innovation Physics Flow Architecture**: Non-linear validation with evidence-driven routing
-- 8-crew/18-agent organization structure defined
-- State schemas with validation signals implemented
-- Router logic for all three gates (Desirability, Feasibility, Viability)
-- CrewAI AMP deployment is live and accessible
-- REST API (kickoff, status) responds correctly
-- GitHub auto-deploy configured
+- **3-Crew architecture code complete**: 19 agents, 32 tasks, 7 HITL checkpoints
+- Crew 1 (Intake) restructured to repo root with `type = "crew"`
+- HITL integrated via `human_input: true` on approval tasks
+- Task sequencing via `context` arrays (replaces `@listen`/`@router`)
 
-### Implementation Status (Phase 2D Complete)
+### What's Pending
+- **Crew 1 deployment**: Requires `crewai login` then `crewai deploy push`
+- **Crews 2 & 3 repos**: Need separate GitHub repos (AMP deploys from root only)
+- **Crew chaining**: `InvokeCrewAIAutomationTool` configuration after deployment
+- **Environment variables**: Set OPENAI_API_KEY in AMP dashboard for each crew
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| `state_schemas.py` | ✅ Complete | All signals implemented (EvidenceStrength, CommitmentType, etc.) |
-| `founder_validation_flow.py` | ✅ Complete | Non-linear routers with pivot logic, 9 @persist() checkpoints |
-| Service Crew | ✅ Complete | 3 agents for intake/brief |
-| Analysis Crew | ✅ Complete | 2 agents with TavilySearchTool for real web research |
-| Build Crew | ✅ Complete | 3 agents with LandingPageGeneratorTool + Netlify deploy |
-| Growth Crew | ✅ Complete | 3 agents (ad APIs deferred) |
-| Synthesis Crew | ✅ Complete | Full task definitions with pivot logic |
-| Finance Crew | ✅ Complete | 2 agents with UnitEconomicsCalculatorTool |
-| Governance Crew | ✅ Complete | 3 agents with 8 tools (HITL, Flywheel, Privacy) |
-| `main.py` | ✅ Complete | Entry point for flow execution |
+### Agent Distribution
 
-**Tools Implemented (24+ total):**
-- Research: TavilySearchTool, CompetitorResearchTool, MarketResearchTool, CustomerResearchTool
-- Financial: IndustryBenchmarkTool, UnitEconomicsCalculatorTool
-- Build: LandingPageGeneratorTool, CodeValidatorTool, LandingPageDeploymentTool
-- HITL: GuardianReviewTool, MethodologyCheckTool, ViabilityApprovalTool
-- Flywheel: LearningCaptureTool, LearningRetrievalTool, FlywheelInsightsTool, OutcomeTrackerTool
-- Privacy: AnonymizerTool, PrivacyGuardTool
-- **Area 3 (Policy Versioning)**: PolicyBandit, ExperimentConfigResolver
-- **Area 6 (Budget Guardrails)**: BudgetGuardrails, DecisionLogger
-- **Area 7 (Business Models)**: BusinessModelClassifier, 10 UnitEconomicsModels
+**Crew 1: Intake (4 agents)**
+- S1 (FounderOnboarding): Parse founder input into structured brief
+- S2 (CustomerResearch): Research using JTBD methodology
+- S3 (ValueDesigner): Create Value Proposition Canvas
+- G1 (QA): Quality assurance and human approval gate
 
-### Innovation Physics Signals Implemented
-- `evidence_strength`: STRONG, WEAK, NONE
-- `commitment_type`: SKIN_IN_GAME, VERBAL, NONE
-- `feasibility_status`: POSSIBLE, CONSTRAINED, IMPOSSIBLE
-- `unit_economics_status`: PROFITABLE, MARGINAL, UNDERWATER
-- `pivot_recommendation`: 7 pivot types including KILL
+**Crew 2: Validation (12 agents)**
+- Pulse: P1 (AdCreative), P2 (Comms), P3 (Analytics)
+- Forge: F1 (UXUIDesigner), F2 (FrontendDev), F3 (BackendDev)
+- Ledger: L1 (FinancialController), L2 (LegalCompliance), L3 (EconomicsReviewer)
+- Guardian: G1 (QA), G2 (Security), G3 (Audit)
 
-**Deployment Details**:
-- UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
-- Base URL: `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
+**Crew 3: Decision (3 agents)**
+- C1 (ProductPM): Synthesize evidence, propose options
+- C2 (HumanApproval): Present to human for decision
+- C3 (RoadmapWriter): Document decisions, update roadmap
+
+### HITL Checkpoints (7 total)
+
+| Crew | Task | Purpose |
+|------|------|---------|
+| 1 | `approve_intake_to_validation` | Gate: Intake → Validation |
+| 2 | `approve_campaign_launch` | Ad creative approval |
+| 2 | `approve_spend_increase` | Budget approval |
+| 2 | `approve_desirability_gate` | Gate: Desirability → Feasibility |
+| 2 | `approve_feasibility_gate` | Gate: Feasibility → Viability |
+| 2 | `approve_viability_gate` | Gate: Viability → Decision |
+| 3 | `request_human_decision` | Final pivot/proceed decision |
+
+### Deployment Status
+
+| Item | Status | Notes |
+|------|--------|-------|
+| pyproject.toml | ✅ Updated | `type = "crew"` at repo root |
+| Crew 1 code | ✅ Complete | `src/intake_crew/` |
+| Crew 2 code | ✅ Complete | `startupai-crews/crew-2-validation/` |
+| Crew 3 code | ✅ Complete | `startupai-crews/crew-3-decision/` |
+| AMP deployment | ⚠️ Pending | Requires `crewai login` |
+| Crew chaining | ⚠️ Pending | After all crews deployed |
+
+### Archived Code (Flow Architecture)
+
+The original Flow-based architecture is preserved at `archive/flow-architecture/`:
+- `startupai/flows/` - Flow orchestration with `@listen`, `@router`, `@persist`
+- `startupai/crews/` - 8 crews with 18 agents
+- `startupai/tools/` - 24+ tools (still usable)
+- `main.py` - Original entry point
+
+**Note**: Tools from the archived code can be ported to the new crews as needed.
 
 ### What's Limited (Honest Assessment)
 - **Ad platform integration**: Meta/Google Ads APIs not connected - cannot run real ad campaigns
@@ -96,34 +132,14 @@ This document provides an unvarnished view of what works, what's broken, and wha
 - **Token usage**: ~100K tokens per run ($2-5 per analysis)
 - **No streaming**: Users wait without progress updates
 - **Public APIs**: Activity Feed and Metrics APIs for marketing site not implemented
-
-### Recently Completed (Areas 3, 6, 7)
-- ✅ **Policy Versioning (Area 3)**: UCB bandit for A/B testing between yaml_baseline and retrieval_v1 policies
-- ✅ **Budget Guardrails (Area 6)**: Hard/soft enforcement with escalation, decision logging, audit trail
-- ✅ **Business Model Viability (Area 7)**: 10 specialized unit economics models with industry benchmarks
-- ✅ **Offline Evaluation**: `scripts/evaluate_policies.py` for statistical significance testing
+- **Lost Flow features**: No `@persist()` state recovery, no `@router` conditional branching within crews
 
 ### What Doesn't Exist
 - Activity Feed API for marketing site (`GET /api/v1/public/activity`)
 - Metrics API for marketing site (`GET /api/v1/public/metrics`)
 - Meta Business API integration
 - Google Ads API integration
-
-### What DOES Exist (Corrected)
-- ✅ TavilySearchTool for real web research
-- ✅ Webhook notifications for HITL workflows (creative approval, viability)
-- ✅ Result storage to Supabase via `_persist_to_supabase()`
-- ✅ Resume handler for HITL approvals (`webhooks/resume_handler.py`)
-- ✅ State persistence via `@persist()` decorators (9 checkpoints)
-
-### Configuration Status
-| Item | Status |
-|------|--------|
-| Crew configs | Complete (8 crews with 18 agents total) |
-| Task configs | Complete (per-crew task definitions) |
-| Tools | 24+ tools implemented and wired to agents |
-| Environment vars | Set in CrewAI dashboard |
-| Authentication | Bearer token working |
+- Separate repos for Crews 2 & 3 (code exists, repos don't)
 
 ---
 
@@ -296,9 +312,19 @@ This document provides an unvarnished view of what works, what's broken, and wha
 ---
 
 ## Last Updated
-2025-12-01
+2025-12-05
 
-**Latest Changes (2025-12-01 - Product App Status Audit)**:
+**Latest Changes (2025-12-05 - Flow to 3-Crew Migration)**:
+- **MAJOR**: Migrated from `type = "flow"` to `type = "crew"` architecture
+- **REASON**: AMP platform issues with Flow projects (see ADR-001)
+- Created 3 crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)
+- Distributed 7 HITL checkpoints across all 3 crews
+- Restructured repo: Crew 1 at root, Crews 2 & 3 code in subdirectories
+- Archived Flow code to `archive/flow-architecture/`
+- Updated completion from "~95%" to "~70%" (code complete, deployment pending)
+- Added ADR folder: `docs/adr/001-flow-to-crew-migration.md`
+
+**Previous Changes (2025-12-01 - Product App Status Audit)**:
 - **UPDATE**: Product App completion from "65-70%" to "~80-85%"
 - **VERIFIED**: Dashboard pages fully implemented (founder-dashboard: 595 lines, consultant-dashboard: 376 lines)
 - **VERIFIED**: Analysis display components exist and are integrated (InnovationPhysicsPanel, VPCSummaryCard, GateDashboard)

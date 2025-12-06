@@ -1,0 +1,392 @@
+---
+# CREW 2: VALIDATION ENGINE - 21 Tasks (including 5 HITL)
+# Phases: Desirability -> Feasibility -> Viability -> Audit
+
+# ═══════════════════════════════════════════════════════════════
+# DESIRABILITY PHASE - Test customer interest
+# ═══════════════════════════════════════════════════════════════
+
+generate_ad_variants:
+  description: >
+    Using the entrepreneur brief and value proposition canvas from Crew 1, generate
+    3-5 ad variants that test different messaging angles:
+
+    1. Problem-Aware Ads - Lead with the pain point
+    2. Solution-Aware Ads - Lead with the product/solution
+    3. Benefit-Focused Ads - Lead with transformation/outcome
+    4. Social Proof Ads - Lead with validation/traction (if available)
+
+    For each variant, provide:
+    - Headline (max 40 chars)
+    - Primary text (max 125 chars)
+    - CTA button text
+    - Target audience definition
+    - Hypothesis being tested
+  expected_output: >
+    A JSON array of ad_variants, each with: id, angle, headline, primary_text,
+    cta_text, target_audience, hypothesis
+  agent: ad_creative_agent
+
+generate_landing_page_copy:
+  description: >
+    Create landing page copy that converts ad clicks into email signups or other
+    commitment actions:
+
+    1. Hero Section - Headline, subheadline, CTA
+    2. Problem Section - Agitate the pain
+    3. Solution Section - Present the product
+    4. Benefits Section - 3-5 key benefits
+    5. Social Proof Section - Testimonials/logos (placeholder if none)
+    6. CTA Section - Final conversion push
+
+    Ensure copy aligns with the value proposition canvas and ad messaging.
+  expected_output: >
+    A JSON object with: hero (headline, subheadline, cta), problem_section,
+    solution_section, benefits (array), social_proof_section, final_cta
+  agent: comms_agent
+  context:
+    - generate_ad_variants
+
+build_landing_page:
+  description: >
+    Generate a responsive landing page from the copy and layout spec:
+
+    1. Mobile-first responsive design
+    2. Fast loading (< 3 seconds)
+    3. Clear visual hierarchy
+    4. Prominent CTA buttons
+    5. Email capture form
+    6. Analytics tracking (GA, pixel) integration points
+
+    Output deployable HTML/CSS or a specification for deployment.
+  expected_output: >
+    A JSON object with: page_structure (sections array), design_spec,
+    form_config, analytics_config, deployment_notes
+  agent: frontend_dev_agent
+  context:
+    - generate_landing_page_copy
+
+# HITL: Human approves creatives before deployment
+approve_campaign_launch:
+  description: >
+    Present the ad variants and landing page to the human for approval before
+    deploying the experiment:
+
+    REVIEW ITEMS:
+    1. Ad Variants - Messaging, targeting, hypotheses
+    2. Landing Page - Copy, design, conversion flow
+    3. Experiment Design - Budget, duration, success metrics
+
+    Human will APPROVE to proceed or REJECT with feedback.
+  expected_output: >
+    Human approval decision with optional feedback on ads and landing page
+  agent: qa_agent
+  human_input: true
+  context:
+    - build_landing_page
+    - generate_ad_variants
+
+# HITL: Human approves spend
+approve_spend_increase:
+  description: >
+    Request approval for the experiment budget:
+
+    BUDGET REQUEST:
+    1. Recommended spend amount
+    2. Expected reach/impressions
+    3. Projected cost per signup
+    4. ROI projection
+    5. Risk assessment
+
+    Human will APPROVE budget or ADJUST the amount.
+  expected_output: >
+    Human approval with confirmed budget amount
+  agent: financial_controller_agent
+  human_input: true
+  context:
+    - approve_campaign_launch
+
+deploy_experiments:
+  description: >
+    Deploy the approved ads and landing page for live testing:
+
+    1. Set up ad campaigns on approved platforms
+    2. Deploy landing page to production
+    3. Configure tracking and attribution
+    4. Set budget caps and pacing
+    5. Document campaign IDs and tracking links
+
+    Note: For MVP, this may output a deployment spec rather than actual deployment.
+  expected_output: >
+    A JSON object with: campaigns (array with platform, id, budget, status),
+    landing_page_url, tracking_config, estimated_duration
+  agent: analytics_agent
+  context:
+    - approve_spend_increase
+
+compute_desirability_signal:
+  description: >
+    After experiment run time, compute the desirability signal from results:
+
+    METRICS TO COMPUTE:
+    1. Click-through rate (CTR) - Interest signal
+    2. Conversion rate - Commitment signal
+    3. Cost per acquisition (CPA)
+    4. Zombie ratio - % who clicked but didn't convert
+
+    SIGNAL CLASSIFICATION:
+    - NO_INTEREST: CTR < 1%, Conv < 0.5%
+    - WEAK_INTEREST: CTR 1-3%, Conv 0.5-2%
+    - STRONG_COMMITMENT: CTR > 3%, Conv > 2%
+
+    Note: For MVP, use projected/simulated metrics based on industry benchmarks.
+  expected_output: >
+    A JSON object with: metrics (ctr, conversion_rate, cpa, zombie_ratio),
+    signal_classification, confidence_level, raw_data_summary
+  agent: analytics_agent
+  context:
+    - deploy_experiments
+
+# HITL: Human reviews desirability before feasibility
+approve_desirability_gate:
+  description: >
+    Present desirability results to human for gate approval:
+
+    DESIRABILITY SUMMARY:
+    1. Signal Classification (NO_INTEREST/WEAK_INTEREST/STRONG_COMMITMENT)
+    2. Key Metrics (CTR, conversion, CPA)
+    3. What we learned
+    4. Recommendation (proceed/pivot/kill)
+
+    Human decides whether to proceed to feasibility phase.
+  expected_output: >
+    Human approval to proceed to feasibility phase with optional comments
+  agent: qa_agent
+  human_input: true
+  context:
+    - compute_desirability_signal
+
+# ═══════════════════════════════════════════════════════════════
+# FEASIBILITY PHASE - Assess technical buildability
+# ═══════════════════════════════════════════════════════════════
+
+design_layout_spec:
+  description: >
+    Create detailed wireframes and layout specifications for the MVP:
+
+    1. User flow diagram (signup -> onboarding -> core value)
+    2. Key screens/pages with wireframes
+    3. Component inventory
+    4. Responsive breakpoints
+    5. Interaction patterns
+
+    Focus on the minimum viable experience that delivers core value.
+  expected_output: >
+    A JSON object with: user_flow (steps array), screens (array with name,
+    purpose, wireframe_description, components), component_inventory,
+    design_system_requirements
+  agent: ux_ui_designer_agent
+  context:
+    - approve_desirability_gate
+
+assess_technical_feasibility:
+  description: >
+    Evaluate the technical feasibility of building the MVP:
+
+    ASSESSMENT AREAS:
+    1. Core Features - Can we build the essential functionality?
+    2. Tech Stack - What technologies are required?
+    3. Third-Party Dependencies - APIs, services, integrations
+    4. Technical Risks - What could go wrong?
+    5. Effort Estimate - T-shirt sizing (S/M/L/XL)
+
+    FEASIBILITY CLASSIFICATION:
+    - GREEN: Straightforward, known tech, low risk
+    - YELLOW: Some complexity, manageable risks
+    - RED: Significant challenges, high risk
+
+    Flag any features that are technically impossible or impractical.
+  expected_output: >
+    A JSON object with: feasibility_status (GREEN/YELLOW/RED),
+    core_features_assessment (array), tech_stack_recommendation,
+    dependencies (array), risks (array with severity), effort_estimate,
+    impossible_features (array), recommendations
+  agent: backend_dev_agent
+  context:
+    - design_layout_spec
+
+# HITL: Human reviews feasibility before viability
+approve_feasibility_gate:
+  description: >
+    Present feasibility assessment to human for gate approval:
+
+    FEASIBILITY SUMMARY:
+    1. Status (GREEN/YELLOW/RED)
+    2. Tech stack and dependencies
+    3. Effort estimate
+    4. Risks and mitigations
+    5. Any impossible/removed features
+
+    Human decides whether to proceed to viability phase.
+  expected_output: >
+    Human approval to proceed to viability phase with optional comments
+  agent: qa_agent
+  human_input: true
+  context:
+    - assess_technical_feasibility
+
+# ═══════════════════════════════════════════════════════════════
+# VIABILITY PHASE - Validate unit economics
+# ═══════════════════════════════════════════════════════════════
+
+compute_unit_economics:
+  description: >
+    Build a unit economics model using experiment data and benchmarks:
+
+    INPUTS:
+    - CPA from desirability experiments
+    - Pricing assumptions
+    - Cost estimates from feasibility
+
+    COMPUTE:
+    1. Customer Acquisition Cost (CAC) - All-in cost to acquire
+    2. Lifetime Value (LTV) - Revenue over customer lifetime
+    3. LTV:CAC Ratio - Target > 3:1
+    4. Payback Period - Months to recover CAC
+    5. Gross Margin - Revenue minus COGS
+    6. Contribution Margin - After variable costs
+
+    Flag if unit economics are underwater (CAC > LTV).
+  expected_output: >
+    A JSON object with: cac, ltv, ltv_cac_ratio, payback_months,
+    gross_margin_pct, contribution_margin_pct, viability_status
+    (PROFITABLE/MARGINAL/UNDERWATER), assumptions (array), sensitivity_analysis
+  agent: financial_controller_agent
+  context:
+    - approve_feasibility_gate
+    - compute_desirability_signal
+
+flag_compliance_constraints:
+  description: >
+    Identify regulatory and compliance constraints:
+
+    CHECK FOR:
+    1. Industry Regulations (GDPR, HIPAA, PCI, CCPA, etc.)
+    2. Licensing Requirements
+    3. Data Handling Obligations
+    4. Geographic Restrictions
+    5. Age/Consent Requirements
+
+    For each constraint, assess:
+    - Impact on product (feature restrictions)
+    - Impact on economics (compliance costs)
+    - Implementation complexity
+  expected_output: >
+    A JSON object with: regulations (array with name, applies, impact,
+    compliance_cost), licensing_required (array), data_requirements,
+    geographic_constraints, overall_risk_level (LOW/MEDIUM/HIGH)
+  agent: legal_compliance_agent
+  context:
+    - compute_unit_economics
+
+review_economics_assumptions:
+  description: >
+    Stress-test the financial model assumptions:
+
+    REVIEW:
+    1. CAC Assumptions - Are they realistic given market conditions?
+    2. LTV Assumptions - Is retention/expansion realistic?
+    3. Pricing Assumptions - Does pricing make sense vs competitors?
+    4. Cost Assumptions - Are we missing hidden costs?
+
+    Compare to industry benchmarks and flag outliers.
+    Provide confidence levels for each assumption.
+  expected_output: >
+    A JSON object with: assumption_reviews (array with assumption, value,
+    benchmark, confidence, flag), overall_confidence, red_flags (array),
+    recommendations
+  agent: economics_reviewer_agent
+  context:
+    - compute_unit_economics
+    - flag_compliance_constraints
+
+# HITL: Human reviews viability before decision
+approve_viability_gate:
+  description: >
+    Present viability analysis to human for gate approval:
+
+    VIABILITY SUMMARY:
+    1. Unit Economics (CAC, LTV, ratio, payback)
+    2. Compliance Requirements
+    3. Assumption Confidence Levels
+    4. Overall Viability Status
+
+    Human decides whether to proceed to decision phase.
+  expected_output: >
+    Human approval to proceed to decision phase with optional comments
+  agent: qa_agent
+  human_input: true
+  context:
+    - review_economics_assumptions
+
+# ═══════════════════════════════════════════════════════════════
+# AUDIT & HANDOFF
+# ═══════════════════════════════════════════════════════════════
+
+scrub_pii_from_artifacts:
+  description: >
+    Review all artifacts from this validation cycle and scrub any PII:
+
+    CHECK FOR:
+    1. Email addresses in experiment data
+    2. Names or identifiers
+    3. IP addresses
+    4. Geographic identifiers (if sensitive)
+    5. Any other personally identifiable information
+
+    Replace PII with anonymized placeholders.
+    Document what was scrubbed for audit trail.
+  expected_output: >
+    A JSON object with: scrubbed_count, scrubbed_fields (array),
+    artifacts_reviewed (array), clean_artifacts_ready (boolean)
+  agent: security_agent
+  context:
+    - approve_viability_gate
+
+capture_learnings:
+  description: >
+    Document key learnings from this validation cycle:
+
+    CAPTURE:
+    1. Validated Hypotheses - What we proved
+    2. Invalidated Hypotheses - What we disproved
+    3. Surprising Findings - Unexpected learnings
+    4. Process Improvements - How to do better next time
+    5. Decision Rationale - Why we're recommending what we are
+
+    These learnings feed the organizational memory.
+  expected_output: >
+    A JSON object with: validated_hypotheses (array), invalidated_hypotheses (array),
+    surprising_findings (array), process_improvements (array),
+    decision_rationale, key_metrics_summary
+  agent: audit_agent
+  context:
+    - scrub_pii_from_artifacts
+
+trigger_decision_crew:
+  description: >
+    Package all validation outputs and invoke Crew 3 (Decision & Synthesis):
+
+    PASS TO CREW 3:
+    1. desirability_signal - Classification and metrics
+    2. feasibility_assessment - Status and tech recommendations
+    3. viability_metrics - Unit economics and assumptions
+    4. learnings - What we discovered
+    5. artifacts - Cleaned data and documents
+
+    Use InvokeCrewAIAutomationTool to trigger Crew 3.
+  expected_output: >
+    Confirmation of Crew 3 kickoff with execution_id for tracking
+  agent: analytics_agent
+  context:
+    - capture_learnings

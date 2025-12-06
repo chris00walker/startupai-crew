@@ -1,0 +1,134 @@
+---
+# CREW 1: INTAKE - 6 Tasks (including 1 HITL)
+# Task sequencing via context arrays
+
+parse_founder_input:
+  description: >
+    Analyze the {entrepreneur_input} and create a structured StartupAI Brief containing:
+    1. Business Idea - What is the core product/service concept?
+    2. Target Customers - Who are the primary customer segments?
+    3. Problem Statement - What pain points are being addressed?
+    4. Proposed Solution - How does the product solve these problems?
+    5. Key Hypotheses - What assumptions need validation?
+    6. Success Metrics - How will we measure desirability?
+  expected_output: >
+    A JSON object with fields: business_idea, target_customers (array),
+    problem_statement, proposed_solution, key_hypotheses (array of objects
+    with hypothesis and risk_level), success_metrics (array)
+  agent: founder_onboarding_agent
+
+research_customer_problem:
+  description: >
+    Based on the entrepreneur brief, research and build a detailed customer
+    profile for each target segment using Jobs-to-be-Done methodology:
+    1. Functional Jobs - What tasks are customers trying to accomplish?
+    2. Emotional Jobs - How do customers want to feel?
+    3. Social Jobs - How do customers want to be perceived?
+    4. Pains - What obstacles, risks, and frustrations do they face?
+    5. Gains - What outcomes, benefits, and aspirations do they seek?
+
+    Use web research to validate assumptions about customer needs.
+  expected_output: >
+    A JSON object with fields: customer_segments (array of objects, each with
+    segment_name, jobs_to_be_done (object with functional, emotional, social arrays),
+    pains (array with severity ratings), gains (array with importance ratings))
+  agent: customer_research_agent
+  context:
+    - parse_founder_input
+
+create_value_proposition_canvas:
+  description: >
+    Using the entrepreneur brief and customer profile, construct a complete
+    Value Proposition Canvas:
+
+    CUSTOMER PROFILE (Right Side):
+    - Jobs-to-be-done (from customer research)
+    - Pains (prioritized by severity)
+    - Gains (prioritized by importance)
+
+    VALUE MAP (Left Side):
+    - Products & Services - What you offer
+    - Pain Relievers - How you address each pain
+    - Gain Creators - How you create each gain
+
+    Ensure explicit mapping between customer needs and value offerings.
+    Identify any gaps where customer needs are not addressed.
+  expected_output: >
+    A JSON object with fields: customer_profile (jobs, pains, gains),
+    value_map (products_services, pain_relievers, gain_creators),
+    fit_analysis (covered_jobs, covered_pains, covered_gains, gaps),
+    value_proposition_statement (string)
+  agent: value_designer_agent
+  context:
+    - parse_founder_input
+    - research_customer_problem
+
+qa_gate_intake:
+  description: >
+    Review all intake outputs for quality and completeness:
+
+    BRIEF VALIDATION:
+    - Is the business idea clearly articulated?
+    - Are target customers specific enough?
+    - Are hypotheses testable?
+
+    CUSTOMER RESEARCH VALIDATION:
+    - Are jobs-to-be-done clearly defined?
+    - Are pains and gains evidence-based?
+    - Is the research comprehensive?
+
+    VPC VALIDATION:
+    - Does the value map address key pains?
+    - Are gain creators aligned with customer aspirations?
+    - Are there critical gaps?
+
+    Provide a pass/fail with specific issues to address.
+  expected_output: >
+    A JSON object with fields: overall_status (pass/fail),
+    brief_review (status, issues array), customer_research_review (status, issues array),
+    vpc_review (status, issues array), recommendations (array)
+  agent: qa_agent
+  context:
+    - parse_founder_input
+    - create_value_proposition_canvas
+
+# HITL: Human approves before proceeding to validation
+approve_intake_to_validation:
+  description: >
+    Present a summary of the intake phase to the human founder for approval:
+
+    1. Business Brief Summary
+    2. Customer Profile Overview
+    3. Value Proposition Canvas
+    4. QA Results and Recommendations
+    5. Proposed Next Steps
+
+    The human will review and decide whether to:
+    - APPROVE: Proceed to validation experiments
+    - REJECT: Return to intake with specific feedback
+
+    Wait for human input before proceeding.
+  expected_output: >
+    Human approval decision with optional comments and feedback
+  agent: qa_agent
+  human_input: true
+  context:
+    - qa_gate_intake
+
+trigger_validation_crew:
+  description: >
+    Package all intake outputs and invoke Crew 2 (Validation Engine) using
+    the InvokeCrewAIAutomationTool. Pass the following data:
+
+    1. entrepreneur_brief - Structured brief from intake
+    2. customer_profile - JTBD analysis
+    3. value_proposition_canvas - Complete VPC
+    4. qa_report - Quality assessment
+    5. human_approval - Approval status and comments
+
+    Log the kickoff confirmation and return the execution ID for tracking.
+  expected_output: >
+    Confirmation of Crew 2 kickoff with execution_id for tracking
+  agent: founder_onboarding_agent
+  context:
+    - approve_intake_to_validation

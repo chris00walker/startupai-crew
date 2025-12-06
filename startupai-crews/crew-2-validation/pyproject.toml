@@ -1,0 +1,23 @@
+[project]
+name = "startupai-validation-crew"
+version = "0.1.0"
+description = "StartupAI Validation Crew - Execute Desirability/Feasibility/Viability experiments"
+authors = [{ name = "Chris Walker", email = "chris@startupai.site" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[litellm,tools]==1.4.1",
+]
+
+[project.scripts]
+startupai-validation-crew = "validation_crew.main:run"
+run_crew = "validation_crew.main:run"
+train = "validation_crew.main:train"
+replay = "validation_crew.main:replay"
+test = "validation_crew.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"

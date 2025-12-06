@@ -1,20 +1,68 @@
 ---
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
-last_reviewed: "2025-11-27"
-last_audit: "2025-11-27 - All 8 architectural areas verified complete"
+last_reviewed: "2025-12-05"
+last_audit: "2025-12-05 - Architecture migrated from Flow to 3-Crew"
 ---
 
 # Engineering Phases
 
-## Phase 1 - Service Side + Desirability Validation (Active)
-- Create state schemas (`state_schemas.py`)
-- Build Service Crew (agents.yaml, tasks.yaml, service_crew.py)
-- Build Analysis Crew
-- Build Governance Crew (Phase 1 - QA Agent only)
-- Create Phase 1 Flow
-- Test with StartupAI's own business context
-- Owners: AI Platform (lead)
+## Architecture Migration Notice (2025-12-05)
+
+**MAJOR CHANGE**: The Flow-based architecture has been replaced with a 3-Crew architecture.
+
+- **ADR**: See `docs/adr/001-flow-to-crew-migration.md`
+- **Reason**: AMP platform has issues with `type = "flow"` projects
+- **Old code**: Archived to `archive/flow-architecture/`
+
+The phases below are being updated to reflect the new architecture.
+
+---
+
+## Phase 0 - 3-Crew Architecture Deployment (Active)
+
+Deploy the 3-Crew architecture to CrewAI AMP.
+
+### Phase 0 Complete Criteria
+
+**Repository Structure:**
+- [x] Crew 1 (Intake) at repo root with `type = "crew"`
+- [x] Crew 2 (Validation) code in `startupai-crews/crew-2-validation/`
+- [x] Crew 3 (Decision) code in `startupai-crews/crew-3-decision/`
+- [ ] Crew 2 in separate GitHub repo
+- [ ] Crew 3 in separate GitHub repo
+
+**Deployment:**
+- [ ] `crewai login` authenticated
+- [ ] Crew 1 deployed to AMP
+- [ ] Crew 2 deployed to AMP (separate repo)
+- [ ] Crew 3 deployed to AMP (separate repo)
+- [ ] Environment variables set in AMP dashboard for all crews
+
+**Crew Chaining:**
+- [ ] `InvokeCrewAIAutomationTool` configured for Crew 1 → Crew 2
+- [ ] `InvokeCrewAIAutomationTool` configured for Crew 2 → Crew 3
+- [ ] End-to-end test: Intake → Validation → Decision
+
+**HITL Verification:**
+- [ ] Crew 1 HITL (`approve_intake_to_validation`) works
+- [ ] Crew 2 HITL (5 checkpoints) works
+- [ ] Crew 3 HITL (`request_human_decision`) works
+
+**Cross-Repo Unblocks:**
+- Product App: Can call Crew 1 /kickoff endpoint
+- Marketing: Real validation cycles possible
+
+---
+
+## Phase 1 - Service Side + Desirability Validation (Paused - Superseded)
+
+**Note**: This phase used the Flow architecture which has been deprecated. The functionality is now distributed across the 3-Crew architecture.
+
+**Mapping to 3-Crew:**
+- Service Crew → Crew 1 (Intake)
+- Analysis Crew → Crew 2 (Validation - desirability phase)
+- Governance Crew → Distributed across all 3 crews
 
 ### Phase 1 Complete Criteria
 Phase 1 is **complete** when all of the following are true:
