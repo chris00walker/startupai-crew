@@ -115,7 +115,7 @@ crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 | Crew | Repository | UUID | Token |
 |------|------------|------|-------|
 | Crew 1: Intake | `chris00walker/startupai-crew` | `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | `db9f9f4c1a7a` |
-| Crew 2: Validation | `chris00walker/startupai-crew-validation` | `df7f9fa4-f2c2-425c-890e-11a04e632050` | `c823a366d901` |
+| Crew 2: Validation | `chris00walker/startupai-crew-validation` | `3135e285-c0e6-4451-b7b6-d4a061ac4437` | (check AMP dashboard) |
 | Crew 3: Decision | `chris00walker/startupai-crew-decision` | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | `988cc694f297` |
 
 ### Crew Chaining Environment Variables
