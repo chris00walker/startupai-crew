@@ -1,8 +1,8 @@
 ---
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
-last_reviewed: "2025-12-05"
-last_audit: "2025-12-05 - Architecture migrated from Flow to 3-Crew"
+last_reviewed: "2026-01-04"
+last_audit: "2026-01-04 - 3-Crew architecture deployed to AMP"
 ---
 
 # Engineering Phases
@@ -19,9 +19,11 @@ The phases below are being updated to reflect the new architecture.
 
 ---
 
-## Phase 0 - 3-Crew Architecture Deployment (Active)
+## Phase 0 - 3-Crew Architecture Deployment (COMPLETE)
 
 Deploy the 3-Crew architecture to CrewAI AMP.
+
+**Status**: DEPLOYED (2026-01-04)
 
 ### Phase 0 Complete Criteria
 
@@ -29,20 +31,20 @@ Deploy the 3-Crew architecture to CrewAI AMP.
 - [x] Crew 1 (Intake) at repo root with `type = "crew"`
 - [x] Crew 2 (Validation) code in `startupai-crews/crew-2-validation/`
 - [x] Crew 3 (Decision) code in `startupai-crews/crew-3-decision/`
-- [ ] Crew 2 in separate GitHub repo
-- [ ] Crew 3 in separate GitHub repo
+- [x] Crew 2 in separate GitHub repo (`chris00walker/startupai-crew-validation`)
+- [x] Crew 3 in separate GitHub repo (`chris00walker/startupai-crew-decision`)
 
 **Deployment:**
-- [ ] `crewai login` authenticated
-- [ ] Crew 1 deployed to AMP
-- [ ] Crew 2 deployed to AMP (separate repo)
-- [ ] Crew 3 deployed to AMP (separate repo)
-- [ ] Environment variables set in AMP dashboard for all crews
+- [x] `crewai login` authenticated
+- [x] Crew 1 deployed to AMP (UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`)
+- [x] Crew 2 deployed to AMP (UUID: `9d84b14f-bd06-4868-baee-e23484a4fcc2`)
+- [x] Crew 3 deployed to AMP (UUID: `7da95dc8-7bb5-4c90-925b-2861fa9cba20`)
+- [ ] Environment variables set in AMP dashboard for all crews (CREW_2_URL, CREW_3_URL, tokens)
 
 **Crew Chaining:**
-- [ ] `InvokeCrewAIAutomationTool` configured for Crew 1 → Crew 2
-- [ ] `InvokeCrewAIAutomationTool` configured for Crew 2 → Crew 3
-- [ ] End-to-end test: Intake → Validation → Decision
+- [x] `InvokeCrewAIAutomationTool` configured for Crew 1 → Crew 2
+- [x] `InvokeCrewAIAutomationTool` configured for Crew 2 → Crew 3
+- [ ] End-to-end test: Intake → Validation → Decision (pending env var config)
 
 **HITL Verification:**
 - [ ] Crew 1 HITL (`approve_intake_to_validation`) works

@@ -5,7 +5,7 @@
 **Purpose**: 3-Crew/19-Agent validation engine with HITL checkpoints
 **Framework**: CrewAI Crews (type="crew") - migrated from Flows
 **Deployment**: CrewAI AMP Platform
-**Status**: 3-Crew architecture ready for deployment
+**Status**: 3-Crew architecture DEPLOYED to AMP
 
 ## Critical Context
 **⚠️ IMPORTANT**: This repository is the **brain of the StartupAI ecosystem**. It powers the 6 AI Founders team that delivers Fortune 500-quality strategic analysis.
@@ -111,19 +111,21 @@ crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 ## Deployment Configuration
 
-### 3-Crew Deployments
-| Crew | Repository | Status | Notes |
-|------|------------|--------|-------|
-| Crew 1: Intake | `startupai-crew` (this) | Ready to deploy | `type = "crew"` at root |
-| Crew 2: Validation | Needs separate repo | Code ready | Copy `startupai-crews/crew-2-validation/` |
-| Crew 3: Decision | Needs separate repo | Code ready | Copy `startupai-crews/crew-3-decision/` |
+### 3-Crew Deployments (Active)
+| Crew | Repository | UUID | Token | URL |
+|------|------------|------|-------|-----|
+| Crew 1: Intake | `chris00walker/startupai-crew` | `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | `db9f9f4c1a7a` | `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com` |
+| Crew 2: Validation | `chris00walker/startupai-crew-validation` | `9d84b14f-bd06-4868-baee-e23484a4fcc2` | `3330a624bd66` | `https://startupai-validation-crew-9d84b14f-bd06-486-218c4c9d.crewai.com` |
+| Crew 3: Decision | `chris00walker/startupai-crew-decision` | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | `988cc694f297` | `https://startupai-decision-crew-7da95dc8-7bb5-4c-7f70a58e.crewai.com` |
 
-### Previous Deployment IDs (from earlier attempts)
-- Crew 1: `7a73e75d-b611-4780-8f99-a05fca9b44bb` (Token: `13a07597a155`)
-- Crew 2: `06d6a951-67ef-4936-b6d8-6fcaf5801b68` (Token: `6e274e9be0db`)
-- Crew 3: `5a4330ef-0394-441d-bc2f-d458fde7ec06` (Token: `b07cee1f4637`)
+### Crew Chaining Environment Variables
+**Crew 1** needs these in AMP dashboard:
+- `CREW_2_URL` = `https://startupai-validation-crew-9d84b14f-bd06-486-218c4c9d.crewai.com`
+- `CREW_2_BEARER_TOKEN` = `3330a624bd66`
 
-**Note**: May need recreation after restructure.
+**Crew 2** needs these in AMP dashboard:
+- `CREW_3_URL` = `https://startupai-decision-crew-7da95dc8-7bb5-4c-7f70a58e.crewai.com`
+- `CREW_3_BEARER_TOKEN` = `988cc694f297`
 
 **Organization**: StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
 **Dashboard**: https://app.crewai.com/deployments
@@ -394,9 +396,9 @@ Agents are automatically invoked based on context and trigger words in their des
 - CrewAI Docs: https://docs.crewai.com
 
 ---
-**Last Updated**: 2025-12-05
+**Last Updated**: 2026-01-04
 **Maintainer**: Chris Walker
-**Status**: 3-Crew architecture complete, ready for AMP deployment
+**Status**: 3-Crew architecture DEPLOYED to AMP
 **Critical Note**: This is the BRAIN of the StartupAI ecosystem
 
 ### Migration Notes (2025-12-05)
@@ -404,3 +406,9 @@ Agents are automatically invoked based on context and trigger words in their des
 - Flow-based code archived to `archive/flow-architecture/`
 - Crew 1 at root level, Crews 2 & 3 require separate repos
 - See `docs/3-crew-deployment.md` for deployment steps
+
+### Deployment Notes (2026-01-04)
+- All 3 crews deployed to AMP and online
+- Crew chaining implemented with `InvokeCrewAIAutomationTool`
+- Separate GitHub repos: `startupai-crew`, `startupai-crew-validation`, `startupai-crew-decision`
+- Environment variables for chaining must be set in AMP dashboard (see above)
