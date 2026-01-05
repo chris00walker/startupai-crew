@@ -14,14 +14,16 @@ Agents: S1 (FounderOnboarding), S2 (CustomerResearch), S3 (ValueDesigner), G1 (Q
 import os
 from crewai import LLM, Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from crewai.tools import InvokeCrewAIAutomationTool
+from crewai_tools import InvokeCrewAIAutomationTool
 
 
 # Create invoker for Crew 2 (Validation Engine)
 # Environment variables must be set in AMP dashboard
 validation_crew_invoker = InvokeCrewAIAutomationTool(
-    automation_url=os.getenv("CREW_2_URL", ""),
-    bearer_token=os.getenv("CREW_2_BEARER_TOKEN", ""),
+    crew_api_url=os.getenv("CREW_2_URL", ""),
+    crew_bearer_token=os.getenv("CREW_2_BEARER_TOKEN", ""),
+    crew_name="Validation Crew",
+    crew_description="12-agent D/F/V validation engine for startup ideas",
 )
 
 

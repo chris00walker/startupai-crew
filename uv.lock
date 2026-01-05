@@ -3465,6 +3465,7 @@ version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "crewai", extra = ["litellm", "tools"] },
+    { name = "crewai-tools" },
     { name = "httpx" },
     { name = "python-dotenv" },
     { name = "supabase" },
@@ -3489,6 +3490,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "crewai", extras = ["litellm", "tools"], specifier = "==1.4.1" },
+    { name = "crewai-tools", specifier = ">=0.17.0" },
     { name = "httpx", specifier = ">=0.25.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
