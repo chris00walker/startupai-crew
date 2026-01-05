@@ -112,19 +112,19 @@ crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 ## Deployment Configuration
 
 ### 3-Crew Deployments (Active)
-| Crew | Repository | UUID | Token | URL |
-|------|------------|------|-------|-----|
-| Crew 1: Intake | `chris00walker/startupai-crew` | `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | `db9f9f4c1a7a` | `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com` |
-| Crew 2: Validation | `chris00walker/startupai-crew-validation` | `9d84b14f-bd06-4868-baee-e23484a4fcc2` | `3330a624bd66` | `https://startupai-validation-crew-9d84b14f-bd06-486-218c4c9d.crewai.com` |
-| Crew 3: Decision | `chris00walker/startupai-crew-decision` | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | `988cc694f297` | `https://startupai-decision-crew-7da95dc8-7bb5-4c-7f70a58e.crewai.com` |
+| Crew | Repository | UUID | Token |
+|------|------------|------|-------|
+| Crew 1: Intake | `chris00walker/startupai-crew` | `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | `db9f9f4c1a7a` |
+| Crew 2: Validation | `chris00walker/startupai-crew-validation` | `df7f9fa4-f2c2-425c-890e-11a04e632050` | `c823a366d901` |
+| Crew 3: Decision | `chris00walker/startupai-crew-decision` | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | `988cc694f297` |
 
 ### Crew Chaining Environment Variables
 **Crew 1** needs these in AMP dashboard:
-- `CREW_2_URL` = `https://startupai-validation-crew-9d84b14f-bd06-486-218c4c9d.crewai.com`
-- `CREW_2_BEARER_TOKEN` = `3330a624bd66`
+- `CREW_2_URL` = (get from AMP dashboard for Crew 2)
+- `CREW_2_BEARER_TOKEN` = `c823a366d901`
 
 **Crew 2** needs these in AMP dashboard:
-- `CREW_3_URL` = `https://startupai-decision-crew-7da95dc8-7bb5-4c-7f70a58e.crewai.com`
+- `CREW_3_URL` = (get from AMP dashboard for Crew 3)
 - `CREW_3_BEARER_TOKEN` = `988cc694f297`
 
 **Organization**: StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)

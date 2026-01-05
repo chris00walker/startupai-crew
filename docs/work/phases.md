@@ -37,7 +37,7 @@ Deploy the 3-Crew architecture to CrewAI AMP.
 **Deployment:**
 - [x] `crewai login` authenticated
 - [x] Crew 1 deployed to AMP (UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`)
-- [x] Crew 2 deployed to AMP (UUID: `9d84b14f-bd06-4868-baee-e23484a4fcc2`)
+- [x] Crew 2 deployed to AMP (UUID: `df7f9fa4-f2c2-425c-890e-11a04e632050`)
 - [x] Crew 3 deployed to AMP (UUID: `7da95dc8-7bb5-4c90-925b-2861fa9cba20`)
 - [ ] Environment variables set in AMP dashboard for all crews (CREW_2_URL, CREW_3_URL, tokens)
 
