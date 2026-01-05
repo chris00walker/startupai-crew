@@ -14,6 +14,15 @@ Agents: S1 (FounderOnboarding), S2 (CustomerResearch), S3 (ValueDesigner), G1 (Q
 import os
 from crewai import LLM, Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+from crewai.tools import InvokeCrewAIAutomationTool
+
+
+# Create invoker for Crew 2 (Validation Engine)
+# Environment variables must be set in AMP dashboard
+validation_crew_invoker = InvokeCrewAIAutomationTool(
+    automation_url=os.getenv("CREW_2_URL", ""),
+    bearer_token=os.getenv("CREW_2_BEARER_TOKEN", ""),
+)
 
 
 @CrewBase
@@ -74,10 +83,10 @@ class IntakeCrew:
 
     @agent
     def qa_agent(self) -> Agent:
-        """G1: Quality assurance and human approval gate."""
+        """G1: Quality assurance and human approval gate + trigger Crew 2."""
         return Agent(
             config=self.agents_config["qa_agent"],
-            tools=[],
+            tools=[validation_crew_invoker],  # Invokes Crew 2 after approval
             reasoning=False,
             inject_date=True,
             allow_delegation=False,
