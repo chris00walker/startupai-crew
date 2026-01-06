@@ -1,10 +1,13 @@
 ---
 purpose: Product app smart artifact and canvas architecture
 status: planning
-last_reviewed: 2025-11-21
+last_reviewed: 2026-01-05
+vpd_compliance: true
 ---
 
 # Product App Smart Artifact Architecture
+
+> **VPD Framework**: This architecture implements Value Proposition Design (Osterwalder/Pigneur) with Testing Business Ideas methodology. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 specification.
 
 ## Vision: Reimagining Strategyzer Frameworks
 
@@ -140,6 +143,154 @@ Evidence doesn't just validate canvases - it updates them:
 - **Strong evidence** → Auto-strengthens related canvas sections
 - **Weak evidence** → Suggests additional experiments
 
+## VPC Fit Assessment (Phase 1 Gate)
+
+Before proceeding to Phase 2 validation, the VPC must demonstrate Problem-Solution Fit:
+
+### Fit Score Components
+
+| Metric | Description | Target |
+|--------|-------------|--------|
+| **fit_score** | Overall Problem-Solution Fit score | ≥ 70/100 |
+| **profile_completeness** | % of Jobs/Pains/Gains with validation evidence | ≥ 75% |
+| **value_map_coverage** | % of customer pains addressed by pain relievers | ≥ 75% |
+| **evidence_strength** | Ratio of DO evidence vs SAY evidence | ≥ 50% DO |
+
+### Fit Status Thresholds
+
+| Status | Fit Score | Action |
+|--------|-----------|--------|
+| **Strong** | ≥ 80 | Ready for Phase 2 validation |
+| **Moderate** | 70-79 | Ready, but monitor closely |
+| **Weak** | 50-69 | Iterate on value map design |
+| **None** | < 50 | Consider segment pivot |
+
+### Evidence Hierarchy (SAY vs DO)
+
+Evidence quality is weighted by behavioral commitment level:
+
+| Level | Weight | Example | Classification |
+|-------|--------|---------|----------------|
+| **Paid** | 5 | Pre-order, paid pilot | DO (Direct) |
+| **High-CTA** | 4 | Signup, demo request | DO (Direct) |
+| **Medium-CTA** | 3 | Email capture, waitlist | DO (Direct) |
+| **Low-CTA** | 2 | Social share, referral | DO (Indirect) |
+| **Stated** | 1 | Interview response, survey | SAY |
+| **Implied** | 0.5 | Review mining, social listening | SAY |
+
+### VPC Completion Approval
+
+The `approve_vpc_completion` HITL checkpoint fires when:
+- Fit score ≥ 70
+- At least 3 experiments completed
+- No untested high-priority assumptions remain
+
+Approval context includes:
+- Customer Profile summary (validated Jobs/Pains/Gains)
+- Value Map coverage analysis
+- Experiment results and learnings
+- Recommended Phase 2 focus areas
+
+## BMC Population Sequence by Phase
+
+The Business Model Canvas populates progressively through validation phases:
+
+### Phase 1 (VPC Discovery) → BMC Seeds
+
+| BMC Block | Source | Populated From |
+|-----------|--------|----------------|
+| **Customer Segments** | VPC Customer Profile | Validated customer segment from discovery |
+| **Value Propositions** | VPC Value Map | Products/Services, Pain Relievers, Gain Creators |
+| **Revenue Streams** | WTP Experiments | Pricing test results (preliminary) |
+
+### Phase 2 (Desirability) → BMC Demand-Side
+
+| BMC Block | Evidence Source | Populated From |
+|-----------|-----------------|----------------|
+| **Channels** | Ad platform experiments | Which channels reach customers effectively |
+| **Customer Relationships** | User behavior data | Relationship type preferences |
+| **Revenue Streams** | Pricing A/B tests | Validated pricing model |
+
+### Phase 2 (Feasibility) → BMC Supply-Side
+
+| BMC Block | Evidence Source | Populated From |
+|-----------|-----------------|----------------|
+| **Key Activities** | Technical breakdown | What operations are required |
+| **Key Resources** | Resource audit | What assets are needed |
+| **Key Partners** | Supplier evaluation | Who provides critical inputs |
+
+### Phase 3 (Viability) → BMC Economics
+
+| BMC Block | Evidence Source | Populated From |
+|-----------|-----------------|----------------|
+| **Cost Structure** | Key Activities + Resources | Operational cost model |
+| **Revenue Streams** | Unit economics validation | Final pricing and revenue model |
+
+### Cascade Rules
+
+When VPC updates, BMC updates cascade:
+- **Customer Profile change** → Customer Segments + Value Propositions update
+- **Value Map change** → Value Propositions + potentially Revenue Streams update
+- **Segment pivot** → Full BMC review required
+
+## TBI Experiment Selection Guide
+
+Choosing the right experiment for each hypothesis type:
+
+### Customer Profile Validation
+
+| Hypothesis Type | Recommended Experiments | Cost | Speed | Reliability |
+|-----------------|-------------------------|------|-------|-------------|
+| **Customer Jobs** | Discovery interviews, contextual inquiry | Low | Medium | High |
+| **Customer Pains** | Pain interviews + review mining | Low | Fast | Medium |
+| **Customer Gains** | Gain interviews + feature voting | Low | Medium | Medium |
+
+### Value Map Validation
+
+| Hypothesis Type | Recommended Experiments | Cost | Speed | Reliability |
+|-----------------|-------------------------|------|-------|-------------|
+| **Products/Services** | Paper prototypes, clickable mockups | Medium | Fast | Medium |
+| **Pain Relievers** | A/B feature tests, usability studies | Medium | Medium | High |
+| **Gain Creators** | Feature flag experiments, NPS surveys | Medium | Fast | Medium |
+
+### Business Model Validation
+
+| Hypothesis Type | Recommended Experiments | Cost | Speed | Reliability |
+|-----------------|-------------------------|------|-------|-------------|
+| **Pricing (WTP)** | Price sensitivity surveys, A/B pricing | Low-Med | Fast | Medium |
+| **Channels** | Multi-channel ad tests | Medium | Fast | High |
+| **Unit Economics** | Cohort analysis, CAC/LTV calculation | High | Slow | High |
+
+## Rejection and Invalidation Handling
+
+When experiments invalidate hypotheses:
+
+### Pivot Attempt Limits
+
+| Pivot Type | Max Attempts | After Exhaustion |
+|------------|--------------|------------------|
+| **Segment Pivot** | 3 | Strategic review with founder |
+| **Value Pivot** | 3 | Consider adjacent markets |
+| **Feature Pivot** | 2 | Scope reduction or tech pivot |
+| **Price Pivot** | 2 | Cost structure review |
+
+### Evidence Contradiction Thresholds
+
+| Scenario | Threshold | Action |
+|----------|-----------|--------|
+| Single experiment fails | 1 failure | Re-run or iterate design |
+| Multiple experiments fail same hypothesis | 2+ failures | Flag for pivot review |
+| Conflicting evidence | > 40% contradiction | Segment deeper, find pattern |
+| All experiments fail | 100% failure | Kill recommendation |
+
+### Learning Capture on Failure
+
+Every failed experiment produces:
+- **Learning Card**: What was learned and implications
+- **Flywheel Entry**: Anonymized pattern for future projects
+- **VPC Update**: Mark element as invalidated
+- **Next Action**: Pivot recommendation or alternative approach
+
 ## Innovation Physics Signal Validation Matrix
 
 ### Evidence Signals and Routing Logic
@@ -264,9 +415,17 @@ interface RouterStatus {
 
 ## Related Documents
 
+- [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) - Phase 0-1 VPD specification
 - [approval-workflows.md](./approval-workflows.md) - HITL implementation patterns
 - [database-schemas.md](./database-schemas.md) - SQL schema definitions
 - [02-organization.md](../02-organization.md) - Founder approval ownership
+- [flywheel-learning.md](./flywheel-learning.md) - Learning capture patterns
 
 ---
-**Last Updated**: 2025-11-21
+**Last Updated**: 2026-01-05
+
+**Latest Changes**:
+- Added VPC Fit Assessment section (fit score, evidence hierarchy)
+- Added BMC Population Sequence by Phase
+- Added TBI Experiment Selection Guide
+- Added Rejection and Invalidation Handling (pivot limits, learning capture)

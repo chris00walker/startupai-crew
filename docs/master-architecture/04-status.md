@@ -1,25 +1,33 @@
 ---
 purpose: Honest assessment of current implementation status
 status: active
-last_reviewed: 2025-12-05
+last_reviewed: 2026-01-05
+vpd_compliance: true
 ---
 
 # StartupAI Current State - Honest Assessment
 
 This document provides an unvarnished view of what works, what's broken, and what doesn't exist across the three services.
 
-## Architecture Change Notice (2025-12-05)
+> **VPD Framework**: StartupAI implements the Value Proposition Design (VPD) framework. See [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) for Phase 0-1 details.
 
-**MAJOR CHANGE**: Migrated from Flow-based architecture to 3-Crew architecture.
-- **Reason**: AMP platform has issues with `type = "flow"` projects
-- **ADR**: See `docs/adr/001-flow-to-crew-migration.md` for full decision record
+## Architecture Change Notice (2026-01-05)
+
+**CURRENT**: Multi-phase crew architecture with VPD framework compliance.
+- **Phase 0**: Onboarding (Founder's Brief) - Specified in `05-phase-0-1-specification.md`
+- **Phase 1**: VPC Discovery (Customer Profile + Value Map) - Specified in `05-phase-0-1-specification.md`
+- **Phases 2-3**: Desirability/Feasibility/Viability validation - 3-Crew deployment
+
+### Previous Changes
+- **2025-12-05**: Migrated from Flow-based to Crew-based architecture (AMP compatibility)
+- **ADR**: See `docs/adr/001-flow-to-crew-migration.md`
 - **Old code**: Archived to `archive/flow-architecture/`
 
 ## Status Summary
 
 | Service | Overall Status | Completion | Reality Check |
 |---------|---------------|------------|---------------|
-| AI Founders Core (startupai-crew) | 3-Crew architecture ready, pending deployment | ~70% functional | Code complete, needs AMP deployment |
+| AI Founders Core (startupai-crew) | Multi-phase architecture with VPD compliance | ~75% functional | Phase 0-1 specified, deployed crews online |
 | Marketing Site (startupai.site) | Functional, static | 90% | Ad platform APIs (Meta/Google) not connected |
 | Product App (app.startupai.site) | Dashboards functional, integration working | ~80-85% | Full UI + CrewAI integration ready |
 
@@ -51,16 +59,18 @@ This document provides an unvarnished view of what works, what's broken, and wha
 
 ## AI Founders Core (`startupai-crew`)
 
-### Architecture Status (2025-12-05)
+### Architecture Status (2026-01-05)
 
-**Current**: 3-Crew Architecture (migrated from Flows)
-**Reason**: AMP `type = "flow"` issues - see ADR-001
+**Current**: Multi-phase crew architecture with VPD framework compliance
+**Framework**: Value Proposition Design (Osterwalder/Pigneur)
 
-| Crew | Agents | Tasks | HITL | Repository Status |
-|------|--------|-------|------|-------------------|
-| Crew 1: Intake | 4 | 6 | 1 | ✅ At repo root, ready to deploy |
-| Crew 2: Validation | 12 | 21 | 5 | ⚠️ Code ready, needs separate repo |
-| Crew 3: Decision | 3 | 5 | 1 | ⚠️ Code ready, needs separate repo |
+| Phase | Crew/Flow | Agents | HITL | Status |
+|-------|-----------|--------|------|--------|
+| Phase 0 | Onboarding | 4 (O1, G1, G2, S1) | 1 | ✅ Specified in `05-phase-0-1-specification.md` |
+| Phase 1 | VPC Discovery | 18 (E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2) | 3 | ✅ Specified in `05-phase-0-1-specification.md` |
+| Phase 2+ | Crew 1: Intake | 4 | 1 | ✅ Deployed to AMP |
+| Phase 2+ | Crew 2: Validation | 12 | 5 | ✅ Deployed to AMP |
+| Phase 2+ | Crew 3: Decision | 3 | 1 | ✅ Deployed to AMP |
 
 ### What Works
 - **3-Crew architecture code complete**: 19 agents, 32 tasks, 7 HITL checkpoints
@@ -93,10 +103,21 @@ This document provides an unvarnished view of what works, what's broken, and wha
 - C2 (HumanApproval): Present to human for decision
 - C3 (RoadmapWriter): Document decisions, update roadmap
 
-### HITL Checkpoints (7 total)
+### HITL Checkpoints (11 total across all phases)
 
-| Crew | Task | Purpose |
-|------|------|---------|
+#### Phase 0-1 Checkpoints (VPD Framework)
+
+| Phase | Checkpoint | Owner | Purpose |
+|-------|------------|-------|---------|
+| 0 | `approve_founders_brief` | Founder + Guardian | Gate: Founder approves brief before Phase 1 |
+| 1 | `approve_experiment_plan` | Sage (E1) | Approve experiment mix before execution |
+| 1 | `approve_pricing_test` | Ledger (W1, W2) | Approve tests involving real money |
+| 1 | `approve_vpc_completion` | Compass (F1) | Gate: Confirm VPC ready for Phase 2 (fit ≥ 70) |
+
+#### Phase 2+ Checkpoints (Deployed Crews)
+
+| Crew | Checkpoint | Purpose |
+|------|------------|---------|
 | 1 | `approve_intake_to_validation` | Gate: Intake → Validation |
 | 2 | `approve_campaign_launch` | Ad creative approval |
 | 2 | `approve_spend_increase` | Budget approval |
@@ -312,9 +333,16 @@ The original Flow-based architecture is preserved at `archive/flow-architecture/
 ---
 
 ## Last Updated
-2025-12-05
+2026-01-05
 
-**Latest Changes (2025-12-05 - Flow to 3-Crew Migration)**:
+**Latest Changes (2026-01-05 - VPD Framework Compliance)**:
+- Added Phase 0 (Onboarding) and Phase 1 (VPC Discovery) to architecture
+- Reference to `05-phase-0-1-specification.md` for VPD framework implementation
+- Updated HITL checkpoints to include Phase 0-1 approval gates
+- Changed terminology from "3-Crew" to "Multi-phase architecture"
+- Added VPD framework compliance note
+
+**Previous Changes (2025-12-05 - Flow to 3-Crew Migration)**:
 - **MAJOR**: Migrated from `type = "flow"` to `type = "crew"` architecture
 - **REASON**: AMP platform issues with Flow projects (see ADR-001)
 - Created 3 crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)

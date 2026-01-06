@@ -1,16 +1,19 @@
 ---
 purpose: Repository introduction, architecture overview, and quick start
 status: active
-last_reviewed: 2025-11-21
+last_reviewed: 2026-01-05
+vpd_compliance: true
 ---
 
 # StartupAI Crew - Introduction & Architecture
 
 ## Overview
 
-**CrewAI Flows-based validation engine for delivering Fortune 500-quality strategic analysis**
+**VPD-compliant validation engine for delivering Fortune 500-quality strategic analysis**
 
-This repository contains the brain of the StartupAI ecosystem - a multi-crew orchestration system that powers the AI Founders team. It implements 8 specialized crews with 18 specialist agents, coordinated through CrewAI Flows to deliver desirability, feasibility, and viability validation.
+This repository contains the brain of the StartupAI ecosystem - a multi-phase crew orchestration system that powers the AI Founders team. It implements the **Value Proposition Design (VPD)** framework by Osterwalder & Pigneur using CrewAI Flows to deliver Problem-Solution Fit, Desirability, Feasibility, and Viability validation.
+
+> **VPD Framework Compliance**: This system implements patterns from *Value Proposition Design*, *Testing Business Ideas*, and *Business Model Generation*. See [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) for detailed Phase 0-1 implementation.
 
 ## Design Principles
 
@@ -71,55 +74,58 @@ Validation is sequential, not parallel:
 | **Guardian** | CGoO | Governance, accountability, oversight |
 | **Ledger** | CFO | Finance, viability, compliance |
 
-## 8 Crews Architecture
+## Phase-Based Architecture
 
-> **Single Source**: See [02-organization.md](./02-organization.md) for complete agent details per crew.
+> **Single Source**: See [02-organization.md](./02-organization.md) for complete agent details and [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) for Phase 0-1 implementation.
 
-### Phase 1: Service Side + Desirability Validation
+### Phase 0: Onboarding (Founder's Brief)
 
-#### 1. Service Crew (Sage owns)
-**Purpose**: Intake and brief capture
-- Customer Service Agent, Founder Onboarding Agent, Consultant Onboarding Agent
-- **Output**: Client Brief
+**Purpose**: Capture business hypothesis and create Founder's Brief
 
-#### 2. Analysis Crew (Sage)
-**Purpose**: Customer and competitor analysis
-- Customer Researcher, Competitor Analyst
-- **Output**: VPC components ready for testing
+| Crew | Agents | Output |
+|------|--------|--------|
+| Interview Crew | O1 (Founder Interview Agent) | Structured interview responses |
+| QA Crew | G1, G2 (Concept Validator, Intent Verifier) | Legitimacy + intent validation |
+| Brief Compilation Crew | S1 (Brief Compiler) | **Founder's Brief** |
 
-#### 3. Governance Crew (Guardian) - Phase 1
-**Purpose**: Quality validation before proceeding
-- QA Agent
-- **Output**: QA Pass/Fail with feedback
+**HITL**: `approve_founders_brief` - Founder approves brief before Phase 1
 
-### Phase 2: Commercial Side + Build/Test
+### Phase 1: VPC Discovery (Customer Profile + Value Map)
 
-#### 4. Build Crew (Forge)
-**Purpose**: Create testable artifacts
-- UX/UI Designer, Frontend Developer, Backend Developer
-- **Output**: Deployed testable artifacts with tracking
+**Purpose**: Discover customer reality and design value using VPD framework
 
-#### 5. Growth Crew (Pulse)
-**Purpose**: Run experiments, collect signals
-- Ad Creative Agent, Communications Agent, Social Media Analyst
-- **Output**: Desirability evidence (quantitative + qualitative)
+| Flow | Agents | Output |
+|------|--------|--------|
+| Segment Discovery | E1, D1, D2, D3, D4 | Validated customer segment |
+| Jobs Discovery | J1, J2 | Ranked Jobs-to-be-Done |
+| Pains Discovery | P1, P2 | Ranked customer pains |
+| Gains Discovery | G1, G2 | Ranked customer gains |
+| Value Map Design | V1, V2, V3 | Products, Pain Relievers, Gain Creators |
+| Willingness to Pay | W1, W2 | WTP validation |
+| Fit Assessment | F1, F2 | **Validated VPC** (fit score ≥ 70) |
 
-#### 6. Synthesis Crew (Compass)
-**Purpose**: Integrate evidence, recommend pivot/proceed
-- Project Manager
-- **Output**: Evidence synthesis with recommendation
+**HITL**: `approve_experiment_plan`, `approve_pricing_test`, `approve_vpc_completion`
 
-### Phase 3: Governance + Viability
+### Phase 2: Desirability + Feasibility Validation
 
-#### 7. Finance Crew (Ledger)
-**Purpose**: Validate business model viability
-- Financial Controller, Legal & Compliance Agent
-- **Output**: Viability assessment with financial model
+**Purpose**: Build testable artifacts and validate with real customers
 
-#### 8. Enhanced Governance Crew (Guardian)
-**Purpose**: Full audit trail and compliance
-- Audit Agent, Security Agent, QA Agent
-- **Output**: Audit report with compliance status
+| Crew | Agents | Output |
+|------|--------|--------|
+| Build Crew (Forge) | UX/UI Designer, Frontend Dev, Backend Dev | Testable artifacts |
+| Growth Crew (Pulse) | Ad Creative, Communications, Social Analyst | Desirability evidence |
+| Synthesis Crew (Compass) | Project Manager | Evidence synthesis |
+| Governance Crew (Guardian) | QA Agent | Phase gate validation |
+
+### Phase 3: Viability + Final Decision
+
+**Purpose**: Validate business model economics and make final recommendation
+
+| Crew | Agents | Output |
+|------|--------|--------|
+| Finance Crew (Ledger) | Financial Controller, Legal & Compliance | Viability assessment |
+| Enhanced Governance (Guardian) | Audit Agent, Security Agent, QA Agent | Audit report |
+| Decision Crew (Compass) | Decision Agents | Final pivot/proceed recommendation |
 
 ## CrewAI Flows Implementation
 
@@ -158,59 +164,64 @@ class ValidationState(BaseModel):
 
 > **Full Implementation**: See `src/startupai/flows/state_schemas.py`
 
-### Innovation Physics Flow Example
+### VPD Flow Example (Phase 0-1)
 
-The flow uses **non-linear routing** where evidence signals determine the path:
+The flow implements **VPD framework patterns** with evidence-driven routing:
 
 ```python
-class FounderValidationFlow(Flow[ValidationState]):
+class OnboardingFlow(Flow[OnboardingState]):
+    """Phase 0: Capture Founder's Brief"""
 
     @start()
-    def intake_entrepreneur_input(self):
-        """Service Crew captures business context"""
-        result = ServiceCrew().crew().kickoff(inputs={...})
-        self.state.business_idea = result.pydantic.business_idea
+    def conduct_founder_interview(self):
+        """O1 Agent: 7-area discovery interview"""
+        result = InterviewCrew().crew().kickoff(inputs={...})
+        self.state.interview_responses = result.pydantic
 
-    @listen(intake_entrepreneur_input)
-    def test_desirability(self):
-        """Growth Crew tests if customers actually care"""
-        result = GrowthCrew().crew().kickoff(inputs={...})
-        self.state.desirability_evidence = result.pydantic
-        self._calculate_signals()
+    @listen(conduct_founder_interview)
+    def validate_concept(self):
+        """G1 Agent: Legitimacy screening"""
+        result = QACrew().crew().kickoff(inputs={...})
+        self.state.qa_status = result.pydantic
 
-    @router(test_desirability)
-    def desirability_gate(self) -> str:
-        """Innovation Physics: Evidence-driven routing"""
-        evidence = self.state.desirability_evidence
+    @listen(validate_concept)
+    def compile_founders_brief(self):
+        """S1 Agent: Synthesize Founder's Brief"""
+        result = BriefCompilationCrew().crew().kickoff(inputs={...})
+        self.state.founders_brief = result.pydantic
+        # HITL: approve_founders_brief
 
-        # PROBLEM-SOLUTION FILTER: Low resonance = wrong audience
-        if evidence.problem_resonance < 0.3:
-            self.state.pivot_recommendation = PivotRecommendation.SEGMENT_PIVOT
-            self.state.human_input_required = True
-            return "segment_pivot_required"
 
-        # PRODUCT-MARKET FILTER: High traffic but low commitment = zombie
-        elif evidence.traffic_quality == "High" and evidence.zombie_ratio < 0.1:
-            self.state.pivot_recommendation = PivotRecommendation.VALUE_PIVOT
-            self.state.human_input_required = True
-            return "value_pivot_required"
+class VPCDiscoveryFlow(Flow[VPCState]):
+    """Phase 1: Discover Customer Profile + Design Value Map"""
 
-        # Strong signal = proceed
-        elif self.state.evidence_strength == EvidenceStrength.STRONG:
-            return "proceed_to_feasibility"
+    @start()
+    def design_experiments(self):
+        """E1 Agent: Assumptions Mapping → Test Cards"""
+        # Prioritize assumptions by importance × evidence weakness
+        pass
 
-        return "compass_synthesis_required"
+    @listen(design_experiments)
+    def run_discovery(self):
+        """D1-D4 Agents: Multi-source evidence collection"""
+        # D1: Customer interviews (SAY)
+        # D2: Observation (DO - indirect)
+        # D3: CTA tests (DO - direct)
+        # D4: Evidence triangulation
+        pass
 
-    @listen("segment_pivot_required")
-    def pivot_customer_segment(self):
-        """Don't change solution; change audience"""
-        if self.state.human_input_required:
-            # HITL approval workflow
-            pass
-        # Route back to Sage for new segment
+    @router(run_discovery)
+    def fit_assessment(self) -> str:
+        """F1 Agent: Score Problem-Solution Fit"""
+        if self.state.fit_score >= 70:
+            return "vpc_complete"  # approve_vpc_completion HITL
+        elif self.state.fit_score < 40:
+            return "segment_pivot"  # Wrong customer
+        else:
+            return "iterate"  # Refine value map
 ```
 
-> **Full Implementation**: See `src/startupai/flows/founder_validation_flow.py` and `docs/innovation-physics.md`
+> **Full Implementation**: See [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) for complete flow specification
 
 ## File Structure
 
@@ -262,33 +273,46 @@ src/startupai/
 
 ```json
 {
-  "entrepreneur_input": "Detailed description of startup idea, target customers, and business context"
+  "founder_input": "Initial business idea description for Phase 0 interview"
 }
 ```
+
+> **Note**: Phase 0 conducts a structured 7-area interview. The `founder_input` seeds the interview but comprehensive context is gathered through dialogue.
 
 ## Outputs
 
 Structured deliverables per phase:
 
-### Phase 1 (Desirability)
-- Client Brief (structured business context)
-- Customer Profiles (Jobs/Pains/Gains per segment)
-- Competitor Analysis (positioning map)
-- Value Proposition Canvas
-- Assumption Backlog (prioritized)
-- QA Report
+### Phase 0 (Onboarding)
+- **Founder's Brief** (structured hypothesis capture):
+  - The Idea (concept, one-liner)
+  - Problem Hypothesis (who, what, alternatives)
+  - Customer Hypothesis (segment, characteristics)
+  - Solution Hypothesis (approach, features)
+  - Key Assumptions (ranked by risk)
+  - Success Criteria (founder-defined validation goals)
+- QA Report (concept legitimacy + intent verification)
 
-### Phase 2 (Feasibility)
+### Phase 1 (VPC Discovery)
+- **Validated Value Proposition Canvas**:
+  - Customer Profile (Jobs, Pains, Gains - ranked and evidence-backed)
+  - Value Map (Products, Pain Relievers, Gain Creators)
+- Test Cards (experiment designs with pass/fail criteria)
+- Learning Cards (experiment results with implications)
+- Fit Score (≥ 70 for Phase 1 exit)
+- Evidence Summary (SAY vs DO triangulation)
+
+### Phase 2 (Desirability + Feasibility)
 - Test Artifacts (landing pages, ads, prototypes)
-- Evidence Report (signals collected)
-- Assumption Validation (validated/invalidated)
+- Evidence Report (desirability signals collected)
+- Feasibility Assessment (technical constraints, resource requirements)
 - Pivot/Proceed Recommendation
 
 ### Phase 3 (Viability)
-- Feasibility Report
-- Viability Model (unit economics)
+- Viability Model (unit economics: CAC, LTV, margins)
+- Business Model Canvas (populated with validated assumptions)
 - Audit Trail
-- Flywheel Entry (methodology improvements)
+- Flywheel Entry (methodology improvements for future validations)
 
 ## Deployment
 
@@ -360,11 +384,11 @@ curl https://startupai-...crewai.com/status/{kickoff_id} \
 
 - **Ecosystem Overview**: [01-ecosystem.md](./01-ecosystem.md)
 - **Organizational Structure**: [02-organization.md](./02-organization.md) (single source for founders/agents)
-- **Technical Specification**: [03-validation-spec.md](./03-validation-spec.md)
+- **Phase 0-1 Specification**: [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) (VPD framework implementation)
+- **Technical Specification**: [03-validation-spec.md](./03-validation-spec.md) (Phase 2+ validation)
 - **Current State**: [04-status.md](./04-status.md)
 - **API Contracts**: [reference/api-contracts.md](./reference/api-contracts.md)
 - **Approval Workflows**: [reference/approval-workflows.md](./reference/approval-workflows.md)
-- **Validation Backlog**: [../work/backlog.md](../work/backlog.md)
 
 ## Support
 
@@ -374,5 +398,5 @@ curl https://startupai-...crewai.com/status/{kickoff_id} \
 
 ---
 
-**Status**: Rebuilding from 6-agent crew to 8-crew/18-agent Flows architecture
-**Last Updated**: 2025-12-04
+**Status**: Multi-phase architecture with VPD framework compliance
+**Last Updated**: 2026-01-05

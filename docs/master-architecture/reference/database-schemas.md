@@ -1,15 +1,17 @@
 ---
 purpose: Database schema definitions for all services
 status: mostly-implemented
-last_reviewed: 2025-11-27
+last_reviewed: 2026-01-05
+vpd_compliance: true
 ---
 
 # Database Schemas
 
 This document consolidates all SQL schema definitions used across the StartupAI ecosystem.
 
+> **VPD Framework**: This schema implements Value Proposition Design data structures. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 specification.
 > **Implementation Status**: Many tables are now deployed. See status indicators below.
-> **Authoritative Spec**: `../03-validation-spec.md` contains the complete state architecture.
+> **Authoritative Spec**: `../03-validation-spec.md` contains the Phase 2+ state architecture.
 
 ## Approval System Tables
 
@@ -67,6 +69,282 @@ CREATE TABLE approval_preferences (
   UNIQUE(user_id, project_id, approval_type)
 );
 ```
+
+## Phase 0: Founder's Brief Tables
+
+**Status**: ⏳ Planned
+
+### Founder's Briefs
+
+Stores the structured Founder's Brief output from Phase 0 onboarding.
+
+```sql
+-- Founder's Brief (Phase 0 output)
+CREATE TABLE founders_briefs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id) UNIQUE,
+
+  -- The Idea
+  concept TEXT NOT NULL,
+  one_liner TEXT,
+
+  -- Problem Hypothesis
+  target_who TEXT NOT NULL,
+  target_what TEXT NOT NULL,
+  current_alternatives JSONB,  -- ["Alternative 1", "Alternative 2"]
+
+  -- Customer Hypothesis
+  customer_segment TEXT NOT NULL,
+  customer_characteristics JSONB,  -- ["Characteristic 1", "Characteristic 2"]
+
+  -- Solution Hypothesis
+  solution_approach TEXT NOT NULL,
+  key_features JSONB,  -- ["Feature 1", "Feature 2"]
+
+  -- Key Assumptions (ranked by risk)
+  key_assumptions JSONB NOT NULL,  -- [{"assumption": "...", "risk_level": "high", "testable": true}]
+
+  -- Success Criteria
+  problem_resonance_target DECIMAL(3,2) DEFAULT 0.50,
+  zombie_ratio_max DECIMAL(3,2) DEFAULT 0.30,
+  fit_score_target INTEGER DEFAULT 70,
+
+  -- QA Status
+  concept_legitimacy TEXT CHECK (concept_legitimacy IN ('pass', 'fail', 'pending')),
+  intent_verification TEXT CHECK (intent_verification IN ('pass', 'fail', 'pending')),
+  qa_issues JSONB,
+
+  -- Workflow
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'pending_approval', 'approved', 'rejected')),
+  approved_at TIMESTAMPTZ,
+  approved_by UUID REFERENCES users(id),
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+---
+
+## Phase 1: VPC Tables
+
+**Status**: ⏳ Planned
+
+### Customer Profile Elements
+
+Stores Jobs, Pains, and Gains from the Customer Profile side of the VPC.
+
+```sql
+-- Customer Profile elements (Jobs/Pains/Gains)
+CREATE TABLE customer_profile_elements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+
+  -- Element type and content
+  element_type TEXT NOT NULL CHECK (element_type IN ('job', 'pain', 'gain')),
+  element_text TEXT NOT NULL,
+
+  -- Job-specific fields
+  job_type TEXT CHECK (job_type IN ('functional', 'social', 'emotional')),  -- For jobs only
+  job_statement TEXT,  -- "When [situation], I want to [motivation] so I can [outcome]"
+
+  -- Pain-specific fields
+  pain_severity TEXT CHECK (pain_severity IN ('extreme', 'severe', 'moderate', 'mild')),
+
+  -- Gain-specific fields
+  gain_relevance TEXT CHECK (gain_relevance IN ('essential', 'nice_to_have', 'unexpected')),
+
+  -- Prioritization
+  priority INTEGER DEFAULT 0,
+  importance_score DECIMAL(3,2),  -- From founder ranking
+
+  -- Validation status
+  validation_status TEXT DEFAULT 'untested' CHECK (validation_status IN ('validated', 'invalidated', 'untested')),
+  confidence_score DECIMAL(3,2),  -- 0.00-1.00
+  evidence_count INTEGER DEFAULT 0,
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for efficient profile lookups
+CREATE INDEX idx_profile_elements_project ON customer_profile_elements(project_id);
+CREATE INDEX idx_profile_elements_type ON customer_profile_elements(element_type);
+CREATE INDEX idx_profile_elements_priority ON customer_profile_elements(project_id, element_type, priority);
+```
+
+### Value Map Elements
+
+Stores Products/Services, Pain Relievers, and Gain Creators from the Value Map side.
+
+```sql
+-- Value Map elements (Products, Pain Relievers, Gain Creators)
+CREATE TABLE value_map_elements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+
+  -- Element type and content
+  element_type TEXT NOT NULL CHECK (element_type IN ('product_service', 'pain_reliever', 'gain_creator')),
+  element_text TEXT NOT NULL,
+  description TEXT,
+
+  -- Linkage to Customer Profile
+  addresses_profile_element UUID REFERENCES customer_profile_elements(id),
+
+  -- Effectiveness assessment
+  effectiveness TEXT CHECK (effectiveness IN ('eliminates', 'reduces', 'none', 'exceeds', 'meets', 'misses')),
+
+  -- Validation status
+  validation_status TEXT DEFAULT 'untested' CHECK (validation_status IN ('validated', 'invalidated', 'untested')),
+  confidence_score DECIMAL(3,2),
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for value map lookups
+CREATE INDEX idx_value_map_project ON value_map_elements(project_id);
+CREATE INDEX idx_value_map_type ON value_map_elements(element_type);
+CREATE INDEX idx_value_map_addresses ON value_map_elements(addresses_profile_element);
+```
+
+### VPC Fit Scores
+
+Tracks fit assessment history as VPC evolves.
+
+```sql
+-- VPC Fit Score tracking
+CREATE TABLE vpc_fit_scores (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+
+  -- Overall fit
+  fit_score INTEGER NOT NULL,  -- 0-100, target ≥70
+  fit_status TEXT CHECK (fit_status IN ('strong', 'moderate', 'weak', 'none')),
+
+  -- Component scores
+  profile_completeness DECIMAL(3,2),  -- % of elements tested
+  value_map_coverage DECIMAL(3,2),    -- % of pains/gains addressed
+
+  -- Evidence strength
+  evidence_strength TEXT CHECK (evidence_strength IN ('strong', 'weak', 'none')),
+  say_vs_do_ratio DECIMAL(3,2),  -- DO evidence / total evidence
+
+  -- Experiment summary
+  experiments_total INTEGER DEFAULT 0,
+  experiments_passed INTEGER DEFAULT 0,
+  experiments_failed INTEGER DEFAULT 0,
+
+  -- Gate readiness
+  gate_ready BOOLEAN DEFAULT false,
+  recommended_action TEXT,  -- 'approve_vpc_completion', 'iterate', 'segment_pivot'
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for fit history
+CREATE INDEX idx_fit_scores_project ON vpc_fit_scores(project_id);
+CREATE INDEX idx_fit_scores_created ON vpc_fit_scores(project_id, created_at DESC);
+```
+
+### Test Cards & Learning Cards
+
+Implements the TBI (Testing Business Ideas) experiment framework.
+
+```sql
+-- Test Cards (experiment design)
+CREATE TABLE test_cards (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  experiment_id UUID REFERENCES experiments(id),
+
+  -- TBI Framework fields
+  tbi_experiment_id TEXT,  -- e.g., "T1.1", "T2.3"
+  hypothesis TEXT NOT NULL,  -- "We believe..."
+  test_description TEXT NOT NULL,  -- "To verify, we will..."
+  metric TEXT NOT NULL,  -- "We measure..."
+  criteria TEXT NOT NULL,  -- "We are right if..."
+
+  -- Linkage to VPC
+  tests_assumption TEXT,  -- Which assumption this tests
+  tests_profile_element UUID REFERENCES customer_profile_elements(id),
+
+  -- Classification
+  evidence_type TEXT CHECK (evidence_type IN ('say', 'do')),
+  evidence_strength INTEGER CHECK (evidence_strength BETWEEN 0 AND 5),
+  -- 5=Paid, 4=High-CTA, 3=Medium-CTA, 2=Low-CTA, 1=Stated, 0.5=Implied
+
+  -- Status
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'approved', 'running', 'completed')),
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Learning Cards (experiment results)
+CREATE TABLE learning_cards (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  test_card_id UUID REFERENCES test_cards(id),
+  project_id UUID REFERENCES projects(id),
+
+  -- TBI Framework fields
+  observation TEXT NOT NULL,  -- "We observed..."
+  learning TEXT NOT NULL,  -- "From that we learned..."
+  decisions_actions TEXT NOT NULL,  -- "Therefore we will..."
+
+  -- Results
+  passed BOOLEAN,
+  confidence DECIMAL(3,2),
+  sample_size INTEGER,
+
+  -- VPC Updates triggered
+  vpc_updates JSONB,  -- [{"element_type": "job", "element_id": "uuid", "new_status": "validated"}]
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX idx_test_cards_project ON test_cards(project_id);
+CREATE INDEX idx_test_cards_element ON test_cards(tests_profile_element);
+CREATE INDEX idx_learning_cards_test ON learning_cards(test_card_id);
+```
+
+### Jobs-to-be-Done Library (Flywheel Learning)
+
+Stores anonymized JTBD patterns learned across projects for reuse.
+
+```sql
+-- JTBD Library for flywheel learning
+CREATE TABLE jobs_to_be_done_library (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- Classification
+  industry TEXT NOT NULL,
+  business_model TEXT,  -- 'saas_b2b', 'marketplace', 'consumer_app', etc.
+  customer_segment TEXT,
+
+  -- Job statement
+  job_statement TEXT NOT NULL,  -- "When [situation], I want to [motivation] so I can [outcome]"
+  job_category TEXT CHECK (job_category IN ('functional', 'social', 'emotional')),
+
+  -- Effectiveness metrics (anonymized)
+  resonance_rate DECIMAL(3,2),  -- How often this resonates with similar segments
+  validation_count INTEGER DEFAULT 0,
+  invalidation_count INTEGER DEFAULT 0,
+
+  -- Embedding for semantic search
+  embedding VECTOR(1536),
+
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Semantic search index
+CREATE INDEX idx_jtbd_embedding ON jobs_to_be_done_library USING ivfflat (embedding vector_cosine_ops);
+CREATE INDEX idx_jtbd_industry ON jobs_to_be_done_library(industry);
+CREATE INDEX idx_jtbd_model ON jobs_to_be_done_library(business_model);
+```
+
+---
 
 ## Marketing Site Tables
 
@@ -183,9 +461,12 @@ CREATE TABLE experiments (
 );
 ```
 
-### Entrepreneur Briefs
+### Entrepreneur Briefs (Legacy - Use founders_briefs)
+
+> **Note**: This table is being replaced by `founders_briefs` which implements the full VPD Founder's Brief structure. See Phase 0 tables above.
 
 ```sql
+-- LEGACY: Use founders_briefs table for new projects
 CREATE TABLE entrepreneur_briefs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID REFERENCES projects(id),
@@ -507,19 +788,23 @@ CREATE INDEX idx_hypotheses_status ON hypotheses(status);
 
 ## Related Documents
 
+- [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) - Phase 0-1 VPD specification
 - [approval-workflows.md](./approval-workflows.md) - How approvals work
 - [product-artifacts.md](./product-artifacts.md) - Canvas architecture
 - [api-contracts.md](./api-contracts.md) - API specifications
-- [../03-validation-spec.md](../03-validation-spec.md) - Authoritative technical blueprint
+- [../03-validation-spec.md](../03-validation-spec.md) - Phase 2+ technical blueprint
 
 ---
-**Last Updated**: 2025-11-27
+**Last Updated**: 2026-01-05
 
-**Latest Changes (2025-11-27 - Migrations Deployed)**:
+**Latest Changes (2026-01-05 - VPD Framework)**:
+- Added Phase 0 tables: `founders_briefs` (Founder's Brief structure)
+- Added Phase 1 VPC tables: `customer_profile_elements`, `value_map_elements`, `vpc_fit_scores`
+- Added TBI framework tables: `test_cards`, `learning_cards`
+- Added flywheel learning table: `jobs_to_be_done_library`
+- Marked `entrepreneur_briefs` as legacy
+
+**Previous Changes (2025-11-27)**:
 - All CrewAI migrations deployed to Supabase: 001, 002, 004, 005, 006
-- Updated status indicators from "Ready" to "Deployed"
-
-**Previous Changes**:
 - Added Area 3 tables: `experiment_outcomes`, `policy_performance_summary` view, `get_policy_weights()` function
 - Added Area 6 tables: `decision_log`, `budget_decisions_summary` view, `override_audit` view, `log_decision()` function
-- Added policy_version extension to learnings table (migration 005)

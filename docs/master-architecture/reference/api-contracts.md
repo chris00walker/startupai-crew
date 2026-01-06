@@ -2,7 +2,101 @@
 
 All API endpoints, webhooks, and payloads for StartupAI services.
 
-## CrewAI AMP Endpoints
+> **VPD Framework**: This API implements the Value Proposition Design (VPD) framework by Osterwalder/Pigneur. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for the authoritative specification.
+
+---
+
+## Phase 0: Onboarding API
+
+Phase 0 captures the Founder's Brief through structured interview and validation.
+
+### Endpoints
+
+| Endpoint | Method | Purpose | Status |
+|----------|--------|---------|--------|
+| `/interview/start` | POST | Start founder interview session | Planned |
+| `/interview/continue` | POST | Continue multi-turn interview | Planned |
+| `/brief/{brief_id}` | GET | Retrieve Founder's Brief | Planned |
+| `/brief/approve` | POST | Founder approves brief → Phase 1 | Planned |
+
+### Interview Start Request
+```bash
+curl -X POST https://startupai-...crewai.com/interview/start \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "founder_input": "Initial business idea description...",
+    "project_id": "uuid"
+  }'
+```
+
+### Interview Continue Request
+```bash
+curl -X POST https://startupai-...crewai.com/interview/continue \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "session_id": "uuid",
+    "response": "Founder response to interview question..."
+  }'
+```
+
+### Founder's Brief Response
+```json
+{
+  "brief_id": "uuid",
+  "project_id": "uuid",
+  "status": "draft|pending_approval|approved",
+  "founders_brief": {
+    "the_idea": {
+      "concept": "One-sentence description",
+      "one_liner": "Elevator pitch"
+    },
+    "problem_hypothesis": {
+      "who": "Target customer description",
+      "what": "Problem they face",
+      "current_alternatives": ["Alternative 1", "Alternative 2"]
+    },
+    "customer_hypothesis": {
+      "segment": "Primary customer segment",
+      "characteristics": ["Characteristic 1", "Characteristic 2"]
+    },
+    "solution_hypothesis": {
+      "approach": "How the solution works",
+      "key_features": ["Feature 1", "Feature 2"]
+    },
+    "key_assumptions": [
+      {"assumption": "...", "risk_level": "high|medium|low", "testable": true}
+    ],
+    "success_criteria": {
+      "problem_resonance_target": 0.50,
+      "zombie_ratio_max": 0.30,
+      "fit_score_target": 70
+    }
+  },
+  "qa_report": {
+    "concept_legitimacy": "pass|fail",
+    "intent_verification": "pass|fail",
+    "issues": []
+  }
+}
+```
+
+### Brief Approval Request
+```bash
+curl -X POST https://startupai-...crewai.com/brief/approve \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "brief_id": "uuid",
+    "approval_decision": "approve|reject|revise",
+    "feedback": "Optional founder feedback"
+  }'
+```
+
+---
+
+## Phase 1+: Validation API (CrewAI AMP Endpoints)
 
 **Base URL**: `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
 
@@ -21,7 +115,8 @@ curl -X POST https://startupai-...crewai.com/kickoff \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
-    "entrepreneur_input": "Business idea description..."
+    "founder_input": "Business idea description...",
+    "brief_id": "uuid-of-approved-founders-brief"
   }'
 ```
 
@@ -40,7 +135,78 @@ curl -X POST https://startupai-...crewai.com/kickoff \
       "human_input_required": false,
       "next_steps": ["..."]
     },
-    "value_proposition_canvas": { ... },
+    "value_proposition_canvas": {
+      "customer_profile": {
+        "customer_jobs": [
+          {
+            "id": "job_uuid",
+            "job_statement": "When [situation], I want to [motivation] so I can [outcome]",
+            "job_type": "functional|social|emotional",
+            "priority": 1,
+            "validation_status": "validated|invalidated|untested",
+            "confidence_score": 0.85,
+            "supporting_experiments": ["exp_uuid_1", "exp_uuid_2"]
+          }
+        ],
+        "pains": [
+          {
+            "id": "pain_uuid",
+            "pain_statement": "Description of customer pain",
+            "severity": "extreme|severe|moderate|mild",
+            "priority": 1,
+            "validation_status": "validated|invalidated|untested",
+            "confidence_score": 0.78,
+            "supporting_experiments": ["exp_uuid_3"]
+          }
+        ],
+        "gains": [
+          {
+            "id": "gain_uuid",
+            "gain_statement": "Description of desired gain",
+            "relevance": "essential|nice_to_have|unexpected",
+            "priority": 1,
+            "validation_status": "validated|invalidated|untested",
+            "confidence_score": 0.72,
+            "supporting_experiments": ["exp_uuid_4"]
+          }
+        ]
+      },
+      "value_map": {
+        "products_and_services": [
+          {
+            "id": "product_uuid",
+            "name": "Product or service name",
+            "description": "What it does",
+            "addresses_jobs": ["job_uuid"]
+          }
+        ],
+        "pain_relievers": [
+          {
+            "id": "reliever_uuid",
+            "description": "How it relieves pain",
+            "addresses_pain": "pain_uuid",
+            "effectiveness": "eliminates|reduces|none",
+            "validation_status": "validated|invalidated|untested"
+          }
+        ],
+        "gain_creators": [
+          {
+            "id": "creator_uuid",
+            "description": "How it creates gain",
+            "addresses_gain": "gain_uuid",
+            "effectiveness": "exceeds|meets|misses",
+            "validation_status": "validated|invalidated|untested"
+          }
+        ]
+      },
+      "fit_assessment": {
+        "fit_score": 72,
+        "fit_status": "strong|moderate|weak|none",
+        "profile_completeness": 0.85,
+        "value_map_coverage": 0.78,
+        "evidence_strength": "strong|weak|none"
+      }
+    },
     "evidence": {
       "desirability": {
         "problem_resonance": 0.65,
@@ -256,6 +422,111 @@ metrics = model.calculate_metrics(input_data)
 
 ---
 
+## Phase 1: VPC Canvas API
+
+Endpoints for managing Value Proposition Canvas during Phase 1 discovery.
+
+### Endpoints
+
+| Endpoint | Method | Purpose | Status |
+|----------|--------|---------|--------|
+| `/vpc/{project_id}` | GET | Get current VPC state | Planned |
+| `/vpc/{project_id}/profile` | PUT | Update Customer Profile | Planned |
+| `/vpc/{project_id}/value-map` | PUT | Update Value Map | Planned |
+| `/vpc/{project_id}/fit` | GET | Get fit assessment | Planned |
+| `/experiments` | POST | Record experiment result | Planned |
+| `/experiments/{project_id}` | GET | Get experiment history | Planned |
+
+### Update Customer Profile Request
+```bash
+curl -X PUT https://startupai-...crewai.com/vpc/{project_id}/profile \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "element_type": "job|pain|gain",
+    "operation": "add|update|remove|rerank",
+    "element": {
+      "id": "uuid (for update/remove)",
+      "statement": "Element statement",
+      "priority": 1,
+      "validation_status": "validated",
+      "confidence_score": 0.85
+    },
+    "evidence_source": {
+      "experiment_id": "exp_uuid",
+      "evidence_type": "interview|observation|cta_test|landing_page",
+      "evidence_strength": 4
+    }
+  }'
+```
+
+### Record Experiment Result
+```bash
+curl -X POST https://startupai-...crewai.com/experiments \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_id": "uuid",
+    "experiment_type": "customer_interview|landing_page|ad_test|prototype_test|price_test",
+    "tbi_experiment_id": "T1.1",
+    "hypothesis_tested": "Customers prioritize X over Y",
+    "test_card": {
+      "hypothesis": "We believe...",
+      "test": "To verify, we will...",
+      "metric": "We measure...",
+      "criteria": "We are right if..."
+    },
+    "learning_card": {
+      "observation": "We observed...",
+      "learning": "From that we learned...",
+      "decisions_actions": "Therefore we will..."
+    },
+    "result": {
+      "passed": true,
+      "confidence": 0.85,
+      "sample_size": 25,
+      "evidence_strength": 4,
+      "say_vs_do": "do"
+    },
+    "vpc_updates": [
+      {"element_type": "job", "element_id": "uuid", "new_status": "validated"}
+    ]
+  }'
+```
+
+### Fit Assessment Response
+```json
+{
+  "project_id": "uuid",
+  "fit_score": 72,
+  "fit_status": "moderate",
+  "gate_ready": true,
+  "profile_metrics": {
+    "jobs_validated": 3,
+    "jobs_total": 4,
+    "pains_validated": 5,
+    "pains_total": 6,
+    "gains_validated": 2,
+    "gains_total": 3
+  },
+  "value_map_metrics": {
+    "pains_addressed": 5,
+    "pains_total": 6,
+    "gains_addressed": 2,
+    "gains_total": 3
+  },
+  "experiment_summary": {
+    "total_experiments": 12,
+    "passed": 9,
+    "failed": 2,
+    "inconclusive": 1
+  },
+  "next_recommended_action": "approve_vpc_completion|run_more_experiments|segment_pivot"
+}
+```
+
+---
+
 ## Aspirational Contracts (NOT IMPLEMENTED)
 
 These were documented but do not exist yet:
@@ -266,12 +537,34 @@ These were documented but do not exist yet:
 
 ## Implementation Status
 
+### Phase 0: Onboarding API
+| Component | Status |
+|-----------|--------|
+| `/interview/start` | ⏳ Planned |
+| `/interview/continue` | ⏳ Planned |
+| `/brief/{id}` | ⏳ Planned |
+| `/brief/approve` | ⏳ Planned |
+
+### Phase 1+: Validation API
 | Component | Status |
 |-----------|--------|
 | CrewAI `/kickoff` | ✅ Working |
 | CrewAI `/status` | ✅ Working |
 | CrewAI `/resume` | ✅ Available in CrewAI AMP |
 | CrewAI webhook delivery | ✅ Available in CrewAI AMP |
+
+### Phase 1: VPC Canvas API
+| Component | Status |
+|-----------|--------|
+| `/vpc/{project_id}` | ⏳ Planned |
+| `/vpc/{project_id}/profile` | ⏳ Planned |
+| `/vpc/{project_id}/value-map` | ⏳ Planned |
+| `/vpc/{project_id}/fit` | ⏳ Planned |
+| `/experiments` | ⏳ Planned |
+
+### Product App Integration
+| Component | Status |
+|-----------|--------|
 | Product app unified webhook | ✅ Implemented (`/api/crewai/webhook`) |
 | Product app results webhook | ✅ Implemented (`/api/crewai/results`) |
 | Product app consultant webhook | ✅ Implemented (`/api/crewai/consultant`) |
@@ -280,9 +573,12 @@ These were documented but do not exist yet:
 | Metrics API | ❌ NOT IMPLEMENTED (marketing site feature) |
 
 ---
-**Last Updated**: 2025-12-04
+**Last Updated**: 2026-01-05
 
 **Latest Changes**:
-- Added Area 3 policy versioning patterns (policy selection, status response)
-- Added Area 6 budget check patterns (spend validation, decision logging)
-- Added Area 7 business model classification patterns (classification, viability response)
+- Added Phase 0 Onboarding API (interview, brief, approval endpoints)
+- Added Phase 1 VPC Canvas API (profile, value-map, experiments endpoints)
+- Expanded VPC schema with VPD framework fields (Jobs/Pains/Gains, Pain Relievers/Gain Creators)
+- Renamed `entrepreneur_input` → `founder_input`
+- Added Test Card / Learning Card experiment tracking
+- Updated implementation status by phase

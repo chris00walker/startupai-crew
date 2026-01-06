@@ -2,9 +2,19 @@
 
 Human-in-the-loop (HITL) patterns for StartupAI's gated validation system.
 
+> **VPD Framework**: Approval workflows implement governance patterns from the Value Proposition Design framework. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 HITL specification.
+
 ## Overview
 
 Certain AI decisions require human approval before proceeding. This document consolidates all approval workflow documentation from across the master architecture.
+
+## Phase Structure
+
+| Phase | Gate | Approvals | Purpose |
+|-------|------|-----------|---------|
+| **Phase 0** | Onboarding → VPC Discovery | 1 | Validate Founder's Brief before analysis |
+| **Phase 1** | VPC Discovery → Validation | 3 | Experiment approval, pricing tests, VPC completion |
+| **Phase 2+** | Desirability → Feasibility → Viability | 7 | Campaign, spend, stage gates, pivots |
 
 ## Approval Flow Architecture
 
@@ -40,7 +50,65 @@ Certain AI decisions require human approval before proceeding. This document con
 
 ---
 
-## Approval Types & Ownership
+## Phase 0: Onboarding Approvals
+
+Phase 0 has a single critical approval checkpoint gating entry to Phase 1.
+
+| Approval Type | Approver | Agents | Task | Rationale |
+|---------------|----------|--------|------|-----------|
+| `approve_founders_brief` | Founder + Guardian | O1, G1, G2, S1 | brief_approval | Ensure Brief accurately captures founder intent before analysis |
+
+### Founder's Brief Approval Context
+
+The approval request includes:
+- **The Idea**: Concept and one-liner
+- **Problem Hypothesis**: Who, what, current alternatives
+- **Customer Hypothesis**: Segment, characteristics
+- **Solution Hypothesis**: Approach, key features
+- **Key Assumptions**: Ranked by risk level
+- **Success Criteria**: Target metrics (problem_resonance, zombie_ratio, fit_score)
+- **QA Report**: Concept legitimacy + intent verification status
+
+### Approval Decisions
+
+| Decision | Next Action |
+|----------|-------------|
+| **Approve** | Proceed to Phase 1 VPC Discovery |
+| **Revise** | Return to interview for clarification |
+| **Reject** | Close project (concept fails legitimacy check) |
+
+---
+
+## Phase 1: VPC Discovery Approvals
+
+Phase 1 has three approval checkpoints for experiment governance.
+
+| Approval Type | Approver | Agents | Task | Rationale |
+|---------------|----------|--------|------|-----------|
+| `approve_experiment_plan` | Founder + Guardian | E1 | experiment_approval | Validate test designs before execution |
+| `approve_pricing_test` | Founder + Ledger | W1 | pricing_approval | Pricing tests require founder consent |
+| `approve_vpc_completion` | Founder + Guardian | F1, F2 | vpc_gate_approval | Confirm fit score ≥70 before Phase 2 |
+
+### Experiment Plan Approval Context
+
+The approval request includes:
+- **Test Cards**: Hypothesis, test method, metrics, pass/fail criteria
+- **Resource Requirements**: Time, cost, tools needed
+- **Assumption Priority**: Which assumptions this tests
+- **Expected Evidence**: SAY vs DO classification
+
+### VPC Completion Approval Context
+
+The approval request includes:
+- **Fit Score**: Current score (≥70 required)
+- **Customer Profile**: Validated Jobs, Pains, Gains
+- **Value Map**: Products/Services, Pain Relievers, Gain Creators
+- **Evidence Summary**: Experiments run, pass/fail rates
+- **Recommendation**: Proceed to Phase 2 or iterate
+
+---
+
+## Phase 2+: Validation Approvals
 
 | Approval Type | Blocking | Primary Owner | CrewAI Task Location | Rationale |
 |---------------|----------|---------------|----------------------|-----------|
@@ -180,11 +248,16 @@ def output_deliverables(self):
 
 ## Related Documents
 
-- API payloads: `api-contracts.md`
-- Founder ownership: `../02-organization.md`
-- Implementation details: `../03-validation-spec.md` (authoritative blueprint)
+- **Phase 0-1 Specification**: `../05-phase-0-1-specification.md` (VPD framework implementation)
+- **API payloads**: `api-contracts.md`
+- **Founder ownership**: `../02-organization.md`
+- **Implementation details**: `../03-validation-spec.md` (Phase 2+ blueprint)
 
 ---
-**Last Updated**: 2025-11-26
+**Last Updated**: 2026-01-05
 
-**Latest Changes**: Updated implementation status - approval webhook, CRUD API, hook, and database tables now implemented. See `03-validation-spec.md` for full technical specification.
+**Latest Changes**:
+- Added Phase 0 Onboarding Approvals (approve_founders_brief)
+- Added Phase 1 VPC Discovery Approvals (approve_experiment_plan, approve_pricing_test, approve_vpc_completion)
+- Added approval context documentation for VPD-specific checkpoints
+- Reorganized by phase structure

@@ -1,11 +1,14 @@
 ---
 purpose: "Technical specification for the shared, anonymized learning system"
 status: "foundation-complete"
-last_reviewed: "2025-11-26"
+last_reviewed: "2026-01-05"
 priority: "critical - competitive moat"
+vpd_compliance: true
 ---
 
 # Flywheel Learning System Architecture
+
+> **VPD Framework**: The Flywheel System captures patterns from Value Proposition Design implementations. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 VPD patterns.
 
 ## Executive Summary
 
@@ -77,6 +80,160 @@ flowchart TB
 - Healthcare regulatory patterns
 - B2B SaaS pricing benchmarks
 - Marketplace chicken-and-egg dynamics
+
+---
+
+## VPD Framework Learning Patterns
+
+### Customer Profile Pattern Library
+
+Learning patterns specific to VPD Customer Profile discovery:
+
+| Pattern Type | What's Learned | Example |
+|--------------|----------------|---------|
+| **Jobs Resonance** | Which job statements resonate by industry/segment | "When managing remote teams, I want to track productivity without micromanaging" |
+| **Pain Severity** | Which pain types are most severe in segments | Healthcare: compliance > UX; Fintech: security > speed |
+| **Gain Relevance** | Which gains are essential vs nice-to-have | B2B: reliability > features; B2C: delight > reliability |
+
+#### Jobs-to-be-Done Library Structure
+
+```json
+{
+  "learning_type": "pattern",
+  "pattern_type": "customer_profile_jobs",
+  "industry": "B2B SaaS",
+  "segment": "HR Tech",
+  "job_category": "functional",
+  "job_statement": "When onboarding new employees, I want to automate paperwork so I can focus on culture integration",
+  "resonance_rate": 0.78,
+  "validation_count": 12,
+  "associated_pains": ["manual data entry", "compliance risk", "delayed productivity"],
+  "associated_gains": ["faster time-to-productivity", "error reduction", "employee satisfaction"]
+}
+```
+
+#### Retrieval Query Pattern
+```python
+# When Sage discovers customer jobs
+learnings = LearningRetrievalTool()._run(
+    query="Jobs-to-be-done patterns for B2B HR Tech segment",
+    founder="sage",
+    learning_type="pattern",
+    pattern_type="customer_profile_jobs",
+    industry="B2B SaaS",
+    limit=10
+)
+```
+
+### Value Map Antipattern Learning
+
+Patterns of value propositions that failed validation:
+
+| Antipattern | Description | Signal | Industry |
+|-------------|-------------|--------|----------|
+| **Generic Pain Reliever** | "Saves time" without specificity | High zombie_ratio (>0.7) | All |
+| **Feature Dump** | Too many features, no clear benefit | Low problem_resonance (<0.3) | B2B |
+| **Solution Looking for Problem** | No validated customer job | Segment pivot triggered | All |
+| **Price-Value Mismatch** | Premium features at budget price | WTP test failure | B2B SaaS |
+
+#### Value Map Failure Pattern Structure
+
+```json
+{
+  "learning_type": "outcome",
+  "outcome_type": "value_map_failure",
+  "title": "Generic productivity claims fail in enterprise HR",
+  "value_map_element": "pain_reliever",
+  "failed_claim": "Save 10 hours per week on HR tasks",
+  "evidence": {
+    "zombie_ratio": 0.82,
+    "problem_resonance": 0.45,
+    "sample_size": 500
+  },
+  "what_failed": "Generic time-saving claims lack credibility with enterprise buyers",
+  "what_worked_instead": "Specific compliance risk reduction with audit trail",
+  "confidence_score": 0.86
+}
+```
+
+### Experiment Selection Learning
+
+Which TBI experiments work best for which hypothesis types:
+
+| Hypothesis Type | Best Experiment | Effectiveness | Cost/Speed |
+|-----------------|-----------------|---------------|------------|
+| **Customer Jobs (functional)** | Contextual inquiry interviews | 0.92 | Low/Medium |
+| **Customer Jobs (social)** | Social listening + interviews | 0.78 | Low/Fast |
+| **Customer Pains** | Pain interviews + review mining | 0.88 | Low/Fast |
+| **Customer Gains** | Feature voting + interviews | 0.85 | Low/Medium |
+| **Pain Relievers** | A/B landing page tests | 0.82 | Medium/Fast |
+| **Gain Creators** | Prototype usability tests | 0.79 | Medium/Medium |
+| **Willingness to Pay** | Van Westendorp + A/B pricing | 0.90 | Medium/Fast |
+
+#### Experiment Effectiveness Learning Structure
+
+```json
+{
+  "learning_type": "pattern",
+  "pattern_type": "experiment_effectiveness",
+  "hypothesis_type": "customer_jobs",
+  "experiment_type": "contextual_inquiry_interviews",
+  "tbi_experiment_id": "T1.1",
+  "effectiveness_score": 0.92,
+  "sample_projects": 45,
+  "cost_category": "low",
+  "speed_category": "medium",
+  "best_for": ["functional jobs", "B2B segments"],
+  "avoid_for": ["B2C mass market", "emotional jobs"],
+  "evidence_type": "say",
+  "typical_sample_size": 15
+}
+```
+
+### Cross-Canvas Learning Patterns
+
+How VPC signals predict BMC outcomes:
+
+| VPC Signal | BMC Implication | Correlation |
+|------------|-----------------|-------------|
+| High job importance + low pain severity | Gain creator focus → Premium positioning | 0.82 |
+| High pain severity + multiple alternatives | Pain reliever focus → Feature differentiation | 0.78 |
+| Strong problem_resonance + high zombie_ratio | Value proposition needs stronger commitment driver | 0.91 |
+| Low problem_resonance across segments | Customer segment hypothesis invalid | 0.95 |
+
+#### Cross-Canvas Pattern Structure
+
+```json
+{
+  "learning_type": "pattern",
+  "pattern_type": "cross_canvas_signal",
+  "source_canvas": "vpc",
+  "target_canvas": "bmc",
+  "signal_combination": {
+    "problem_resonance": ">0.6",
+    "zombie_ratio": ">0.7"
+  },
+  "implication": "Revenue Streams block needs stronger commitment mechanism",
+  "recommended_actions": [
+    "Add skin-in-game pricing tier",
+    "Implement pilot program with deposit",
+    "Create limited-time founding member offer"
+  ],
+  "correlation_strength": 0.91,
+  "sample_projects": 23
+}
+```
+
+### Fit Score Progression Learning
+
+How fit scores progress through validation cycles:
+
+| Starting Fit | Typical Progression | Success Rate |
+|--------------|--------------------|--------------|
+| < 40 | Usually requires segment pivot | 15% |
+| 40-55 | 2-3 iterations to reach 70 | 45% |
+| 55-70 | 1-2 iterations to reach 70 | 75% |
+| > 70 | Minor refinements only | 90% |
 
 ---
 
@@ -809,9 +966,10 @@ OPENAI_API_KEY=sk-...  # For embeddings
 |------|--------|--------|
 | 2025-11-21 | Initial specification created | Claude + Chris |
 | 2025-11-26 | Updated implementation status - Phase 1 Foundation complete | Claude + Chris |
+| 2026-01-05 | Added VPD Framework Learning Patterns (Customer Profile, Value Map, Experiments, Cross-Canvas) | Claude + Chris |
 
 ---
 
 **This is StartupAI's competitive moat. Every validation makes all 6 Founders smarter.**
 
-> **Authoritative Spec**: See `../03-validation-spec.md` for complete technical implementation details.
+> **Authoritative Spec**: See `../05-phase-0-1-specification.md` for Phase 0-1 VPD implementation and `../03-validation-spec.md` for Phase 2+ technical details.

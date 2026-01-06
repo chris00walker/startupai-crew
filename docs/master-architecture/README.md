@@ -1,6 +1,8 @@
 # Master Architecture
 
-This directory contains the **ecosystem source of truth** for StartupAI's 3-service architecture.
+This directory contains the **ecosystem source of truth** for StartupAI's multi-phase crew architecture.
+
+> **VPD Framework**: StartupAI implements the Value Proposition Design (VPD) framework by Osterwalder/Pigneur. Phase 0-1 specification provides the authoritative VPD implementation.
 
 ## Reading Order
 
@@ -10,10 +12,11 @@ Start here and progress through the numbered documents:
 |-------|----------|---------|--------------|
 | 0 | [00-introduction.md](./00-introduction.md) | This repo's architecture & quick start | First - get oriented |
 | 1 | [01-ecosystem.md](./01-ecosystem.md) | 3-service architecture overview | Second - understand the system |
-| 2 | [02-organization.md](./02-organization.md) | 6 founders, 18 agents (SINGLE SOURCE) | Third - understand the team |
-| 3 | [03-validation-spec.md](./03-validation-spec.md) | Core validation flow implementation | When building crews/flows |
-| 3.5 | [../innovation-physics.md](../innovation-physics.md) | **Non-linear routing logic** | When understanding pivot decisions |
-| 4 | [04-status.md](./04-status.md) | Current state and blockers | Before starting any work |
+| 2 | [02-organization.md](./02-organization.md) | 6 founders, agents, VPD terminology | Third - understand the team |
+| 3 | **[05-phase-0-1-specification.md](./05-phase-0-1-specification.md)** | **Phase 0-1 VPD implementation** | **Before implementing Phase 0/1** |
+| 4 | [03-validation-spec.md](./03-validation-spec.md) | Phase 2+ validation flow | When building validation crews |
+| 4.5 | [../innovation-physics.md](../innovation-physics.md) | Non-linear routing logic | When understanding pivot decisions |
+| 5 | [04-status.md](./04-status.md) | Current state and blockers | Before starting any work |
 
 ## Reference Documents
 
@@ -35,8 +38,11 @@ Detailed specifications extracted for standalone reference:
 
 - **Architecture**: 01-ecosystem.md
 - **AI Founders**: 02-organization.md (canonical source)
-- **18 Agents**: 02-organization.md (canonical source)
-- **Gated Validation**: 03-validation-spec.md
+- **Phase 0-1 Agents**: 02-organization.md (O1, G1, G2, S1 + 18 Phase 1 agents)
+- **VPD Framework**: 05-phase-0-1-specification.md (Value Proposition Design implementation)
+- **Phase 0 (Onboarding)**: 05-phase-0-1-specification.md (Founder's Brief capture)
+- **Phase 1 (VPC Discovery)**: 05-phase-0-1-specification.md (Customer Profile + Value Map)
+- **Phase 2+ Validation**: 03-validation-spec.md (Desirability → Feasibility → Viability)
 - **Innovation Physics**: ../innovation-physics.md (non-linear routing)
 - **Flywheel Learning**: reference/flywheel-learning.md (competitive moat)
 - **AMP Platform**: reference/amp-configuration.md
@@ -46,7 +52,9 @@ Detailed specifications extracted for standalone reference:
 
 ### By Task
 
-- **"I'm new, where do I start?"** → Read 01 → 02 → 03 → 04 in order
+- **"I'm new, where do I start?"** → Read 00 → 01 → 02 → 05 → 03 → 04 in order
+- **"I'm implementing Phase 0 or 1"** → 05-phase-0-1-specification.md (VPD framework)
+- **"What is VPD/Value Proposition Design?"** → 05-phase-0-1-specification.md
 - **"I need to integrate with CrewAI API"** → reference/api-contracts.md
 - **"I'm implementing approval UI"** → reference/approval-workflows.md
 - **"I want to understand the learning system"** → reference/flywheel-learning.md
@@ -74,6 +82,6 @@ These repositories consume this architecture:
   - Blockers: `startupai.site/docs/work/cross-repo-blockers.md`
 
 ---
-**Last Updated**: 2025-12-01
+**Last Updated**: 2026-01-05
 
-**Latest Changes**: README updates across ecosystem, standardized crew documentation.
+**Latest Changes**: VPD framework alignment, Phase 0-1 specification integration, updated navigation.

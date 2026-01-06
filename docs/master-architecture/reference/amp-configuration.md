@@ -1,12 +1,15 @@
 ---
 purpose: "CrewAI AMP platform configuration and capabilities reference"
 status: "active"
-last_reviewed: "2025-11-21"
+last_reviewed: "2026-01-05"
+vpd_compliance: true
 ---
 
 # CrewAI AMP Platform Configuration
 
 This document clarifies what CrewAI AMP provides out-of-the-box versus what StartupAI must configure or implement.
+
+> **VPD Framework**: AMP deployment supports the multi-phase VPD architecture. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 crew configurations.
 
 ---
 
@@ -85,6 +88,14 @@ For Human-in-the-Loop approval workflows:
    - Include `WEBHOOK_SECRET` in dashboard
    - Product app validates signature
 
+4. **Phase 0/1 Specific Events**
+   - `interview.followup_needed` - Multi-turn interview continues
+   - `qa.validation_complete` - Concept/intent validation done
+   - `brief.ready_for_approval` - Founder's Brief ready for HITL
+   - `vpc.profile_updated` - Customer Profile element changed
+   - `vpc.fit_assessed` - Fit score calculated
+   - `experiment.completed` - Test Card result recorded
+
 ### GitHub Integration
 
 1. **Repository**: `chris00walker/startupai-crew`
@@ -102,6 +113,16 @@ AMP runs the code but doesn't manage persistence.
 - `@persist()` decorator placement in flows
 - Storage backend choice (SQLite default or Supabase)
 - State recovery logic after failures
+
+**Phase 0 Specific Requirements**:
+- **Interview State**: Preserve multi-turn conversation context
+- **Founder's Brief**: Immutable once `approve_founders_brief` HITL passes
+- **Brief Injection**: Phase 1 crews receive complete brief in task context
+
+**Phase 1 Specific Requirements**:
+- **VPC State**: Customer Profile and Value Map must persist across experiments
+- **Experiment Traceability**: Link Learning Cards to VPC element updates
+- **Fit Score History**: Track progression across iteration cycles
 
 **Reference**: See `state_schemas.py` and Flow definitions
 
@@ -184,11 +205,11 @@ AMP shows costs but doesn't enforce budgets.
 curl https://[base-url]/inputs \
   -H "Authorization: Bearer [token]"
 
-# Start validation
+# Start validation (Phase 1+ with approved brief)
 curl -X POST https://[base-url]/kickoff \
   -H "Authorization: Bearer [token]" \
   -H "Content-Type: application/json" \
-  -d '{"entrepreneur_input": "Business idea..."}'
+  -d '{"founder_input": "Business idea...", "brief_id": "uuid"}'
 
 # Check status
 curl https://[base-url]/status/{kickoff_id} \
@@ -263,9 +284,12 @@ crewai run
 - Cache repeated analyses
 - Limit agent verbosity
 
-### Budget Targets
-- **Phase 1 run**: ~50K tokens ($1-2)
-- **Full validation**: ~100K tokens ($3-5)
+### Budget Targets by Phase
+- **Phase 0 interview**: ~10K tokens ($0.30)
+- **Phase 0 with follow-ups**: ~25K tokens ($0.75)
+- **Phase 1 VPC Discovery**: ~50K tokens ($1-2)
+- **Phase 2+ validation**: ~50K tokens ($1-2)
+- **Full validation (all phases)**: ~125K tokens ($4-6)
 - **Monthly cap**: Set alerts in dashboard
 
 ---
@@ -273,7 +297,8 @@ crewai run
 ## References
 
 - [CLAUDE.md](../../../CLAUDE.md) - Deployment details
-- [03-validation-spec.md](../03-validation-spec.md) - Flow architecture
+- [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) - Phase 0-1 VPD specification
+- [03-validation-spec.md](../03-validation-spec.md) - Phase 2+ flow architecture
 - [flywheel-learning.md](./flywheel-learning.md) - Learning system
 - [approval-workflows.md](./approval-workflows.md) - HITL patterns
 - CrewAI AMP documentation: https://docs.crewai.com
@@ -286,3 +311,4 @@ crewai run
 |------|--------|--------|
 | 2025-11-21 | Initial configuration reference | Claude + Chris |
 | 2025-12-04 | Update deployment UUID and URL | Claude + Chris |
+| 2026-01-05 | Add Phase 0/1 webhook events, state persistence, cost estimates | Claude + Chris |

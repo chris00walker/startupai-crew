@@ -1,16 +1,19 @@
 ---
-purpose: Single source of truth for 6 AI Founders and 18 agents
+purpose: Single source of truth for 6 AI Founders and agents (Phase 0-3)
 status: active
-last_reviewed: 2025-11-21
+last_reviewed: 2026-01-05
+vpd_compliance: true
 ---
 
 # StartupAI Organizational Structure
 
 ## Overview
 
-StartupAI is run by a team of AI Founders - six co-equal team members organized around the customer. They collaborate as peers to deliver strategic business analysis and validation.
+StartupAI is run by a team of AI Founders - six co-equal team members organized around the customer. They collaborate as peers to deliver strategic business analysis and validation using the **Value Proposition Design (VPD)** framework by Alex Osterwalder and Yves Pigneur.
 
 **This document is the SINGLE SOURCE OF TRUTH for founder names, roles, agents, and organizational structure. All other documents reference here - they do not duplicate this content.**
+
+> **VPD Framework Compliance**: This organization implements patterns from *Value Proposition Design*, *Testing Business Ideas*, and *Business Model Generation*. See `05-phase-0-1-specification.md` for detailed Phase 0-1 implementation.
 
 ## Design Philosophy
 
@@ -22,6 +25,52 @@ Inspired by Edwin Korver's RoundMap® Customer Dynamics Lifecycle, StartupAI pla
 
 ### Continuous Learning
 AI organizations have a structural advantage over human-led companies: they learn from every interaction. This is StartupAI's moat. Learning isn't delegated to a role - it's inherent to the system.
+
+## VPD Framework Terminology
+
+StartupAI implements the Value Proposition Design (VPD) framework. Key terminology used throughout this organization:
+
+### Value Proposition Canvas (Two Sides)
+
+| Side | Component | Description |
+|------|-----------|-------------|
+| **Customer Profile (Right)** | Jobs-to-be-Done | Functional, emotional, social tasks customers try to accomplish |
+| | Pains | Undesired outcomes, obstacles, risks customers face |
+| | Gains | Required, expected, desired, unexpected outcomes customers seek |
+| **Value Map (Left)** | Products & Services | What we offer to help customers |
+| | Pain Relievers | How we address specific pains |
+| | Gain Creators | How we create specific gains |
+
+### Testing Business Ideas Framework
+
+| Concept | Description |
+|---------|-------------|
+| **Assumptions Mapping** | 2×2 matrix (importance × evidence strength) to prioritize what to test |
+| **Test Card** | 4-step hypothesis structure: Hypothesis → Test → Metric → Criteria |
+| **Learning Card** | 4-step result capture: Hypothesis → Observation → Learnings → Actions |
+| **44 Experiment Library** | Discovery (cheap/fast) → Validation (expensive/reliable) experiments |
+
+### Evidence Hierarchy (SAY vs DO)
+
+Behavioral evidence is stronger than stated preferences:
+
+| Type | Weight | Example |
+|------|--------|---------|
+| Paid | 5 | Actually paid money |
+| High-Commitment CTA | 4 | Demo request, application |
+| Medium-Commitment CTA | 3 | Email signup, form fill |
+| Low-Commitment CTA | 2 | Click, view |
+| Stated | 1 | "I would buy this" |
+| Implied | 0.5 | Didn't say no |
+
+### Problem-Solution Fit Criteria
+
+Phase 1 exit requires:
+- **Fit Score** ≥ 70/100
+- **Jobs addressed** ≥ 75%
+- **Pains addressed** ≥ 75%
+- **Gains addressed** ≥ 70%
+- **WTP validated** (behavioral evidence, not just stated)
 
 ## The AI Founders Team
 
@@ -226,7 +275,7 @@ StartupAI operates as two interconnected sides balanced by Compass, with Guardia
     │  Onboarding │     interests]    │ • UX/UI Designer│
     └──────┬──────┘                   │ • Frontend Dev  │
            │                          │ • Backend Dev   │
-           └──→ [Client Brief] ──────→├─────────────────┤
+           └──→ [Founder's Brief] ────→├─────────────────┤
                                       │ Pulse           │
                                       │ • Ad Creative   │
                                       │ • Communications│
@@ -263,7 +312,25 @@ Guardian is *accountable* for governance outcomes (the buck stops here), while s
 
 ### Approval Checkpoint Ownership
 
-Human-in-the-loop (HITL) approvals are distributed across founders based on domain expertise. Each approval type has a primary owner who prepares the approval request and a governance reviewer.
+Human-in-the-loop (HITL) approvals are distributed across founders based on domain expertise and phase. Each approval type has a primary owner who prepares the approval request and a governance reviewer.
+
+#### Phase 0 Approvals (Onboarding)
+
+| Approval Type | Primary Owner | Prepares Request | Governance Review |
+|---------------|---------------|------------------|-------------------|
+| **Founder's Brief** (`approve_founders_brief`) | Sage + Founder | Brief content, hypothesis capture | Guardian (G1, G2) |
+| **Concept Legitimacy** | Guardian (G1) | Legal, ethical, feasibility screening | Sage |
+| **Intent Verification** | Guardian (G2) | Brief accuracy vs founder intent | Sage |
+
+#### Phase 1 Approvals (VPC Discovery)
+
+| Approval Type | Primary Owner | Prepares Request | Governance Review |
+|---------------|---------------|------------------|-------------------|
+| **Experiment Plan** (`approve_experiment_plan`) | Sage (E1) | Experiment mix, cost, timeline | Guardian |
+| **Pricing Tests** (`approve_pricing_test`) | Ledger (W1, W2) | Price points, payment methods | Guardian |
+| **VPC Completion** (`approve_vpc_completion`) | Compass (F1) | Fit score, evidence summary | Guardian |
+
+#### Phase 2+ Approvals (Validation)
 
 | Approval Type | Primary Owner | Prepares Request | Governance Review |
 |---------------|---------------|------------------|-------------------|
@@ -289,21 +356,24 @@ Guardian serves as the approval orchestrator, ensuring:
 - Escalations are handled appropriately
 - Compliance requirements are satisfied
 
-### The Client Brief Handoff
+### The Founder's Brief Handoff
 
-The **Client Brief** is the contract between Service and Commercial sides:
+The **Founder's Brief** is the contract between Phase 0 (Onboarding) and Phase 1+ (Validation):
 
-**Service Side captures:**
-- Business idea/hypothesis
-- Target customer description
-- Problem being solved
-- Current stage (idea/MVP/traction)
-- Validation goals
-- Segment-specific context (Founder vs Consultant)
+**Phase 0 (Onboarding) captures:**
+- The Idea (concept, one-liner hypothesis)
+- Problem Hypothesis (who, what, alternatives)
+- Customer Hypothesis (segment, characteristics)
+- Solution Hypothesis (approach, key features)
+- Key Assumptions (ranked by risk)
+- Success Criteria (what "validated" means)
+- Founder Context (stage, resources, constraints)
 
-**Commercial Side receives:**
-- Structured brief that informs all downstream analysis
-- Everything needed to begin Customer Research → Competitor Analysis → Value Design → Validation
+**Phase 1+ (Validation) receives:**
+- Structured Founder's Brief that informs all downstream analysis
+- Everything needed to begin VPC Discovery → Desirability → Feasibility → Viability
+
+> **VPD Note**: The Founder's Brief captures *hypotheses* about customer and value. Phase 1 VPC Discovery validates these against customer reality using experiments from the Testing Business Ideas framework.
 
 ### Compass as Balancing Force
 
@@ -323,9 +393,57 @@ Compass (CPO) sits at the center, balancing natural tensions:
 
 ## Specialist Agents (Task Executors)
 
-Specialist agents execute specific tasks within each founder's domain. Total: **18 agents** across the organization.
+Specialist agents execute specific tasks within each founder's domain. Agents are organized by phase:
 
-### Service Side Agents (Sage owns)
+- **Phase 0 (Onboarding)**: 4 agents - Founder's Brief creation
+- **Phase 1+ (Validation)**: 18+ agents - VPC Discovery through Decision
+
+### Phase 0: Onboarding Agents
+
+Phase 0 agents capture the founder's business hypothesis and create the **Founder's Brief** - the prime input to all downstream validation. See `05-phase-0-1-specification.md` for full specification.
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **O1** | Founder Interview Agent | Sage | 7-area discovery interview (idea, motivation, customer, problem, solution, assumptions, success criteria) |
+| **G1** | Concept Validator Agent | Guardian | Legitimacy screening (legal, ethical, feasible, sane) |
+| **G2** | Intent Verification Agent | Guardian | Ensures Founder's Brief accurately captures founder's intent |
+| **S1** | Brief Compiler Agent | Sage | Synthesizes interview and QA outputs into structured Founder's Brief |
+
+**Phase 0 HITL Checkpoint**: `approve_founders_brief` - Founder reviews and approves their brief before Phase 1 begins.
+
+### Phase 1: VPC Discovery Agents
+
+Phase 1 agents discover customer reality (Customer Profile) and design value (Value Map) using the VPD framework. See `05-phase-0-1-specification.md` for full specification.
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **E1** | Experiment Designer | Sage | Design experiment mix using Assumptions Mapping, Test Cards, Learning Cards |
+| **D1** | Customer Interview Agent | Sage | Discovery interviews using The Mom Test methodology |
+| **D2** | Observation Agent | Pulse | Social listening, forum mining, review mining, search trends |
+| **D3** | CTA Test Agent | Pulse | Landing pages, ads, fake doors, explainer videos, pre-sales |
+| **D4** | Evidence Triangulation Agent | Guardian | SAY vs DO analysis, confidence scoring, weighted evidence synthesis |
+| **J1** | JTBD Researcher | Sage | Discover Jobs-to-be-Done (functional, emotional, social, supporting) |
+| **J2** | Job Ranking Agent | Sage | Rank jobs by importance using interviews, surveys, engagement metrics |
+| **P1** | Pain Researcher | Sage | Discover pains via interviews, review mining, support tickets |
+| **P2** | Pain Ranking Agent | Sage | Rank pains by severity |
+| **G1** | Gain Researcher | Sage | Discover gains via interviews, feature requests, success stories |
+| **G2** | Gain Ranking Agent | Sage | Rank gains by importance |
+| **V1** | Solution Designer | Forge | Design products/services that address top jobs |
+| **V2** | Pain Reliever Designer | Forge | Design pain relievers for top pains |
+| **V3** | Gain Creator Designer | Forge | Design gain creators for top gains |
+| **W1** | Pricing Experiment Agent | Ledger | Design WTP experiments (Van Westendorp, pricing A/B, conjoint) |
+| **W2** | Payment Test Agent | Ledger | Run payment tests (pre-orders, crowdfunding, LOIs) |
+| **F1** | Fit Analyst | Compass | Score Problem-Solution Fit (Customer Profile ↔ Value Map coverage) |
+| **F2** | Iteration Router | Compass | Route back to appropriate flow if fit < 70 |
+
+**Phase 1 HITL Checkpoints**:
+- `approve_experiment_plan` - Approve experiment mix before execution
+- `approve_pricing_test` - Approve tests involving real money
+- `approve_vpc_completion` - Confirm VPC ready for Phase 2 (fit ≥ 70)
+
+---
+
+### Phase 1+ Service Side Agents (Sage owns)
 
 | Agent | Task Focus |
 |-------|------------|
@@ -411,12 +529,16 @@ This organizational structure is the **conceptual design**. Translation to CrewA
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-05 | Added Phase 0 & Phase 1 agent definitions (O1, G1, G2, S1, E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2) | VPD framework compliance |
+| 2026-01-05 | Renamed "Client Brief" to "Founder's Brief" throughout | Align with VPD Phase 0 terminology |
+| 2026-01-05 | Added VPD Framework Terminology section | Document VPD vocabulary (Jobs, Pains, Gains, Test Cards, etc.) |
+| 2026-01-05 | Restructured Approval Checkpoints by phase | Phase 0, Phase 1, Phase 2+ separation |
 | 2025-11-21 | Added Approval Checkpoint Ownership section | HITL workflow distribution across founders |
 | 2025-11-21 | Complete organizational restructure with Service/Commercial model | Organizational Physics principles, clear separation of concerns |
 | 2025-11-21 | Added 18 specialist agents across all founders | Complete task executor coverage |
 | 2025-11-21 | Documented Guardian dual role (Founder + Board) | Accountability vs responsibility distinction |
 | 2025-11-21 | Added Compass as balancing force between sides | PSIU Unifier role, tension management |
-| 2025-11-21 | Defined Client Brief as handoff contract | Clear interface between Service and Commercial |
+| 2025-11-21 | Defined Founder's Brief as handoff contract | Clear interface between Phase 0 and Phase 1+ |
 | 2025-11-20 | Added Ledger as 6th founder (CFO) | Financial viability accountability |
 | 2025-11-20 | Restructured to customer-centric model | RoundMap-inspired, customer as integrating point |
 | 2025-11-20 | Added PSIU balance documentation | Organizational Physics principles |

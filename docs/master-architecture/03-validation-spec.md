@@ -1,5 +1,9 @@
 # StartupAI Dynamic Master Architecture
 
+> **Phase 0 Reference**: This document covers Phase 1+ (Desirability → Feasibility → Viability) validation. Phase 0 (Onboarding) and Phase 1 (VPC Discovery) specifications are in [05-phase-0-1-specification.md](./05-phase-0-1-specification.md).
+
+> **VPD Framework**: This validation flow implements patterns from *Value Proposition Design*, *Testing Business Ideas*, and *Business Model Generation* by Osterwalder/Pigneur. Signals like `problem_resonance` and `zombie_ratio` map to VPD Customer Profile validation.
+
 ---
 
 ## 1\) Agent & Crew Manifest
@@ -26,6 +30,8 @@
 | Compass | C1 | ProductPMAgent | Read state, synthesize votes, propose pivot/proceed/kill options. | `StateInspectionTool`, `SynthesisTool` | `memory=true` |
 | Compass | C2 | HumanApprovalAgent | Present options to human, manage HITL prompts, integrate `/resume` decisions (creatives \+ viability). | `ApprovalRequestTool` | `memory=true`, `human_input=true` |
 | Compass | C3 | RoadmapWriterAgent | Document pivot decisions and update roadmap artifacts. | `LearningCaptureTool`, `FileWriteTool` | `memory=true`, `external_memory=supabase_pgvector` |
+
+> **Phase 0/1 Agents**: Phase 0 (Onboarding) uses agents O1, G1, G2, S1. Phase 1 (VPC Discovery) uses agents E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2. See [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) and [02-organization.md](./02-organization.md) for complete definitions.
 
 ### 1.2 Mapping Flow Steps → Crew \+ Agent \+ Task
 
@@ -479,11 +485,14 @@ from .crews import SageCrew, PulseCrew, ForgeCrew, LedgerCrew, CompassCrew, Guar
 
 class StartupValidationFlow(Flow\[StartupValidationState\]):
 
-    \# \---------- PHASE 0: INTAKE & VPC (Sage \+ Guardian) \----------
+    \# \---------- PHASE 1+: Receives Founder's Brief from Phase 0 (Sage \+ Guardian) \----------
+    \# NOTE: Phase 0 (OnboardingFlow) creates the Founder's Brief via agents O1, G1, G2, S1.
+    \#       See 05-phase-0-1-specification.md for Phase 0/1 implementation.
 
     @start()
 
     def intake\_and\_hypothesis(self):
+        \# Receives Founder's Brief from Phase 0 (approve_founders_brief HITL checkpoint)
 
         sage \= SageCrew()
 

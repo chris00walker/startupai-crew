@@ -1,10 +1,13 @@
 ---
 purpose: Marketing site AI integration architecture
 status: planning
-last_reviewed: 2025-11-21
+last_reviewed: 2026-01-05
+vpd_compliance: true
 ---
 
 # Marketing Site AI Integration
+
+> **VPD Framework**: The marketing site showcases StartupAI's Value Proposition Design methodology. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for framework details.
 
 The marketing site (startupai.site) requires AI integration to embody our transparency values and demonstrate the AI Founders' capabilities before conversion.
 
@@ -140,10 +143,212 @@ Rationale:
 
 ---
 
-## Related Documents
+## VPD Framework Demonstration
 
-- [02-organization.md](../02-organization.md) - Founder roles and personalities
-- [api-contracts.md](./api-contracts.md) - API specifications
+Showcase the VPD methodology to educate and build trust with prospects.
+
+### Educational Content
+
+| Content Type | Purpose | Placement |
+|--------------|---------|-----------|
+| **VPD Overview** | Explain Osterwalder/Pigneur framework | /methodology page |
+| **VPC → TBI → BMC Flow** | Show progression through validation | Interactive diagram |
+| **Test Cards/Learning Cards** | Demonstrate experiment rigor | Sample artifacts |
+| **Evidence Hierarchy** | SAY vs DO distinction | Trust metrics |
+
+### VPC → TBI → BMC Animation Concept
+
+Interactive visualization showing the validation progression:
+
+```
+Stage 1: VPC Discovery
+┌─────────────────────────────────────┐
+│  Customer Profile  │   Value Map    │
+│  [Jobs] [Pains]    │  [Products]    │
+│  [Gains]           │  [Relievers]   │
+│                    │  [Creators]    │
+└─────────────────────────────────────┘
+        ↓ (fit score animation)
+
+Stage 2: Testing Business Ideas
+┌─────────────────────────────────────┐
+│  Test Cards → Experiments → Learning│
+│  [Design]    [Execute]    [Capture] │
+└─────────────────────────────────────┘
+        ↓ (evidence flow animation)
+
+Stage 3: Business Model Canvas
+┌─────────────────────────────────────┐
+│  Validated sections populate based  │
+│  on evidence from experiments       │
+└─────────────────────────────────────┘
+```
+
+## Example Artifacts (Anonymized)
+
+Showcase real (anonymized) examples to demonstrate quality:
+
+### Customer Profile Example
+
+```markdown
+## Validated Customer Profile: B2B HR Tech
+
+### Customer Jobs (Ranked by Importance)
+1. **Functional**: "Automate new hire paperwork completion" (validated, 0.82 confidence)
+2. **Functional**: "Track compliance training completion" (validated, 0.78 confidence)
+3. **Social**: "Appear modern to candidates" (validated, 0.65 confidence)
+
+### Top Pains (Ranked by Severity)
+1. "Manual data entry across multiple systems" (extreme, validated)
+2. "Compliance audit failures" (severe, validated)
+3. "Delayed new hire productivity" (moderate, validated)
+
+### Top Gains (Ranked by Relevance)
+1. "Faster time-to-productivity" (essential, validated)
+2. "Error-free compliance" (essential, validated)
+3. "Better candidate experience" (nice-to-have, validated)
+```
+
+### Value Map Example
+
+```markdown
+## Value Map: HR Automation Platform
+
+### Products & Services
+- Automated onboarding workflow system
+- Compliance tracking dashboard
+- New hire portal
+
+### Pain Relievers
+- "Single source of truth eliminates re-entry" → addresses #1 pain
+- "Automated compliance reminders" → addresses #2 pain
+- "Day-1 ready setup" → addresses #3 pain
+
+### Gain Creators
+- "New hires productive in 3 days vs 2 weeks" → creates #1 gain
+- "100% audit pass rate" → creates #2 gain
+- "Modern mobile experience" → creates #3 gain
+
+**Fit Score: 78/100** (Strong)
+```
+
+### Before/After BMC Example
+
+Show how the BMC evolves from hypothesis to validated:
+
+| BMC Block | Before (Hypothesis) | After (Validated) |
+|-----------|---------------------|-------------------|
+| Customer Segments | "HR teams at growing companies" | "HR teams at 50-500 employee tech companies with compliance burden" |
+| Value Propositions | "Streamlined HR automation" | "Compliance-first onboarding that reduces time-to-productivity by 80%" |
+| Revenue Streams | "SaaS subscription" | "$49/employee/month with 85% gross margin, validated via pricing experiments" |
+
+## Experiment Visibility
+
+Show the types of experiments run and their outcomes:
+
+### Experiment Types Dashboard
+
+| Experiment Type | Count | Avg Duration | Pass Rate |
+|-----------------|-------|--------------|-----------|
+| Customer Interviews | 847 | 45 min | 72% |
+| Landing Page Tests | 423 | 7 days | 58% |
+| Ad Creative Tests | 312 | 5 days | 45% |
+| Pricing A/B Tests | 156 | 14 days | 61% |
+| Prototype Usability | 89 | 2 hours | 68% |
+
+### Time to Key Learnings
+
+| Learning Type | Typical Time |
+|---------------|--------------|
+| Problem resonance signal | 3-5 days |
+| Zombie ratio assessment | 7-10 days |
+| Pricing validation | 14-21 days |
+| Fit score ≥70 | 4-6 weeks |
+| Full validation | 8-12 weeks |
+
+### Pivot Frequency Stats
+
+| Pivot Type | Frequency | Success After Pivot |
+|------------|-----------|---------------------|
+| Segment Pivot | 23% of projects | 67% reach fit score ≥70 |
+| Value Pivot | 31% of projects | 72% reach fit score ≥70 |
+| Price Pivot | 18% of projects | 81% improve unit economics |
+| No Pivot | 42% of projects | 85% reach fit score ≥70 |
+
+## Success Definition Transparency
+
+Clear thresholds for what "validated" means at each gate:
+
+### Gate Thresholds
+
+| Gate | Metric | Threshold | What It Means |
+|------|--------|-----------|---------------|
+| **Phase 1 Exit** | Fit Score | ≥ 70/100 | Problem-Solution Fit demonstrated |
+| **Desirability** | problem_resonance | ≥ 50% | Customers care about the problem |
+| **Desirability** | zombie_ratio | < 30% | Interest converts to commitment |
+| **Feasibility** | feasibility_status | Green | Can be built with available resources |
+| **Viability** | ltv_cac_ratio | ≥ 3.0 | Unit economics are sustainable |
+
+### Evidence Quality Standards
+
+| Evidence Type | Weight | Example | Reliability |
+|---------------|--------|---------|-------------|
+| **DO (Behavioral)** | High | Pre-orders, signups | Very reliable |
+| **SAY (Verbal)** | Medium | Interviews, surveys | Moderate reliability |
+| **Implied** | Low | Social listening | Directional only |
+
+## Methodology Transparency
+
+### 11 HITL Checkpoints Diagram
+
+Visual showing all human approval points:
+
+```
+PHASE 0 (Onboarding)
+    └─ [1] approve_founders_brief ← Founder reviews Brief
+
+PHASE 1 (VPC Discovery)
+    ├─ [2] approve_experiment_plan ← Founder approves test designs
+    ├─ [3] approve_pricing_test ← Founder consents to pricing experiments
+    └─ [4] approve_vpc_completion ← Founder confirms fit score ≥70
+
+PHASE 2+ (Validation)
+    ├─ [5] approve_intake_to_validation ← Gate to start validation
+    ├─ [6] approve_campaign_launch ← Creative approval
+    ├─ [7] approve_spend_increase ← Budget approval
+    ├─ [8] approve_desirability_gate ← Evidence review
+    ├─ [9] approve_feasibility_gate ← Technical review
+    └─ [10] approve_viability_gate ← Economics review
+
+PHASE 3 (Decision)
+    └─ [11] request_human_decision ← Final pivot/proceed decision
+```
+
+### Typical Timeline Expectations
+
+| Phase | Duration | Key Deliverables |
+|-------|----------|------------------|
+| **Phase 0** | 1-2 days | Founder's Brief |
+| **Phase 1** | 4-6 weeks | Validated VPC (fit ≥70) |
+| **Phase 2** | 4-8 weeks | Desirability + Feasibility gates |
+| **Phase 3** | 2-4 weeks | Viability + Final decision |
+| **Total** | 10-16 weeks | Validated Business Model |
 
 ---
-**Last Updated**: 2025-11-21
+
+## Related Documents
+
+- [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) - Phase 0-1 VPD specification
+- [02-organization.md](../02-organization.md) - Founder roles and personalities
+- [api-contracts.md](./api-contracts.md) - API specifications
+- [product-artifacts.md](./product-artifacts.md) - Canvas architecture
+
+---
+**Last Updated**: 2026-01-05
+
+**Latest Changes**:
+- Added VPD Framework Demonstration section
+- Added Example Artifacts (anonymized Customer Profile, Value Map, BMC)
+- Added Experiment Visibility dashboard metrics
+- Added Success Definition transparency
+- Added Methodology Transparency (11 HITL checkpoints, timeline)
