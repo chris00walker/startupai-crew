@@ -63,6 +63,9 @@ src/intake_crew/
 ├── __init__.py
 ├── crew.py                     # 4 agents: S1, S2, S3, G1
 ├── main.py                     # Entry point
+├── tools/                      # Agent tools
+│   ├── __init__.py
+│   └── web_search.py           # TavilySearchTool, CustomerResearchTool
 └── config/
     ├── agents.yaml             # Agent definitions
     └── tasks.yaml              # 6 tasks (1 HITL)

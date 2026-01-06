@@ -16,6 +16,25 @@ from crewai import LLM, Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import InvokeCrewAIAutomationTool
 
+from intake_crew.tools.web_search import TavilySearchTool, CustomerResearchTool
+from intake_crew.tools.methodology_check import MethodologyCheckTool
+from intake_crew.schemas import (
+    FounderBrief,
+    CustomerResearchOutput,
+    ValuePropositionCanvas,
+    QAGateOutput,
+    HumanApprovalInput,
+    CrewInvocationResult,
+)
+
+# Instantiate research tools for S2 agent
+# Requires TAVILY_API_KEY environment variable
+tavily_search = TavilySearchTool()
+customer_research = CustomerResearchTool()
+
+# Instantiate methodology check tool for G1 agent
+# Validates VPC structure against Strategyzer methodology
+methodology_check = MethodologyCheckTool()
 
 # Create invoker for Crew 2 (Validation Engine)
 # Environment variables must be set in AMP dashboard
@@ -54,8 +73,8 @@ class IntakeCrew:
         """S2: Research customer segments using JTBD methodology."""
         return Agent(
             config=self.agents_config["customer_research_agent"],
-            tools=[],  # Can add WebSearchTool here
-            reasoning=False,
+            tools=[tavily_search, customer_research],  # Web search + customer research
+            reasoning=True,  # Enabled for thorough research synthesis
             inject_date=True,
             allow_delegation=False,
             max_iter=25,
@@ -88,8 +107,8 @@ class IntakeCrew:
         """G1: Quality assurance and human approval gate + trigger Crew 2."""
         return Agent(
             config=self.agents_config["qa_agent"],
-            tools=[validation_crew_invoker],  # Invokes Crew 2 after approval
-            reasoning=False,
+            tools=[methodology_check, validation_crew_invoker],  # VPC validation + Crew 2 invoke
+            reasoning=True,  # Enabled for rigorous QA decisions
             inject_date=True,
             allow_delegation=False,
             max_iter=25,
@@ -100,12 +119,13 @@ class IntakeCrew:
             ),
         )
 
-    # Task definitions
+    # Task definitions - each with Pydantic output schema for structured validation
     @task
     def parse_founder_input(self) -> Task:
         """Parse entrepreneur_input into structured brief."""
         return Task(
             config=self.tasks_config["parse_founder_input"],
+            output_pydantic=FounderBrief,
             markdown=False,
         )
 
@@ -114,6 +134,7 @@ class IntakeCrew:
         """Research customer segments using JTBD."""
         return Task(
             config=self.tasks_config["research_customer_problem"],
+            output_pydantic=CustomerResearchOutput,
             markdown=False,
         )
 
@@ -122,6 +143,7 @@ class IntakeCrew:
         """Build complete VPC from brief and customer profile."""
         return Task(
             config=self.tasks_config["create_value_proposition_canvas"],
+            output_pydantic=ValuePropositionCanvas,
             markdown=False,
         )
 
@@ -130,6 +152,7 @@ class IntakeCrew:
         """Review all outputs for quality and completeness."""
         return Task(
             config=self.tasks_config["qa_gate_intake"],
+            output_pydantic=QAGateOutput,
             markdown=False,
         )
 
@@ -138,6 +161,7 @@ class IntakeCrew:
         """HITL: Present summary to human for approval."""
         return Task(
             config=self.tasks_config["approve_intake_to_validation"],
+            output_pydantic=HumanApprovalInput,
             markdown=False,
             human_input=True,  # This triggers HITL in AMP
         )
@@ -147,6 +171,7 @@ class IntakeCrew:
         """Invoke Crew 2 with intake outputs."""
         return Task(
             config=self.tasks_config["trigger_validation_crew"],
+            output_pydantic=CrewInvocationResult,
             markdown=False,
         )
 

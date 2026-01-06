@@ -45,6 +45,15 @@ src/intake_crew/
 ### HITL Checkpoint
 - `approve_intake_to_validation`: Human reviews brief and VPC before proceeding
 
+### Tools
+
+Crew 1 agents have the following tools wired:
+
+| Agent | Tools | Purpose |
+|-------|-------|---------|
+| S2 (CustomerResearch) | `TavilySearchTool`, `CustomerResearchTool` | Web search for customer research |
+| G1 (QA) | `InvokeCrewAIAutomationTool` | Triggers Crew 2 after approval |
+
 ### Deploy Crew 1
 ```bash
 # Login (one-time)
@@ -57,6 +66,7 @@ crewai deploy create
 
 # Set environment variables in dashboard
 # - OPENAI_API_KEY
+# - TAVILY_API_KEY (required for web search tools)
 # - CREW_2_URL (after deploying Crew 2)
 # - CREW_2_BEARER_TOKEN
 ```

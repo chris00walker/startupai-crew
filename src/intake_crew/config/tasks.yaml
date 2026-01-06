@@ -1,37 +1,95 @@
 ---
 # CREW 1: INTAKE - 6 Tasks (including 1 HITL)
 # Task sequencing via context arrays
+# Expected outputs aligned with Pydantic schemas in schemas.py
 
 parse_founder_input:
   description: >
-    Analyze the {entrepreneur_input} and create a structured StartupAI Brief containing:
-    1. Business Idea - What is the core product/service concept?
-    2. Target Customers - Who are the primary customer segments?
-    3. Problem Statement - What pain points are being addressed?
-    4. Proposed Solution - How does the product solve these problems?
-    5. Key Hypotheses - What assumptions need validation?
-    6. Success Metrics - How will we measure desirability?
+    Analyze the {entrepreneur_input} and create a structured StartupAI Brief.
+
+    Extract and structure the following components:
+
+    1. BUSINESS_IDEA (string, min 20 chars)
+       - Core product/service concept described in detail
+
+    2. PROBLEM_STATEMENT (string, min 20 chars)
+       - Pain points being addressed, specific and measurable
+
+    3. PROPOSED_SOLUTION (string, min 20 chars)
+       - How the product solves these problems
+
+    4. TARGET_CUSTOMERS (list of strings)
+       - Primary customer segment names (at least 1)
+
+    5. KEY_HYPOTHESES (list of Hypothesis objects)
+       Each hypothesis must have:
+       - statement: Clear, testable hypothesis statement
+       - risk_level: One of "critical", "high", "medium", "low"
+       - validation_method: Optional suggestion for how to test
+
+       Apply the Testing Business Ideas framework - rank by criticality.
+
+    6. SUCCESS_METRICS (list of strings)
+       - How to measure desirability (at least 1 metric)
   expected_output: >
-    A JSON object with fields: business_idea, target_customers (array),
-    problem_statement, proposed_solution, key_hypotheses (array of objects
-    with hypothesis and risk_level), success_metrics (array)
+    A FounderBrief object with fields:
+    - business_idea: string (min 20 chars)
+    - problem_statement: string (min 20 chars)
+    - proposed_solution: string (min 20 chars)
+    - target_customers: list of segment name strings
+    - key_hypotheses: list of Hypothesis objects (statement, risk_level, validation_method)
+    - success_metrics: list of metric strings
+    - parsed_at: ISO timestamp (auto-generated)
   agent: founder_onboarding_agent
 
 research_customer_problem:
   description: >
-    Based on the entrepreneur brief, research and build a detailed customer
-    profile for each target segment using Jobs-to-be-Done methodology:
-    1. Functional Jobs - What tasks are customers trying to accomplish?
-    2. Emotional Jobs - How do customers want to feel?
-    3. Social Jobs - How do customers want to be perceived?
-    4. Pains - What obstacles, risks, and frustrations do they face?
-    5. Gains - What outcomes, benefits, and aspirations do they seek?
+    Based on the entrepreneur brief, research and build detailed customer
+    profiles for each target segment using Jobs-to-be-Done methodology.
 
-    Use web research to validate assumptions about customer needs.
+    For EACH customer segment, research and document:
+
+    1. SEGMENT_NAME (string, min 3 chars)
+       - Clear identifier for this segment
+
+    2. SEGMENT_DESCRIPTION (string, min 20 chars)
+       - Who they are, their context, characteristics
+
+    3. JOBS_TO_BE_DONE (list of CustomerJob objects)
+       Each job must have:
+       - job_type: One of "functional", "emotional", "social"
+       - description: What the customer is trying to accomplish (min 10 chars)
+       - frequency: How often this job occurs (optional)
+       - importance: 1-10 scale
+
+    4. PAINS (list of CustomerPain objects)
+       Each pain must have:
+       - description: The frustration or obstacle (min 10 chars)
+       - severity: One of "extreme", "high", "moderate", "low"
+       - frequency: How often experienced (optional)
+       - current_workaround: How they cope today (optional)
+
+    5. GAINS (list of CustomerGain objects)
+       Each gain must have:
+       - description: The desired outcome (min 10 chars)
+       - importance: One of "essential", "expected", "desired", "unexpected"
+       - current_satisfaction: 1-10 how well met today (optional)
+
+    6. RESEARCH_SOURCES (list of strings)
+       - URLs or names of sources used in research
+
+    USE YOUR WEB SEARCH TOOLS (tavily_search, customer_research) to validate
+    assumptions with real-world data. Don't just confirm founder beliefs -
+    search for contradicting evidence too.
+
+    End with a RESEARCH_SUMMARY (string, min 50 chars) capturing high-level findings.
   expected_output: >
-    A JSON object with fields: customer_segments (array of objects, each with
-    segment_name, jobs_to_be_done (object with functional, emotional, social arrays),
-    pains (array with severity ratings), gains (array with importance ratings))
+    A CustomerResearchOutput object with fields:
+    - customer_segments: list of CustomerSegmentProfile objects
+      Each segment has: segment_name, segment_description, jobs_to_be_done,
+      pains, gains, research_sources
+    - research_summary: string (min 50 chars) with high-level findings
+    - researched_at: ISO timestamp (auto-generated)
   agent: customer_research_agent
   context:
     - parse_founder_input
@@ -39,25 +97,57 @@ research_customer_problem:
 create_value_proposition_canvas:
   description: >
     Using the entrepreneur brief and customer profile, construct a complete
-    Value Proposition Canvas:
+    Value Proposition Canvas following Strategyzer methodology.
 
-    CUSTOMER PROFILE (Right Side):
-    - Jobs-to-be-done (from customer research)
-    - Pains (prioritized by severity)
-    - Gains (prioritized by importance)
+    CUSTOMER PROFILE SIDE - Synthesize from research:
 
-    VALUE MAP (Left Side):
-    - Products & Services - What you offer
-    - Pain Relievers - How you address each pain
-    - Gain Creators - How you create each gain
+    - PRIMARY_SEGMENT (string)
+      - Which segment this VPC addresses
 
-    Ensure explicit mapping between customer needs and value offerings.
-    Identify any gaps where customer needs are not addressed.
+    - CUSTOMER_JOBS (list of strings)
+      - Key jobs from research, in plain language
+
+    - CUSTOMER_PAINS (list of strings)
+      - Key pains from research, in plain language
+
+    - CUSTOMER_GAINS (list of strings)
+      - Key gains from research, in plain language
+
+    VALUE MAP SIDE - Design based on proposed solution:
+
+    - VALUE_MAP object containing:
+      - products_services: list of what you offer (strings)
+      - pain_relievers: list of PainReliever objects
+        Each has: pain_addressed, reliever_description, relief_strength
+        (relief_strength: "complete", "partial", or "minimal")
+      - gain_creators: list of GainCreator objects
+        Each has: gain_addressed, creator_description, creation_strength
+        (creation_strength: "strong", "moderate", or "weak")
+
+    FIT ANALYSIS - Map explicitly:
+
+    - FIT_ANALYSIS object containing:
+      - covered_jobs: list of jobs addressed by the solution
+      - covered_pains: list of pains that have relievers
+      - covered_gains: list of gains that have creators
+      - gaps: list of unaddressed customer needs (be honest!)
+      - fit_score: 0.0-1.0 score of problem-solution fit
+
+    VALUE PROPOSITION STATEMENT:
+
+    - One clear sentence (min 20 chars) capturing the core value in plain language.
+      Format: "For [target customer] who [job/pain], [product] provides [benefit]
+      unlike [alternative]."
   expected_output: >
-    A JSON object with fields: customer_profile (jobs, pains, gains),
-    value_map (products_services, pain_relievers, gain_creators),
-    fit_analysis (covered_jobs, covered_pains, covered_gains, gaps),
-    value_proposition_statement (string)
+    A ValuePropositionCanvas object with fields:
+    - primary_segment: string (which segment this addresses)
+    - customer_jobs: list of job strings
+    - customer_pains: list of pain strings
+    - customer_gains: list of gain strings
+    - value_map: ValueMap object (products_services, pain_relievers, gain_creators)
+    - fit_analysis: FitAnalysis object (covered_jobs, covered_pains, covered_gains, gaps, fit_score)
+    - value_proposition_statement: string (min 20 chars)
+    - canvas_created_at: ISO timestamp (auto-generated)
   agent: value_designer_agent
   context:
     - parse_founder_input
@@ -65,28 +155,49 @@ create_value_proposition_canvas:
 
 qa_gate_intake:
   description: >
-    Review all intake outputs for quality and completeness:
+    Review all intake outputs for quality and completeness.
 
-    BRIEF VALIDATION:
-    - Is the business idea clearly articulated?
-    - Are target customers specific enough?
-    - Are hypotheses testable?
+    Use your METHODOLOGY_CHECK tool to programmatically validate VPC structure.
 
-    CUSTOMER RESEARCH VALIDATION:
-    - Are jobs-to-be-done clearly defined?
-    - Are pains and gains evidence-based?
-    - Is the research comprehensive?
+    BRIEF VALIDATION - Check FounderBrief:
+    - Is business_idea at least 20 chars and clearly articulated?
+    - Are target_customers specific enough? (at least 1 segment)
+    - Are key_hypotheses testable with risk_level assigned?
 
-    VPC VALIDATION:
-    - Does the value map address key pains?
-    - Are gain creators aligned with customer aspirations?
-    - Are there critical gaps?
+    CUSTOMER RESEARCH VALIDATION - Check CustomerResearchOutput:
+    - Are jobs_to_be_done covering all three types (functional, emotional, social)?
+    - Are pains and gains rated by severity/importance?
+    - Were research tools used? Are research_sources documented?
 
-    Provide a pass/fail with specific issues to address.
+    VPC VALIDATION - Check ValuePropositionCanvas:
+    - Does value_map address key pains? (pain_relievers mapped to pains)
+    - Are gain_creators aligned with customer gains?
+    - Is fit_score reasonable given the gaps identified?
+
+    For EACH section, create a ReviewSection with:
+    - status: "pass", "fail", or "conditional"
+    - issues: list of problems found
+    - suggestions: list of improvements
+
+    SCORING (0.0 to 1.0):
+    - completeness_score: Are all required fields present?
+    - quality_score: Are outputs well-reasoned and evidence-based?
+    - methodology_compliance_score: Do outputs follow Strategyzer methodology?
+
+    Determine overall_status and whether outputs are ready_for_human_review.
   expected_output: >
-    A JSON object with fields: overall_status (pass/fail),
-    brief_review (status, issues array), customer_research_review (status, issues array),
-    vpc_review (status, issues array), recommendations (array)
+    A QAGateOutput object with fields:
+    - overall_status: "pass", "fail", or "conditional"
+    - brief_review: ReviewSection (status, issues, suggestions)
+    - customer_research_review: ReviewSection
+    - vpc_review: ReviewSection
+    - recommendations: list of improvement suggestions
+    - blocking_issues: list of must-fix issues before proceeding
+    - completeness_score: float 0.0-1.0
+    - quality_score: float 0.0-1.0
+    - methodology_compliance_score: float 0.0-1.0
+    - ready_for_human_review: boolean
+    - reviewed_at: ISO timestamp (auto-generated)
   agent: qa_agent
   context:
     - parse_founder_input
@@ -95,21 +206,33 @@ qa_gate_intake:
 # HITL: Human approves before proceeding to validation
 approve_intake_to_validation:
   description: >
-    Present a summary of the intake phase to the human founder for approval:
+    Present a summary of the intake phase to the human founder for approval.
 
-    1. Business Brief Summary
-    2. Customer Profile Overview
-    3. Value Proposition Canvas
-    4. QA Results and Recommendations
-    5. Proposed Next Steps
+    PREPARE A CLEAR SUMMARY including:
+    1. Business Brief Overview - Key points from the FounderBrief
+    2. Customer Profile Highlights - Most important JTBD findings
+    3. Value Proposition Canvas - VPC summary with fit_score
+    4. QA Results - Quality assessment scores and any concerns
+    5. Recommended Next Steps - What happens in validation (Crew 2)
 
-    The human will review and decide whether to:
-    - APPROVE: Proceed to validation experiments
-    - REJECT: Return to intake with specific feedback
+    WAIT FOR HUMAN DECISION:
 
-    Wait for human input before proceeding.
+    The human will review and choose one of:
+    - "approved": Proceed to validation experiments (Crew 2)
+    - "rejected": Stop the process entirely
+    - "needs_revision": Return to earlier steps with specific feedback
+
+    Capture their decision in the output. If they provide comments or specific
+    feedback, capture those as well.
+
+    The approved_by field can capture an identifier if provided.
   expected_output: >
-    Human approval decision with optional comments and feedback
+    A HumanApprovalInput object with fields:
+    - decision: "approved", "rejected", or "needs_revision"
+    - comments: optional string with human feedback
+    - specific_feedback: list of items to address if revision needed
+    - approved_by: optional identifier of approver
+    - approved_at: ISO timestamp (auto-generated)
   agent: qa_agent
   human_input: true
   context:
@@ -118,17 +241,37 @@ approve_intake_to_validation:
 trigger_validation_crew:
   description: >
     Package all intake outputs and invoke Crew 2 (Validation Engine) using
-    the InvokeCrewAIAutomationTool. Pass the following data:
+    the InvokeCrewAIAutomationTool.
 
-    1. entrepreneur_brief - Structured brief from intake
-    2. customer_profile - JTBD analysis
-    3. value_proposition_canvas - Complete VPC
-    4. qa_report - Quality assessment
-    5. human_approval - Approval status and comments
+    DATA PACKAGE TO SEND:
+    1. entrepreneur_brief - The FounderBrief from Task 1
+    2. customer_profile - The CustomerResearchOutput from Task 2
+    3. value_proposition_canvas - The ValuePropositionCanvas from Task 3
+    4. qa_report - The QAGateOutput from Task 4
+    5. human_approval - The HumanApprovalInput from Task 5
 
-    Log the kickoff confirmation and return the execution ID for tracking.
+    Use the validation_crew_invoker tool to call Crew 2.
+
+    If successful:
+    - Capture the kickoff_id (execution ID) for tracking
+    - Set success: true
+    - Record which data packages were sent in data_sent dict
+
+    If failed:
+    - Set success: false
+    - Capture error_message
+    - Increment retry_count if retrying
+
+    Return the result for tracking purposes.
   expected_output: >
-    Confirmation of Crew 2 kickoff with execution_id for tracking
+    A CrewInvocationResult object with fields:
+    - success: boolean
+    - crew_name: "Validation Crew"
+    - kickoff_id: string (Crew 2 execution ID) or null if failed
+    - data_sent: dict mapping data type names to boolean (what was included)
+    - error_message: string if failed, null otherwise
+    - retry_count: integer
+    - invoked_at: ISO timestamp (auto-generated)
   agent: founder_onboarding_agent
   context:
     - approve_intake_to_validation
