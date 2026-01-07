@@ -32,6 +32,59 @@ AI organizations have a structural advantage over human-led companies: they lear
 
 This organization implements VPD patterns. Agents use Test Cards to design experiments and Learning Cards to capture results, prioritizing behavioral evidence (DO) over stated preferences (SAY).
 
+## CrewAI Pattern Hierarchy
+
+> **Single Source**: For complete CrewAI pattern definitions, see [00-introduction.md](./00-introduction.md#3-crewai-pattern-hierarchy).
+
+This organization uses CrewAI's documented patterns. Understanding the hierarchy is essential:
+
+```
+PHASE (Business Concept)
+└── FLOW (Orchestration Unit)
+    ├── @start() → Entry point
+    ├── @listen() → Crew.kickoff()
+    │               └── CREW (Collaborative Agent Group)
+    │                   ├── Agent 1 (role, goal, backstory)
+    │                   ├── Agent 2
+    │                   └── Agent N
+    │                       └── Tasks
+    ├── @router() → Conditional branching (gates)
+    └── @listen("label") → Route-specific handlers
+```
+
+**Key Definitions**:
+
+| Pattern | Definition | Key Characteristic |
+|---------|------------|-------------------|
+| **Phase** | Business/methodology concept | NOT a CrewAI construct - decomposed into Flows |
+| **Flow** | Event-driven orchestration | Controls WHEN and IF crews execute |
+| **Crew** | Collaborative GROUP of agents (2+) | Controls HOW agents collaborate |
+| **Agent** | Individual executor | Has role, goal, backstory |
+| **Task** | Specific work item | Produces output |
+
+**Critical Rule**: A crew must have 2+ agents. One agent is NOT a crew.
+
+### Complete Crew Summary (All Phases)
+
+| Phase | Flow | Crew | Agents |
+|-------|------|------|--------|
+| 0: Onboarding | `OnboardingFlow` | `OnboardingCrew` | O1, G1, G2, S1 |
+| 1: VPC Discovery | `VPCDiscoveryFlow` | `DiscoveryCrew` | E1, D1, D2, D3, D4 |
+| 1: VPC Discovery | `VPCDiscoveryFlow` | `CustomerProfileCrew` | J1, J2, P1, P2, G1, G2 |
+| 1: VPC Discovery | `VPCDiscoveryFlow` | `ValueDesignCrew` | V1, V2, V3 |
+| 1: VPC Discovery | `VPCDiscoveryFlow` | `WTPCrew` | W1, W2 |
+| 1: VPC Discovery | `VPCDiscoveryFlow` | `FitAssessmentCrew` | F1, F2 |
+| 2: Desirability | `DesirabilityFlow` | `BuildCrew` | F1, F2, F3 |
+| 2: Desirability | `DesirabilityFlow` | `GrowthCrew` | P1, P2, P3 |
+| 2: Desirability | `DesirabilityFlow` | `GovernanceCrew` | G1, G2, G3 |
+| 3: Feasibility | `FeasibilityFlow` | `BuildCrew` | F1, F2, F3 (reused) |
+| 3: Feasibility | `FeasibilityFlow` | `GovernanceCrew` | G1 |
+| 4: Viability | `ViabilityFlow` | `FinanceCrew` | L1, L2, L3 |
+| 4: Viability | `ViabilityFlow` | `SynthesisCrew` | C1, C2, C3 |
+| 4: Viability | `ViabilityFlow` | `GovernanceCrew` | G1, G2, G3 |
+
+**Totals**: 5 Phases, 5 Flows, 14 Crews, 44 Agents
+
 ## The AI Founders Team
 
 ### Founding Team (Flat Structure)
@@ -439,18 +492,26 @@ Specialist agents execute specific tasks within each founder's domain. Agents ar
 
 Phase 0 agents capture the founder's business hypothesis and create the **Founder's Brief** - the prime input to all downstream validation. See [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) for full specification.
 
-| ID | Agent | Founder | Task Focus |
-|----|-------|---------|------------|
-| **O1** | Founder Interview Agent | Sage | 7-area discovery interview (idea, motivation, customer, problem, solution, assumptions, success criteria) |
-| **G1** | Concept Validator Agent | Guardian | Legitimacy screening (legal, ethical, feasible, sane) |
-| **G2** | Intent Verification Agent | Guardian | Ensures Founder's Brief accurately captures founder's intent |
-| **S1** | Brief Compiler Agent | Sage | Synthesizes interview and QA outputs into structured Founder's Brief |
+**Flow**: `OnboardingFlow`
+**Crew**: `OnboardingCrew` (4 agents)
+
+| ID | Agent | Founder | Crew | Task Focus |
+|----|-------|---------|------|------------|
+| **O1** | Founder Interview Agent | Sage | OnboardingCrew | 7-area discovery interview (idea, motivation, customer, problem, solution, assumptions, success criteria) |
+| **G1** | Concept Validator Agent | Guardian | OnboardingCrew | Legitimacy screening (legal, ethical, feasible, sane) |
+| **G2** | Intent Verification Agent | Guardian | OnboardingCrew | Ensures Founder's Brief accurately captures founder's intent |
+| **S1** | Brief Compiler Agent | Sage | OnboardingCrew | Synthesizes interview and QA outputs into structured Founder's Brief |
 
 **Phase 0 HITL Checkpoint**: `approve_founders_brief` - Founder reviews and approves their brief before Phase 1 begins.
 
 ### Phase 1: VPC Discovery Agents
 
 Phase 1 agents discover customer reality (Customer Profile) and design value (Value Map) using the VPD framework. See [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) for full specification.
+
+**Flow**: `VPCDiscoveryFlow`
+**Crews**: 5 crews (18 agents total)
+
+#### DiscoveryCrew (5 agents)
 
 | ID | Agent | Founder | Task Focus |
 |----|-------|---------|------------|
@@ -459,28 +520,142 @@ Phase 1 agents discover customer reality (Customer Profile) and design value (Va
 | **D2** | Observation Agent | Pulse | Social listening, forum mining, review mining, search trends |
 | **D3** | CTA Test Agent | Pulse | Landing pages, ads, fake doors, explainer videos, pre-sales |
 | **D4** | Evidence Triangulation Agent | Guardian | SAY vs DO analysis, confidence scoring, weighted evidence synthesis |
+
+#### CustomerProfileCrew (6 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
 | **J1** | JTBD Researcher | Sage | Discover Jobs-to-be-Done (functional, emotional, social, supporting) |
 | **J2** | Job Ranking Agent | Sage | Rank jobs by importance using interviews, surveys, engagement metrics |
 | **P1** | Pain Researcher | Sage | Discover pains via interviews, review mining, support tickets |
 | **P2** | Pain Ranking Agent | Sage | Rank pains by severity |
 | **G1** | Gain Researcher | Sage | Discover gains via interviews, feature requests, success stories |
 | **G2** | Gain Ranking Agent | Sage | Rank gains by importance |
+
+#### ValueDesignCrew (3 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
 | **V1** | Solution Designer | Forge | Design products/services that address top jobs |
 | **V2** | Pain Reliever Designer | Forge | Design pain relievers for top pains |
 | **V3** | Gain Creator Designer | Forge | Design gain creators for top gains |
+
+#### WTPCrew (2 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
 | **W1** | Pricing Experiment Agent | Ledger | Design WTP experiments (Van Westendorp, pricing A/B, conjoint) |
 | **W2** | Payment Test Agent | Ledger | Run payment tests (pre-orders, crowdfunding, LOIs) |
+
+#### FitAssessmentCrew (2 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
 | **F1** | Fit Analyst | Compass | Score Problem-Solution Fit (Customer Profile ↔ Value Map coverage) |
-| **F2** | Iteration Router | Compass | Route back to appropriate flow if fit < 70 |
+| **F2** | Iteration Router | Compass | Route back to appropriate crew if fit < 70 |
 
 **Phase 1 HITL Checkpoints**:
 - `approve_experiment_plan` - Approve experiment mix before execution
 - `approve_pricing_test` - Approve tests involving real money
 - `approve_vpc_completion` - Confirm VPC ready for Phase 2 (fit ≥ 70)
 
+### Phase 2: Desirability Agents
+
+Phase 2 tests whether customers actually want the validated value proposition. See [06-phase-2-desirability.md](./06-phase-2-desirability.md) for full specification.
+
+**Flow**: `DesirabilityFlow`
+**Crews**: 3 crews (9 agents total)
+
+#### BuildCrew (3 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **F1** | UX/UI Designer | Forge | Design landing pages and test artifacts |
+| **F2** | Frontend Developer | Forge | Build landing pages |
+| **F3** | Backend Developer | Forge | Deploy testable artifacts |
+
+#### GrowthCrew (3 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **P1** | Ad Creative Agent | Pulse | Generate ad variants |
+| **P2** | Communications Agent | Pulse | Write copy |
+| **P3** | Analytics Agent | Pulse | Run experiments, compute desirability signals |
+
+#### GovernanceCrew (3 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **G1** | QA Agent | Guardian | Methodology + creative QA |
+| **G2** | Security Agent | Guardian | PII protection |
+| **G3** | Audit Agent | Guardian | Decision logging |
+
+**Phase 2 HITL Checkpoints**:
+- `approve_campaign_launch` - Approve ad campaigns before launch
+- `approve_spend_increase` - Approve budget increases
+- `approve_desirability_gate` - Confirm desirability signal is STRONG_COMMITMENT
+
+### Phase 3: Feasibility Agents
+
+Phase 3 assesses whether the validated value proposition can be built. See [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) for full specification.
+
+**Flow**: `FeasibilityFlow`
+**Crews**: 2 crews (4 agents total, reusing BuildCrew from Phase 2)
+
+#### BuildCrew (3 agents, reused)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **F1** | UX/UI Designer | Forge | Map features to requirements |
+| **F2** | Frontend Developer | Forge | Assess frontend feasibility |
+| **F3** | Backend Developer | Forge | Assess backend feasibility, set signal |
+
+#### GovernanceCrew (1 agent)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **G1** | QA Agent | Guardian | Gate validation |
+
+**Phase 3 HITL Checkpoint**: `approve_feasibility_gate` - Confirm feasibility signal is GREEN
+
+### Phase 4: Viability Agents
+
+Phase 4 validates business model economics and makes the final recommendation. See [08-phase-4-viability.md](./08-phase-4-viability.md) for full specification.
+
+**Flow**: `ViabilityFlow`
+**Crews**: 3 crews (9 agents total)
+
+#### FinanceCrew (3 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **L1** | Financial Controller | Ledger | Calculate unit economics (CAC, LTV, margins) |
+| **L2** | Legal & Compliance | Ledger | Regulatory constraints |
+| **L3** | Economics Reviewer | Ledger | Validate assumptions |
+
+#### SynthesisCrew (3 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **C1** | Product PM | Compass | Synthesize evidence across phases |
+| **C2** | Human Approval Agent | Compass | HITL decision orchestration |
+| **C3** | Roadmap Writer | Compass | Document decision and next steps |
+
+#### GovernanceCrew (3 agents)
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **G1** | QA Agent | Guardian | Final validation |
+| **G2** | Security Agent | Guardian | PII scrubbing |
+| **G3** | Audit Agent | Guardian | Flywheel persistence |
+
+**Phase 4 HITL Checkpoints**:
+- `approve_viability_gate` - Confirm viability signal is PROFITABLE
+- `request_human_decision` - Final pivot/proceed decision
+
 ---
 
-### Phase 1+ Service Side Agents (Sage owns)
+### Service Side Agents (Sage owns)
 
 | Agent | Task Focus |
 |-------|------------|
@@ -536,12 +711,31 @@ Phase 1 agents discover customer reality (Customer Profile) and design value (Va
 
 ## CrewAI Implementation
 
-This organizational structure is the **conceptual design**. Translation to CrewAI implementation will follow.
+This organizational structure maps directly to CrewAI's documented patterns.
 
-**Current CrewAI agents** (`config/agents.yaml`):
-- `onboarding_agent`, `customer_researcher`, `competitor_analyst`, `value_designer`, `validation_agent`, `qa_agent`
+### Pattern Mapping
 
-**Mapping note**: The conceptual specialist agents will be implemented as CrewAI agents over time. Some map directly to existing agents; others represent future capability expansion.
+| Concept | CrewAI Pattern | Implementation |
+|---------|----------------|----------------|
+| Phases (0-4) | Business concepts | Decompose into Flows |
+| Flows | `@start`, `@listen`, `@router` | `OnboardingFlow`, `VPCDiscoveryFlow`, etc. |
+| Crews | Collaborative agent groups | `OnboardingCrew`, `DiscoveryCrew`, etc. |
+| Agents | Individual executors | Defined in `config/agents.yaml` |
+| Tasks | Work items | Defined in `config/tasks.yaml` |
+
+### Implementation Totals
+
+| Metric | Count |
+|--------|-------|
+| **Phases** | 5 (0: Onboarding, 1: VPC Discovery, 2: Desirability, 3: Feasibility, 4: Viability) |
+| **Flows** | 5 (`OnboardingFlow`, `VPCDiscoveryFlow`, `DesirabilityFlow`, `FeasibilityFlow`, `ViabilityFlow`) |
+| **Crews** | 14 (see Complete Crew Summary above) |
+| **Agents** | 44 (unique agent instances across all phases) |
+| **HITL Checkpoints** | 10 (approval gates requiring human decision) |
+
+### Current Status
+
+See [09-status.md](./09-status.md) for current implementation status and deployment details.
 
 ## Naming Conventions
 
@@ -587,6 +781,10 @@ This organizational structure is the **conceptual design**. Translation to CrewA
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-07 | Added CrewAI Pattern Hierarchy section with complete crew summary | Align with CrewAI documentation patterns |
+| 2026-01-07 | Restructured Phase 0-4 agents into crew groupings | Fix one-agent "crews", rename "Flow 1-7" to proper crews |
+| 2026-01-07 | Added Phase 2-4 agent sections (Desirability, Feasibility, Viability) | Complete documentation of all phase agents |
+| 2026-01-07 | Updated CrewAI Implementation section with pattern mapping and totals | Clear mapping of concepts to CrewAI patterns |
 | 2026-01-07 | Replaced VPD terminology section with reference to 03-methodology.md | Single source of truth, reduce duplication |
 | 2026-01-07 | Updated document references to new phase documents (04-08) | Archived 05-phase-0-1-specification.md |
 | 2026-01-07 | Added Related Documents section | Navigation to phase and reference docs |

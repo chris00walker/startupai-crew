@@ -36,11 +36,40 @@ VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DE
 - **Non-linear with pivots**: This is NOT a straight linear process. At any point, a critical failure in Testing Business Ideas can force a pivot (SEGMENT_PIVOT, VALUE_PIVOT, FEATURE_PIVOT, PRICE_PIVOT, COST_PIVOT, MODEL_PIVOT) that loops back to an earlier phase.
 - **Gates are checkpoints**: Each gate (`approve_vpc_completion`, `approve_desirability_gate`, `approve_feasibility_gate`, `approve_viability_gate`) requires evidence-based validation before proceeding.
 
-### 3. Flows + Crews Architecture
-- **Crews**: Autonomous agent teams that collaborate on tasks
-- **Flows**: Event-driven orchestration that coordinates crews
-- **Routers**: Implement governance gates with conditional routing
-- **Structured State**: Pydantic models carry data through the system
+### 3. CrewAI Pattern Hierarchy
+
+This architecture uses CrewAI's documented patterns. Understanding the hierarchy is essential:
+
+```
+PHASE (Business Concept)
+└── FLOW (Orchestration Unit)
+    ├── @start() → Entry point
+    ├── @listen() → Crew.kickoff()
+    │               └── CREW (Collaborative Agent Group)
+    │                   ├── Agent 1 (role, goal, backstory)
+    │                   ├── Agent 2
+    │                   └── Agent N
+    │                       └── Tasks
+    ├── @router() → Conditional branching (gates)
+    └── @listen("label") → Route-specific handlers
+```
+
+**Pattern Definitions** (per CrewAI documentation):
+
+| Pattern | Definition | Key Characteristic |
+|---------|------------|-------------------|
+| **Phase** | Business/methodology concept | NOT a CrewAI construct - decomposed into Flows |
+| **Flow** | Event-driven orchestration with `@start`, `@listen`, `@router` | Controls WHEN and IF crews execute |
+| **Crew** | Collaborative GROUP of agents (2+) | Controls HOW agents collaborate |
+| **Agent** | Individual executor with role/goal/backstory | Performs tasks |
+| **Task** | Specific work item assigned to an agent | Produces output |
+
+**Critical Rule**: A crew must have 2+ agents. One agent is NOT a crew - it's just an agent called within a Flow method.
+
+**Routing & State**:
+- **Routers** (`@router`): Implement governance gates with conditional routing
+- **Structured State**: Pydantic models carry data through the Flow
+- **Listeners**: `@listen("gate_label")` handles route-specific logic
 
 ## Ecosystem Position
 
@@ -88,11 +117,16 @@ VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DE
 
 **Purpose**: Capture business hypothesis and create Founder's Brief
 
-| Crew | Focus | Output |
-|------|-------|--------|
-| Interview Crew (Sage) | 7-area discovery interview | Structured interview responses |
-| QA Crew (Guardian) | Legitimacy screening, intent verification | Validation report |
-| Brief Compilation (Sage) | Synthesize hypothesis | **Founder's Brief** |
+**Flow**: `OnboardingFlow` - Single flow orchestrates the onboarding process
+
+| Crew | Agents | Focus | Output |
+|------|--------|-------|--------|
+| OnboardingCrew | O1, G1, G2, S1 | Interview, validation, synthesis | **Founder's Brief** |
+
+- **O1**: Founder Interview Agent (7-area discovery)
+- **G1**: Concept Validator Agent (legitimacy screening)
+- **G2**: Intent Verification Agent (capture accuracy)
+- **S1**: Brief Compiler Agent (synthesize hypothesis)
 
 **HITL**: `approve_founders_brief` - Founder approves brief before Phase 1
 
@@ -100,12 +134,15 @@ VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DE
 
 **Purpose**: Discover customer reality and design value using VPD framework
 
-| Crew | Focus | Output |
-|------|-------|--------|
-| Discovery Crew (Sage) | Customer interviews, observation, CTA tests | Validated Customer Profile |
-| Value Design Crew (Forge) | Products, Pain Relievers, Gain Creators | Value Map |
-| Pricing Crew (Ledger) | Willingness-to-pay experiments | WTP validation |
-| Fit Assessment (Compass) | Problem-Solution Fit scoring | **Validated VPC** (fit ≥ 70) |
+**Flow**: `VPCDiscoveryFlow` - Orchestrates discovery crews with fit routing
+
+| Crew | Agents | Focus | Output |
+|------|--------|-------|--------|
+| DiscoveryCrew | E1, D1, D2, D3, D4 | Experiment design, evidence collection | SAY + DO evidence |
+| CustomerProfileCrew | J1, J2, P1, P2, G1, G2 | Jobs, Pains, Gains research + ranking | Customer Profile |
+| ValueDesignCrew | V1, V2, V3 | Products, Pain Relievers, Gain Creators | Value Map |
+| WTPCrew | W1, W2 | Willingness-to-pay experiments | WTP validation |
+| FitAssessmentCrew | F1, F2 | Fit scoring, iteration routing | **Validated VPC** (fit ≥ 70) |
 
 **HITL**: `approve_experiment_plan`, `approve_pricing_test`, `approve_vpc_completion`
 
@@ -113,11 +150,13 @@ VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DE
 
 **Purpose**: Test whether customers actually want the value proposition
 
-| Crew | Focus | Output |
-|------|-------|--------|
-| Build Crew (Forge) | Landing pages, testable artifacts | Deployed experiments |
-| Growth Crew (Pulse) | Ad campaigns, analytics tracking | Desirability evidence |
-| Governance (Guardian) | Experiment validation, brand safety | QA approval |
+**Flow**: `DesirabilityFlow` - Orchestrates build/growth with desirability routing
+
+| Crew | Agents | Focus | Output |
+|------|--------|-------|--------|
+| BuildCrew | F1, F2, F3 | Landing pages, testable artifacts | Deployed experiments |
+| GrowthCrew | P1, P2, P3 | Ad campaigns, analytics tracking | Desirability evidence |
+| GovernanceCrew | G1, G2, G3 | Experiment validation, brand safety | QA approval |
 
 **HITL**: `approve_campaign_launch`, `approve_spend_increase`, `approve_desirability_gate`
 
@@ -127,10 +166,12 @@ VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DE
 
 **Purpose**: Assess whether the validated value proposition can be built
 
-| Crew | Focus | Output |
-|------|-------|--------|
-| Build Crew (Forge) | Architecture, cost estimation, constraints | Technical assessment |
-| Governance (Guardian) | Security review, feasibility gate | Approval or downgrade |
+**Flow**: `FeasibilityFlow` - Orchestrates technical assessment with downgrade routing
+
+| Crew | Agents | Focus | Output |
+|------|--------|-------|--------|
+| BuildCrew | F1, F2, F3 | Architecture, cost estimation, constraints | Technical assessment |
+| GovernanceCrew | G1, G2, G3 | Security review, feasibility gate | Approval or downgrade |
 
 **HITL**: `approve_feasibility_gate`
 
@@ -140,11 +181,13 @@ VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DE
 
 **Purpose**: Validate business model economics and make final recommendation
 
-| Crew | Focus | Output |
-|------|-------|--------|
-| Finance Crew (Ledger) | CAC, LTV, unit economics, compliance | Viability assessment |
-| Synthesis Crew (Compass) | Evidence synthesis, pivot/proceed options | Final recommendation |
-| Governance (Guardian) | Audit trail, flywheel learning capture | Validated learnings |
+**Flow**: `ViabilityFlow` - Orchestrates economics analysis with strategic routing
+
+| Crew | Agents | Focus | Output |
+|------|--------|-------|--------|
+| FinanceCrew | L1, L2, L3 | CAC, LTV, unit economics, compliance | Viability assessment |
+| SynthesisCrew | C1, C2, C3 | Evidence synthesis, pivot/proceed options | Final recommendation |
+| GovernanceCrew | G1, G2, G3 | Audit trail, flywheel learning capture | Validated learnings |
 
 **HITL**: `approve_viability_gate`, `request_human_decision`
 

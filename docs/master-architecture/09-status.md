@@ -27,17 +27,54 @@ This document provides an **authoritative, cross-repository view** of implementa
 
 ## Architecture Status
 
+### CrewAI Pattern Hierarchy
+
+> **Single Source**: See [00-introduction.md](./00-introduction.md#3-crewai-pattern-hierarchy) for complete pattern definitions.
+
+The architecture follows CrewAI's documented patterns:
+
+```
+PHASE (Business Concept) → FLOW (Orchestration) → CREW (Agent Group) → AGENT → TASK
+```
+
+| Metric | Count | Notes |
+|--------|-------|-------|
+| **Phases** | 5 | Business concepts (0: Onboarding → 4: Viability) |
+| **Flows** | 5 | Event-driven orchestrators with `@start`, `@listen`, `@router` |
+| **Crews** | 14 | Collaborative agent groups (2+ agents each) |
+| **Agents** | 44 | Individual executors with role/goal/backstory |
+| **HITL Checkpoints** | 10 | Human approval gates |
+
 ### Phase Structure (VPD Framework)
 
 StartupAI implements a 5-phase validation architecture based on Value Proposition Design:
 
-| Phase | Name | Specification | Status |
-|-------|------|---------------|--------|
-| **Phase 0** | Onboarding | [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) | Specified |
-| **Phase 1** | VPC Discovery | [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) | Specified |
-| **Phase 2** | Desirability | [06-phase-2-desirability.md](./06-phase-2-desirability.md) | Specified |
-| **Phase 3** | Feasibility | [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) | Specified |
-| **Phase 4** | Viability | [08-phase-4-viability.md](./08-phase-4-viability.md) | Specified |
+| Phase | Name | Flow | Crews | Agents | Specification |
+|-------|------|------|-------|--------|---------------|
+| **0** | Onboarding | `OnboardingFlow` | 1 | 4 | [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) |
+| **1** | VPC Discovery | `VPCDiscoveryFlow` | 5 | 18 | [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) |
+| **2** | Desirability | `DesirabilityFlow` | 3 | 9 | [06-phase-2-desirability.md](./06-phase-2-desirability.md) |
+| **3** | Feasibility | `FeasibilityFlow` | 2 | 4 | [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) |
+| **4** | Viability | `ViabilityFlow` | 3 | 9 | [08-phase-4-viability.md](./08-phase-4-viability.md) |
+
+### Crew Summary (14 Crews)
+
+| Phase | Crew | Agents | Purpose |
+|-------|------|--------|---------|
+| 0 | `OnboardingCrew` | O1, G1, G2, S1 | Interview, validate, compile brief |
+| 1 | `DiscoveryCrew` | E1, D1-D4 | Experiment design, evidence collection |
+| 1 | `CustomerProfileCrew` | J1-J2, P1-P2, G1-G2 | Jobs, Pains, Gains discovery |
+| 1 | `ValueDesignCrew` | V1-V3 | Products, Pain Relievers, Gain Creators |
+| 1 | `WTPCrew` | W1-W2 | Willingness-to-pay validation |
+| 1 | `FitAssessmentCrew` | F1-F2 | Fit scoring, iteration routing |
+| 2 | `BuildCrew` | F1-F3 | Landing pages, test artifacts |
+| 2 | `GrowthCrew` | P1-P3 | Ad campaigns, desirability signals |
+| 2 | `GovernanceCrew` | G1-G3 | QA, security, audit |
+| 3 | `BuildCrew` | F1-F3 | Technical feasibility (reused) |
+| 3 | `GovernanceCrew` | G1 | Gate validation |
+| 4 | `FinanceCrew` | L1-L3 | Unit economics, compliance |
+| 4 | `SynthesisCrew` | C1-C3 | Evidence synthesis, decision |
+| 4 | `GovernanceCrew` | G1-G3 | Final validation, flywheel |
 
 ### 3-Crew Deployment (AMP Platform)
 
@@ -49,16 +86,15 @@ All three crews are **deployed and online** on CrewAI AMP:
 | **Crew 2: Validation** | `chris00walker/startupai-crew-validation` | `3135e285-c0e6-4451-b7b6-d4a061ac4437` | ✅ Deployed |
 | **Crew 3: Decision** | `chris00walker/startupai-crew-decision` | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | ✅ Deployed |
 
-**Agent Distribution**:
-- Crew 1 (Intake): 4 agents (S1, S2, S3, G1)
-- Crew 2 (Validation): 12 agents (P1-P3, F1-F3, L1-L3, G1-G3)
-- Crew 3 (Decision): 3 agents (C1, C2, C3)
-- **Total**: 19 agents, 32 tasks, 7 HITL checkpoints
+> **Note**: The 3-Crew AMP deployment is a platform-constrained workaround. The canonical architecture uses 5 Flows orchestrating 14 Crews per CrewAI documentation. See [Architecture Migration History](#architecture-migration-history) for context.
 
 ### Architecture Migration History
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-01-07 | CrewAI pattern standardization across all docs | Align with CrewAI documentation: Phase → Flow → Crew → Agent |
+| 2026-01-07 | Fixed one-agent "crews" → consolidated into proper crews | CrewAI definition: crew = collaborative group (2+ agents) |
+| 2026-01-07 | Renamed "Flow 1-7" to proper Crew names in Phase 1 | Terminology correction: those were Crews, not Flows |
 | 2026-01-06 | Crew 1 aligned to CrewAI best practices (100%) | Pydantic schemas, reasoning mode, enriched backstories |
 | 2026-01-05 | Added VPD Phase 0-4 specifications | Framework compliance |
 | 2025-12-05 | Migrated from Flow to Crew architecture | AMP compatibility issues with `type = "flow"` |
@@ -71,7 +107,8 @@ All three crews are **deployed and online** on CrewAI AMP:
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| 3-Crew architecture | ✅ Complete | 19 agents, 32 tasks, 7 HITL checkpoints |
+| 5-Flow/14-Crew architecture | ✅ Specified | 44 agents, 10 HITL checkpoints (canonical) |
+| 3-Crew AMP deployment | ✅ Deployed | Platform workaround for `type = "flow"` issue |
 | AMP deployment | ✅ Online | All 3 crews deployed and accessible |
 | Pydantic output schemas | ✅ Complete | 6 models enforcing structured outputs |
 | HITL integration | ✅ Complete | `human_input: true` on approval tasks |
@@ -315,6 +352,12 @@ Marketing activity feed shows real activity
 
 | Date | Changes |
 |------|---------|
+| **2026-01-07** | CrewAI Pattern Standardization |
+| | Added CrewAI Pattern Hierarchy section (Phase → Flow → Crew → Agent) |
+| | Updated counts: 5 Flows, 14 Crews, 44 Agents, 10 HITL |
+| | Added complete Crew Summary table |
+| | Clarified 3-Crew AMP deployment as platform workaround |
+| | Added Architecture Migration History entries |
 | **2026-01-07** | Full rewrite with cross-repo verification |
 | | Updated phase structure to 0-4 (was 0-3) |
 | | Corrected deployment status: all 3 crews deployed |

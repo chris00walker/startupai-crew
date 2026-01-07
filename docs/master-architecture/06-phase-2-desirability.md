@@ -42,6 +42,27 @@ Test whether customers **actually want** the value proposition designed in Phase
 
 ---
 
+## CrewAI Pattern Mapping
+
+> **Pattern Reference**: See [00-introduction.md](./00-introduction.md) for CrewAI pattern hierarchy.
+
+| Pattern | This Phase |
+|---------|------------|
+| **Phase** | Phase 2: Desirability Validation (business concept) |
+| **Flow** | `DesirabilityFlow` (orchestrates 3 crews) |
+| **Crews** | `BuildCrew`, `GrowthCrew`, `GovernanceCrew` |
+| **Agents** | 9 total (F1-F3, P1-P3, G1-G3) |
+
+### Crew Composition
+
+| Crew | Agents | Purpose |
+|------|--------|---------|
+| **BuildCrew** | F1, F2, F3 | Build landing pages and testable artifacts |
+| **GrowthCrew** | P1, P2, P3 | Run ad campaigns, collect desirability evidence |
+| **GovernanceCrew** | G1, G2, G3 | QA validation, security, audit |
+
+---
+
 ## DesirabilityFlow
 
 ```
@@ -50,6 +71,9 @@ Test whether customers **actually want** the value proposition designed in Phase
 │                                                                              │
 │  Entry: Validated VPC from Phase 1                                          │
 │  Exit: STRONG_COMMITMENT signal OR pivot recommendation                     │
+│                                                                              │
+│  Flow: DesirabilityFlow                                                      │
+│  Crews: BuildCrew, GrowthCrew, GovernanceCrew                               │
 │                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
@@ -538,22 +562,43 @@ class DesirabilityResult(BaseModel):
 
 ---
 
-## Agent Summary
+## Summary
 
-| ID | Agent | Founder | Role |
-|----|-------|---------|------|
-| F1 | UX/UI Designer | Forge | Design landing pages |
-| F2 | Frontend Developer | Forge | Build landing pages |
-| F3 | Backend Developer | Forge | Deploy artifacts |
-| P1 | Ad Creative | Pulse | Generate ad variants |
-| P2 | Communications | Pulse | Write copy |
-| P3 | Analytics | Pulse | Run experiments, compute signals |
-| G1 | QA Agent | Guardian | Methodology + creative QA |
-| G2 | Security Agent | Guardian | PII protection |
-| G3 | Audit Agent | Guardian | Decision logging |
+### CrewAI Pattern Summary
 
-**Total Phase 2 Agents: 9**
-**Total Phase 2 HITL Checkpoints: 3**
+| Pattern | Implementation |
+|---------|----------------|
+| **Phase** | Phase 2: Desirability Validation |
+| **Flow** | `DesirabilityFlow` |
+| **Crews** | 3 crews (see below) |
+
+### Crew Summary
+
+| Crew | Agents | Purpose |
+|------|--------|---------|
+| `BuildCrew` | F1, F2, F3 | Build landing pages and testable artifacts |
+| `GrowthCrew` | P1, P2, P3 | Run ad campaigns, collect evidence |
+| `GovernanceCrew` | G1, G2, G3 | QA, security, audit |
+
+### Agent Summary
+
+| ID | Agent | Founder | Crew | Role |
+|----|-------|---------|------|------|
+| F1 | UX/UI Designer | Forge | BuildCrew | Design landing pages |
+| F2 | Frontend Developer | Forge | BuildCrew | Build landing pages |
+| F3 | Backend Developer | Forge | BuildCrew | Deploy artifacts |
+| P1 | Ad Creative | Pulse | GrowthCrew | Generate ad variants |
+| P2 | Communications | Pulse | GrowthCrew | Write copy |
+| P3 | Analytics | Pulse | GrowthCrew | Run experiments, compute signals |
+| G1 | QA Agent | Guardian | GovernanceCrew | Methodology + creative QA |
+| G2 | Security Agent | Guardian | GovernanceCrew | PII protection |
+| G3 | Audit Agent | Guardian | GovernanceCrew | Decision logging |
+
+**Phase 2 Totals:**
+- Flows: 1 (`DesirabilityFlow`)
+- Crews: 3
+- Agents: 9
+- HITL Checkpoints: 3
 
 ---
 

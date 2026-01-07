@@ -45,6 +45,26 @@ Determine whether the validated value proposition **can be built** with availabl
 
 ---
 
+## CrewAI Pattern Mapping
+
+> **Pattern Reference**: See [00-introduction.md](./00-introduction.md) for CrewAI pattern hierarchy.
+
+| Pattern | This Phase |
+|---------|------------|
+| **Phase** | Phase 3: Feasibility Validation (business concept) |
+| **Flow** | `FeasibilityFlow` (orchestrates 2 crews) |
+| **Crews** | `BuildCrew`, `GovernanceCrew` |
+| **Agents** | 4 total (F1-F3 reused, G1) |
+
+### Crew Composition
+
+| Crew | Agents | Purpose |
+|------|--------|---------|
+| **BuildCrew** | F1, F2, F3 | Technical feasibility assessment |
+| **GovernanceCrew** | G1 | Gate validation (reuses Phase 2 governance) |
+
+---
+
 ## FeasibilityFlow
 
 ```
@@ -52,6 +72,9 @@ Determine whether the validated value proposition **can be built** with availabl
 │                       FEASIBILITY FLOW                                       │
 │                                                                              │
 │  Entry: STRONG_COMMITMENT from Phase 2                                      │
+│                                                                              │
+│  Flow: FeasibilityFlow                                                       │
+│  Crews: BuildCrew, GovernanceCrew                                           │
 │  Exit: GREEN signal OR successful downgrade retest                          │
 │                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
@@ -401,17 +424,37 @@ class FeasibilityResult(BaseModel):
 
 ---
 
-## Agent Summary
+## Summary
 
-| ID | Agent | Founder | Role |
-|----|-------|---------|------|
-| F1 | UX/UI Designer | Forge | Map features to requirements |
-| F2 | Frontend Developer | Forge | Assess frontend feasibility |
-| F3 | Backend Developer | Forge | Assess backend feasibility, set signal |
-| G1 | QA Agent | Guardian | Gate validation |
+### CrewAI Pattern Summary
 
-**Total Phase 3 Agents: 4** (reusing Forge crew from Phase 2)
-**Total Phase 3 HITL Checkpoints: 1**
+| Pattern | Implementation |
+|---------|----------------|
+| **Phase** | Phase 3: Feasibility Validation |
+| **Flow** | `FeasibilityFlow` |
+| **Crews** | 2 crews (see below) |
+
+### Crew Summary
+
+| Crew | Agents | Purpose |
+|------|--------|---------|
+| `BuildCrew` | F1, F2, F3 | Technical feasibility assessment |
+| `GovernanceCrew` | G1 | Gate validation |
+
+### Agent Summary
+
+| ID | Agent | Founder | Crew | Role |
+|----|-------|---------|------|------|
+| F1 | UX/UI Designer | Forge | BuildCrew | Map features to requirements |
+| F2 | Frontend Developer | Forge | BuildCrew | Assess frontend feasibility |
+| F3 | Backend Developer | Forge | BuildCrew | Assess backend feasibility, set signal |
+| G1 | QA Agent | Guardian | GovernanceCrew | Gate validation |
+
+**Phase 3 Totals:**
+- Flows: 1 (`FeasibilityFlow`)
+- Crews: 2 (reusing BuildCrew from Phase 2)
+- Agents: 4
+- HITL Checkpoints: 1
 
 ---
 

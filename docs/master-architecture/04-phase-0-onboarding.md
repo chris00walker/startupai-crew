@@ -40,6 +40,19 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 
 ---
 
+## CrewAI Pattern Mapping
+
+> **Pattern Reference**: See [00-introduction.md](./00-introduction.md) for CrewAI pattern hierarchy.
+
+| Pattern | This Phase |
+|---------|------------|
+| **Phase** | Phase 0: Onboarding (business concept) |
+| **Flow** | `OnboardingFlow` (orchestrates the crew) |
+| **Crew** | `OnboardingCrew` (4 collaborative agents) |
+| **Agents** | O1, G1, G2, S1 |
+
+---
+
 ## OnboardingFlow
 
 ```
@@ -48,6 +61,9 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │                                                                              │
 │  Entry: Founder submits initial idea (text, voice, or conversation)         │
 │  Exit: Approved Founder's Brief ready for Phase 1                           │
+│                                                                              │
+│  Flow: OnboardingFlow                                                        │
+│  Crew: OnboardingCrew (O1, G1, G2, S1)                                      │
 │                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
@@ -58,10 +74,11 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │                                    │                                         │
 │                                    ▼                                         │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                      INTERVIEW CREW                                  │   │
+│  │                      ONBOARDING CREW                                 │   │
+│  │                      (4 Collaborative Agents)                        │   │
 │  │                                                                      │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  FOUNDER INTERVIEW AGENT (O1)                                │   │   │
+│  │  │  O1: FOUNDER INTERVIEW AGENT                                 │   │   │
 │  │  │  Persona: Alex Osterwalder                                   │   │   │
 │  │  │                                                              │   │   │
 │  │  │  Conducts conversational interview to understand:            │   │   │
@@ -75,14 +92,10 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │  │  │                                                              │   │   │
 │  │  │  Output: Interview Transcript + Structured Notes             │   │   │
 │  │  └─────────────────────────────────────────────────────────────┘   │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                    │                                         │
-│                                    ▼                                         │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                      QA CREW                                         │   │
-│  │                                                                      │   │
+│  │                                    │                                │   │
+│  │                                    ▼                                │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  CONCEPT VALIDATOR AGENT (G1)                                │   │   │
+│  │  │  G1: CONCEPT VALIDATOR AGENT                                 │   │   │
 │  │  │                                                              │   │   │
 │  │  │  Validates the concept is legitimate:                        │   │   │
 │  │  │  • NOT illegal (drugs, weapons, fraud, etc.)                │   │   │
@@ -93,9 +106,10 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │  │  │                                                              │   │   │
 │  │  │  Output: Legitimacy Report (PASS/FAIL + reasons)            │   │   │
 │  │  └─────────────────────────────────────────────────────────────┘   │   │
-│  │                                                                      │   │
+│  │                                    │                                │   │
+│  │                                    ▼                                │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  INTENT VERIFICATION AGENT (G2)                              │   │   │
+│  │  │  G2: INTENT VERIFICATION AGENT                               │   │   │
 │  │  │                                                              │   │   │
 │  │  │  Verifies the interview captured intent correctly:           │   │   │
 │  │  │  • Does the summary reflect what Founder said?              │   │   │
@@ -105,26 +119,10 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │  │  │                                                              │   │   │
 │  │  │  Output: Intent Verification Report (PASS/NEEDS FOLLOWUP)   │   │   │
 │  │  └─────────────────────────────────────────────────────────────┘   │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                    │                                         │
-│                          ┌─────────┴─────────┐                              │
-│                          │                   │                               │
-│                    NEEDS FOLLOWUP          PASS                              │
-│                          │                   │                               │
-│                          ▼                   │                               │
-│                   Loop back to               │                               │
-│                   Interview Agent            │                               │
-│                   with specific              │                               │
-│                   questions                  │                               │
-│                          │                   │                               │
-│                          └─────────┬─────────┘                              │
-│                                    │                                         │
-│                                    ▼                                         │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                      BRIEF COMPILATION CREW                          │   │
-│  │                                                                      │   │
+│  │                                    │                                │   │
+│  │                                    ▼                                │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  BRIEF COMPILER AGENT (S1)                                   │   │   │
+│  │  │  S1: BRIEF COMPILER AGENT                                    │   │   │
 │  │  │                                                              │   │   │
 │  │  │  Synthesizes all inputs into structured Founder's Brief:     │   │   │
 │  │  │  • The Idea (concept, one-liner, description)               │   │   │
@@ -138,6 +136,23 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │  │  │  Output: FOUNDER'S BRIEF (Prime Artifact)                   │   │   │
 │  │  └─────────────────────────────────────────────────────────────┘   │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                         │
+│                                    ▼                                         │
+│                         ┌─────────────────────┐                             │
+│                         │  @router()          │                             │
+│                         │  intent_gate        │                             │
+│                         └─────────┬───────────┘                             │
+│                                   │                                          │
+│                    ┌──────────────┼──────────────┐                          │
+│                    │              │              │                           │
+│             [NEEDS_FOLLOWUP]   [FAIL]      [PASS]                           │
+│                    │              │              │                           │
+│                    ▼              ▼              ▼                           │
+│              Loop back      Reject with    Proceed to                       │
+│              to O1 with     explanation    HITL approval                    │
+│              questions                                                       │
+│                    │                             │                           │
+│                    └─────────────────────────────┘                          │
 │                                    │                                         │
 │                                    ▼                                         │
 │                    ┌───────────────────────────────┐                        │
@@ -582,7 +597,17 @@ This phase implements VPD patterns from [03-methodology.md](./03-methodology.md)
 
 ---
 
-## Agent Summary
+## Summary
+
+### CrewAI Pattern Summary
+
+| Pattern | Implementation |
+|---------|----------------|
+| **Phase** | Phase 0: Onboarding |
+| **Flow** | `OnboardingFlow` |
+| **Crew** | `OnboardingCrew` (4 agents) |
+
+### Agent Summary
 
 | ID | Agent | Founder | Role | Output |
 |----|-------|---------|------|--------|
@@ -591,8 +616,11 @@ This phase implements VPD patterns from [03-methodology.md](./03-methodology.md)
 | G2 | Intent Verification Agent | Guardian | Verify capture accuracy | Intent Verification Report |
 | S1 | Brief Compiler Agent | Sage | Synthesize into Brief | **Founder's Brief** |
 
-**Total Phase 0 Agents: 4**
-**Total Phase 0 HITL Checkpoints: 1**
+**Phase 0 Totals:**
+- Flows: 1 (`OnboardingFlow`)
+- Crews: 1 (`OnboardingCrew`)
+- Agents: 4
+- HITL Checkpoints: 1
 
 ---
 

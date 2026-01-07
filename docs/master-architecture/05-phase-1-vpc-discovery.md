@@ -45,6 +45,29 @@ Discover **Customer Reality** (what customers actually need) and design a **Valu
 
 ---
 
+## CrewAI Pattern Mapping
+
+> **Pattern Reference**: See [00-introduction.md](./00-introduction.md) for CrewAI pattern hierarchy.
+
+| Pattern | This Phase |
+|---------|------------|
+| **Phase** | Phase 1: VPC Discovery (business concept) |
+| **Flow** | `VPCDiscoveryFlow` (orchestrates 5 crews) |
+| **Crews** | `DiscoveryCrew`, `CustomerProfileCrew`, `ValueDesignCrew`, `WTPCrew`, `FitAssessmentCrew` |
+| **Agents** | 18 total (E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2) |
+
+### Crew Composition
+
+| Crew | Agents | Purpose |
+|------|--------|---------|
+| **DiscoveryCrew** | E1, D1, D2, D3, D4 | Experiment design + evidence collection (SAY + DO) |
+| **CustomerProfileCrew** | J1, J2, P1, P2, G1, G2 | Research + rank Jobs, Pains, Gains |
+| **ValueDesignCrew** | V1, V2, V3 | Design Products, Pain Relievers, Gain Creators |
+| **WTPCrew** | W1, W2 | Willingness-to-pay experiments |
+| **FitAssessmentCrew** | F1, F2 | Score fit, determine routing |
+
+---
+
 ## VPCDiscoveryFlow (Orchestrator)
 
 ```
@@ -54,34 +77,51 @@ Discover **Customer Reality** (what customers actually need) and design a **Valu
 │  Entry: Founder's Brief from Phase 0                                        │
 │  Exit: Validated VPC with fit_score ≥ 70                                    │
 │                                                                              │
+│  Flow: VPCDiscoveryFlow                                                      │
+│  Crews: DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew,                │
+│         WTPCrew, FitAssessmentCrew                                          │
+│                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │                         ┌─────────────────────┐                             │
+│                         │   @start()          │                             │
 │                         │   Founder's Brief   │                             │
 │                         │   (From Phase 0)    │                             │
 │                         └──────────┬──────────┘                             │
 │                                    │                                         │
 │                                    ▼                                         │
-│                         ┌─────────────────────┐                             │
-│                         │  SEGMENT VALIDATION │                             │
-│                         │      (Flow 1)       │                             │
-│                         └──────────┬──────────┘                             │
-│                                    │                                         │
-│                          ┌─────────┴─────────┐                              │
-│                   [segment_exists]    [segment_not_found]                    │
-│                          │                   │                               │
-│                          │                   ▼                               │
-│                          │          SEGMENT_PIVOT                            │
-│                          │          (Loop to Brief)                          │
-│                          │                                                   │
-│                          ▼                                                   │
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
-│  │                    CUSTOMER PROFILE DISCOVERY                         │  │
+│  │  @listen(start)                                                       │  │
 │  │                                                                       │  │
+│  │  DISCOVERY CREW (E1, D1, D2, D3, D4)                                 │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐    │  │
+│  │  │  E1: Experiment Designer   → Design test mix                 │    │  │
+│  │  │  D1: Customer Interview    → SAY evidence collection         │    │  │
+│  │  │  D2: Observation Agent     → DO-indirect evidence            │    │  │
+│  │  │  D3: CTA Test Agent        → DO-direct evidence              │    │  │
+│  │  │  D4: Evidence Triangulation → Synthesize SAY vs DO           │    │  │
+│  │  └─────────────────────────────────────────────────────────────┘    │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                    │                                         │
+│                                    ▼                                         │
+│                         ┌─────────────────────┐                             │
+│                         │  @router()          │                             │
+│                         │  segment_gate       │                             │
+│                         └─────────┬───────────┘                             │
+│                                   │                                          │
+│                    ┌──────────────┴──────────────┐                          │
+│             [segment_exists]             [segment_not_found]                 │
+│                    │                             │                           │
+│                    │                             ▼                           │
+│                    │                    SEGMENT_PIVOT                        │
+│                    │                    (Loop to Brief)                      │
+│                    ▼                                                         │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │  @listen("segment_exists")                                            │  │
+│  │                                                                       │  │
+│  │  CUSTOMER PROFILE CREW (J1, J2, P1, P2, G1, G2)                      │  │
 │  │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐      │  │
-│  │  │  JOBS DISCOVERY │  │ PAINS DISCOVERY │  │ GAINS DISCOVERY │      │  │
-│  │  │    (Flow 2)     │  │    (Flow 3)     │  │    (Flow 4)     │      │  │
-│  │  │                 │  │                 │  │                 │      │  │
+│  │  │  JOBS           │  │  PAINS          │  │  GAINS          │      │  │
 │  │  │  J1: Research   │  │  P1: Research   │  │  G1: Research   │      │  │
 │  │  │  J2: Rank       │  │  P2: Rank       │  │  G2: Rank       │      │  │
 │  │  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘      │  │
@@ -97,65 +137,79 @@ Discover **Customer Reality** (what customers actually need) and design a **Valu
 │                                    │                                         │
 │                                    ▼                                         │
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
-│  │                    VALUE MAP DESIGN                                   │  │
-│  │                       (Flow 5)                                        │  │
+│  │  @listen(customer_profile_crew)                                       │  │
 │  │                                                                       │  │
-│  │  V1: Solution Designer     → Products & Services                     │  │
-│  │  V2: Pain Reliever Designer → Pain Relievers                         │  │
-│  │  V3: Gain Creator Designer  → Gain Creators                          │  │
+│  │  VALUE DESIGN CREW (V1, V2, V3)                                      │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐    │  │
+│  │  │  V1: Solution Designer     → Products & Services             │    │  │
+│  │  │  V2: Pain Reliever Designer → Pain Relievers                 │    │  │
+│  │  │  V3: Gain Creator Designer  → Gain Creators                  │    │  │
+│  │  └─────────────────────────────────────────────────────────────┘    │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │  @listen(value_design_crew)                                           │  │
 │  │                                                                       │  │
+│  │  WTP CREW (W1, W2)                                                   │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐    │  │
+│  │  │  W1: Pricing Experiment Agent  → Design WTP experiments      │    │  │
+│  │  │  W2: Payment Test Agent        → Execute payment tests       │    │  │
+│  │  └─────────────────────────────────────────────────────────────┘    │  │
+│  │                                                                       │  │
+│  │  ┌───────────────────────────────┐                                   │  │
+│  │  │  HITL: approve_pricing_test   │                                   │  │
+│  │  │  (if real $ involved)         │                                   │  │
+│  │  └───────────────────────────────┘                                   │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │  @listen(wtp_crew)                                                    │  │
+│  │                                                                       │  │
+│  │  FIT ASSESSMENT CREW (F1, F2)                                        │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐    │  │
+│  │  │  F1: Fit Analyst       → Score Problem-Solution Fit          │    │  │
+│  │  │  F2: Iteration Router  → Determine routing                   │    │  │
+│  │  └─────────────────────────────────────────────────────────────┘    │  │
 │  └──────────────────────────────────────────────────────────────────────┘  │
 │                                    │                                         │
 │                                    ▼                                         │
 │                         ┌─────────────────────┐                             │
-│                         │  WILLINGNESS TO PAY │                             │
-│                         │      (Flow 6)       │                             │
-│                         │                     │                             │
-│                         │  W1: Pricing        │                             │
-│                         │  W2: Payment Tests  │                             │
-│                         └──────────┬──────────┘                             │
-│                                    │                                         │
-│                    ┌───────────────────────────────┐                        │
-│                    │  HITL: approve_pricing_test   │                        │
-│                    │  (if real $ involved)         │                        │
-│                    └───────────────────────────────┘                        │
-│                                    │                                         │
-│                                    ▼                                         │
-│                         ┌─────────────────────┐                             │
-│                         │   FIT ASSESSMENT    │                             │
-│                         │      (Flow 7)       │                             │
-│                         │                     │                             │
-│                         │  F1: Fit Analyst    │                             │
-│                         │  F2: Iteration Rtr  │                             │
-│                         └──────────┬──────────┘                             │
-│                                    │                                         │
-│                      ┌─────────────┼─────────────┐                          │
-│                      │             │             │                           │
-│               [fit < 40]    [40 ≤ fit < 70]  [fit ≥ 70]                     │
-│                      │             │             │                           │
-│                      ▼             ▼             ▼                           │
-│              SEGMENT_PIVOT   ITERATE      ┌─────────────────────┐          │
-│              (wrong customer) (refine VPC) │  approve_vpc_compl  │          │
-│                      │             │       │  (HITL)             │          │
-│                      │             │       └──────────┬──────────┘          │
-│                      │             │                  │                      │
-│                      │             │           APPROVE│REJECT                │
-│                      │             │                  │    │                 │
-│                      │             │                  ▼    │                 │
-│                      │             │         ───────────   │                 │
-│                      └─────────────┴──────── To Phase 2 ◄──┘                │
-│                                              Desirability                    │
-│                                              ───────────                     │
+│                         │  @router()          │                             │
+│                         │  fit_gate           │                             │
+│                         └─────────┬───────────┘                             │
+│                                   │                                          │
+│                      ┌────────────┼────────────┐                            │
+│                      │            │            │                             │
+│               [fit < 40]   [40 ≤ fit < 70]  [fit ≥ 70]                      │
+│                      │            │            │                             │
+│                      ▼            ▼            ▼                             │
+│              SEGMENT_PIVOT   ITERATE    ┌─────────────────────┐            │
+│              (wrong customer) (refine)  │  approve_vpc_compl  │            │
+│                      │            │     │  (HITL)             │            │
+│                      │            │     └──────────┬──────────┘            │
+│                      │            │                │                        │
+│                      │            │         APPROVE│REJECT                  │
+│                      │            │                │    │                   │
+│                      │            │                ▼    │                   │
+│                      │            │       ───────────   │                   │
+│                      └────────────┴────── To Phase 2 ◄──┘                  │
+│                                           Desirability                      │
+│                                           ───────────                       │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Flow 1: Segment Validation
+## DiscoveryCrew: Segment Validation + Evidence Collection
 
-**Purpose**: Verify the customer segment from Founder's Brief actually exists and is reachable.
+**Purpose**: Verify the customer segment from Founder's Brief actually exists and is reachable. Collect SAY + DO evidence.
 
-### Agents
+**Crew**: `DiscoveryCrew`
+**Agents**: E1, D1, D2, D3, D4 (5 agents)
+
+### Agent Specifications
 
 #### E1: Experiment Designer
 
@@ -344,7 +398,12 @@ def triangulate_evidence(say_evidence, do_evidence):
 
 ---
 
-## Flow 2: Jobs Discovery
+## CustomerProfileCrew: Jobs, Pains, Gains Discovery
+
+**Crew**: `CustomerProfileCrew`
+**Agents**: J1, J2, P1, P2, G1, G2 (6 agents)
+
+### Jobs Discovery
 
 **Purpose**: Discover what customers are trying to accomplish (Jobs-to-be-Done).
 
@@ -409,11 +468,9 @@ IMPORTANCE SCORE (1-10)
 
 ---
 
-## Flow 3: Pains Discovery
+### Pains Discovery
 
 **Purpose**: Discover what customers want to avoid (Pains).
-
-### Agents
 
 #### P1: Pain Researcher
 
@@ -465,11 +522,9 @@ LOW (1-3): Mild inconvenience
 
 ---
 
-## Flow 4: Gains Discovery
+### Gains Discovery
 
 **Purpose**: Discover what customers desire (Gains).
-
-### Agents
 
 #### G1: Gain Researcher
 
@@ -514,11 +569,14 @@ UNEXPECTED (Delighters)
 
 ---
 
-## Flow 5: Value Map Design
+## ValueDesignCrew: Value Map Design
 
 **Purpose**: Design the Value Map side of the VPC to address discovered Customer Profile.
 
-### Agents
+**Crew**: `ValueDesignCrew`
+**Agents**: V1, V2, V3 (3 agents)
+
+### Agent Specifications
 
 #### V1: Solution Designer
 
@@ -580,11 +638,14 @@ UNEXPECTED (Delighters)
 
 ---
 
-## Flow 6: Willingness to Pay
+## WTPCrew: Willingness to Pay Validation
 
 **Purpose**: Validate that customers will pay for the proposed value.
 
-### Agents
+**Crew**: `WTPCrew`
+**Agents**: W1, W2 (2 agents)
+
+### Agent Specifications
 
 #### W1: Pricing Experiment Agent
 
@@ -635,11 +696,14 @@ VALIDATION (Behavioral)
 
 ---
 
-## Flow 7: Fit Assessment
+## FitAssessmentCrew: Fit Scoring + Iteration Routing
 
 **Purpose**: Score Problem-Solution Fit and route based on result.
 
-### Agents
+**Crew**: `FitAssessmentCrew`
+**Agents**: F1, F2 (2 agents)
+
+### Agent Specifications
 
 #### F1: Fit Analyst
 
@@ -905,31 +969,54 @@ class EvidenceSummary(BaseModel):
 
 ---
 
-## Agent Summary
+## Summary
 
-| ID | Agent | Founder | Flow | Role |
+### CrewAI Pattern Summary
+
+| Pattern | Implementation |
+|---------|----------------|
+| **Phase** | Phase 1: VPC Discovery |
+| **Flow** | `VPCDiscoveryFlow` |
+| **Crews** | 5 crews (see below) |
+
+### Crew Summary
+
+| Crew | Agents | Purpose |
+|------|--------|---------|
+| `DiscoveryCrew` | E1, D1, D2, D3, D4 | Segment validation + evidence collection |
+| `CustomerProfileCrew` | J1, J2, P1, P2, G1, G2 | Jobs, Pains, Gains research + ranking |
+| `ValueDesignCrew` | V1, V2, V3 | Products, Pain Relievers, Gain Creators |
+| `WTPCrew` | W1, W2 | Willingness-to-pay validation |
+| `FitAssessmentCrew` | F1, F2 | Fit scoring + iteration routing |
+
+### Agent Summary
+
+| ID | Agent | Founder | Crew | Role |
 |----|-------|---------|------|------|
-| E1 | Experiment Designer | Sage | 1 | Design experiment mix |
-| D1 | Customer Interview Agent | Sage | 1 | SAY evidence collection |
-| D2 | Observation Agent | Pulse | 1 | DO-indirect evidence |
-| D3 | CTA Test Agent | Pulse | 1 | DO-direct evidence |
-| D4 | Evidence Triangulation Agent | Guardian | 1 | Evidence synthesis |
-| J1 | JTBD Researcher | Sage | 2 | Discover jobs |
-| J2 | Job Ranking Agent | Sage | 2 | Rank jobs |
-| P1 | Pain Researcher | Sage | 3 | Discover pains |
-| P2 | Pain Ranking Agent | Sage | 3 | Rank pains |
-| G1 | Gain Researcher | Sage | 4 | Discover gains |
-| G2 | Gain Ranking Agent | Sage | 4 | Rank gains |
-| V1 | Solution Designer | Forge | 5 | Design products/services |
-| V2 | Pain Reliever Designer | Forge | 5 | Design pain relievers |
-| V3 | Gain Creator Designer | Forge | 5 | Design gain creators |
-| W1 | Pricing Experiment Agent | Ledger | 6 | Design WTP experiments |
-| W2 | Payment Test Agent | Ledger | 6 | Execute payment tests |
-| F1 | Fit Analyst | Compass | 7 | Score fit |
-| F2 | Iteration Router | Compass | 7 | Route by fit score |
+| E1 | Experiment Designer | Sage | DiscoveryCrew | Design experiment mix |
+| D1 | Customer Interview Agent | Sage | DiscoveryCrew | SAY evidence collection |
+| D2 | Observation Agent | Pulse | DiscoveryCrew | DO-indirect evidence |
+| D3 | CTA Test Agent | Pulse | DiscoveryCrew | DO-direct evidence |
+| D4 | Evidence Triangulation Agent | Guardian | DiscoveryCrew | Evidence synthesis |
+| J1 | JTBD Researcher | Sage | CustomerProfileCrew | Discover jobs |
+| J2 | Job Ranking Agent | Sage | CustomerProfileCrew | Rank jobs |
+| P1 | Pain Researcher | Sage | CustomerProfileCrew | Discover pains |
+| P2 | Pain Ranking Agent | Sage | CustomerProfileCrew | Rank pains |
+| G1 | Gain Researcher | Sage | CustomerProfileCrew | Discover gains |
+| G2 | Gain Ranking Agent | Sage | CustomerProfileCrew | Rank gains |
+| V1 | Solution Designer | Forge | ValueDesignCrew | Design products/services |
+| V2 | Pain Reliever Designer | Forge | ValueDesignCrew | Design pain relievers |
+| V3 | Gain Creator Designer | Forge | ValueDesignCrew | Design gain creators |
+| W1 | Pricing Experiment Agent | Ledger | WTPCrew | Design WTP experiments |
+| W2 | Payment Test Agent | Ledger | WTPCrew | Execute payment tests |
+| F1 | Fit Analyst | Compass | FitAssessmentCrew | Score fit |
+| F2 | Iteration Router | Compass | FitAssessmentCrew | Route by fit score |
 
-**Total Phase 1 Agents: 18**
-**Total Phase 1 HITL Checkpoints: 3**
+**Phase 1 Totals:**
+- Flows: 1 (`VPCDiscoveryFlow`)
+- Crews: 5
+- Agents: 18
+- HITL Checkpoints: 3
 
 ---
 

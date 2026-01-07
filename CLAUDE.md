@@ -2,10 +2,10 @@
 
 ## Project Identity
 **Name**: StartupAI AI Founders Engine
-**Purpose**: 3-Crew/19-Agent validation engine with HITL checkpoints
-**Framework**: CrewAI Crews (type="crew") - migrated from Flows
-**Deployment**: CrewAI AMP Platform
-**Status**: 3-Crew architecture DEPLOYED to AMP
+**Purpose**: 5-Flow/14-Crew/44-Agent validation engine with HITL checkpoints
+**Framework**: CrewAI Flows + Crews (canonical); Crews-only (AMP deployment)
+**Deployment**: CrewAI AMP Platform (3-Crew workaround)
+**Status**: Architecture specified, AMP deployment online
 
 ## Critical Context
 **⚠️ IMPORTANT**: This repository is the **brain of the StartupAI ecosystem**. It powers the 6 AI Founders team that delivers Fortune 500-quality strategic analysis.
@@ -14,22 +14,39 @@
 ```
 [Product App] → [Onboarding: Vercel AI SDK] → Collects business data
                                     ↓
-                          [3-Crew Pipeline]
-  ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
-  │ CREW 1: INTAKE  │──▶│ CREW 2: VALID.  │──▶│ CREW 3: DECIDE  │
-  │ (4 agents, 1HITL)│   │ (12 agents, 5HITL)│  │ (3 agents, 1HITL)│
-  └─────────────────┘   └─────────────────┘   └─────────────────┘
+                     [5-Flow / 14-Crew Pipeline]
+  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
+  │ PHASE 0      │──▶│ PHASE 1      │──▶│ PHASE 2      │──▶│ PHASE 3      │──▶│ PHASE 4      │
+  │ Onboarding   │   │ VPC Discovery│   │ Desirability │   │ Feasibility  │   │ Viability    │
+  │ 1 crew, 4 ag │   │ 5 crews,18 ag│   │ 3 crews, 9 ag│   │ 2 crews, 4 ag│   │ 3 crews, 9 ag│
+  └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘
                                     ↓
                        [Structured Reports → Supabase]
                                     ↓
                           [Product App Displays Results]
 ```
 
-### Why 3 Crews (Not Flows)
-AMP handles `type = "crew"` reliably but has issues with `type = "flow"`. The 3-Crew design:
-- Preserves gated validation phases (Desirability → Feasibility → Viability)
-- Enables conditional routing via task `context` dependencies
-- Supports HITL approval workflows at 7 checkpoints
+### CrewAI Pattern Hierarchy
+The architecture follows CrewAI's documented patterns:
+```
+PHASE (Business Concept) → FLOW (Orchestration) → CREW (Agent Group) → AGENT → TASK
+```
+
+| Metric | Canonical | AMP Deployed |
+|--------|-----------|--------------|
+| Phases | 5 | 5 |
+| Flows | 5 | N/A (crews only) |
+| Crews | 14 | 3 |
+| Agents | 44 | 19 |
+| HITL | 10 | 7 |
+
+**Critical Rule**: A crew must have 2+ agents (per CrewAI docs). One agent is NOT a crew.
+
+### Why 3-Crew AMP Deployment (Workaround)
+AMP handles `type = "crew"` reliably but has issues with `type = "flow"`. The 3-Crew deployment is a **platform workaround**, not the canonical architecture:
+- Canonical: 5 Flows orchestrating 14 Crews with `@start`, `@listen`, `@router`
+- Deployed: 3 Crews chained via `InvokeCrewAIAutomationTool`
+- See `docs/master-architecture/09-status.md` for full context
 
 ### Master Architecture
 **Source of Truth**: `docs/master-architecture/`
@@ -224,28 +241,45 @@ All CrewAI flows use a single webhook endpoint with `flow_type` differentiation:
 | **Guardian** | CGO | Governance, accountability, board-level oversight |
 | **Ledger** | CFO | Finance, viability, compliance |
 
-### 3 Crews / 19 Agents
-**Crew 1 (Intake)**: 4 agents - Sage S1/S2/S3, Guardian G1
-**Crew 2 (Validation)**: 12 agents - Pulse P1/P2/P3, Forge F1/F2/F3, Ledger L1/L2/L3, Guardian G1/G2/G3
-**Crew 3 (Decision)**: 3 agents - Compass C1/C2/C3
+### 14 Crews / 44 Agents (Canonical Architecture)
 
-### 7 HITL Checkpoints
-| Crew | Checkpoint | Purpose |
-|------|------------|---------|
-| 1 | `approve_intake_to_validation` | Gate: Intake → Validation |
-| 2 | `approve_campaign_launch` | Ad creative approval |
-| 2 | `approve_spend_increase` | Budget approval |
-| 2 | `approve_desirability_gate` | Gate: Desirability → Feasibility |
-| 2 | `approve_feasibility_gate` | Gate: Feasibility → Viability |
-| 2 | `approve_viability_gate` | Gate: Viability → Decision |
-| 3 | `request_human_decision` | Final pivot/proceed decision |
+| Phase | Flow | Crews | Agents |
+|-------|------|-------|--------|
+| **Phase 0** | OnboardingFlow | OnboardingCrew | 4 (O1, G1, G2, S1) |
+| **Phase 1** | VPCDiscoveryFlow | DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew | 18 |
+| **Phase 2** | DesirabilityFlow | BuildCrew, GrowthCrew, GovernanceCrew | 9 |
+| **Phase 3** | FeasibilityFlow | BuildCrew, GovernanceCrew | 4 |
+| **Phase 4** | ViabilityFlow | FinanceCrew, SynthesisCrew, GovernanceCrew | 9 |
+
+**Note**: BuildCrew and GovernanceCrew are reused across phases.
+
+### AMP Deployment (3 Crews / 19 Agents)
+Due to AMP platform limitations with `type = "flow"`, the canonical architecture is deployed as 3 chained crews:
+- **Crew 1 (Intake)**: 4 agents
+- **Crew 2 (Validation)**: 12 agents
+- **Crew 3 (Decision)**: 3 agents
+
+### 10 HITL Checkpoints (Canonical)
+| Phase | Flow | Checkpoint | Purpose |
+|-------|------|------------|---------|
+| 0 | OnboardingFlow | `approve_brief` | Founder's Brief approval |
+| 1 | VPCDiscoveryFlow | `approve_vpc` | VPC fit validation |
+| 2 | DesirabilityFlow | `approve_campaign_launch` | Ad creative approval |
+| 2 | DesirabilityFlow | `approve_spend_increase` | Budget approval |
+| 2 | DesirabilityFlow | `approve_desirability_gate` | Gate: Desirability → Feasibility |
+| 3 | FeasibilityFlow | `approve_feasibility_gate` | Gate: Feasibility → Viability |
+| 4 | ViabilityFlow | `approve_viability_gate` | Gate: Viability → Decision |
+| 4 | ViabilityFlow | `approve_pivot` | Pivot strategy approval |
+| 4 | ViabilityFlow | `approve_proceed` | Proceed recommendation |
+| 4 | ViabilityFlow | `request_human_decision` | Final pivot/proceed decision |
 
 ### Gated Validation Flow
 ```
-CREW 1 → [HITL] → CREW 2: Desirability → [HITL] → Feasibility → [HITL] → Viability → [HITL] → CREW 3 → [HITL]
+Phase 0 → [HITL] → Phase 1 → [HITL] → Phase 2 → [HITL] → Phase 3 → [HITL] → Phase 4 → [HITL]
 ```
 
-Orchestrated with `InvokeCrewAIAutomationTool` for crew-to-crew chaining.
+Canonical: Orchestrated with `@start`, `@listen`, `@router` decorators in Flows.
+AMP Deployed: Orchestrated with `InvokeCrewAIAutomationTool` for crew-to-crew chaining.
 
 **Full Details**: See `docs/master-architecture/` phase documents (03-08) for authoritative implementation blueprints
 
@@ -457,7 +491,7 @@ docs/master-architecture/
 ---
 **Last Updated**: 2026-01-07
 **Maintainer**: Chris Walker
-**Status**: 3-Crew architecture DEPLOYED to AMP
+**Status**: Canonical architecture specified (5 Flows / 14 Crews / 44 Agents); AMP deployment online (3 Crews / 19 Agents)
 **Critical Note**: This is the BRAIN of the StartupAI ecosystem
 
 ### Migration Notes (2025-12-05)
@@ -486,3 +520,14 @@ docs/master-architecture/
 - Clarified Guardian as board-level oversight (sentinel/overwatch)
 - Full rewrite of `09-status.md` with cross-repo verification against `startupai.site` and `app.startupai.site`
 - Primary blocker corrected: E2E verification (not deployment)
+
+### Architecture Pattern Alignment (2026-01-07)
+- Applied CrewAI documentation patterns as single source of truth
+- Established pattern hierarchy: `PHASE → FLOW → CREW → AGENT → TASK`
+- **Critical rule enforced**: A crew must have 2+ agents (one agent is NOT a crew)
+- Consolidated one-agent "crews" into proper multi-agent crews
+- Canonical architecture: 5 Flows, 14 Crews, 44 Agents, 10 HITL
+- AMP deployment documented as platform workaround (3 Crews, 19 Agents, 7 HITL)
+- Updated all phase documents (04-08) with CrewAI Pattern Mapping sections
+- Updated `02-organization.md` with complete crew structure
+- Updated `09-status.md` with architecture metrics

@@ -41,6 +41,27 @@ Determine whether the validated, feasible value proposition **can make money**. 
 
 ---
 
+## CrewAI Pattern Mapping
+
+> **Pattern Reference**: See [00-introduction.md](./00-introduction.md) for CrewAI pattern hierarchy.
+
+| Pattern | This Phase |
+|---------|------------|
+| **Phase** | Phase 4: Viability Validation + Final Decision (business concept) |
+| **Flow** | `ViabilityFlow` (orchestrates 3 crews) |
+| **Crews** | `FinanceCrew`, `SynthesisCrew`, `GovernanceCrew` |
+| **Agents** | 9 total (L1-L3, C1-C3, G1-G3) |
+
+### Crew Composition
+
+| Crew | Agents | Purpose |
+|------|--------|---------|
+| **FinanceCrew** | L1, L2, L3 | Unit economics, compliance, validation |
+| **SynthesisCrew** | C1, C2, C3 | Evidence synthesis, HITL decision, roadmap |
+| **GovernanceCrew** | G1, G2, G3 | QA, security, audit |
+
+---
+
 ## ViabilityFlow
 
 ```
@@ -49,6 +70,9 @@ Determine whether the validated, feasible value proposition **can make money**. 
 │                                                                              │
 │  Entry: GREEN feasibility signal from Phase 3                               │
 │  Exit: VALIDATED or KILLED with evidence-based recommendation               │
+│                                                                              │
+│  Flow: ViabilityFlow                                                         │
+│  Crews: FinanceCrew, SynthesisCrew, GovernanceCrew                          │
 │                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
@@ -587,22 +611,43 @@ class FinalValidationReport(BaseModel):
 
 ---
 
-## Agent Summary
+## Summary
 
-| ID | Agent | Founder | Role |
-|----|-------|---------|------|
-| L1 | Financial Controller | Ledger | Calculate unit economics |
-| L2 | Legal & Compliance | Ledger | Regulatory constraints |
-| L3 | Economics Reviewer | Ledger | Validate assumptions |
-| C1 | Product PM | Compass | Synthesize evidence |
-| C2 | Human Approval | Compass | HITL decision |
-| C3 | Roadmap Writer | Compass | Document decision |
-| G1 | QA Agent | Guardian | Final validation |
-| G2 | Security Agent | Guardian | PII scrubbing |
-| G3 | Audit Agent | Guardian | Flywheel persistence |
+### CrewAI Pattern Summary
 
-**Total Phase 4 Agents: 9**
-**Total Phase 4 HITL Checkpoints: 2**
+| Pattern | Implementation |
+|---------|----------------|
+| **Phase** | Phase 4: Viability + Final Decision |
+| **Flow** | `ViabilityFlow` |
+| **Crews** | 3 crews (see below) |
+
+### Crew Summary
+
+| Crew | Agents | Purpose |
+|------|--------|---------|
+| `FinanceCrew` | L1, L2, L3 | Unit economics, compliance, validation |
+| `SynthesisCrew` | C1, C2, C3 | Evidence synthesis, HITL decision, roadmap |
+| `GovernanceCrew` | G1, G2, G3 | QA, security, audit |
+
+### Agent Summary
+
+| ID | Agent | Founder | Crew | Role |
+|----|-------|---------|------|------|
+| L1 | Financial Controller | Ledger | FinanceCrew | Calculate unit economics |
+| L2 | Legal & Compliance | Ledger | FinanceCrew | Regulatory constraints |
+| L3 | Economics Reviewer | Ledger | FinanceCrew | Validate assumptions |
+| C1 | Product PM | Compass | SynthesisCrew | Synthesize evidence |
+| C2 | Human Approval | Compass | SynthesisCrew | HITL decision |
+| C3 | Roadmap Writer | Compass | SynthesisCrew | Document decision |
+| G1 | QA Agent | Guardian | GovernanceCrew | Final validation |
+| G2 | Security Agent | Guardian | GovernanceCrew | PII scrubbing |
+| G3 | Audit Agent | Guardian | GovernanceCrew | Flywheel persistence |
+
+**Phase 4 Totals:**
+- Flows: 1 (`ViabilityFlow`)
+- Crews: 3
+- Agents: 9
+- HITL Checkpoints: 2
 
 ---
 
