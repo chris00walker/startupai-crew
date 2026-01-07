@@ -18,7 +18,7 @@
   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐   ┌──────────────┐
   │ PHASE 0      │──▶│ PHASE 1      │──▶│ PHASE 2      │──▶│ PHASE 3      │──▶│ PHASE 4      │
   │ Onboarding   │   │ VPC Discovery│   │ Desirability │   │ Feasibility  │   │ Viability    │
-  │ 1 crew, 4 ag │   │ 5 crews,18 ag│   │ 3 crews, 9 ag│   │ 2 crews, 4 ag│   │ 3 crews, 9 ag│
+  │ 1 crew, 4 ag │   │ 5 crews,18 ag│   │ 3 crews, 9 ag│   │ 2 crews, 5 ag│   │ 3 crews, 9 ag│
   └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘   └──────────────┘
                                     ↓
                        [Structured Reports → Supabase]
@@ -37,7 +37,7 @@ PHASE (Business Concept) → FLOW (Orchestration) → CREW (Agent Group) → AGE
 | Phases | 5 | 5 |
 | Flows | 5 | N/A (crews only) |
 | Crews | 14 | 3 |
-| Agents | 44 | 19 |
+| Agents | 45 | 19 |
 | HITL | 10 | 7 |
 
 **Critical Rule**: A crew must have 2+ agents (per CrewAI docs). One agent is NOT a crew.

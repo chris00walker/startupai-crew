@@ -42,7 +42,7 @@ PHASE (Business Concept) → FLOW (Orchestration) → CREW (Agent Group) → AGE
 | **Phases** | 5 | Business concepts (0: Onboarding → 4: Viability) |
 | **Flows** | 5 | Event-driven orchestrators with `@start`, `@listen`, `@router` |
 | **Crews** | 14 | Collaborative agent groups (2+ agents each) |
-| **Agents** | 44 | Individual executors with role/goal/backstory |
+| **Agents** | 45 | Individual executors with role/goal/backstory |
 | **HITL Checkpoints** | 10 | Human approval gates |
 
 ### Phase Structure (VPD Framework)
@@ -54,7 +54,7 @@ StartupAI implements a 5-phase validation architecture based on Value Propositio
 | **0** | Onboarding | `OnboardingFlow` | 1 | 4 | [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) |
 | **1** | VPC Discovery | `VPCDiscoveryFlow` | 5 | 18 | [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) |
 | **2** | Desirability | `DesirabilityFlow` | 3 | 9 | [06-phase-2-desirability.md](./06-phase-2-desirability.md) |
-| **3** | Feasibility | `FeasibilityFlow` | 2 | 4 | [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) |
+| **3** | Feasibility | `FeasibilityFlow` | 2 | 5 | [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) |
 | **4** | Viability | `ViabilityFlow` | 3 | 9 | [08-phase-4-viability.md](./08-phase-4-viability.md) |
 
 ### Crew Summary (14 Crews)
@@ -63,15 +63,15 @@ StartupAI implements a 5-phase validation architecture based on Value Propositio
 |-------|------|--------|---------|
 | 0 | `OnboardingCrew` | O1, G1, G2, S1 | Interview, validate, compile brief |
 | 1 | `DiscoveryCrew` | E1, D1-D4 | Experiment design, evidence collection |
-| 1 | `CustomerProfileCrew` | J1-J2, P1-P2, G1-G2 | Jobs, Pains, Gains discovery |
+| 1 | `CustomerProfileCrew` | J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK | Jobs, Pains, Gains discovery |
 | 1 | `ValueDesignCrew` | V1-V3 | Products, Pain Relievers, Gain Creators |
 | 1 | `WTPCrew` | W1-W2 | Willingness-to-pay validation |
-| 1 | `FitAssessmentCrew` | F1-F2 | Fit scoring, iteration routing |
+| 1 | `FitAssessmentCrew` | FIT_SCORE, FIT_ROUTE | Fit scoring, iteration routing |
 | 2 | `BuildCrew` | F1-F3 | Landing pages, test artifacts |
 | 2 | `GrowthCrew` | P1-P3 | Ad campaigns, desirability signals |
 | 2 | `GovernanceCrew` | G1-G3 | QA, security, audit |
 | 3 | `BuildCrew` | F1-F3 | Technical feasibility (reused) |
-| 3 | `GovernanceCrew` | G1 | Gate validation |
+| 3 | `GovernanceCrew` | G1, G2 | Gate validation |
 | 4 | `FinanceCrew` | L1-L3 | Unit economics, compliance |
 | 4 | `SynthesisCrew` | C1-C3 | Evidence synthesis, decision |
 | 4 | `GovernanceCrew` | G1-G3 | Final validation, flywheel |
@@ -107,7 +107,7 @@ All three crews are **deployed and online** on CrewAI AMP:
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| 5-Flow/14-Crew architecture | ✅ Specified | 44 agents, 10 HITL checkpoints (canonical) |
+| 5-Flow/14-Crew architecture | ✅ Specified | 45 agents, 10 HITL checkpoints (canonical) |
 | 3-Crew AMP deployment | ✅ Deployed | Platform workaround for `type = "flow"` issue |
 | AMP deployment | ✅ Online | All 3 crews deployed and accessible |
 | Pydantic output schemas | ✅ Complete | 6 models enforcing structured outputs |
@@ -354,7 +354,7 @@ Marketing activity feed shows real activity
 |------|---------|
 | **2026-01-07** | CrewAI Pattern Standardization |
 | | Added CrewAI Pattern Hierarchy section (Phase → Flow → Crew → Agent) |
-| | Updated counts: 5 Flows, 14 Crews, 44 Agents, 10 HITL |
+| | Updated counts: 5 Flows, 14 Crews, 45 Agents, 10 HITL |
 | | Added complete Crew Summary table |
 | | Clarified 3-Crew AMP deployment as platform workaround |
 | | Added Architecture Migration History entries |
