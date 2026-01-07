@@ -1,11 +1,13 @@
+---
+purpose: Phase 4 specification - Viability validation (can we make money?)
+status: active
+last_reviewed: 2026-01-07
+vpd_compliance: true
+---
+
 # Phase 4: Viability Validation
 
-**Version**: 1.0.0
-**Status**: Active
-**Last Updated**: 2026-01-06
-**Methodology Reference**: [03-methodology.md](./03-methodology.md)
-
----
+> **Methodology Reference**: See [03-methodology.md](./03-methodology.md) for VPD framework patterns.
 
 ## Purpose
 
@@ -737,7 +739,22 @@ TERMINAL: VALIDATED or KILLED
 
 ---
 
-**Document Version**: 1.0.0
-**Last Updated**: 2026-01-06
-**Previous Phase**: [07-phase-3-feasibility.md](./07-phase-3-feasibility.md)
-**Final Phase**: This is the terminal validation phase
+## Related Documents
+
+### Architecture
+- [00-introduction.md](./00-introduction.md) - Quick start and orientation
+- [01-ecosystem.md](./01-ecosystem.md) - Three-service architecture overview
+- [02-organization.md](./02-organization.md) - 6 AI Founders and agents
+- [03-methodology.md](./03-methodology.md) - VPD framework reference
+
+### Phase Specifications
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery
+- [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
+- [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation (previous phase)
+- **Phase 4: Viability** - (this document, terminal phase)
+
+### Reference
+- [09-status.md](./09-status.md) - Current implementation status
+- [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
+- [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
