@@ -219,10 +219,10 @@ All CrewAI flows use a single webhook endpoint with `flow_type` differentiation:
 |---------|-------|----------------|
 | **Sage** | CSO | Strategy, VPC design, owns Service Side |
 | **Forge** | CTO | Build, technical feasibility |
-| **Pulse** | CGO | Growth, market signals |
+| **Pulse** | CMO | Marketing, market signals, desirability evidence |
 | **Compass** | CPO | Balance, synthesis, pivot/proceed |
-| **Guardian** | CGO | Governance, accountability |
-| **Ledger** | CFO | Finance, viability |
+| **Guardian** | CGO | Governance, accountability, board-level oversight |
+| **Ledger** | CFO | Finance, viability, compliance |
 
 ### 3 Crews / 19 Agents
 **Crew 1 (Intake)**: 4 agents - Sage S1/S2/S3, Guardian G1
@@ -455,7 +455,7 @@ docs/master-architecture/
 - CrewAI Docs: https://docs.crewai.com
 
 ---
-**Last Updated**: 2026-01-06
+**Last Updated**: 2026-01-07
 **Maintainer**: Chris Walker
 **Status**: 3-Crew architecture DEPLOYED to AMP
 **Critical Note**: This is the BRAIN of the StartupAI ecosystem
@@ -478,3 +478,11 @@ docs/master-architecture/
 - Split phases: 04 (Onboarding), 05 (VPC Discovery), 06 (Desirability), 07 (Feasibility), 08 (Viability)
 - Renamed status doc from `04-status.md` to `09-status.md`
 - Archived old monolithic specs to `archive/`
+
+### Documentation Standardization (2026-01-07)
+- All 10 docs now have consistent YAML frontmatter with `vpd_compliance: true`
+- All docs have Related Documents navigation section
+- Updated Pulse title: CGO → CMO (Chief Marketing Officer)
+- Clarified Guardian as board-level oversight (sentinel/overwatch)
+- Full rewrite of `09-status.md` with cross-repo verification against `startupai.site` and `app.startupai.site`
+- Primary blocker corrected: E2E verification (not deployment)
