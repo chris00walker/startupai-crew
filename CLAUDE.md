@@ -33,12 +33,22 @@ AMP handles `type = "crew"` reliably but has issues with `type = "flow"`. The 3-
 
 ### Master Architecture
 **Source of Truth**: `docs/master-architecture/`
-- `01-ecosystem.md` - Three-service overview
-- `02-organization.md` - 6 founders, 18 agents
-- `03-validation-spec.md` - **AUTHORITATIVE BLUEPRINT** (complete implementation spec)
-- `04-status.md` - Honest assessment
-- `reference/api-contracts.md` - All API specifications
-- `reference/approval-workflows.md` - HITL patterns
+
+| Document | Purpose |
+|----------|---------|
+| `00-introduction.md` | Repository architecture & quick start |
+| `01-ecosystem.md` | Three-service overview |
+| `02-organization.md` | 6 founders, agents, VPD terminology |
+| `03-methodology.md` | **VPD framework, evidence hierarchy, templates** |
+| `04-phase-0-onboarding.md` | Phase 0: Founder's Brief capture |
+| `05-phase-1-vpc-discovery.md` | Phase 1: VPC Discovery (Customer Profile + Value Map) |
+| `06-phase-2-desirability.md` | Phase 2: Desirability validation |
+| `07-phase-3-feasibility.md` | Phase 3: Feasibility validation |
+| `08-phase-4-viability.md` | Phase 4: Viability + Final Decision |
+| `09-status.md` | Current state and blockers |
+| `reference/` | API contracts, approval workflows, database schemas |
+
+**Phase Documents** follow a consistent template with: Purpose, Entry/Exit criteria, Flow diagrams, Agent specs, Output schemas, HITL checkpoints.
 
 ### CrewAI Documentation
 **Location**: `docs/crewai-documentation/` (34 files, comprehensive reference)
@@ -237,7 +247,7 @@ CREW 1 → [HITL] → CREW 2: Desirability → [HITL] → Feasibility → [HITL]
 
 Orchestrated with `InvokeCrewAIAutomationTool` for crew-to-crew chaining.
 
-**Full Details**: See `docs/master-architecture/03-validation-spec.md` (authoritative implementation blueprint)
+**Full Details**: See `docs/master-architecture/` phase documents (03-08) for authoritative implementation blueprints
 
 ## API Interface
 ### Input Format
@@ -320,24 +330,23 @@ export async function POST(req: Request) {
 
 ## Implementation Roadmap
 
-### Phase 1: Service Side + Desirability (Current)
-1. Create state schemas (`state_schemas.py`)
-2. Build Service Crew
-3. Build Analysis Crew
-4. Build Governance Crew (Phase 1)
-5. Create Phase 1 Flow
+### Validation Funnel (5 Phases)
+| Phase | Purpose | Agents | Key Output |
+|-------|---------|--------|------------|
+| **Phase 0** | Onboarding | 4 (O1, G1, G2, S1) | Founder's Brief |
+| **Phase 1** | VPC Discovery | 18 | Validated VPC (fit ≥ 70) |
+| **Phase 2** | Desirability | 9 | STRONG_COMMITMENT signal |
+| **Phase 3** | Feasibility | 4 | GREEN signal |
+| **Phase 4** | Viability | 9 | PROFITABLE signal / Decision |
 
-### Phase 2: Commercial Side + Build/Test
-1. Build Crew, Growth Crew, Synthesis Crew
-2. Add pivot/proceed router logic
-3. Implement evidence synthesis
+**Detailed Specs**: See `docs/master-architecture/` phase documents:
+- `04-phase-0-onboarding.md` - Founder's Brief capture
+- `05-phase-1-vpc-discovery.md` - Customer Profile + Value Map
+- `06-phase-2-desirability.md` - "Do they want it?"
+- `07-phase-3-feasibility.md` - "Can we build it?"
+- `08-phase-4-viability.md` - "Can we make money?"
 
-### Phase 3: Governance + Viability
-1. Finance Crew
-2. Enhanced Governance Crew
-3. Flywheel learning capture
-
-**Detailed Plan**: See `docs/master-architecture/03-validation-spec.md`
+**Methodology**: See `docs/master-architecture/03-methodology.md` for VPD framework, SAY vs DO evidence hierarchy, Test Cards, Learning Cards.
 
 ## Troubleshooting
 ### "Repository wrong" error
@@ -423,15 +432,26 @@ Agents are automatically invoked based on context and trigger words in their des
 ## Documentation
 
 ### Master Architecture (Ecosystem Source of Truth)
-- `docs/master-architecture/01-ecosystem.md` - Three-service overview
-- `docs/master-architecture/02-organization.md` - 6 founders, 18 agents
-- `docs/master-architecture/03-validation-spec.md` - Technical blueprint
-- `docs/master-architecture/04-status.md` - Status assessment
-- `docs/master-architecture/reference/` - API contracts, approval workflows
+```
+docs/master-architecture/
+├── 00-introduction.md         # Quick start
+├── 01-ecosystem.md            # Three-service overview
+├── 02-organization.md         # 6 founders, agents
+├── 03-methodology.md          # VPD framework, evidence hierarchy
+├── 04-phase-0-onboarding.md   # Phase 0: Founder's Brief
+├── 05-phase-1-vpc-discovery.md # Phase 1: VPC Discovery
+├── 06-phase-2-desirability.md # Phase 2: Desirability
+├── 07-phase-3-feasibility.md  # Phase 3: Feasibility
+├── 08-phase-4-viability.md    # Phase 4: Viability + Decision
+├── 09-status.md               # Current state
+├── reference/                 # API contracts, approval workflows
+└── archive/                   # Old monolithic specs
+```
 
 ### Service-Specific
 - Deployment: `docs/deployment/`
 - Testing: `docs/testing/`
+- Concepts: `docs/concepts/innovation-physics.md`
 - CrewAI Docs: https://docs.crewai.com
 
 ---
@@ -451,3 +471,10 @@ Agents are automatically invoked based on context and trigger words in their des
 - Crew chaining implemented with `InvokeCrewAIAutomationTool`
 - Separate GitHub repos: `startupai-crew`, `startupai-crew-validation`, `startupai-crew-decision`
 - Environment variables for chaining must be set in AMP dashboard (see above)
+
+### Documentation Restructure (2026-01-06)
+- Reorganized `docs/master-architecture/` into separate phase documents
+- Created `03-methodology.md` as reusable VPD framework reference
+- Split phases: 04 (Onboarding), 05 (VPC Discovery), 06 (Desirability), 07 (Feasibility), 08 (Viability)
+- Renamed status doc from `04-status.md` to `09-status.md`
+- Archived old monolithic specs to `archive/`

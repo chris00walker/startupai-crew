@@ -2,7 +2,9 @@
 
 This directory contains the **ecosystem source of truth** for StartupAI's multi-phase crew architecture.
 
-> **VPD Framework**: StartupAI implements the Value Proposition Design (VPD) framework by Osterwalder/Pigneur. Phase 0-1 specification provides the authoritative VPD implementation.
+> **VPD Framework**: StartupAI implements the Value Proposition Design (VPD) framework by Osterwalder/Pigneur. The phase specifications provide authoritative VPD implementation patterns.
+
+---
 
 ## Reading Order
 
@@ -10,13 +12,93 @@ Start here and progress through the numbered documents:
 
 | Order | Document | Purpose | When to Read |
 |-------|----------|---------|--------------|
-| 0 | [00-introduction.md](./00-introduction.md) | This repo's architecture & quick start | First - get oriented |
+| 0 | [00-introduction.md](./00-introduction.md) | Repository architecture & quick start | First - get oriented |
 | 1 | [01-ecosystem.md](./01-ecosystem.md) | 3-service architecture overview | Second - understand the system |
 | 2 | [02-organization.md](./02-organization.md) | 6 founders, agents, VPD terminology | Third - understand the team |
-| 3 | **[05-phase-0-1-specification.md](./05-phase-0-1-specification.md)** | **Phase 0-1 VPD implementation** | **Before implementing Phase 0/1** |
-| 4 | [03-validation-spec.md](./03-validation-spec.md) | Phase 2+ validation flow | When building validation crews |
-| 4.5 | [../innovation-physics.md](../innovation-physics.md) | Non-linear routing logic | When understanding pivot decisions |
-| 5 | [04-status.md](./04-status.md) | Current state and blockers | Before starting any work |
+| 3 | [03-methodology.md](./03-methodology.md) | **VPD framework, evidence hierarchy, templates** | Before any implementation |
+| 4 | [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) | Phase 0: Founder's Brief capture | When implementing onboarding |
+| 5 | [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) | Phase 1: VPC Discovery (Customer Profile + Value Map) | When implementing discovery |
+| 6 | [06-phase-2-desirability.md](./06-phase-2-desirability.md) | Phase 2: Desirability validation | When implementing desirability |
+| 7 | [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) | Phase 3: Feasibility validation | When implementing feasibility |
+| 8 | [08-phase-4-viability.md](./08-phase-4-viability.md) | Phase 4: Viability + Final Decision | When implementing viability |
+| 9 | [09-status.md](./09-status.md) | Current state and blockers | Before starting any work |
+
+---
+
+## Phase Overview
+
+```
+                         StartupAI Validation Funnel
+                         ═══════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  PHASE 0: ONBOARDING                                                        │
+│  ────────────────────                                                       │
+│  • Input: Raw founder idea                                                  │
+│  • Agents: O1, G1, G2, S1 (4 agents)                                       │
+│  • Output: Founder's Brief                                                  │
+│  • HITL: approve_founders_brief                                             │
+│  • Purpose: Capture hypothesis (NOT validate)                               │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  PHASE 1: VPC DISCOVERY                                                     │
+│  ──────────────────────                                                     │
+│  • Input: Founder's Brief                                                   │
+│  • Agents: E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2 (18 agents)│
+│  • Output: Validated VPC (fit ≥ 70)                                        │
+│  • HITL: approve_experiment_plan, approve_pricing_test, approve_vpc_compl  │
+│  • Purpose: Discover customer reality, design value                         │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  PHASE 2: DESIRABILITY                                                      │
+│  ─────────────────────                                                      │
+│  • Input: Validated VPC                                                     │
+│  • Agents: F1-F3, P1-P3, G1-G3 (9 agents)                                  │
+│  • Output: STRONG_COMMITMENT signal                                         │
+│  • HITL: approve_campaign_launch, approve_spend_increase, approve_desr_gate│
+│  • Purpose: Test "Do customers want it?" with real behavior                 │
+│  • Pivots: SEGMENT_PIVOT, VALUE_PIVOT                                       │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  PHASE 3: FEASIBILITY                                                       │
+│  ────────────────────                                                       │
+│  • Input: Desirability evidence                                             │
+│  • Agents: F1-F3, G1 (4 agents)                                            │
+│  • Output: GREEN feasibility signal                                         │
+│  • HITL: approve_feasibility_gate                                           │
+│  • Purpose: Test "Can we build it?" with technical assessment              │
+│  • Pivots: FEATURE_PIVOT (downgrade), KILL                                  │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  PHASE 4: VIABILITY                                                         │
+│  ──────────────────                                                         │
+│  • Input: Feasibility artifact                                              │
+│  • Agents: L1-L3, C1-C3, G1-G3 (9 agents)                                  │
+│  • Output: PROFITABLE signal OR human decision                              │
+│  • HITL: approve_viability_gate, request_human_decision                     │
+│  • Purpose: Test "Can we make money?" with unit economics                   │
+│  • Pivots: PRICE_PIVOT, COST_PIVOT, MODEL_PIVOT, KILL                       │
+└────────────────────────────────────┬────────────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  TERMINAL: VALIDATED or KILLED                                              │
+│  ────────────────────────────────                                           │
+│  • Evidence trail documented                                                │
+│  • Learnings captured to flywheel                                           │
+│  • Final recommendation delivered                                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## Reference Documents
 
@@ -32,43 +114,54 @@ Detailed specifications extracted for standalone reference:
 | [reference/product-artifacts.md](./reference/product-artifacts.md) | Smart canvas architecture |
 | [reference/database-schemas.md](./reference/database-schemas.md) | SQL schema definitions |
 
+---
+
 ## Quick Navigation
+
+### By Phase
+
+- **Phase 0 (Onboarding)**: [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- **Phase 1 (VPC Discovery)**: [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - Customer Profile + Value Map
+- **Phase 2 (Desirability)**: [06-phase-2-desirability.md](./06-phase-2-desirability.md) - "Do they want it?"
+- **Phase 3 (Feasibility)**: [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - "Can we build it?"
+- **Phase 4 (Viability)**: [08-phase-4-viability.md](./08-phase-4-viability.md) - "Can we make money?"
 
 ### By Topic
 
-- **Architecture**: 01-ecosystem.md
-- **AI Founders**: 02-organization.md (canonical source)
-- **Phase 0-1 Agents**: 02-organization.md (O1, G1, G2, S1 + 18 Phase 1 agents)
-- **VPD Framework**: 05-phase-0-1-specification.md (Value Proposition Design implementation)
-- **Phase 0 (Onboarding)**: 05-phase-0-1-specification.md (Founder's Brief capture)
-- **Phase 1 (VPC Discovery)**: 05-phase-0-1-specification.md (Customer Profile + Value Map)
-- **Phase 2+ Validation**: 03-validation-spec.md (Desirability → Feasibility → Viability)
-- **Innovation Physics**: ../innovation-physics.md (non-linear routing)
-- **Flywheel Learning**: reference/flywheel-learning.md (competitive moat)
-- **AMP Platform**: reference/amp-configuration.md
-- **API Integration**: reference/api-contracts.md
-- **HITL Approvals**: reference/approval-workflows.md
-- **What Works Today**: 04-status.md
+- **Architecture**: [01-ecosystem.md](./01-ecosystem.md)
+- **AI Founders**: [02-organization.md](./02-organization.md) (canonical source)
+- **VPD Methodology**: [03-methodology.md](./03-methodology.md) (Test Cards, Learning Cards, SAY vs DO)
+- **Innovation Physics**: [concepts/innovation-physics.md](../concepts/innovation-physics.md) (non-linear routing)
+- **Flywheel Learning**: [reference/flywheel-learning.md](./reference/flywheel-learning.md) (competitive moat)
+- **AMP Platform**: [reference/amp-configuration.md](./reference/amp-configuration.md)
+- **API Integration**: [reference/api-contracts.md](./reference/api-contracts.md)
+- **HITL Approvals**: [reference/approval-workflows.md](./reference/approval-workflows.md)
+- **Current Status**: [09-status.md](./09-status.md)
 
 ### By Task
 
-- **"I'm new, where do I start?"** → Read 00 → 01 → 02 → 05 → 03 → 04 in order
-- **"I'm implementing Phase 0 or 1"** → 05-phase-0-1-specification.md (VPD framework)
-- **"What is VPD/Value Proposition Design?"** → 05-phase-0-1-specification.md
-- **"I need to integrate with CrewAI API"** → reference/api-contracts.md
-- **"I'm implementing approval UI"** → reference/approval-workflows.md
-- **"I want to understand the learning system"** → reference/flywheel-learning.md
-- **"I'm configuring AMP deployment"** → reference/amp-configuration.md
-- **"What's the current status?"** → 04-status.md
-- **"Who owns what?"** → 02-organization.md
-- **"How do routers and pivots work?"** → ../innovation-physics.md
-- **"Why did the flow route to pivot?"** → 03-validation-spec.md (Innovation Physics section)
+- **"I'm new, where do I start?"** → Read 00 → 01 → 02 → 03 → (phase you're working on) → 09
+- **"What is VPD/Value Proposition Design?"** → [03-methodology.md](./03-methodology.md)
+- **"I'm implementing a specific phase"** → Go to that phase document (04-08)
+- **"I need to integrate with CrewAI API"** → [reference/api-contracts.md](./reference/api-contracts.md)
+- **"I'm implementing approval UI"** → [reference/approval-workflows.md](./reference/approval-workflows.md)
+- **"I want to understand the learning system"** → [reference/flywheel-learning.md](./reference/flywheel-learning.md)
+- **"How do routers and pivots work?"** → [03-methodology.md](./03-methodology.md) (Innovation Physics section)
+- **"What's the current status?"** → [09-status.md](./09-status.md)
+- **"Who owns what?"** → [02-organization.md](./02-organization.md)
 
-## Cross-References
+---
 
-- Work tracking: `../work/` (backlog, phases, roadmap)
-- Environment setup: `../environments.md`
-- Other repos reference this directory as source of truth
+## Archive
+
+Previous versions of specifications preserved for reference:
+
+| Document | Notes |
+|----------|-------|
+| [archive/03-validation-spec.md](./archive/03-validation-spec.md) | Original monolithic validation spec (Phase 2-4 combined) |
+| [archive/05-phase-0-1-specification.md](./archive/05-phase-0-1-specification.md) | Original Phase 0+1 combined spec |
+
+---
 
 ## Downstream Repositories
 
@@ -82,6 +175,19 @@ These repositories consume this architecture:
   - Blockers: `startupai.site/docs/work/cross-repo-blockers.md`
 
 ---
-**Last Updated**: 2026-01-05
 
-**Latest Changes**: VPD framework alignment, Phase 0-1 specification integration, updated navigation.
+## Cross-References
+
+- Work tracking: `../work/` (backlog, phases, roadmap)
+- Environment setup: `../deployment/environments.md`
+- Conceptual thinking: `../concepts/innovation-physics.md`
+
+---
+
+**Last Updated**: 2026-01-06
+
+**Latest Changes**:
+- Restructured to separate phase documents (04-08)
+- Created 03-methodology.md as reusable VPD framework reference
+- Archived monolithic specs to archive/
+- Renamed status document to 09-status.md
