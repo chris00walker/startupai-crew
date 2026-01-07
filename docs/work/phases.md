@@ -1,8 +1,8 @@
 ---
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
-last_reviewed: "2026-01-04"
-last_audit: "2026-01-04 - 3-Crew architecture deployed to AMP"
+last_reviewed: "2026-01-06"
+last_audit: "2026-01-06 - Crew 1 100% CrewAI best practices alignment"
 ---
 
 # Engineering Phases
@@ -24,6 +24,7 @@ The phases below are being updated to reflect the new architecture.
 Deploy the 3-Crew architecture to CrewAI AMP.
 
 **Status**: DEPLOYED (2026-01-04)
+**Crew 1 Enhanced**: 100% CrewAI Best Practices Alignment (2026-01-06)
 
 ### Phase 0 Complete Criteria
 
@@ -54,6 +55,92 @@ Deploy the 3-Crew architecture to CrewAI AMP.
 **Cross-Repo Unblocks:**
 - Product App: Can call Crew 1 /kickoff endpoint
 - Marketing: Real validation cycles possible
+
+---
+
+## Phase 0.6 - Architecture Alignment (IN PROGRESS)
+
+Complete remaining items from architecture audit (2026-01-06).
+
+**Status**: IN PROGRESS
+
+### Documentation (COMPLETE)
+- [x] `reference/api-contracts.md` - Phase 0-1 endpoints documented
+- [x] `reference/database-schemas.md` - All schemas documented (including crew_execution_state)
+- [x] `reference/tool-mapping.md` - Tool-to-agent assignments documented
+- [x] `04-status.md` - Vercel AI SDK architecture correction reflected
+
+### Database Migrations (PENDING)
+Create and deploy migrations for Phase 0-1 tables:
+- [ ] `founders_briefs` - Phase 0 Founder's Brief output
+- [ ] `customer_profile_elements` - Jobs/Pains/Gains storage
+- [ ] `value_map_elements` - Products/Pain Relievers/Gain Creators
+- [ ] `vpc_fit_scores` - Fit score tracking
+- [ ] `test_cards` - TBI experiment design
+- [ ] `learning_cards` - TBI experiment results
+- [ ] `crew_execution_state` - Cross-crew state persistence
+
+### Tool Wiring (PENDING)
+Wire archived tools to deployed crews (see `reference/tool-mapping.md` for details):
+
+**Crew 2 (Validation):**
+- [ ] `LandingPageGeneratorTool` → F2 (Frontend Developer)
+- [ ] `LandingPageDeploymentTool` → F2 (Frontend Developer)
+- [ ] `GuardianReviewTool` → G1 (QA Reviewer)
+- [ ] `PrivacyGuardTool` → G2 (Security Analyst)
+- [ ] `UnitEconomicsModelsTool` → L1 (Financial Controller)
+- [ ] `BusinessModelClassifierTool` → L1 (Financial Controller)
+- [ ] `BudgetGuardrailsTool` → L1 (Financial Controller)
+- [ ] `CodeValidatorTool` → F3 (Backend Developer)
+
+**Crew 3 (Decision):**
+- [ ] `LearningCaptureTool` → C3 (Roadmap Writer)
+- [ ] `LearningRetrievalTool` → C1 (Product PM)
+- [ ] `AnonymizerTool` → C3 (Roadmap Writer)
+
+### Cross-Repo Work (Product App - NOT THIS REPO)
+Items identified in architecture audit that belong in `app.startupai.site`:
+- Dead code removal (`/api/onboarding/message/route.ts`)
+- V1 component archival (`OnboardingWizard.tsx`, `ConversationInterface.tsx`)
+- Missing Drizzle schemas (12 tables)
+- Frontend hooks (`useVPC`, `useCrewAIReport`, `useApprovals`, etc.)
+
+---
+
+## Phase 0.5 - Crew 1 CrewAI Best Practices Alignment (COMPLETE)
+
+Achieve 100% alignment with CrewAI best practices for Crew 1 (Intake).
+
+**Status**: COMPLETE (2026-01-06)
+**Commit**: `327ce50`
+
+### Improvements Implemented
+
+**Pydantic Output Schemas:**
+- [x] `src/intake_crew/schemas.py` created (397 lines)
+- [x] 6 task output models: FounderBrief, CustomerResearchOutput, ValuePropositionCanvas, QAGateOutput, HumanApprovalInput, CrewInvocationResult
+- [x] 6 enums: RiskLevel, PainSeverity, GainImportance, JobType, QAStatus, ApprovalDecision
+- [x] `output_pydantic` wired to all 6 tasks in `crew.py`
+
+**Tool Integration:**
+- [x] `TavilySearchTool` wired to S2 (CustomerResearch)
+- [x] `CustomerResearchTool` wired to S2 (CustomerResearch)
+- [x] `MethodologyCheckTool` migrated and wired to G1 (QA)
+- [x] Tools exported in `src/intake_crew/tools/__init__.py`
+
+**Agent Enhancements:**
+- [x] Reasoning enabled for S2 and G1 agents (`reasoning=True`)
+- [x] All 4 agent backstories enriched with expertise depth
+- [x] Task expected_outputs aligned with Pydantic schema fields
+
+**Testing:**
+- [x] `tests/test_intake_schemas.py` created (517 lines, 28 tests)
+- [x] All tests passing
+
+**Documentation:**
+- [x] `docs/master-architecture/04-status.md` updated
+- [x] `docs/master-architecture/reference/crew1-output-schemas.md` created
+- [x] `docs/3-crew-deployment.md` tools section added
 
 ---
 
