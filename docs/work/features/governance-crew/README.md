@@ -1,10 +1,12 @@
 # Governance Crew Implementation
 
-## Overview
+> **ARCHIVED (2026-01-07)**: This documents the original 8-crew architecture. The project has migrated to a 3-Crew architecture. Governance Crew functionality is now distributed across all crews with Guardian agents (G1 in Crew 1, G1-G3 in Crew 2). See [02-organization.md](../../../master-architecture/02-organization.md) for current architecture.
 
-The Governance Crew handles quality assurance, compliance, flywheel learning, and privacy protection. Owned by Guardian (CGoO).
+## Overview (Historical)
 
-**Status:** Implemented (Phase 2A-2D complete)
+The Governance Crew handled quality assurance, compliance, flywheel learning, and privacy protection. Owned by Guardian (CGO).
+
+**Status:** Archived - Distributed across Crews 1, 2, 3
 
 ## Agents (3)
 
@@ -91,5 +93,5 @@ tests/integration/
 - **Phase 2D:** PrivacyGuardTool, compliance checks, privacy boundaries
 
 ---
-**Spec**: `docs/master-architecture/03-validation-spec.md`
-**Last Updated**: 2025-12-01
+**Spec**: `docs/master-architecture/03-methodology.md`
+**Last Updated**: 2026-01-07 (archived)

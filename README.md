@@ -1,8 +1,8 @@
 # StartupAI Crew - AI Founders Engine
 
-**CrewAI Flows-based validation engine powering the AI Founders team**
+**3-Crew/19-Agent validation engine powering the AI Founders team**
 
-This repository is the brain of the StartupAI ecosystem - a multi-crew orchestration system that delivers Fortune 500-quality strategic analysis through 6 AI Founders and 18 specialist agents.
+This repository is the brain of the StartupAI ecosystem - a multi-crew orchestration system deployed on CrewAI AMP that delivers Fortune 500-quality strategic analysis through 6 AI Founders and 19 specialist agents.
 
 ---
 
@@ -14,33 +14,30 @@ This repository is the brain of the StartupAI ecosystem - a multi-crew orchestra
 |---------|-------|----------------|
 | **Sage** | CSO | Strategy, VPC design, owns Service Side |
 | **Forge** | CTO | Build, technical feasibility |
-| **Pulse** | CGO | Growth, market signals, desirability evidence |
+| **Pulse** | CMO | Growth, market signals, desirability evidence |
 | **Compass** | CPO | Balance, synthesis, pivot/proceed |
 | **Guardian** | CGO | Governance, accountability, oversight |
 | **Ledger** | CFO | Finance, viability, compliance |
 
-### 8 Crews / 18 Agents
+### 3 Crews / 19 Agents
 
-**Service Side (Sage owns):**
-- Service Crew: Customer Service, Founder Onboarding, Consultant Onboarding
+**Deployed on CrewAI AMP:**
 
-**Commercial Side:**
-- Analysis Crew (Sage): Customer Researcher, Competitor Analyst
-- Build Crew (Forge): UX/UI Designer, Frontend Developer, Backend Developer
-- Growth Crew (Pulse): Ad Creative, Communications, Social Media Analyst
-- Synthesis Crew (Compass): Project Manager
-- Finance Crew (Ledger): Financial Controller, Legal & Compliance
+| Crew | Repository | Agents | Purpose |
+|------|------------|--------|---------|
+| **Crew 1: Intake** | `startupai-crew` (this repo) | 4 (S1, S2, S3, G1) | VPC Discovery, brief capture |
+| **Crew 2: Validation** | `startupai-crew-validation` | 12 (P1-P3, F1-F3, L1-L3, G1-G3) | D-F-V validation |
+| **Crew 3: Decision** | `startupai-crew-decision` | 3 (C1, C2, C3) | Final synthesis |
 
-**Governance (Guardian):**
-- Governance Crew: Audit Agent, Security Agent, QA Agent
-
-### Gated Validation
+### Gated Validation (VPD Framework)
 
 ```
-[Test Cycles] → DESIRABILITY GATE → [Test Cycles] → FEASIBILITY GATE → [Test Cycles] → VIABILITY GATE
+Phase 0 (Onboarding) → Phase 1 (VPC Discovery) → [HITL] →
+Phase 2 (Desirability) → [HITL] → Phase 3 (Feasibility) → [HITL] →
+Phase 4 (Viability) → [HITL] → Decision
 ```
 
-**Technology:** CrewAI Flows with `@listen` and `@router` decorators for crew orchestration and governance gates.
+**Technology:** CrewAI Crews (`type="crew"`) with `InvokeCrewAIAutomationTool` for crew chaining.
 
 ---
 
@@ -48,9 +45,9 @@ This repository is the brain of the StartupAI ecosystem - a multi-crew orchestra
 
 ```
 ┌─────────────────────┐
-│   AI Founders Core  │  ← THIS REPOSITORY
+│   AI Founders Core  │  ← THIS REPOSITORY (Crew 1)
 │   (startupai-crew)  │
-│  CrewAI Flows Engine│
+│   CrewAI AMP Engine │
 └──────────┬──────────┘
            │
     ┌──────┼──────┐
@@ -97,10 +94,9 @@ crewai run
 
 ## Deployment
 
-**Current Deployment:**
+### Crew 1 (This Repo)
 - **UUID:** `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
 - **URL:** `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
-- **Token:** Get from [CrewAI Dashboard](https://app.crewai.com/deployments) → Your Deployment → Settings
 - **Dashboard:** https://app.crewai.com/deployments
 
 ### Commands
@@ -127,25 +123,22 @@ crewai deploy logs --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 }
 ```
 
-### Output (Per Phase)
+### Output (VPD Framework Phases)
 
-**Phase 1 - Desirability:**
-- Client Brief
+**Phase 0 - Onboarding:**
+- Founder's Brief
+
+**Phase 1 - VPC Discovery:**
 - Customer Profiles (Jobs/Pains/Gains)
 - Competitor Analysis
 - Value Proposition Canvas
 - Assumption Backlog
 - QA Report
 
-**Phase 2 - Feasibility:**
-- Test Artifacts
-- Evidence Report
+**Phase 2-4 - Validation:**
+- Test Artifacts & Evidence
+- D-F-V Scores
 - Pivot/Proceed Recommendation
-
-**Phase 3 - Viability:**
-- Viability Model
-- Audit Trail
-- Flywheel Entry
 
 ---
 
@@ -173,34 +166,34 @@ curl https://startupai-...crewai.com/status/{kickoff_id} \
 
 ```
 startupai-crew/
-├── src/startupai/
-│   ├── flows/                      # CrewAI Flows orchestration
-│   │   ├── founder_validation_flow.py
-│   │   └── state_schemas.py
-│   ├── crews/                      # 8 specialized crews
-│   │   ├── service/
-│   │   ├── analysis/
-│   │   ├── governance/
-│   │   ├── build/
-│   │   ├── growth/
-│   │   ├── synthesis/
-│   │   └── finance/
-│   └── tools/                      # 18 tools (see docs/tools/README.md)
-│       ├── web_search.py           # Tavily-powered research
-│       ├── financial_data.py       # Industry benchmarks
-│       ├── landing_page.py         # Landing page generation
-│       ├── guardian_review.py      # HITL creative review
-│       ├── viability_approval.py   # HITL viability decisions
-│       ├── flywheel_insights.py    # Cross-validation learning
-│       ├── privacy_guard.py        # PII/compliance protection
-│       └── ...
-├── tests/integration/              # 192 integration tests
+├── src/intake_crew/              # Crew 1: Intake (deployed to AMP)
+│   ├── __init__.py
+│   ├── crew.py                   # 4 agents: S1, S2, S3, G1
+│   ├── main.py                   # Entry point
+│   ├── schemas.py                # Pydantic output schemas
+│   ├── tools/                    # Agent tools
+│   │   ├── methodology_check.py
+│   │   └── web_search.py         # TavilySearchTool
+│   └── config/
+│       ├── agents.yaml           # Agent definitions
+│       └── tasks.yaml            # Task definitions
+├── db/migrations/                # SQL migration files
+├── scripts/                      # Utility scripts
+├── tests/                        # Test suite
 ├── docs/
-│   ├── master-architecture/        # ECOSYSTEM SOURCE OF TRUTH
-│   ├── tools/                      # Tool documentation
-│   └── work/                       # Work tracking
-├── CLAUDE.md                       # AI context
-└── pyproject.toml                  # Dependencies
+│   ├── master-architecture/      # ECOSYSTEM SOURCE OF TRUTH
+│   │   ├── 00-introduction.md    # Quick start
+│   │   ├── 01-ecosystem.md       # Three-service overview
+│   │   ├── 02-organization.md    # 6 founders, 19 agents
+│   │   ├── 03-methodology.md     # VPD framework
+│   │   ├── 04-08-phase-*.md      # Phase specifications
+│   │   ├── 09-status.md          # Current status
+│   │   └── reference/            # API contracts, workflows
+│   ├── deployment/               # Deployment guides
+│   ├── testing/                  # Testing documentation
+│   └── work/                     # Work tracking
+├── CLAUDE.md                     # AI context
+└── pyproject.toml                # Dependencies (type = "crew")
 ```
 
 ---
@@ -209,6 +202,8 @@ startupai-crew/
 
 - **Marketing Site:** [startupai.site](https://github.com/chris00walker/startupai.site) - Lead capture & transparency
 - **Product App:** [app.startupai.site](https://github.com/chris00walker/app.startupai.site) - Delivery portal
+- **Crew 2:** [startupai-crew-validation](https://github.com/chris00walker/startupai-crew-validation) - Validation crews
+- **Crew 3:** [startupai-crew-decision](https://github.com/chris00walker/startupai-crew-decision) - Decision crew
 
 **Development Ports (Canonical):**
 - **Marketing Site** (`startupai.site`): `localhost:3000`
@@ -221,6 +216,7 @@ startupai-crew/
 
 - **Docs Index:** `docs/README.md`
 - **Master Architecture:** `docs/master-architecture/`
+- **Current Status:** `docs/master-architecture/09-status.md`
 - **CrewAI Docs:** https://docs.crewai.com
 
 ---
@@ -243,38 +239,22 @@ crewai deploy list
 
 ---
 
-## Support
-
-- **CrewAI Docs:** https://docs.crewai.com
-- **Dashboard:** https://app.crewai.com
-- **Issues:** https://github.com/chris00walker/startupai-crew/issues
-
----
-
 ## Current Status
 
-> **Phase 2D Complete:** Core validation flow with HITL workflows, flywheel learning, and privacy protection. See [04-status.md](docs/master-architecture/04-status.md) for detailed status.
+> **3-Crew Architecture DEPLOYED to AMP.** All 19 agents, 32 tasks, and 7 HITL checkpoints operational. See [09-status.md](docs/master-architecture/09-status.md) for detailed status.
 
-**Implemented (Phases 1A-2D):**
-- Flow orchestration with 3-phase gated validation (Innovation Physics routers)
-- State management with `@persist()` decorators at 9 checkpoints
-- 18 tools implemented (research, financial, build, HITL, flywheel, privacy)
-- Real web research (TavilySearchTool)
-- Real financial analysis (IndustryBenchmarkTool, UnitEconomicsCalculatorTool)
-- Landing page generation + Netlify deployment
-- HITL creative approval workflow (GuardianReviewTool)
-- HITL viability decision workflow (ViabilityApprovalTool)
-- Flywheel learning system (FlywheelInsightsTool, OutcomeTrackerTool)
-- Privacy protection (PrivacyGuardTool with GDPR/CCPA/HIPAA checks)
-- 192 integration tests passing
+**What Works:**
+- 3-Crew architecture deployed to AMP (Crew 1, 2, 3)
+- Crew chaining with `InvokeCrewAIAutomationTool`
+- 7 HITL checkpoints across all crews
+- Webhook persistence to Supabase
+- Pydantic structured outputs (100% CrewAI best practices alignment)
 
-**Not Yet Implemented:**
-- Real ad platform integration (Meta/Google APIs) - deferred
-- Real experiment tracking and analytics
-- Production webhook integration with product app
+**Primary Blocker:**
+- E2E verification with live data
 
 ---
 
-**Status:** Phase 2D complete (~85% overall)
-**Last Updated:** 2025-12-04
+**Status:** 3-Crew architecture DEPLOYED (~85% overall)
+**Last Updated:** 2026-01-07
 **License:** Proprietary - StartupAI Platform

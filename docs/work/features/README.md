@@ -1,50 +1,50 @@
 ---
-purpose: "Feature-specific documentation for crew and flow implementations"
-status: "active"
-last_reviewed: "2025-12-01"
+purpose: "Feature-specific documentation for crew implementations"
+status: "archived"
+last_reviewed: "2026-01-07"
 ---
 
 # Features
 
-This directory contains feature-specific documentation for crew and flow implementations.
+> **Note**: This directory contains historical feature documentation from the original 8-crew architecture (Nov 2025). The project has migrated to a 3-Crew architecture deployed on CrewAI AMP.
 
-Each feature should have its own folder with:
-- Scope definition
-- Test plan
-- Implementation checklist
-- Delivery notes
+## Current Architecture
 
-## Structure
+The 3-Crew architecture is documented in:
+- **[02-organization.md](../../master-architecture/02-organization.md)** - 6 founders, 19 agents
+- **[09-status.md](../../master-architecture/09-status.md)** - Current implementation status
 
-```
-features/
-├── README.md (this file)
-├── service-crew/       # Sage - intake & brief (Phase 1A)
-├── analysis-crew/      # Sage - customer/competitor research (Phase 1A)
-├── build-crew/         # Forge - MVP generation & deployment (Phase 1B)
-├── growth-crew/        # Pulse - experiments & growth (stub)
-├── finance-crew/       # Ledger - unit economics & viability (Phase 2B)
-├── synthesis-crew/     # Compass - pivot/proceed decisions (Phase 1)
-└── governance-crew/    # Guardian - QA, compliance, flywheel (Phase 2A-2D)
-```
+### 3 Crews (Current)
 
-## Crew Status
+| Crew | Repository | Agents | Status |
+|------|------------|--------|--------|
+| **Crew 1: Intake** | `startupai-crew` | 4 (S1, S2, S3, G1) | ✅ DEPLOYED |
+| **Crew 2: Validation** | `startupai-crew-validation` | 12 | ✅ DEPLOYED |
+| **Crew 3: Decision** | `startupai-crew-decision` | 3 | ✅ DEPLOYED |
 
-| Crew | Owner | Status | Completed | Notes |
-|------|-------|--------|-----------|-------|
-| Service | Sage (CSO) | ✅ Complete | Nov 2025 | 3 agents, intake & brief capture |
-| Analysis | Sage (CSO) | ✅ Complete | Nov 2025 | 2 agents, TavilySearchTool for real research |
-| Build | Forge (CTO) | ✅ Complete | Nov 2025 | 3 agents, LandingPageGeneratorTool + Netlify deploy |
-| Growth | Pulse (CGO) | ✅ Complete | Nov 2025 | 3 agents (ad platform APIs deferred) |
-| Finance | Ledger (CFO) | ✅ Complete | Nov 2025 | 2 agents, UnitEconomicsCalculatorTool |
-| Synthesis | Compass (CPO) | ✅ Complete | Nov 2025 | 1 agent, pivot decision logic |
-| Governance | Guardian (CGoO) | ✅ Complete | Nov 2025 | 3 agents, 8 tools (HITL, Flywheel, Privacy) |
+## Archived Feature Docs
 
-*Last verified: 2025-12-01*
+The subdirectories here (service-crew/, analysis-crew/, etc.) document the **original 8-crew design**. They're kept for historical reference but no longer reflect the current implementation.
 
-## Ecosystem Context
+| Directory | Original Purpose | Current Status |
+|-----------|-----------------|----------------|
+| service-crew/ | Sage intake flow | → Now in Crew 1 |
+| analysis-crew/ | Sage research | → Now in Crew 2 |
+| governance-crew/ | Guardian oversight | → Split across all crews |
+| build-crew/ | Forge MVP generation | → Now in Crew 2 |
+| growth-crew/ | Pulse experiments | → Now in Crew 2 |
+| finance-crew/ | Ledger viability | → Now in Crew 2 |
+| synthesis-crew/ | Compass decisions | → Now in Crew 3 |
 
-- **Master Architecture**: `../master-architecture/`
-- **API Contracts**: `../master-architecture/reference/api-contracts.md`
-- **Product App Features**: `app.startupai.site/docs/work/features/`
-- **Marketing Site Features**: `startupai.site/docs/work/features/`
+## For Current Implementation
+
+See the phase specifications in `master-architecture/`:
+- [04-phase-0-onboarding.md](../../master-architecture/04-phase-0-onboarding.md)
+- [05-phase-1-vpc-discovery.md](../../master-architecture/05-phase-1-vpc-discovery.md)
+- [06-phase-2-desirability.md](../../master-architecture/06-phase-2-desirability.md)
+- [07-phase-3-feasibility.md](../../master-architecture/07-phase-3-feasibility.md)
+- [08-phase-4-viability.md](../../master-architecture/08-phase-4-viability.md)
+
+---
+*Last Updated: 2026-01-07*
+*Note: Marked as archived after migration to 3-Crew architecture*

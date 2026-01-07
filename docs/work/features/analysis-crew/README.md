@@ -1,10 +1,12 @@
 # Analysis Crew Implementation
 
-## Overview
+> **ARCHIVED (2026-01-07)**: This documents the original 8-crew architecture. The project has migrated to a 3-Crew architecture. Analysis Crew functionality is now part of **Crew 2 (Validation)** in `startupai-crew-validation` repository. See [02-organization.md](../../../master-architecture/02-organization.md) for current architecture.
 
-The Analysis Crew handles customer and competitor research. Part of Sage's (CSO) commercial side responsibilities.
+## Overview (Historical)
 
-**Status:** Implemented (Phase 1A complete)
+The Analysis Crew handled customer and competitor research. Part of Sage's (CSO) commercial side responsibilities.
+
+**Status:** Archived - Migrated to Crew 2
 
 ## Agents (2)
 
@@ -75,5 +77,5 @@ tests/integration/
 - **Phase 1A:** Full research workflow with TavilySearchTool for real web research
 
 ---
-**Spec**: `docs/master-architecture/03-validation-spec.md`
-**Last Updated**: 2025-12-01
+**Spec**: `docs/master-architecture/03-methodology.md`
+**Last Updated**: 2026-01-07 (archived)
