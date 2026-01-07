@@ -1,43 +1,25 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2026-01-06"
+last_reviewed: "2026-01-07"
+last_synced: "2026-01-07 - Full ecosystem status sync"
 ---
 
 # Cross-Repository Blockers
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
 
-## Architecture Change Notice (2025-12-05)
+## Ecosystem Status (2026-01-07)
 
-**MAJOR**: Migrated from Flow to 3-Crew architecture. See ADR-001.
+**All services deployed and functional.** Primary work is E2E verification.
 
-**Impact on Cross-Repo:**
-- This repo now hosts **Crew 1 (Intake)** only
-- Crews 2 & 3 require **new GitHub repositories**
-- Product App will call Crew 1's `/kickoff` endpoint (same API, different internal structure)
+| Service | Status | Completion |
+|---------|--------|------------|
+| CrewAI Backend | ✅ 3 Crews deployed to AMP | ~85% |
+| Product App | ✅ Phase Alpha complete | ~85% |
+| Marketing Site | ✅ Production, static export | ~90% |
 
-## Marketing Promise Gap (Updated 2025-11-26)
-
-The marketing site makes promises that require technical capabilities. Status after code audit:
-
-| Gap | Description | Status |
-|-----|-------------|--------|
-| MVP Building | Marketing promises "working software in days" | ⚠️ LandingPageGeneratorTool + Netlify deploy exist; full app scaffold pending |
-| Real Ad Spend | Marketing promises $450-525 ad budget execution | ❌ No Meta/Google Ads API integration |
-| Real User Testing | Marketing promises "test with real customers" | ❌ No analytics or experiment framework |
-| Unit Economics | Marketing promises CAC/LTV analysis | ✅ 10 business model-specific UnitEconomicsModels with industry benchmarks |
-| Evidence-Based | Marketing promises data-driven validation | ⚠️ TavilySearchTool provides real web research |
-
-### Capabilities Required to Close Gap
-
-1. **MVP Generation**: ✅ LandingPageGeneratorTool exists; full app scaffolding pending
-2. **Ad Platform Integration**: ❌ Meta Business API, Google Ads API not connected
-3. **Analytics Integration**: ⚠️ PolicyBandit + offline evaluation exist; ad platform analytics pending
-4. **Financial Modeling**: ✅ 10 business model-specific UnitEconomicsModels with industry benchmarks
-5. **Web Research Tools**: ✅ TavilySearchTool + 4 research tools implemented
-6. **Budget Guardrails**: ✅ BudgetGuardrails with hard/soft enforcement (Area 6)
-7. **Policy Versioning**: ✅ PolicyBandit with UCB algorithm for A/B testing (Area 3)
+**Source of Truth**: `docs/master-architecture/09-status.md`
 
 ---
 
@@ -47,109 +29,117 @@ The marketing site makes promises that require technical capabilities. Status af
 
 | Blocker | Status | Description | Unblocks |
 |---------|--------|-------------|----------|
-| 3-Crew Architecture | ✅ DEPLOYED | All 3 crews deployed to AMP | Product can call Crew 1 |
+| 3-Crew Architecture | ✅ DEPLOYED | 19 agents, 32 tasks, 7 HITL | Full pipeline operational |
 | Crew 1 Deployment | ✅ DEPLOYED | UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | Product can trigger validation |
 | Crews 2 & 3 Repos | ✅ DEPLOYED | Separate GitHub repos created | Full pipeline works |
 | Crew Chaining | ✅ CONFIGURED | `InvokeCrewAIAutomationTool` wired | End-to-end validation |
 | Crew 1 Best Practices | ✅ COMPLETE | 100% CrewAI alignment (2026-01-06) | Structured outputs |
+
+**All Product App blockers resolved.**
 
 **API Endpoints (LIVE):**
 - `POST /kickoff` - Crew 1 entry point (token: `db9f9f4c1a7a`)
 - `GET /status/{id}` - Standard AMP endpoint
 - HITL webhooks - 7 checkpoints across 3 crews
 
-**✅ Deployment Complete (2026-01-04)**
-- 3-Crew code: ✅ Complete (19 agents, 32 tasks, 7 HITL)
-- Crew 1 at repo root: ✅ Done
-- Crews 2 & 3 repos: ✅ Created (`chris00walker/startupai-crew-validation`, `chris00walker/startupai-crew-decision`)
-- AMP deployment: ✅ All 3 crews online
-- Crew 1 enhanced: ✅ 100% CrewAI best practices (2026-01-06)
-
-**Previous Flow Integration (DEPRECATED):**
-The previous Flow-based integration is archived. Product App should wait for 3-Crew deployment before updating integration.
-
-**Flywheel Learning Tables:**
-- Schema: See `docs/master-architecture/reference/flywheel-learning.md`
-- Requires pgvector extension enabled in Supabase
-- Tables: `learnings`, `patterns`, `outcomes`, `domain_expertise`
-- Status: ✅ Tables exist, will be used by Crew 2 (Validation) once deployed
-
 ### Marketing Site (`startupai.site`)
 
 | Blocker | Status | Description | Unblocks |
 |---------|--------|-------------|----------|
-| Activity Feed API | Not Started | `GET /api/v1/public/activity` - agent status | Marketing transparency page |
-| Metrics API | Not Started | `GET /api/v1/public/metrics` - validation counts | Marketing trust metrics |
+| Activity Feed API | ✅ SHIPPED | `GET /api/v1/public/activity` in Product App | Marketing can show live activity |
+| Metrics API | ✅ SHIPPED | `GET /api/v1/public/metrics` in Product App | Marketing can show trust metrics |
 
-**Note:** Marketing site can implement Netlify functions that query Supabase directly (per `reference/marketing-integration.md`) rather than waiting for CrewAI APIs. This provides an alternative unblock path.
+**All Marketing Site blockers resolved.** APIs are available in Product App.
+
+---
 
 ## This Repo Blocked By
 
 | Blocker | Source Repo | Status | Impact |
 |---------|-------------|--------|--------|
-| Learning tables migration | Product App | ✅ Done | Flywheel learning tools have pgvector tables in Supabase |
+| Learning tables migration | Product App | ✅ Done | Flywheel learning tools have pgvector tables |
 
-**Note**: Product app manages Supabase migrations. Learning tables schema is defined in `docs/master-architecture/reference/flywheel-learning.md`.
+**All upstream blockers resolved.**
+
+---
+
+## Remaining Work (Not Blockers - Internal)
+
+| Item | Status | Owner | Notes |
+|------|--------|-------|-------|
+| E2E flow verification | ⚠️ Ready to test | All repos | All components exist |
+| Ad platform integration | ❌ Not connected | Crew | Meta/Google Ads APIs - deferred |
+| Real analytics tracking | ⚠️ Partial | Crew | PostHog exists; ad analytics pending |
+
+---
+
+## Marketing Promise Gap
+
+| Promise | Technical Status |
+|---------|------------------|
+| "Build your MVP" | ⚠️ LandingPageGeneratorTool exists; full scaffold pending |
+| "Real ad spend ($450-525)" | ❌ No Meta/Google Ads API integrated |
+| "Real user testing" | ❌ No analytics/experiment framework |
+| "Unit economics (CAC/LTV)" | ✅ 10 UnitEconomicsModels with industry benchmarks |
+| "2-week validation cycles" | ⚠️ Tools exist; quality depends on data |
+| "Evidence-based validation" | ✅ TavilySearchTool provides real web research |
+| "6 AI Founders team" | ✅ 19 agents across 3 crews |
+
+**Primary gap**: Ad platform integration (Meta/Google APIs) - explicitly deferred.
+
+---
+
+## E2E Verification Checklist
+
+The following flow needs live verification:
+
+```
+User lands on startupai.site
+    ↓
+Signs up (Supabase Auth)
+    ↓
+Redirects to app.startupai.site with plan
+    ↓
+Completes onboarding chat (7 stages)
+    ↓
+Triggers CrewAI analysis (POST /kickoff)
+    ↓
+CrewAI processes through 3 crews
+    ↓
+Webhook persists results to Supabase
+    ↓
+Dashboard displays validation results
+    ↓
+Marketing activity feed shows real activity
+```
+
+**Status**: All components exist. Needs live end-to-end test.
+
+---
 
 ## Coordination Notes
 
-- **Phase 2D Complete** - All code criteria met (see `phases.md`)
-- Results persistence mechanism: ✅ Webhook implemented (`_persist_to_supabase()`)
-- Activity Feed API added to `backlog.md` per marketing dependency
-- Flywheel tables: ✅ Migration complete in product app
+- **CrewAI backend is UNBLOCKED** - All 3 crews deployed to AMP
+- **Product App UNBLOCKED** - No remaining blockers from this repo
+- **Marketing site UNBLOCKED** - Activity Feed + Metrics APIs shipped
+- **Primary work**: E2E verification with live data
+
+---
 
 ## Cross-Repo Links
 
 - Product app blockers: `app.startupai.site/docs/work/cross-repo-blockers.md`
 - Marketing blockers: `startupai.site/docs/work/cross-repo-blockers.md`
-- Master architecture: `docs/master-architecture/01-ecosystem.md`
-- API contracts: `docs/master-architecture/reference/api-contracts.md`
-- Approval workflows: `docs/master-architecture/reference/approval-workflows.md`
+- Master architecture: `docs/master-architecture/09-status.md`
 
 ---
-**Last Updated**: 2026-01-06
 
-**Changes (2026-01-06 - Crew 1 Best Practices + Status Update)**:
-- **MAJOR**: Updated all blocker statuses from "Pending" to "DEPLOYED"
-- All 3 crews now deployed and online on AMP
-- Crew 1 achieved 100% CrewAI best practices alignment
-- Added Crew 1 enhancements: Pydantic schemas, tools wired, reasoning enabled
-- Updated API endpoints section to show LIVE status
-- Crew deployment UUIDs and tokens documented
+**Last Updated**: 2026-01-07
 
-**Changes (2025-12-05 - Flow to 3-Crew Migration)**:
-- **MAJOR**: Architecture migrated from Flow to 3-Crew
-- All existing blockers now superseded by 3-Crew deployment blockers
-- Product App should wait for 3-Crew deployment before integration changes
-- Added Architecture Change Notice section
-- Updated blocker table to reflect deployment-pending status
-- See ADR-001 for full decision record
-
-**Changes (2025-11-27 - Migrations Deployed)**:
-- **Database migrations deployed**: flow_executions (001), validation_events (002), experiment_outcomes (004), policy_version (005), decision_log (006)
-- All CrewAI-specific tables now live in Supabase
-
-**Changes (2025-11-27)**:
-- **Areas 3, 6, 7 Complete**: All 8 architectural improvements now 100% implemented
-- Added Area 3 tools: PolicyBandit, ExperimentConfigResolver
-- Added Area 6 tools: BudgetGuardrails, DecisionLogger
-- Added Area 7 tools: BusinessModelClassifier, 10 UnitEconomicsModels
-- Tool count increased from 18 to 24+
-- Flywheel learning tables: ✅ Done (learnings, patterns, outcomes, domain_expertise)
-- Product app can now build results display UI (webhook persistence working)
-- Marketing site can build transparency features (data available in Supabase)
-
-**Changes (2025-11-26 - Post-Audit)**:
-- **MAJOR CORRECTION**: Updated multiple blockers from "Not Started" to "Implemented"
-- Results → Supabase: ✅ `_persist_to_supabase()` webhook exists
-- Resume/Webhook API: ✅ `webhooks/resume_handler.py` with 5 approval types
-- Real Analysis Tools: ✅ TavilySearchTool + 4 research tools implemented
-- Flywheel Learning Tables: ✅ Migration complete in product app
-- Phase status updated from "Phase 1 Partial" to "Phase 2D Complete"
-- No remaining blockers for Product App - ready for E2E testing
-
-**Changes (2025-12-02 - Integration Test Added)**:
-- **E2E Integration Test**: `webhook-to-dashboard.integration.test.ts` added to product app
-- Tests verify: webhook → 5 tables persistence → dashboard hooks can query data
-- Validates complete flow: reports, evidence, crewai_validation_states, projects, public_activity_log
-- Dashboard hooks confirmed: useCrewAIState, useInnovationSignals, useVPCData already existed
+**Changes (2026-01-07 - Full Ecosystem Sync)**:
+- Synced with `docs/master-architecture/09-status.md` cross-repo rewrite
+- Added Ecosystem Status table
+- Updated Marketing Site blockers: Activity Feed + Metrics APIs now SHIPPED
+- Added E2E Verification Checklist
+- Simplified structure to match other repo blocker files
+- Primary blocker is now E2E verification, not deployment
