@@ -1,10 +1,11 @@
-# StartupAI Validation Methodology
-
-**Version**: 1.0.0
-**Status**: Active
-**Last Updated**: 2026-01-06
-
 ---
+purpose: Reusable VPD methodology patterns for all validation phases
+status: active
+last_reviewed: 2026-01-07
+vpd_compliance: true
+---
+
+# StartupAI Validation Methodology
 
 ## Overview
 
@@ -16,17 +17,19 @@ This document defines the **reusable methodology patterns** that all StartupAI v
 
 ## Guiding Principles
 
-### From CrewAI Agentic Systems Architecture
+### Agentic Systems Architecture
 
 StartupAI follows the recommended pattern for building agentic systems:
 
-1. **Deterministic Backbone (Flows)**: Manages structure, branching, state, and guardrails
-2. **Scoped Intelligence (Agents)**: Operate within boundaries defined by the Flow
+1. **Deterministic Backbone**: Manages structure, branching, state, and guardrails (implemented via Crews with task dependencies)
+2. **Scoped Intelligence (Agents)**: Operate within boundaries defined by the orchestration layer
 3. **Graduated Complexity**:
    - Simple operations → Plain code
    - Single completions → Ad-hoc LLM calls
    - Tool-use tasks → Single agents
    - Complex reasoning → Multi-agent Crews
+
+> **Implementation Note**: StartupAI uses CrewAI Crews (`type = "crew"`) deployed on AMP. The 3-Crew architecture (Intake → Validation → Decision) implements this pattern with task `context` dependencies for conditional routing.
 
 ### Anti-Patterns to Avoid
 
@@ -660,5 +663,21 @@ How this phase implements VPD patterns (reference this document)
 
 ---
 
-**Document Version**: 1.0.0
-**Last Updated**: 2026-01-06
+## Related Documents
+
+### Architecture
+- [00-introduction.md](./00-introduction.md) - Quick start and orientation
+- [01-ecosystem.md](./01-ecosystem.md) - Three-service architecture overview
+- [02-organization.md](./02-organization.md) - 6 AI Founders and agents
+
+### Phase Specifications
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery (Customer Profile + Value Map)
+- [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
+- [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation
+- [08-phase-4-viability.md](./08-phase-4-viability.md) - Viability + Decision
+
+### Reference
+- [09-status.md](./09-status.md) - Current implementation status
+- [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
+- [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
