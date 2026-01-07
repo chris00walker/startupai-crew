@@ -1,5 +1,5 @@
 ---
-purpose: Single source of truth for 6 AI Founders and agents (Phase 0-3)
+purpose: Single source of truth for 6 AI Founders and agents (Phase 0-4)
 status: active
 last_reviewed: 2026-01-07
 vpd_compliance: true
@@ -13,7 +13,7 @@ StartupAI is run by a team of AI Founders - six co-equal team members organized 
 
 **This document is the SINGLE SOURCE OF TRUTH for founder names, roles, agents, and organizational structure. All other documents reference here - they do not duplicate this content.**
 
-> **VPD Framework Compliance**: This organization implements patterns from *Value Proposition Design*, *Testing Business Ideas*, and *Business Model Generation*. See `05-phase-0-1-specification.md` for detailed Phase 0-1 implementation.
+> **VPD Framework Compliance**: This organization implements patterns from *Value Proposition Design*, *Testing Business Ideas*, and *Business Model Generation*. See [03-methodology.md](./03-methodology.md) for VPD framework reference.
 
 ## Design Philosophy
 
@@ -26,51 +26,11 @@ Inspired by Edwin Korver's RoundMap® Customer Dynamics Lifecycle, StartupAI pla
 ### Continuous Learning
 AI organizations have a structural advantage over human-led companies: they learn from every interaction. This is StartupAI's moat. Learning isn't delegated to a role - it's inherent to the system.
 
-## VPD Framework Terminology
+## VPD Framework Reference
 
-StartupAI implements the Value Proposition Design (VPD) framework. Key terminology used throughout this organization:
+> **Single Source**: For complete VPD terminology (Value Proposition Canvas, Test Cards, Learning Cards, Evidence Hierarchy, Problem-Solution Fit criteria), see [03-methodology.md](./03-methodology.md).
 
-### Value Proposition Canvas (Two Sides)
-
-| Side | Component | Description |
-|------|-----------|-------------|
-| **Customer Profile (Right)** | Jobs-to-be-Done | Functional, emotional, social tasks customers try to accomplish |
-| | Pains | Undesired outcomes, obstacles, risks customers face |
-| | Gains | Required, expected, desired, unexpected outcomes customers seek |
-| **Value Map (Left)** | Products & Services | What we offer to help customers |
-| | Pain Relievers | How we address specific pains |
-| | Gain Creators | How we create specific gains |
-
-### Testing Business Ideas Framework
-
-| Concept | Description |
-|---------|-------------|
-| **Assumptions Mapping** | 2×2 matrix (importance × evidence strength) to prioritize what to test |
-| **Test Card** | 4-step hypothesis structure: Hypothesis → Test → Metric → Criteria |
-| **Learning Card** | 4-step result capture: Hypothesis → Observation → Learnings → Actions |
-| **44 Experiment Library** | Discovery (cheap/fast) → Validation (expensive/reliable) experiments |
-
-### Evidence Hierarchy (SAY vs DO)
-
-Behavioral evidence is stronger than stated preferences:
-
-| Type | Weight | Example |
-|------|--------|---------|
-| Paid | 5 | Actually paid money |
-| High-Commitment CTA | 4 | Demo request, application |
-| Medium-Commitment CTA | 3 | Email signup, form fill |
-| Low-Commitment CTA | 2 | Click, view |
-| Stated | 1 | "I would buy this" |
-| Implied | 0.5 | Didn't say no |
-
-### Problem-Solution Fit Criteria
-
-Phase 1 exit requires:
-- **Fit Score** ≥ 70/100
-- **Jobs addressed** ≥ 75%
-- **Pains addressed** ≥ 75%
-- **Gains addressed** ≥ 70%
-- **WTP validated** (behavioral evidence, not just stated)
+This organization implements VPD patterns. Agents use Test Cards to design experiments and Learning Cards to capture results, prioritizing behavioral evidence (DO) over stated preferences (SAY).
 
 ## The AI Founders Team
 
@@ -477,7 +437,7 @@ Specialist agents execute specific tasks within each founder's domain. Agents ar
 
 ### Phase 0: Onboarding Agents
 
-Phase 0 agents capture the founder's business hypothesis and create the **Founder's Brief** - the prime input to all downstream validation. See `05-phase-0-1-specification.md` for full specification.
+Phase 0 agents capture the founder's business hypothesis and create the **Founder's Brief** - the prime input to all downstream validation. See [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) for full specification.
 
 | ID | Agent | Founder | Task Focus |
 |----|-------|---------|------------|
@@ -490,7 +450,7 @@ Phase 0 agents capture the founder's business hypothesis and create the **Founde
 
 ### Phase 1: VPC Discovery Agents
 
-Phase 1 agents discover customer reality (Customer Profile) and design value (Value Map) using the VPD framework. See `05-phase-0-1-specification.md` for full specification.
+Phase 1 agents discover customer reality (Customer Profile) and design value (Value Map) using the VPD framework. See [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) for full specification.
 
 | ID | Agent | Founder | Task Focus |
 |----|-------|---------|------------|
@@ -602,10 +562,34 @@ This organizational structure is the **conceptual design**. Translation to CrewA
 
 ---
 
+## Related Documents
+
+### Architecture
+- [00-introduction.md](./00-introduction.md) - Quick start and orientation
+- [01-ecosystem.md](./01-ecosystem.md) - Three-service architecture overview
+- [03-methodology.md](./03-methodology.md) - VPD framework reference (Test Cards, Learning Cards, evidence hierarchy)
+
+### Phase Specifications
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery (Customer Profile + Value Map)
+- [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
+- [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation
+- [08-phase-4-viability.md](./08-phase-4-viability.md) - Viability + Decision
+
+### Reference
+- [09-status.md](./09-status.md) - Current implementation status
+- [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
+- [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
+
+---
+
 ## Change Log
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-07 | Replaced VPD terminology section with reference to 03-methodology.md | Single source of truth, reduce duplication |
+| 2026-01-07 | Updated document references to new phase documents (04-08) | Archived 05-phase-0-1-specification.md |
+| 2026-01-07 | Added Related Documents section | Navigation to phase and reference docs |
 | 2026-01-07 | Expanded Guardian's Board-Level Role section with Executive vs Board distinction | Clarify Guardian as sentinel/overwatch, not executor |
 | 2026-01-07 | Added RACI model for approvals with Guardian as "Consulted" | Clear accountability chain before HITL |
 | 2026-01-07 | Added Data Governance distributed ownership table | Guardian oversees, domain experts own |
@@ -613,7 +597,6 @@ This organizational structure is the **conceptual design**. Translation to CrewA
 | 2026-01-07 | Added abbreviations (CSO, CTO, CMO, CPO, CGO, CFO) to founder titles | Consistency and clarity |
 | 2026-01-05 | Added Phase 0 & Phase 1 agent definitions (O1, G1, G2, S1, E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2) | VPD framework compliance |
 | 2026-01-05 | Renamed "Client Brief" to "Founder's Brief" throughout | Align with VPD Phase 0 terminology |
-| 2026-01-05 | Added VPD Framework Terminology section | Document VPD vocabulary (Jobs, Pains, Gains, Test Cards, etc.) |
 | 2026-01-05 | Restructured Approval Checkpoints by phase | Phase 0, Phase 1, Phase 2+ separation |
 | 2025-11-21 | Added Approval Checkpoint Ownership section | HITL workflow distribution across founders |
 | 2025-11-21 | Complete organizational restructure with Service/Commercial model | Organizational Physics principles, clear separation of concerns |
