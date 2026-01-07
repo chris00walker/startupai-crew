@@ -82,7 +82,7 @@ VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DE
 
 ## Phase-Based Architecture
 
-> **Single Source**: See [02-organization.md](./02-organization.md) for complete agent details and [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) / [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) for Phase 0-1 implementation.
+> **Single Source**: See [02-organization.md](./02-organization.md) for complete agent details. Phase specifications: [04-phase-0](./04-phase-0-onboarding.md), [05-phase-1](./05-phase-1-vpc-discovery.md), [06-phase-2](./06-phase-2-desirability.md), [07-phase-3](./07-phase-3-feasibility.md), [08-phase-4](./08-phase-4-viability.md).
 
 ### Phase 0: Onboarding (Founder's Brief)
 
@@ -112,26 +112,46 @@ VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DE
 
 **HITL**: `approve_experiment_plan`, `approve_pricing_test`, `approve_vpc_completion`
 
-### Phase 2: Desirability + Feasibility Validation
+### Phase 2: Desirability Validation
 
-**Purpose**: Build testable artifacts and validate with real customers
+**Purpose**: Test whether customers actually want the value proposition
 
 | Crew | Agents | Output |
 |------|--------|--------|
-| Build Crew (Forge) | UX/UI Designer, Frontend Dev, Backend Dev | Testable artifacts |
-| Growth Crew (Pulse) | Ad Creative, Communications, Social Analyst | Desirability evidence |
-| Synthesis Crew (Compass) | Project Manager | Evidence synthesis |
-| Governance Crew (Guardian) | QA Agent | Phase gate validation |
+| Build Crew (Forge) | F1 (UX/UI), F2 (Frontend), F3 (Backend) | Landing pages, testable artifacts |
+| Growth Crew (Pulse) | P1 (Ad Creative), P2 (Communications), P3 (Analytics) | Desirability evidence |
+| Governance Crew (Guardian) | G1 (QA), G2 (Security), G3 (Audit) | Experiment validation |
 
-### Phase 3: Viability + Final Decision
+**HITL**: `approve_campaign_launch`, `approve_spend_increase`, `approve_desirability_gate`
+
+**Exit**: `desirability_signal == STRONG_COMMITMENT` (problem_resonance ≥ 0.3, zombie_ratio < 0.7)
+
+### Phase 3: Feasibility Validation
+
+**Purpose**: Assess whether the validated value proposition can be built
+
+| Crew | Agents | Output |
+|------|--------|--------|
+| Build Crew (Forge) | F1 (UX/UI), F2 (Frontend), F3 (Backend) | Technical assessment |
+| Governance Crew (Guardian) | G1 (QA) | Feasibility gate validation |
+
+**HITL**: `approve_feasibility_gate`
+
+**Exit**: `feasibility_signal == GREEN` (or successful downgrade with desirability retest)
+
+### Phase 4: Viability Validation + Final Decision
 
 **Purpose**: Validate business model economics and make final recommendation
 
 | Crew | Agents | Output |
 |------|--------|--------|
-| Finance Crew (Ledger) | Financial Controller, Legal & Compliance | Viability assessment |
-| Enhanced Governance (Guardian) | Audit Agent, Security Agent, QA Agent | Audit report |
-| Decision Crew (Compass) | Decision Agents | Final pivot/proceed recommendation |
+| Finance Crew (Ledger) | L1 (Financial Controller), L2 (Legal), L3 (Economics Reviewer) | Unit economics, viability assessment |
+| Synthesis Crew (Compass) | C1 (Product PM), C2 (Human Approval), C3 (Roadmap Writer) | Evidence synthesis, final recommendation |
+| Governance Crew (Guardian) | G1 (QA), G2 (Security), G3 (Audit) | Audit trail, flywheel capture |
+
+**HITL**: `approve_viability_gate`, `request_human_decision`
+
+**Exit**: `viability_signal == PROFITABLE` → VALIDATED | Strategic pivot or KILL
 
 ## CrewAI Flows Implementation
 

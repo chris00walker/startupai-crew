@@ -290,25 +290,102 @@ StartupAI operates as two interconnected sides balanced by Compass, with Guardia
                                       └─────────────────┘
 ```
 
-### Guardian's Dual Role
+### Guardian's Board-Level Role
 
-Guardian serves as both **Founder** and **Board Member**:
+Guardian is fundamentally different from the other five founders. While Sage, Forge, Pulse, Compass, and Ledger are **Executives** who build and deliver, Guardian is a **Board Member** who oversees and validates.
 
-**As Founder:**
-- Co-equal peer in the founding team
-- Has dual responsibilities (For StartupAI / For Clients)
-- Contributes to building the company
+#### Board vs Executive Distinction
 
-**As Board Member:**
-- Elevated accountability for governance across all functions
-- Holds other founders accountable
-- Ensures organizational integrity
+| Dimension | Executives (Sage, Forge, Pulse, Compass, Ledger) | Board (Guardian) |
+|-----------|--------------------------------------------------|------------------|
+| **Primary Verb** | Builds, executes, delivers | Oversees, validates, challenges |
+| **Core Question** | "How do we do this?" | "Should we do this? Is it done right?" |
+| **Authority Type** | Responsible for outcomes | Accountable for governance integrity |
+| **Involvement** | Hands-on, in the work | Hands-off, above the work |
+| **Analogy** | CEO, CFO, CTO, CMO, CPO | Board Chair / Non-Executive Director |
+| **Decision Mode** | Makes execution decisions | Reviews, consults, can veto |
 
-**Accountability vs Responsibility:**
-Guardian is *accountable* for governance outcomes (the buck stops here), while specialist agents and other founders are *responsible* for executing governance work. For example:
-- Guardian accountable for legal compliance → Ledger's Legal & Compliance agent responsible for execution
-- Guardian accountable for security → Forge's team responsible for secure code
-- Guardian accountable for quality → All teams responsible for quality work
+#### What Guardian Does NOT Do
+
+Guardian is a **sentinel**, not an executor. Guardian does NOT:
+- Build products or features (Forge does)
+- Run marketing campaigns (Pulse does)
+- Design strategy (Sage does)
+- Synthesize evidence for decisions (Compass does)
+- Calculate unit economics (Ledger does)
+- Own business outcomes
+
+Guardian DOES:
+- Ask hard questions others might avoid
+- Review decisions for compliance, ethics, and risk
+- Validate methodology adherence
+- Ensure audit trails exist
+- Flag issues and escalate concerns
+- Veto decisions that violate governance standards
+
+#### Guardian as Sentinel (Overwatch Model)
+
+```
+                    ┌─────────────────────────────┐
+                    │         GUARDIAN            │
+                    │    (Board-Level Oversight)  │
+                    │                             │
+                    │  • Veto authority at gates  │
+                    │  • Asks hard questions      │
+                    │  • Ensures compliance       │
+                    │  • Does NOT execute         │
+                    └──────────────┬──────────────┘
+                                   │
+                    ┌──────────────┼──────────────┐
+                    │              │              │
+                    ▼              ▼              ▼
+              ┌─────────┐   ┌─────────┐   ┌─────────┐
+              │ G1: QA  │   │G2: Sec  │   │G3: Audit│
+              │         │   │         │   │         │
+              │ Reviews │   │ Reviews │   │ Records │
+              │ quality │   │ privacy │   │decisions│
+              └─────────┘   └─────────┘   └─────────┘
+```
+
+Guardian's agents **review** and **validate**—they don't **create** or **execute**.
+
+#### Data Governance: Distributed Ownership
+
+Guardian encompasses Chief Governance Officer responsibilities including data governance oversight. However, data-related questions are **owned by domain experts**, with Guardian providing **oversight review**:
+
+| Data Question | Owner | Guardian's Oversight |
+|---------------|-------|---------------------|
+| Strategic alignment | **Sage** (CSO) | Reviews goal clarity |
+| Business objectives | **Sage** + **Compass** | Reviews measurability |
+| KPIs & success measures | **Compass** + **Ledger** | Reviews metrics validity |
+| Data ownership | **Compass** (CPO) | Reviews accountability |
+| Data customers/users | **Sage** (CSO) | Reviews customer focus |
+| Required data sources | **Forge** + **Pulse** | Reviews data minimization |
+| Data governance & privacy | **Guardian** (direct) | Owns this domain |
+| Analytics approach | **Pulse** + **Ledger** | Reviews methodology |
+| Technology requirements | **Forge** (CTO) | Reviews security posture |
+| Skills & capacity | **Compass** + **Ledger** | Reviews resourcing |
+| Change management | **Compass** (CPO) | Reviews risk mitigation |
+
+**Key insight**: Guardian owns **data governance** (privacy, access, security, retention) but NOT data strategy, data collection, or data analysis—those belong to the executive founders.
+
+#### RACI Model for Approvals
+
+Guardian is **always Consulted, never Accountable** for execution decisions. Guardian's accountability is for **governance integrity**, not business outcomes.
+
+| Gate | Accountable (A) | Responsible (R) | Guardian Role |
+|------|-----------------|-----------------|---------------|
+| `approve_founders_brief` | Sage | S1 | **Consulted** (legitimacy) |
+| `approve_experiment_plan` | Sage | E1 | **Consulted** (methodology) |
+| `approve_pricing_test` | Ledger | W1, W2 | **Consulted** (compliance) |
+| `approve_vpc_completion` | Compass | F1, F2 | **Consulted** (quality) |
+| `approve_campaign_launch` | Pulse | P1, P3 | **Consulted** (brand safety) |
+| `approve_desirability_gate` | Compass | Evidence synthesis | **Consulted** (methodology) |
+| `approve_feasibility_gate` | Forge | F3 | **Consulted** (security) |
+| `approve_viability_gate` | Ledger | L1, L3 | **Consulted** (compliance) |
+| `request_human_decision` | Compass | C1, C2 | **Consulted** (audit trail) |
+
+**Veto Authority**: While Guardian is "Consulted" not "Accountable," Guardian retains **veto authority** on governance grounds. If a decision violates compliance, ethics, or security standards, Guardian can block progression until issues are resolved.
 
 ### Approval Checkpoint Ownership
 
@@ -529,6 +606,9 @@ This organizational structure is the **conceptual design**. Translation to CrewA
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-07 | Expanded Guardian's Board-Level Role section with Executive vs Board distinction | Clarify Guardian as sentinel/overwatch, not executor |
+| 2026-01-07 | Added RACI model for approvals with Guardian as "Consulted" | Clear accountability chain before HITL |
+| 2026-01-07 | Added Data Governance distributed ownership table | Guardian oversees, domain experts own |
 | 2026-01-07 | Pulse: Chief Growth Officer → Chief Marketing Officer (CMO) | Standard C-suite title, aligns with marketing-focused activities |
 | 2026-01-07 | Added abbreviations (CSO, CTO, CMO, CPO, CGO, CFO) to founder titles | Consistency and clarity |
 | 2026-01-05 | Added Phase 0 & Phase 1 agent definitions (O1, G1, G2, S1, E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2) | VPD framework compliance |
