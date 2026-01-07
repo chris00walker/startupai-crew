@@ -1,14 +1,17 @@
 ---
 purpose: Three-service ecosystem architecture overview
 status: active
-last_reviewed: 2025-11-21
+last_reviewed: 2026-01-07
+vpd_compliance: true
 ---
 
-# StartupAI Ecosystem - Master Architecture
+# StartupAI Ecosystem Architecture
 
 ## Overview
 
-StartupAI is a three-service ecosystem where AI Founders (this repository) serve as the decision engine, with two web interfaces providing transparency and delivery.
+StartupAI is a three-service ecosystem that delivers **Value Proposition Design (VPD)** validation through AI Founders. The CrewAI engine serves as the decision-making brain, with two web interfaces providing customer access and result delivery.
+
+> **VPD Framework**: This ecosystem implements the Strategyzer methodology. See [03-methodology.md](./03-methodology.md) for framework details.
 
 ```
                     ┌─────────────────────┐
@@ -59,90 +62,79 @@ StartupAI is a three-service ecosystem where AI Founders (this repository) serve
 
 ---
 
-## What's Implemented (Reality)
+## Phase-to-Service Mapping
 
-### Authentication Flow
-```
-Marketing Site                    Product App
-     │                                │
-     │ [Sign Up Button]               │
-     │         │                      │
-     └─────────┼──────────────────────┘
-               │
-               ▼
-     ┌─────────────────┐
-     │  Supabase Auth  │
-     │   (GitHub OAuth)│
-     └────────┬────────┘
-              │
-              ▼
-     ┌─────────────────┐
-     │  Product App    │
-     │ /auth/callback  │
-     └─────────────────┘
-```
-**Status**: Working end-to-end
+Each validation phase involves specific services:
 
-### Analysis Workflow
 ```
-Product App                      CrewAI AMP
-     │                                │
-     │ [Complete Onboarding]          │
-     │         │                      │
-     │ POST /api/crewai/analyze       │
-     │ ─────────────────────────────► │
-     │                                │
-     │         (async processing)     │
-     │                                │
-     │ GET /status/{kickoff_id}       │
-     │ ─────────────────────────────► │
-     │                                │
-     │ GET /results                   │
-     │ ◄───────────────────────────── │
-     └────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         VALIDATION FLOW                                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   PRODUCT APP              CREWAI AMP                  SUPABASE             │
+│   ───────────              ──────────                  ────────             │
+│                                                                              │
+│   ┌─────────────┐                                                           │
+│   │ Onboarding  │ ──────► Phase 0: Founder's Brief                          │
+│   │ UI Forms    │         (Sage, Guardian)                                  │
+│   └─────────────┘                │                                          │
+│                                  ▼                                          │
+│                          Phase 1: VPC Discovery ──────► Customer Profile    │
+│                          (Sage, Forge, Ledger)    │    Value Map stored     │
+│                                  │                └──► Flywheel: Discovery  │
+│                                  ▼                     learnings            │
+│   ┌─────────────┐        Phase 2: Desirability                              │
+│   │ Approval UI │ ◄────► (Forge, Pulse, Guardian) │                         │
+│   │ HITL Modal  │        Landing pages, ads       └──► Flywheel: Campaign   │
+│   └─────────────┘                │                     learnings            │
+│                                  ▼                                          │
+│                          Phase 3: Feasibility ──────► Cost estimates        │
+│                          (Forge, Guardian)       │    Constraints stored    │
+│                                  │               └──► Flywheel: Technical   │
+│                                  ▼                    learnings             │
+│   ┌─────────────┐        Phase 4: Viability                                 │
+│   │ Results     │ ◄───── (Ledger, Compass, Guardian)                        │
+│   │ Dashboard   │        Final recommendation    └──► Flywheel: Economics   │
+│   └─────────────┘                │                    learnings             │
+│                                  ▼                                          │
+│                          ┌─────────────────┐                                │
+│                          │ VALIDATED/KILLED│ ──────► Flywheel: Outcome      │
+│                          └─────────────────┘         summary + patterns     │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
-**Status**: Implemented (15% tools functional, LLM-based analysis works)
 
-### Data Storage
-```
-Product App → Supabase ← CrewAI Results (manual/future)
-```
-**Status**: Partial - app writes to Supabase, CrewAI results storage not automated
+**Flywheel Learning**: Captured at every test cycle, not just final outcome. Each phase contributes Learning Cards that improve methodology for future validations. See [reference/flywheel-learning.md](./reference/flywheel-learning.md).
+
+| Phase | Primary Service | Data Flow | Flywheel Captures |
+|-------|-----------------|-----------|-------------------|
+| **0: Onboarding** | Product App | App → CrewAI (kickoff) | - |
+| **1: VPC Discovery** | CrewAI | CrewAI → Supabase (VPC) | Discovery learnings |
+| **2: Desirability** | CrewAI | CrewAI ↔ App (HITL) | Campaign learnings |
+| **3: Feasibility** | CrewAI | CrewAI → Supabase (costs) | Technical learnings |
+| **4: Viability** | CrewAI | CrewAI → App (results) | Economics learnings |
+| **Terminal** | All | Final storage | Outcome patterns |
 
 ---
 
-## What's NOT Implemented (Hypotheses to Validate)
+## Communication Patterns
 
-### Real-time Activity Feed
+### Synchronous (Request/Response)
 ```
-Marketing Site ◄──── Activity Feed API ────► CrewAI AMP
+Product App ──POST /kickoff──► CrewAI AMP
+Product App ──GET /status────► CrewAI AMP
 ```
-**Status**: NOT IMPLEMENTED
-- No `/api/v1/agents/activity` endpoint exists
-- No webhooks for real-time updates
-- Marketing site cannot display live agent work
 
-**Hypothesis**: Real-time agent activity increases user trust and conversion
-
-### Trust Metrics API
+### Asynchronous (Webhooks)
 ```
-Marketing Site ◄──── Trust Metrics API ────► CrewAI AMP
+CrewAI AMP ──POST /webhook──► Product App (HITL triggers, results)
 ```
-**Status**: NOT IMPLEMENTED
-- No `/api/v1/metrics/public` endpoint exists
-- No aggregated success metrics available
 
-**Hypothesis**: Public metrics (analyses completed, satisfaction scores) drive signups
-
-### Automated Result Storage
+### Shared State
 ```
-CrewAI AMP ────► Supabase (entrepreneur_briefs, analysis_results)
+Product App ──────► Supabase ◄────── CrewAI AMP
+                   (projects, briefs, results)
 ```
-**Status**: NOT IMPLEMENTED
-- Results stay in CrewAI AMP
-- Manual export required to get results into Supabase
-
-**Hypothesis**: Automated storage enables dashboard features and retention
 
 ---
 
@@ -150,67 +142,49 @@ CrewAI AMP ────► Supabase (entrepreneur_briefs, analysis_results)
 
 For detailed API specifications, see **[reference/api-contracts.md](./reference/api-contracts.md)**.
 
-### Summary
-
-| Service | Endpoints | Status |
-|---------|-----------|--------|
-| CrewAI AMP | `/inputs`, `/kickoff`, `/status`, `/resume` | Working |
-| Marketing → App | Auth redirect with plan param | Working |
-| Activity Feed | `GET /api/v1/agents/activity` | NOT IMPLEMENTED |
-| Metrics | `GET /api/v1/metrics/public` | NOT IMPLEMENTED |
+| Integration | Endpoint Pattern | Purpose |
+|-------------|------------------|---------|
+| **Kickoff** | `POST /kickoff` | Start validation workflow |
+| **Status** | `GET /status/{id}` | Poll for completion |
+| **Resume** | `POST /resume` | Continue after HITL approval |
+| **Webhook** | `POST /api/crewai/webhook` | Async notifications to Product App |
 
 ---
 
-## Approval Workflows
+## Approval Workflows (HITL)
 
-For detailed HITL patterns, see **[reference/approval-workflows.md](./reference/approval-workflows.md)**.
+For detailed patterns, see **[reference/approval-workflows.md](./reference/approval-workflows.md)**.
 
-### Summary
-
-Human-in-the-loop approvals require bidirectional communication:
-1. CrewAI task pauses with `human_input: true`
-2. Webhook notifies product app
-3. User approves/rejects in UI
-4. Product app calls `/resume`
-5. Flow continues
-
-**Implementation Status**: CrewAI side available, product app side NOT IMPLEMENTED.
-
----
-
-## Environment Configuration
-
-### Shared Resources
-| Resource | Used By | Purpose |
-|----------|---------|---------|
-| Supabase Project | Marketing, Product | Auth, Database |
-| OpenAI API Key | CrewAI | LLM inference |
-
-### Service-Specific
-| Service | Key Variables |
-|---------|---------------|
-| Marketing | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_APP_URL` |
-| Product | `NEXT_PUBLIC_SUPABASE_URL`, `CREW_CONTRACT_BEARER` |
-| CrewAI | `OPENAI_API_KEY` (in CrewAI dashboard) |
-
----
-
-## Build Order Principles
-
-Since StartupAI uses lean validation (not waterfall), build order is determined by:
-
-1. **What hypothesis needs validation next?**
-2. **What's the minimum build to test it?**
-3. **What did we learn? Pivot or persevere?**
-
-See `docs/work/backlog.md` for the current hypothesis queue.
+```
+CrewAI AMP                           Product App
+    │                                     │
+    │ Task pauses (human_input: true)     │
+    │ ──────── POST /webhook ───────────► │
+    │                                     │ User reviews in UI
+    │                                     │ User approves/rejects
+    │ ◄─────── POST /resume ───────────── │
+    │ Flow continues                      │
+    └─────────────────────────────────────┘
+```
 
 ---
 
 ## Related Documents
 
-- `02-organization.md` - Flat founder team & workflow agents
-- `04-status.md` - Detailed status of each service
-- `../work/backlog.md` - Hypothesis-driven feature backlog
-- `reference/api-contracts.md` - All API specifications
-- `reference/approval-workflows.md` - HITL patterns
+### Architecture
+- [00-introduction.md](./00-introduction.md) - Quick start and orientation
+- [02-organization.md](./02-organization.md) - 6 AI Founders and agents
+- [03-methodology.md](./03-methodology.md) - VPD framework reference
+
+### Phase Specifications
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery
+- [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
+- [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation
+- [08-phase-4-viability.md](./08-phase-4-viability.md) - Viability + Decision
+
+### Reference
+- [09-status.md](./09-status.md) - Current implementation status
+- [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
+- [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
+- [reference/database-schemas.md](./reference/database-schemas.md) - Supabase schemas
