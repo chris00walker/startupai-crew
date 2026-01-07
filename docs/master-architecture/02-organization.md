@@ -1,7 +1,7 @@
 ---
 purpose: Single source of truth for 6 AI Founders and agents (Phase 0-3)
 status: active
-last_reviewed: 2026-01-05
+last_reviewed: 2026-01-07
 vpd_compliance: true
 ---
 
@@ -79,12 +79,12 @@ Six co-equal founders organized around the customer.
 
 | Founder | Title | Responsibility |
 |---------|-------|----------------|
-| **Sage** | Chief Strategy Officer | Business Model Canvas, Value Proposition Design, market analysis, assumption identification |
-| **Forge** | Chief Technology Officer | MVP code generation, technical architecture, deployment automation |
-| **Pulse** | Chief Growth Officer | Ad campaigns, user acquisition, A/B testing, analytics tracking |
-| **Compass** | Chief Product Officer | Evidence synthesis, pivot vs proceed analysis, recommendations |
-| **Guardian** | Chief Governance Officer | Governance monitoring, pattern detection, security oversight |
-| **Ledger** | Chief Financial Officer | Unit economics, revenue model design, pricing strategy, runway projections |
+| **Sage** | Chief Strategy Officer (CSO) | Business Model Canvas, Value Proposition Design, market analysis, assumption identification |
+| **Forge** | Chief Technology Officer (CTO) | MVP code generation, technical architecture, deployment automation |
+| **Pulse** | Chief Marketing Officer (CMO) | Ad campaigns, user acquisition, A/B testing, analytics tracking |
+| **Compass** | Chief Product Officer (CPO) | Evidence synthesis, pivot vs proceed analysis, recommendations |
+| **Guardian** | Chief Governance Officer (CGO) | Governance monitoring, pattern detection, security oversight |
+| **Ledger** | Chief Financial Officer (CFO) | Unit economics, revenue model design, pricing strategy, runway projections |
 
 ### Founder Dual Responsibilities
 
@@ -209,7 +209,7 @@ Following Lex Sisney's framework, the team covers all four organizational styles
 
       ↕                               ↕
   Guardian ←───────────────────────→ Pulse
-(Governance)                       (Growth)
+(Governance)                      (Marketing)
 
                       ↕
                   Compass
@@ -335,8 +335,8 @@ Human-in-the-loop (HITL) approvals are distributed across founders based on doma
 | Approval Type | Primary Owner | Prepares Request | Governance Review |
 |---------------|---------------|------------------|-------------------|
 | **Spend Increases** | Ledger (CFO) | Cost analysis, ROI projection, alternatives | Guardian |
-| **Campaign Launch** | Pulse (CGO) | Creative, copy, targeting, landing pages | Guardian |
-| **Direct Customer Contact** | Pulse (CGO) | Messaging, target list, outreach plan | Guardian |
+| **Campaign Launch** | Pulse (CMO) | Creative, copy, targeting, landing pages | Guardian |
+| **Direct Customer Contact** | Pulse (CMO) | Messaging, target list, outreach plan | Guardian |
 | **Stage Gate Progression** | Guardian (CGO) | QA report, evidence synthesis, gate criteria | Compass (synthesis) |
 | **Pivot Recommendations** | Compass (CPO) | Evidence synthesis, pivot rationale, direction | Guardian |
 | **Third-Party Data Sharing** | Guardian (CGO) | Data inventory, recipient, purpose, retention | Ledger (compliance) |
@@ -468,7 +468,7 @@ Phase 1 agents discover customer reality (Customer Profile) and design value (Va
 | **Frontend Developer** | UI implementation, user-facing code |
 | **Backend Developer** | API, data layer, server-side logic |
 
-#### Pulse (CGO) - Growth & Signals
+#### Pulse (CMO) - Marketing & Signals
 
 | Agent | Task Focus |
 |-------|------------|
@@ -529,6 +529,8 @@ This organizational structure is the **conceptual design**. Translation to CrewA
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-07 | Pulse: Chief Growth Officer → Chief Marketing Officer (CMO) | Standard C-suite title, aligns with marketing-focused activities |
+| 2026-01-07 | Added abbreviations (CSO, CTO, CMO, CPO, CGO, CFO) to founder titles | Consistency and clarity |
 | 2026-01-05 | Added Phase 0 & Phase 1 agent definitions (O1, G1, G2, S1, E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2) | VPD framework compliance |
 | 2026-01-05 | Renamed "Client Brief" to "Founder's Brief" throughout | Align with VPD Phase 0 terminology |
 | 2026-01-05 | Added VPD Framework Terminology section | Document VPD vocabulary (Jobs, Pains, Gains, Test Cards, etc.) |

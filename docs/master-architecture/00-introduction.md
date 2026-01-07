@@ -1,7 +1,7 @@
 ---
 purpose: Repository introduction, architecture overview, and quick start
 status: active
-last_reviewed: 2026-01-05
+last_reviewed: 2026-01-07
 vpd_compliance: true
 ---
 
@@ -13,7 +13,7 @@ vpd_compliance: true
 
 This repository contains the brain of the StartupAI ecosystem - a multi-phase crew orchestration system that powers the AI Founders team. It implements the **Value Proposition Design (VPD)** framework by Osterwalder & Pigneur using CrewAI Flows to deliver Problem-Solution Fit, Desirability, Feasibility, and Viability validation.
 
-> **VPD Framework Compliance**: This system implements patterns from *Value Proposition Design*, *Testing Business Ideas*, and *Business Model Generation*. See [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) for detailed Phase 0-1 implementation.
+> **VPD Framework Compliance**: This system implements patterns from *Value Proposition Design*, *Testing Business Ideas*, and *Business Model Generation*. See [03-methodology.md](./03-methodology.md) for VPD framework reference and phase documents (04-08) for detailed implementation.
 
 ## Design Principles
 
@@ -25,10 +25,16 @@ Organized around the customer, not a linear pipeline:
 - **Guardian**: Governance oversight across all functions
 
 ### 2. Gated Validation
-Validation is sequential, not parallel:
+Validation follows the Strategyzer methodology with four gates:
 ```
-[Test Cycles] → DESIRABILITY GATE → [Test Cycles] → FEASIBILITY GATE → [Test Cycles] → VIABILITY GATE
+VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DESIRABILITY GATE → [Test Cycles] → FEASIBILITY GATE → [Test Cycles] → VIABILITY GATE
 ```
+
+**Key principles:**
+- **VPD comes first**: You must design and validate the Value Proposition Canvas (Customer Profile + Value Map) before testing desirability. There's no point asking "do they want it?" until you've validated you're targeting the correct customer segment.
+- **Test cycles at every stage**: Each phase requires iterative testing. VPD itself requires cycles to achieve Problem-Solution Fit (fit score ≥ 70).
+- **Non-linear with pivots**: This is NOT a straight linear process. At any point, a critical failure in Testing Business Ideas can force a pivot (SEGMENT_PIVOT, VALUE_PIVOT, FEATURE_PIVOT, PRICE_PIVOT, COST_PIVOT, MODEL_PIVOT) that loops back to an earlier phase.
+- **Gates are checkpoints**: Each gate (`approve_vpc_completion`, `approve_desirability_gate`, `approve_feasibility_gate`, `approve_viability_gate`) requires evidence-based validation before proceeding.
 
 ### 3. Flows + Crews Architecture
 - **Crews**: Autonomous agent teams that collaborate on tasks
@@ -69,14 +75,14 @@ Validation is sequential, not parallel:
 |---------|-------|----------------|
 | **Sage** | CSO | Strategy, VPC design, owns Service Side |
 | **Forge** | CTO | Build, technical feasibility |
-| **Pulse** | CGrO | Growth, market signals, desirability evidence |
+| **Pulse** | CMO | Marketing, market signals, desirability evidence |
 | **Compass** | CPO | Balance, synthesis, pivot/proceed |
-| **Guardian** | CGoO | Governance, accountability, oversight |
+| **Guardian** | CGO | Governance, accountability, oversight |
 | **Ledger** | CFO | Finance, viability, compliance |
 
 ## Phase-Based Architecture
 
-> **Single Source**: See [02-organization.md](./02-organization.md) for complete agent details and [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) for Phase 0-1 implementation.
+> **Single Source**: See [02-organization.md](./02-organization.md) for complete agent details and [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) / [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) for Phase 0-1 implementation.
 
 ### Phase 0: Onboarding (Founder's Brief)
 
@@ -221,7 +227,7 @@ class VPCDiscoveryFlow(Flow[VPCState]):
             return "iterate"  # Refine value map
 ```
 
-> **Full Implementation**: See [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) for complete flow specification
+> **Full Implementation**: See [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) and [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) for complete flow specifications
 
 ## File Structure
 
@@ -384,9 +390,13 @@ curl https://startupai-...crewai.com/status/{kickoff_id} \
 
 - **Ecosystem Overview**: [01-ecosystem.md](./01-ecosystem.md)
 - **Organizational Structure**: [02-organization.md](./02-organization.md) (single source for founders/agents)
-- **Phase 0-1 Specification**: [05-phase-0-1-specification.md](./05-phase-0-1-specification.md) (VPD framework implementation)
-- **Technical Specification**: [03-validation-spec.md](./03-validation-spec.md) (Phase 2+ validation)
-- **Current State**: [04-status.md](./04-status.md)
+- **VPD Methodology**: [03-methodology.md](./03-methodology.md) (framework reference, Strategyzer mapping)
+- **Phase 0 (Onboarding)**: [04-phase-0-onboarding.md](./04-phase-0-onboarding.md)
+- **Phase 1 (VPC Discovery)**: [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md)
+- **Phase 2 (Desirability)**: [06-phase-2-desirability.md](./06-phase-2-desirability.md)
+- **Phase 3 (Feasibility)**: [07-phase-3-feasibility.md](./07-phase-3-feasibility.md)
+- **Phase 4 (Viability)**: [08-phase-4-viability.md](./08-phase-4-viability.md)
+- **Current Status**: [09-status.md](./09-status.md)
 - **API Contracts**: [reference/api-contracts.md](./reference/api-contracts.md)
 - **Approval Workflows**: [reference/approval-workflows.md](./reference/approval-workflows.md)
 
@@ -399,4 +409,4 @@ curl https://startupai-...crewai.com/status/{kickoff_id} \
 ---
 
 **Status**: Multi-phase architecture with VPD framework compliance
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-07
