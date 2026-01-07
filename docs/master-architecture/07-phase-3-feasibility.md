@@ -54,14 +54,14 @@ Determine whether the validated value proposition **can be built** with availabl
 | **Phase** | Phase 3: Feasibility Validation (business concept) |
 | **Flow** | `FeasibilityFlow` (orchestrates 2 crews) |
 | **Crews** | `BuildCrew`, `GovernanceCrew` |
-| **Agents** | 4 total (F1-F3 reused, G1) |
+| **Agents** | 5 total (F1-F3 reused, G1, G2) |
 
 ### Crew Composition
 
 | Crew | Agents | Purpose |
 |------|--------|---------|
 | **BuildCrew** | F1, F2, F3 | Technical feasibility assessment |
-| **GovernanceCrew** | G1 | Gate validation (reuses Phase 2 governance) |
+| **GovernanceCrew** | G1, G2 | Gate validation + security review |
 
 ---
 
@@ -261,6 +261,42 @@ Determine whether the validated value proposition **can be built** with availabl
 
 ---
 
+### Governance Crew (Guardian) - Feasibility Validation
+
+#### G1: QA Agent (Feasibility Role)
+
+| Attribute | Value |
+|-----------|-------|
+| **ID** | G1 |
+| **Name** | QA Agent |
+| **Founder** | Guardian |
+| **Role** | Validate feasibility assessment methodology and gate criteria |
+| **Goal** | Ensure feasibility analysis follows VPD methodology |
+
+**Feasibility Tasks:**
+1. `validate_assessment_methodology` - Check technical assessment follows standards
+2. `verify_constraint_documentation` - Ensure all constraints are properly documented
+3. `confirm_gate_readiness` - Validate phase exit criteria met
+
+---
+
+#### G2: Security Agent (Feasibility Role)
+
+| Attribute | Value |
+|-----------|-------|
+| **ID** | G2 |
+| **Name** | Security Agent |
+| **Founder** | Guardian |
+| **Role** | Review architecture security posture |
+| **Goal** | Identify security constraints and validate technical security choices |
+
+**Feasibility Tasks:**
+1. `review_architecture_security` - Assess security implications of proposed architecture
+2. `identify_security_constraints` - Flag security-related technical constraints
+3. `validate_data_handling` - Ensure PII/sensitive data handling is feasible
+
+---
+
 ## Innovation Physics Routing
 
 ### Feasibility Router Logic
@@ -383,7 +419,7 @@ class FeasibilityResult(BaseModel):
 |-----------|-------|
 | **Checkpoint ID** | `approve_feasibility_gate` |
 | **Phase** | 3 |
-| **Owner** | Forge (F3) + Guardian (G1) |
+| **Owner** | Forge (F3) + Guardian (G1, G2) |
 | **Purpose** | Confirm feasibility assessment and approve technical approach |
 | **Required for Exit** | Yes |
 
@@ -439,7 +475,7 @@ class FeasibilityResult(BaseModel):
 | Crew | Agents | Purpose |
 |------|--------|---------|
 | `BuildCrew` | F1, F2, F3 | Technical feasibility assessment |
-| `GovernanceCrew` | G1 | Gate validation |
+| `GovernanceCrew` | G1, G2 | Gate validation + security review |
 
 ### Agent Summary
 
@@ -449,11 +485,12 @@ class FeasibilityResult(BaseModel):
 | F2 | Frontend Developer | Forge | BuildCrew | Assess frontend feasibility |
 | F3 | Backend Developer | Forge | BuildCrew | Assess backend feasibility, set signal |
 | G1 | QA Agent | Guardian | GovernanceCrew | Gate validation |
+| G2 | Security Agent | Guardian | GovernanceCrew | Architecture security review |
 
 **Phase 3 Totals:**
 - Flows: 1 (`FeasibilityFlow`)
 - Crews: 2 (reusing BuildCrew from Phase 2)
-- Agents: 4
+- Agents: 5
 - HITL Checkpoints: 1
 
 ---

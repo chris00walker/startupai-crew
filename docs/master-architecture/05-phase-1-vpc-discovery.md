@@ -54,17 +54,17 @@ Discover **Customer Reality** (what customers actually need) and design a **Valu
 | **Phase** | Phase 1: VPC Discovery (business concept) |
 | **Flow** | `VPCDiscoveryFlow` (orchestrates 5 crews) |
 | **Crews** | `DiscoveryCrew`, `CustomerProfileCrew`, `ValueDesignCrew`, `WTPCrew`, `FitAssessmentCrew` |
-| **Agents** | 18 total (E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2) |
+| **Agents** | 18 total (E1, D1-D4, J1-J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK, V1-V3, W1-W2, FIT_SCORE, FIT_ROUTE) |
 
 ### Crew Composition
 
 | Crew | Agents | Purpose |
 |------|--------|---------|
 | **DiscoveryCrew** | E1, D1, D2, D3, D4 | Experiment design + evidence collection (SAY + DO) |
-| **CustomerProfileCrew** | J1, J2, P1, P2, G1, G2 | Research + rank Jobs, Pains, Gains |
+| **CustomerProfileCrew** | J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK | Research + rank Jobs, Pains, Gains |
 | **ValueDesignCrew** | V1, V2, V3 | Design Products, Pain Relievers, Gain Creators |
 | **WTPCrew** | W1, W2 | Willingness-to-pay experiments |
-| **FitAssessmentCrew** | F1, F2 | Score fit, determine routing |
+| **FitAssessmentCrew** | FIT_SCORE, FIT_ROUTE | Score fit, determine routing |
 
 ---
 
@@ -119,11 +119,11 @@ Discover **Customer Reality** (what customers actually need) and design a **Valu
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
 │  │  @listen("segment_exists")                                            │  │
 │  │                                                                       │  │
-│  │  CUSTOMER PROFILE CREW (J1, J2, P1, P2, G1, G2)                      │  │
+│  │  CUSTOMER PROFILE CREW (J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK)│  │
 │  │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐      │  │
 │  │  │  JOBS           │  │  PAINS          │  │  GAINS          │      │  │
-│  │  │  J1: Research   │  │  P1: Research   │  │  G1: Research   │      │  │
-│  │  │  J2: Rank       │  │  P2: Rank       │  │  G2: Rank       │      │  │
+│  │  │  J1: Research   │  │  PAIN_RES: Res  │  │  GAIN_RES: Res  │      │  │
+│  │  │  J2: Rank       │  │  PAIN_RANK: Rank│  │  GAIN_RANK: Rank│      │  │
 │  │  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘      │  │
 │  │           │                    │                    │               │  │
 │  │           └────────────────────┼────────────────────┘               │  │
@@ -167,10 +167,10 @@ Discover **Customer Reality** (what customers actually need) and design a **Valu
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
 │  │  @listen(wtp_crew)                                                    │  │
 │  │                                                                       │  │
-│  │  FIT ASSESSMENT CREW (F1, F2)                                        │  │
+│  │  FIT ASSESSMENT CREW (FIT_SCORE, FIT_ROUTE)                         │  │
 │  │  ┌─────────────────────────────────────────────────────────────┐    │  │
-│  │  │  F1: Fit Analyst       → Score Problem-Solution Fit          │    │  │
-│  │  │  F2: Iteration Router  → Determine routing                   │    │  │
+│  │  │  FIT_SCORE: Fit Analyst → Score Problem-Solution Fit         │    │  │
+│  │  │  FIT_ROUTE: Router      → Determine routing                  │    │  │
 │  │  └─────────────────────────────────────────────────────────────┘    │  │
 │  └──────────────────────────────────────────────────────────────────────┘  │
 │                                    │                                         │
@@ -401,7 +401,7 @@ def triangulate_evidence(say_evidence, do_evidence):
 ## CustomerProfileCrew: Jobs, Pains, Gains Discovery
 
 **Crew**: `CustomerProfileCrew`
-**Agents**: J1, J2, P1, P2, G1, G2 (6 agents)
+**Agents**: J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK (6 agents)
 
 ### Jobs Discovery
 
@@ -472,11 +472,11 @@ IMPORTANCE SCORE (1-10)
 
 **Purpose**: Discover what customers want to avoid (Pains).
 
-#### P1: Pain Researcher
+#### PAIN_RES: Pain Researcher
 
 | Attribute | Value |
 |-----------|-------|
-| **ID** | P1 |
+| **ID** | PAIN_RES |
 | **Name** | Pain Researcher |
 | **Founder** | Sage |
 | **Role** | Discover customer pains through research |
@@ -502,11 +502,11 @@ RISKS
 
 ---
 
-#### P2: Pain Ranking Agent
+#### PAIN_RANK: Pain Ranking Agent
 
 | Attribute | Value |
 |-----------|-------|
-| **ID** | P2 |
+| **ID** | PAIN_RANK |
 | **Name** | Pain Ranking Agent |
 | **Founder** | Sage |
 | **Role** | Rank pains by severity |
@@ -526,11 +526,11 @@ LOW (1-3): Mild inconvenience
 
 **Purpose**: Discover what customers desire (Gains).
 
-#### G1: Gain Researcher
+#### GAIN_RES: Gain Researcher
 
 | Attribute | Value |
 |-----------|-------|
-| **ID** | G1 |
+| **ID** | GAIN_RES |
 | **Name** | Gain Researcher |
 | **Founder** | Sage |
 | **Role** | Discover customer gains through research |
@@ -557,11 +557,11 @@ UNEXPECTED (Delighters)
 
 ---
 
-#### G2: Gain Ranking Agent
+#### GAIN_RANK: Gain Ranking Agent
 
 | Attribute | Value |
 |-----------|-------|
-| **ID** | G2 |
+| **ID** | GAIN_RANK |
 | **Name** | Gain Ranking Agent |
 | **Founder** | Sage |
 | **Role** | Rank gains by importance |
@@ -701,15 +701,15 @@ VALIDATION (Behavioral)
 **Purpose**: Score Problem-Solution Fit and route based on result.
 
 **Crew**: `FitAssessmentCrew`
-**Agents**: F1, F2 (2 agents)
+**Agents**: FIT_SCORE, FIT_ROUTE (2 agents)
 
 ### Agent Specifications
 
-#### F1: Fit Analyst
+#### FIT_SCORE: Fit Analyst
 
 | Attribute | Value |
 |-----------|-------|
-| **ID** | F1 |
+| **ID** | FIT_SCORE |
 | **Name** | Fit Analyst |
 | **Founder** | Compass |
 | **Role** | Score Problem-Solution Fit |
@@ -745,11 +745,11 @@ class FitAssessment(BaseModel):
 
 ---
 
-#### F2: Iteration Router
+#### FIT_ROUTE: Iteration Router
 
 | Attribute | Value |
 |-----------|-------|
-| **ID** | F2 |
+| **ID** | FIT_ROUTE |
 | **Name** | Iteration Router |
 | **Founder** | Compass |
 | **Role** | Route based on fit score |
@@ -930,7 +930,7 @@ class EvidenceSummary(BaseModel):
 |-----------|-------|
 | **Checkpoint ID** | `approve_vpc_completion` |
 | **Phase** | 1 |
-| **Owner** | Compass (F1) + Founder |
+| **Owner** | Compass (FIT_SCORE) + Founder |
 | **Purpose** | Confirm VPC ready for Phase 2 (fit ≥ 70) |
 | **Required for Exit** | Yes |
 
@@ -984,10 +984,10 @@ class EvidenceSummary(BaseModel):
 | Crew | Agents | Purpose |
 |------|--------|---------|
 | `DiscoveryCrew` | E1, D1, D2, D3, D4 | Segment validation + evidence collection |
-| `CustomerProfileCrew` | J1, J2, P1, P2, G1, G2 | Jobs, Pains, Gains research + ranking |
+| `CustomerProfileCrew` | J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK | Jobs, Pains, Gains research + ranking |
 | `ValueDesignCrew` | V1, V2, V3 | Products, Pain Relievers, Gain Creators |
 | `WTPCrew` | W1, W2 | Willingness-to-pay validation |
-| `FitAssessmentCrew` | F1, F2 | Fit scoring + iteration routing |
+| `FitAssessmentCrew` | FIT_SCORE, FIT_ROUTE | Fit scoring + iteration routing |
 
 ### Agent Summary
 
@@ -1000,17 +1000,17 @@ class EvidenceSummary(BaseModel):
 | D4 | Evidence Triangulation Agent | Guardian | DiscoveryCrew | Evidence synthesis |
 | J1 | JTBD Researcher | Sage | CustomerProfileCrew | Discover jobs |
 | J2 | Job Ranking Agent | Sage | CustomerProfileCrew | Rank jobs |
-| P1 | Pain Researcher | Sage | CustomerProfileCrew | Discover pains |
-| P2 | Pain Ranking Agent | Sage | CustomerProfileCrew | Rank pains |
-| G1 | Gain Researcher | Sage | CustomerProfileCrew | Discover gains |
-| G2 | Gain Ranking Agent | Sage | CustomerProfileCrew | Rank gains |
+| PAIN_RES | Pain Researcher | Sage | CustomerProfileCrew | Discover pains |
+| PAIN_RANK | Pain Ranking Agent | Sage | CustomerProfileCrew | Rank pains |
+| GAIN_RES | Gain Researcher | Sage | CustomerProfileCrew | Discover gains |
+| GAIN_RANK | Gain Ranking Agent | Sage | CustomerProfileCrew | Rank gains |
 | V1 | Solution Designer | Forge | ValueDesignCrew | Design products/services |
 | V2 | Pain Reliever Designer | Forge | ValueDesignCrew | Design pain relievers |
 | V3 | Gain Creator Designer | Forge | ValueDesignCrew | Design gain creators |
 | W1 | Pricing Experiment Agent | Ledger | WTPCrew | Design WTP experiments |
 | W2 | Payment Test Agent | Ledger | WTPCrew | Execute payment tests |
-| F1 | Fit Analyst | Compass | FitAssessmentCrew | Score fit |
-| F2 | Iteration Router | Compass | FitAssessmentCrew | Route by fit score |
+| FIT_SCORE | Fit Analyst | Compass | FitAssessmentCrew | Score fit |
+| FIT_ROUTE | Iteration Router | Compass | FitAssessmentCrew | Route by fit score |
 
 **Phase 1 Totals:**
 - Flows: 1 (`VPCDiscoveryFlow`)

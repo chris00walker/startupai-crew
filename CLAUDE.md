@@ -2,7 +2,7 @@
 
 ## Project Identity
 **Name**: StartupAI AI Founders Engine
-**Purpose**: 5-Flow/14-Crew/44-Agent validation engine with HITL checkpoints
+**Purpose**: 5-Flow/14-Crew/45-Agent validation engine with HITL checkpoints
 **Framework**: CrewAI Flows + Crews (canonical); Crews-only (AMP deployment)
 **Deployment**: CrewAI AMP Platform (3-Crew workaround)
 **Status**: Architecture specified, AMP deployment online
@@ -241,7 +241,7 @@ All CrewAI flows use a single webhook endpoint with `flow_type` differentiation:
 | **Guardian** | CGO | Governance, accountability, board-level oversight |
 | **Ledger** | CFO | Finance, viability, compliance |
 
-### 14 Crews / 44 Agents (Canonical Architecture)
+### 14 Crews / 45 Agents (Canonical Architecture)
 
 | Phase | Flow | Crews | Agents |
 |-------|------|-------|--------|
@@ -491,7 +491,7 @@ docs/master-architecture/
 ---
 **Last Updated**: 2026-01-07
 **Maintainer**: Chris Walker
-**Status**: Canonical architecture specified (5 Flows / 14 Crews / 44 Agents); AMP deployment online (3 Crews / 19 Agents)
+**Status**: Canonical architecture specified (5 Flows / 14 Crews / 45 Agents); AMP deployment online (3 Crews / 19 Agents)
 **Critical Note**: This is the BRAIN of the StartupAI ecosystem
 
 ### Migration Notes (2025-12-05)
@@ -526,7 +526,7 @@ docs/master-architecture/
 - Established pattern hierarchy: `PHASE → FLOW → CREW → AGENT → TASK`
 - **Critical rule enforced**: A crew must have 2+ agents (one agent is NOT a crew)
 - Consolidated one-agent "crews" into proper multi-agent crews
-- Canonical architecture: 5 Flows, 14 Crews, 44 Agents, 10 HITL
+- Canonical architecture: 5 Flows, 14 Crews, 45 Agents, 10 HITL
 - AMP deployment documented as platform workaround (3 Crews, 19 Agents, 7 HITL)
 - Updated all phase documents (04-08) with CrewAI Pattern Mapping sections
 - Updated `02-organization.md` with complete crew structure

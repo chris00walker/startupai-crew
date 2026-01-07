@@ -70,20 +70,20 @@ PHASE (Business Concept)
 |-------|------|------|--------|
 | 0: Onboarding | `OnboardingFlow` | `OnboardingCrew` | O1, G1, G2, S1 |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `DiscoveryCrew` | E1, D1, D2, D3, D4 |
-| 1: VPC Discovery | `VPCDiscoveryFlow` | `CustomerProfileCrew` | J1, J2, P1, P2, G1, G2 |
+| 1: VPC Discovery | `VPCDiscoveryFlow` | `CustomerProfileCrew` | J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `ValueDesignCrew` | V1, V2, V3 |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `WTPCrew` | W1, W2 |
-| 1: VPC Discovery | `VPCDiscoveryFlow` | `FitAssessmentCrew` | F1, F2 |
+| 1: VPC Discovery | `VPCDiscoveryFlow` | `FitAssessmentCrew` | FIT_SCORE, FIT_ROUTE |
 | 2: Desirability | `DesirabilityFlow` | `BuildCrew` | F1, F2, F3 |
 | 2: Desirability | `DesirabilityFlow` | `GrowthCrew` | P1, P2, P3 |
 | 2: Desirability | `DesirabilityFlow` | `GovernanceCrew` | G1, G2, G3 |
 | 3: Feasibility | `FeasibilityFlow` | `BuildCrew` | F1, F2, F3 (reused) |
-| 3: Feasibility | `FeasibilityFlow` | `GovernanceCrew` | G1 |
+| 3: Feasibility | `FeasibilityFlow` | `GovernanceCrew` | G1, G2 |
 | 4: Viability | `ViabilityFlow` | `FinanceCrew` | L1, L2, L3 |
 | 4: Viability | `ViabilityFlow` | `SynthesisCrew` | C1, C2, C3 |
 | 4: Viability | `ViabilityFlow` | `GovernanceCrew` | G1, G2, G3 |
 
-**Totals**: 5 Phases, 5 Flows, 14 Crews, 44 Agents
+**Totals**: 5 Phases, 5 Flows, 14 Crews, 45 Agents
 
 ## The AI Founders Team
 
@@ -391,7 +391,7 @@ Guardian is **always Consulted, never Accountable** for execution decisions. Gua
 | `approve_founders_brief` | Sage | S1 | **Consulted** (legitimacy) |
 | `approve_experiment_plan` | Sage | E1 | **Consulted** (methodology) |
 | `approve_pricing_test` | Ledger | W1, W2 | **Consulted** (compliance) |
-| `approve_vpc_completion` | Compass | F1, F2 | **Consulted** (quality) |
+| `approve_vpc_completion` | Compass | FIT_SCORE, FIT_ROUTE | **Consulted** (quality) |
 | `approve_campaign_launch` | Pulse | P1, P3 | **Consulted** (brand safety) |
 | `approve_desirability_gate` | Compass | Evidence synthesis | **Consulted** (methodology) |
 | `approve_feasibility_gate` | Forge | F3 | **Consulted** (security) |
@@ -418,7 +418,7 @@ Human-in-the-loop (HITL) approvals are distributed across founders based on doma
 |---------------|---------------|------------------|-------------------|
 | **Experiment Plan** (`approve_experiment_plan`) | Sage (E1) | Experiment mix, cost, timeline | Guardian |
 | **Pricing Tests** (`approve_pricing_test`) | Ledger (W1, W2) | Price points, payment methods | Guardian |
-| **VPC Completion** (`approve_vpc_completion`) | Compass (F1) | Fit score, evidence summary | Guardian |
+| **VPC Completion** (`approve_vpc_completion`) | Compass (FIT_SCORE) | Fit score, evidence summary | Guardian |
 
 #### Phase 2+ Approvals (Validation)
 
@@ -527,10 +527,10 @@ Phase 1 agents discover customer reality (Customer Profile) and design value (Va
 |----|-------|---------|------------|
 | **J1** | JTBD Researcher | Sage | Discover Jobs-to-be-Done (functional, emotional, social, supporting) |
 | **J2** | Job Ranking Agent | Sage | Rank jobs by importance using interviews, surveys, engagement metrics |
-| **P1** | Pain Researcher | Sage | Discover pains via interviews, review mining, support tickets |
-| **P2** | Pain Ranking Agent | Sage | Rank pains by severity |
-| **G1** | Gain Researcher | Sage | Discover gains via interviews, feature requests, success stories |
-| **G2** | Gain Ranking Agent | Sage | Rank gains by importance |
+| **PAIN_RES** | Pain Researcher | Sage | Discover pains via interviews, review mining, support tickets |
+| **PAIN_RANK** | Pain Ranking Agent | Sage | Rank pains by severity |
+| **GAIN_RES** | Gain Researcher | Sage | Discover gains via interviews, feature requests, success stories |
+| **GAIN_RANK** | Gain Ranking Agent | Sage | Rank gains by importance |
 
 #### ValueDesignCrew (3 agents)
 
@@ -551,8 +551,8 @@ Phase 1 agents discover customer reality (Customer Profile) and design value (Va
 
 | ID | Agent | Founder | Task Focus |
 |----|-------|---------|------------|
-| **F1** | Fit Analyst | Compass | Score Problem-Solution Fit (Customer Profile ↔ Value Map coverage) |
-| **F2** | Iteration Router | Compass | Route back to appropriate crew if fit < 70 |
+| **FIT_SCORE** | Fit Analyst | Compass | Score Problem-Solution Fit (Customer Profile ↔ Value Map coverage) |
+| **FIT_ROUTE** | Iteration Router | Compass | Route back to appropriate crew if fit < 70 |
 
 **Phase 1 HITL Checkpoints**:
 - `approve_experiment_plan` - Approve experiment mix before execution
@@ -600,7 +600,7 @@ Phase 2 tests whether customers actually want the validated value proposition. S
 Phase 3 assesses whether the validated value proposition can be built. See [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) for full specification.
 
 **Flow**: `FeasibilityFlow`
-**Crews**: 2 crews (4 agents total, reusing BuildCrew from Phase 2)
+**Crews**: 2 crews (5 agents total, reusing BuildCrew from Phase 2)
 
 #### BuildCrew (3 agents, reused)
 
@@ -610,11 +610,12 @@ Phase 3 assesses whether the validated value proposition can be built. See [07-p
 | **F2** | Frontend Developer | Forge | Assess frontend feasibility |
 | **F3** | Backend Developer | Forge | Assess backend feasibility, set signal |
 
-#### GovernanceCrew (1 agent)
+#### GovernanceCrew (2 agents)
 
 | ID | Agent | Founder | Task Focus |
 |----|-------|---------|------------|
 | **G1** | QA Agent | Guardian | Gate validation |
+| **G2** | Security Agent | Guardian | Architecture security review |
 
 **Phase 3 HITL Checkpoint**: `approve_feasibility_gate` - Confirm feasibility signal is GREEN
 
@@ -730,7 +731,7 @@ This organizational structure maps directly to CrewAI's documented patterns.
 | **Phases** | 5 (0: Onboarding, 1: VPC Discovery, 2: Desirability, 3: Feasibility, 4: Viability) |
 | **Flows** | 5 (`OnboardingFlow`, `VPCDiscoveryFlow`, `DesirabilityFlow`, `FeasibilityFlow`, `ViabilityFlow`) |
 | **Crews** | 14 (see Complete Crew Summary above) |
-| **Agents** | 44 (unique agent instances across all phases) |
+| **Agents** | 45 (unique agent instances across all phases) |
 | **HITL Checkpoints** | 10 (approval gates requiring human decision) |
 
 ### Current Status
