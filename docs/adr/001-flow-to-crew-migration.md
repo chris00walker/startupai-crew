@@ -1,9 +1,10 @@
 # ADR-001: Migration from Flow Architecture to 3-Crew Architecture
 
-**Status**: Accepted
+**Status**: Accepted (Audited 2026-01-06)
 **Date**: 2025-12-05
 **Decision Makers**: Chris Walker, Claude AI Assistant
 **Context**: CrewAI AMP deployment compatibility
+**Last Audited**: 2026-01-06 - Claims verified against CrewAI documentation
 
 ## Summary
 
@@ -19,10 +20,12 @@ The original StartupAI architecture used CrewAI Flows with:
 - 8 crews with 18 agents in a single monolithic flow
 - State management via Pydantic models and `@persist()` decorators
 
-**AMP Deployment Issue**: When deployed to CrewAI AMP, the platform:
+**AMP Deployment Issue** *(empirically observed, not officially documented)*: When deployed to CrewAI AMP, the platform:
 1. Incorrectly parsed `type = "flow"` projects expecting 14 YAML inputs instead of Flow's `kickoff(inputs)` pattern
 2. Returned `source: memory` without executing code (infrastructure-level caching issue)
 3. Dashboard traces showed "Waiting for events to load..." indicating the flow never executed
+
+> **Audit Note (2026-01-06)**: These specific behaviors are not documented in official CrewAI docs. However, [PR #2291](https://github.com/crewAIInc/crewAI/pull/2291) confirms Flow projects had deployment issues that required fixes, and [community reports](https://community.crewai.com/t/deployment-issue/2944) show flows working locally but failing on enterprise deployment.
 
 ### Debugging Attempts (All Failed)
 
@@ -33,6 +36,8 @@ Code-level workarounds attempted:
 - Disabled agent caching at instantiation
 
 **Conclusion**: The issue was at the AMP infrastructure level, not in our code. Per CrewAI support feedback, AMP handles `type = "crew"` projects reliably but has known issues with `type = "flow"`.
+
+> **Audit Note (2026-01-06)**: The claim that `type = "crew"` works reliably while `type = "flow"` doesn't is based on operational experience and support conversations, not official documentation. CrewAI docs state both can be deployed to AOP.
 
 ## Decision
 
@@ -137,8 +142,64 @@ AMP deploys from git repo root, so each crew requires its own repository:
 - `docs/master-architecture/04-status.md` - Current implementation status
 - `.claude/plans/cryptic-marinating-goose.md` - Detailed implementation plan
 
+## Audit Results (2026-01-06)
+
+This ADR was audited against official CrewAI documentation (local and online) on 2026-01-06.
+
+### Verified Claims (Documented)
+
+| Claim | Verification |
+|-------|--------------|
+| `@start`, `@listen`, `@router` decorators | ✅ Confirmed in `flows.md` |
+| Pydantic state management with `Flow[State]` | ✅ Confirmed in `flows.md` and state management guide |
+| `@persist()` decorator for state recovery | ✅ Confirmed in `flows.md` lines 341-424 |
+| `kickoff(inputs)` pattern | ✅ Confirmed in `flows.md` |
+| `human_input: true` on tasks | ✅ Confirmed in `tasks.md` line 54 |
+| Task `context` arrays for sequencing | ✅ Confirmed in `tasks.md` lines 323-340 |
+| `InvokeCrewAIAutomationTool` exists | ✅ Confirmed - [official docs](https://docs.crewai.com/en/tools/integration/crewaiautomationtool) |
+| Tool enables crew-to-crew chaining | ✅ Confirmed - uses `POST /kickoff` and `GET /status/{id}` |
+
+### Partially Supported Claims (Community Evidence)
+
+| Claim | Evidence |
+|-------|----------|
+| Flow projects had deployment issues | [PR #2291](https://github.com/crewAIInc/crewAI/pull/2291) fixed "crewai run command issue for Flow Projects and Cloud Deployment" |
+| Flow deployments can fail on enterprise | [Community report](https://community.crewai.com/t/deployment-issue/2944): flow works locally but fails on enterprise |
+| Missing scripts in flow scaffolding | [Issue #2005](https://github.com/crewAIInc/crewAI/issues/2005): "Missing run_crew script in scaffolded pyproject.toml" |
+| Wrong command caused flow failures | [Community](https://community.crewai.com/t/unable-to-run-crew-using-flow/1186): had to use `crewai flow kickoff` not `crewai run` |
+
+### Unverifiable Claims (Empirical Observations)
+
+| Claim | Status |
+|-------|--------|
+| AMP returns `source: memory` without executing | ❌ Not documented - based on our operational observation |
+| `type = "crew"` works reliably, `type = "flow"` doesn't | ❌ Not documented - docs say both can be deployed |
+| AMP infrastructure-level caching skips Flow execution | ❌ Not documented - [caching issues](https://community.crewai.com/t/crewai-agents-use-old-or-incorrect-input-despite-memory-reset-and-cache-clear/5484) exist but are about agent memory, not AMP execution |
+| AMP deploys from repo root (requires separate repos) | ❌ Not documented - no repo structure requirements in docs |
+
+### Audit Conclusion
+
+The migration decision was **operationally justified** based on:
+1. Real deployment failures we experienced
+2. Documented bugs in Flow project scaffolding ([PR #2291](https://github.com/crewAIInc/crewAI/pull/2291), [Issue #2005](https://github.com/crewAIInc/crewAI/issues/2005))
+3. Community reports of similar Flow deployment issues
+
+However, the ADR's **core technical claims** about AMP behavior (`source: memory`, infrastructure caching, `type = "flow"` incompatibility) are based on **operational experience**, not official documentation. Future readers should understand this distinction.
+
+### Sources
+
+- [CrewAI Run Automation Tool](https://docs.crewai.com/en/tools/integration/crewaiautomationtool)
+- [Flow Run Command Fix PR #2291](https://github.com/crewAIInc/crewAI/pull/2291)
+- [Community: Unable to run Crew using Flow](https://community.crewai.com/t/unable-to-run-crew-using-flow/1186)
+- [Community: Deployment Issue](https://community.crewai.com/t/deployment-issue/2944)
+- [Community: Agents Using Cached Inputs](https://community.crewai.com/t/crewai-agents-use-old-or-incorrect-input-despite-memory-reset-and-cache-clear/5484)
+- [CrewAI CLI Documentation](https://docs.crewai.com/en/concepts/cli)
+- Local docs: `docs/crewai-documentation/core-concepts/flows.md`
+- Local docs: `docs/crewai-documentation/core-concepts/tasks.md`
+
 ## Changelog
 
 | Date | Change |
 |------|--------|
 | 2025-12-05 | Initial decision and implementation |
+| 2026-01-06 | Audited against CrewAI documentation; added verification notes |

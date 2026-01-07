@@ -63,29 +63,65 @@ src/intake_crew/
 ├── __init__.py
 ├── crew.py                     # 4 agents: S1, S2, S3, G1
 ├── main.py                     # Entry point
+├── schemas.py                  # Pydantic schemas
 ├── tools/                      # Agent tools
 │   ├── __init__.py
+│   ├── methodology_check.py
 │   └── web_search.py           # TavilySearchTool, CustomerResearchTool
 └── config/
     ├── agents.yaml             # Agent definitions
     └── tasks.yaml              # 6 tasks (1 HITL)
 
-# CREWS 2 & 3 (require separate repos for AMP deployment)
-startupai-crews/
-├── crew-2-validation/          # 12 agents, 21 tasks (5 HITL)
-└── crew-3-decision/            # 3 agents, 5 tasks (1 HITL)
+# Database
+db/
+└── migrations/                 # SQL migration files
 
-# Archived Flow architecture
-archive/flow-architecture/      # Original Flow-based code
+# Scripts & Tooling
+scripts/
+├── metrics/                    # Performance tracking data
+├── evaluate_policies.py
+├── post_deploy_validation.sh
+├── seed_demo_project.py
+├── simulate_flow.py
+├── test_e2e_webhook.sh
+└── track_performance.py
 
+# Tests
+tests/
+├── integration/                # E2E and workflow tests
+├── scenarios/                  # Test scenario data
+└── test_*.py                   # Unit tests
+
+# Documentation
 docs/
-├── 3-crew-deployment.md        # Deployment guide
-├── architecture.md             # This repo's architecture
-├── environments.md             # Environment setup
-└── master-architecture/        # ECOSYSTEM SOURCE OF TRUTH
+├── deployment/                 # Deployment guides
+│   ├── 3-crew-deployment.md
+│   └── environments.md
+├── testing/                    # Testing documentation
+│   ├── testing.md
+│   ├── testing-contracts.md
+│   └── amp-observability-testing.md
+├── concepts/                   # Conceptual documentation
+│   ├── innovation-physics.md
+│   └── IMPLEMENTATION_ANALYSIS.md
+├── master-architecture/        # ECOSYSTEM SOURCE OF TRUTH
+├── architecture-audit/         # Architecture audits
+├── adr/                        # Architecture Decision Records
+├── crewai-documentation/       # CrewAI reference docs
+├── prompts/                    # Prompt engineering
+├── tools/                      # Tool documentation
+└── work/                       # Work tracking (phases, backlog)
 
+# Archived code
+archive/
+├── flow-architecture/          # Original Flow-based code
+└── crew-templates/             # Templates for Crews 2 & 3
+
+# Root (conventional files only)
 pyproject.toml                  # type = "crew" for AMP
 uv.lock                         # Locked dependencies
+pytest.ini                      # Test configuration
+Makefile                        # Build commands
 ```
 
 ## Core Commands
@@ -134,7 +170,7 @@ crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 **Dashboard**: https://app.crewai.com/deployments
 
 ### Deployment Guide
-See `docs/3-crew-deployment.md` for full deployment instructions.
+See `docs/deployment/3-crew-deployment.md` for full deployment instructions.
 
 ## Environment Variables
 ### Local Development (`.env`)
@@ -394,12 +430,12 @@ Agents are automatically invoked based on context and trigger words in their des
 - `docs/master-architecture/reference/` - API contracts, approval workflows
 
 ### Service-Specific
-- Architecture: `docs/architecture.md`
-- Environments: `docs/environments.md`
+- Deployment: `docs/deployment/`
+- Testing: `docs/testing/`
 - CrewAI Docs: https://docs.crewai.com
 
 ---
-**Last Updated**: 2026-01-04
+**Last Updated**: 2026-01-06
 **Maintainer**: Chris Walker
 **Status**: 3-Crew architecture DEPLOYED to AMP
 **Critical Note**: This is the BRAIN of the StartupAI ecosystem
@@ -408,7 +444,7 @@ Agents are automatically invoked based on context and trigger words in their des
 - Migrated from `type = "flow"` to `type = "crew"` (AMP compatibility)
 - Flow-based code archived to `archive/flow-architecture/`
 - Crew 1 at root level, Crews 2 & 3 require separate repos
-- See `docs/3-crew-deployment.md` for deployment steps
+- See `docs/deployment/3-crew-deployment.md` for deployment steps
 
 ### Deployment Notes (2026-01-04)
 - All 3 crews deployed to AMP and online

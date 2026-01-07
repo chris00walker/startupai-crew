@@ -1,7 +1,7 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2025-12-05"
+last_reviewed: "2026-01-06"
 ---
 
 # Cross-Repository Blockers
@@ -47,22 +47,23 @@ The marketing site makes promises that require technical capabilities. Status af
 
 | Blocker | Status | Description | Unblocks |
 |---------|--------|-------------|----------|
-| 3-Crew Architecture | ⚠️ Pending | Code complete, needs AMP deployment | Product can call Crew 1 |
-| Crew 1 Deployment | ⚠️ Pending | Requires `crewai login` and deploy | Product can trigger validation |
-| Crews 2 & 3 Repos | ⚠️ Pending | Need separate GitHub repos | Full pipeline works |
-| Crew Chaining | ⚠️ Pending | `InvokeCrewAIAutomationTool` config | End-to-end validation |
+| 3-Crew Architecture | ✅ DEPLOYED | All 3 crews deployed to AMP | Product can call Crew 1 |
+| Crew 1 Deployment | ✅ DEPLOYED | UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | Product can trigger validation |
+| Crews 2 & 3 Repos | ✅ DEPLOYED | Separate GitHub repos created | Full pipeline works |
+| Crew Chaining | ✅ CONFIGURED | `InvokeCrewAIAutomationTool` wired | End-to-end validation |
+| Crew 1 Best Practices | ✅ COMPLETE | 100% CrewAI alignment (2026-01-06) | Structured outputs |
 
-**New API Endpoints (after 3-Crew deployment):**
-- `POST /kickoff` - Will be Crew 1 entry point
+**API Endpoints (LIVE):**
+- `POST /kickoff` - Crew 1 entry point (token: `db9f9f4c1a7a`)
 - `GET /status/{id}` - Standard AMP endpoint
 - HITL webhooks - 7 checkpoints across 3 crews
 
-**⚠️ CRITICAL: Deployment Required**
+**✅ Deployment Complete (2026-01-04)**
 - 3-Crew code: ✅ Complete (19 agents, 32 tasks, 7 HITL)
 - Crew 1 at repo root: ✅ Done
-- Crews 2 & 3 repos: ❌ Not created
-- AMP deployment: ❌ Pending `crewai login`
-- Blocker owner: This repo - must complete Phase 0 deployment
+- Crews 2 & 3 repos: ✅ Created (`chris00walker/startupai-crew-validation`, `chris00walker/startupai-crew-decision`)
+- AMP deployment: ✅ All 3 crews online
+- Crew 1 enhanced: ✅ 100% CrewAI best practices (2026-01-06)
 
 **Previous Flow Integration (DEPRECATED):**
 The previous Flow-based integration is archived. Product App should wait for 3-Crew deployment before updating integration.
@@ -106,7 +107,15 @@ The previous Flow-based integration is archived. Product App should wait for 3-C
 - Approval workflows: `docs/master-architecture/reference/approval-workflows.md`
 
 ---
-**Last Updated**: 2025-12-05
+**Last Updated**: 2026-01-06
+
+**Changes (2026-01-06 - Crew 1 Best Practices + Status Update)**:
+- **MAJOR**: Updated all blocker statuses from "Pending" to "DEPLOYED"
+- All 3 crews now deployed and online on AMP
+- Crew 1 achieved 100% CrewAI best practices alignment
+- Added Crew 1 enhancements: Pydantic schemas, tools wired, reasoning enabled
+- Updated API endpoints section to show LIVE status
+- Crew deployment UUIDs and tokens documented
 
 **Changes (2025-12-05 - Flow to 3-Crew Migration)**:
 - **MAJOR**: Architecture migrated from Flow to 3-Crew

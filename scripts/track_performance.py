@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-METRICS_DIR = Path(__file__).parent.parent / "metrics"
+METRICS_DIR = Path(__file__).parent / "metrics"
 HISTORY_FILE = METRICS_DIR / "performance_history.json"
 
 
