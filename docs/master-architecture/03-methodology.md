@@ -111,6 +111,190 @@ The VPC has two sides that must achieve **fit**:
 
 ---
 
+## Business Model Canvas
+
+The BMC captures the full business model across 9 building blocks:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        BUSINESS MODEL CANVAS                                 │
+│                                                                              │
+│  ┌──────────────┬──────────────┬──────────────┬──────────────┬────────────┐│
+│  │              │              │              │              │            ││
+│  │     KEY      │     KEY      │    VALUE     │  CUSTOMER    │  CUSTOMER  ││
+│  │   PARTNERS   │  ACTIVITIES  │ PROPOSITIONS │ RELATIONSHIPS│  SEGMENTS  ││
+│  │              │              │              │              │            ││
+│  │  Who are our │  What key    │  What value  │  What type   │  Who are   ││
+│  │  key         │  activities  │  do we       │  of relation │  we        ││
+│  │  partners?   │  do our VP   │  deliver?    │  does each   │  creating  ││
+│  │              │  require?    │              │  segment     │  value     ││
+│  │              │              │              │  expect?     │  for?      ││
+│  │              ├──────────────┤              │              │            ││
+│  │              │              │              ├──────────────┤            ││
+│  │              │     KEY      │              │              │            ││
+│  │              │  RESOURCES   │              │   CHANNELS   │            ││
+│  │              │              │              │              │            ││
+│  │              │  What key    │              │  How do we   │            ││
+│  │              │  resources   │              │  reach our   │            ││
+│  │              │  do our VP   │              │  customer    │            ││
+│  │              │  require?    │              │  segments?   │            ││
+│  │              │              │              │              │            ││
+│  ├──────────────┴──────────────┴──────────────┴──────────────┴────────────┤│
+│  │                                                                         ││
+│  │         COST STRUCTURE                    REVENUE STREAMS               ││
+│  │                                                                         ││
+│  │  What are the most important costs?       For what value are customers  ││
+│  │                                           willing to pay?               ││
+│  │                                                                         ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### BMC Building Blocks
+
+| Block | Question | Category |
+|-------|----------|----------|
+| **Customer Segments** | Who are we creating value for? | Demand-Side |
+| **Value Propositions** | What value do we deliver? | Core |
+| **Channels** | How do we reach customers? | Demand-Side |
+| **Customer Relationships** | What relationship does each segment expect? | Demand-Side |
+| **Revenue Streams** | For what value are customers willing to pay? | Economics |
+| **Key Resources** | What key resources does our VP require? | Supply-Side |
+| **Key Activities** | What key activities does our VP require? | Supply-Side |
+| **Key Partners** | Who are our key partners and suppliers? | Supply-Side |
+| **Cost Structure** | What are the most important costs? | Economics |
+
+---
+
+## Strategyzer Framework Mapping: VPC → BMC
+
+StartupAI's validation phases map directly to the Strategyzer frameworks:
+
+### Phase-to-Framework Mapping
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    STRATEGYZER FRAMEWORK MAPPING                             │
+│                                                                              │
+│  PHASE 0: ONBOARDING                                                        │
+│  └── Captures hypotheses about VPC and BMC (not validated)                  │
+│                                                                              │
+│  PHASE 1: VPC DISCOVERY                                                     │
+│  └── VALUE PROPOSITION CANVAS                                               │
+│      ├── Customer Profile (Jobs, Pains, Gains)                              │
+│      └── Value Map (Products, Pain Relievers, Gain Creators)                │
+│                                                                              │
+│  PHASES 2-4: BMC VALIDATION                                                 │
+│  └── BUSINESS MODEL CANVAS (validated progressively)                        │
+│                                                                              │
+│      Phase 2: DESIRABILITY (Demand-Side)                                    │
+│      ├── Value Propositions (from VPC)                                      │
+│      ├── Customer Segments                                                  │
+│      ├── Channels                                                           │
+│      └── Customer Relationships                                             │
+│                                                                              │
+│      Phase 3: FEASIBILITY (Supply-Side)                                     │
+│      ├── Value Propositions (verified buildable)                            │
+│      ├── Key Activities                                                     │
+│      ├── Key Resources                                                      │
+│      └── Key Partners                                                       │
+│                                                                              │
+│      Phase 4: VIABILITY (Economics)                                         │
+│      ├── Value Propositions (verified profitable)                           │
+│      ├── Channels (acquisition costs)                                       │
+│      ├── Key Resources (operational costs)                                  │
+│      ├── Cost Structure                                                     │
+│      └── Revenue Streams                                                    │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Phase 1 → Value Proposition Canvas
+
+Phase 1 focuses **exclusively** on achieving Problem-Solution Fit through the VPC:
+
+| VPC Component | Phase 1 Activity | Evidence Source |
+|---------------|------------------|-----------------|
+| **Customer Profile** | Discover Jobs, Pains, Gains | Interviews, observation, CTA tests |
+| **Value Map** | Design Products, Pain Relievers, Gain Creators | VPC alignment with Customer Profile |
+| **Fit** | Score Problem-Solution Fit ≥ 70 | Evidence triangulation |
+
+**Output**: Validated VPC ready to inform BMC validation
+
+### Phase 2 → BMC Demand-Side Blocks
+
+Phase 2 validates that customers **actually want** the value proposition:
+
+| BMC Block | What's Validated | Evidence Source |
+|-----------|------------------|-----------------|
+| **Value Propositions** | Does the value resonate? | Landing page conversions, ad engagement |
+| **Customer Segments** | Is this the right audience? | `problem_resonance` metric |
+| **Channels** | Can we reach them effectively? | Channel experiment results (Meta, Google, etc.) |
+| **Customer Relationships** | What relationship type works? | User behavior, engagement patterns |
+
+**Innovation Physics Signals**:
+- `problem_resonance < 0.3` → SEGMENT_PIVOT (wrong Customer Segments)
+- `zombie_ratio >= 0.7` → VALUE_PIVOT (wrong Value Proposition)
+
+### Phase 3 → BMC Supply-Side Blocks
+
+Phase 3 validates that we **can build** the value proposition:
+
+| BMC Block | What's Validated | Evidence Source |
+|-----------|------------------|-----------------|
+| **Value Propositions** | Can we actually deliver this? | Technical assessment |
+| **Key Activities** | What operations are required? | Build complexity analysis |
+| **Key Resources** | What assets do we need? | Resource audit, cost estimation |
+| **Key Partners** | Who provides critical inputs? | Supplier/API evaluation |
+
+**Innovation Physics Signals**:
+- `feasibility_signal == ORANGE_CONSTRAINED` → FEATURE_PIVOT (downgrade Key Activities/Resources)
+- `feasibility_signal == RED_IMPOSSIBLE` → KILL
+
+### Phase 4 → BMC Economics Blocks
+
+Phase 4 validates that the business model **makes money**:
+
+| BMC Block | What's Validated | Evidence Source |
+|-----------|------------------|-----------------|
+| **Value Propositions** | Is it profitable to deliver? | Unit economics analysis |
+| **Channels** | What's the acquisition cost? | CAC from channel experiments |
+| **Key Resources** | What are operational costs? | Infrastructure + API costs |
+| **Cost Structure** | Total cost model | Sum of all costs |
+| **Revenue Streams** | What will customers pay? | WTP experiments, pricing tests |
+
+**Innovation Physics Signals**:
+- `viability_signal == UNDERWATER` → PRICE_PIVOT or COST_PIVOT
+- `viability_signal == ZOMBIE_MARKET` → MODEL_PIVOT or KILL
+
+### BMC Block Validation Summary
+
+| BMC Block | Phase Validated | Pivot if Invalid |
+|-----------|-----------------|------------------|
+| Customer Segments | Phase 2 | SEGMENT_PIVOT |
+| Value Propositions | Phases 1-4 | VALUE_PIVOT, FEATURE_PIVOT |
+| Channels | Phases 2, 4 | CHANNEL_PIVOT |
+| Customer Relationships | Phase 2 | VALUE_PIVOT |
+| Revenue Streams | Phases 1 (WTP), 4 | PRICE_PIVOT |
+| Key Resources | Phases 3, 4 | FEATURE_PIVOT, COST_PIVOT |
+| Key Activities | Phase 3 | FEATURE_PIVOT |
+| Key Partners | Phase 3 | FEATURE_PIVOT |
+| Cost Structure | Phase 4 | COST_PIVOT |
+
+### Value Proposition as the Core
+
+Notice that **Value Propositions** is validated in every phase:
+
+1. **Phase 1**: Designed through VPC (Problem-Solution Fit)
+2. **Phase 2**: Tested for desirability (do customers want it?)
+3. **Phase 3**: Tested for feasibility (can we build it?)
+4. **Phase 4**: Tested for viability (can we profit from it?)
+
+This reflects the Strategyzer insight that the Value Proposition is the **heart of the business model** - everything else flows from it.
+
+---
+
 ## Evidence Hierarchy (SAY vs DO)
 
 **Core Principle**: What customers SAY and what they DO are two different things. Behavioral evidence is stronger than stated preferences.

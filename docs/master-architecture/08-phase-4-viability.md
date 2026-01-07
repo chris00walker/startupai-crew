@@ -632,6 +632,72 @@ Viability calculations are adjusted based on business model type:
 
 ---
 
+## Strategyzer Framework Mapping
+
+Phase 4 validates the **economics** of the Business Model Canvas. See [03-methodology.md](./03-methodology.md) for the complete VPC → BMC framework mapping.
+
+### BMC Blocks Validated in Phase 4
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    BUSINESS MODEL CANVAS                        │
+├─────────────┬─────────────┬───────────────┬─────────────────────┤
+│ Key         │ Key         │ Value         │ Customer      │ Customer   │
+│ Partners    │ Activities  │ Propositions  │ Relationships │ Segments   │
+│             │             │ ████████████  │               │            │
+│             │             │ [RE-CHECKED]  │               │            │
+├─────────────┴─────────────┼───────────────┼───────────────┴─────┤
+│ Key Resources             │               │ Channels            │
+│ █████████████████████████ │               │ ████████████████████│
+│ [RE-CHECKED]              │               │ [RE-CHECKED]        │
+├───────────────────────────┴───────────────┴─────────────────────┤
+│ Cost Structure                 │ Revenue Streams               │
+│ ██████████████████████████████ │ ████████████████████████████ │
+│ [VALIDATED]                    │ [VALIDATED]                   │
+└────────────────────────────────┴────────────────────────────────┘
+
+████ = Validated in Phase 4 (Viability)
+```
+
+### Evidence → BMC Block Mapping
+
+| BMC Block | What's Validated | Evidence Source | Viability Signal |
+|-----------|------------------|-----------------|------------------|
+| **Cost Structure** | What does it cost to operate? | Development + infrastructure + API costs (from Phase 3) + CAC | Cost breakdown analysis |
+| **Revenue Streams** | Can we generate sustainable revenue? | LTV calculation, pricing validation, churn estimates | `ltv_cac_ratio ≥ 3.0` |
+| **Value Propositions** (Re-checked) | Does the value justify the cost? | Unit economics vs value delivered | Margin analysis |
+| **Key Resources** (Re-checked) | Are resource costs sustainable? | Infrastructure cost vs revenue | Cost efficiency ratios |
+| **Channels** (Re-checked) | Are acquisition channels profitable? | CAC by channel analysis | Channel ROI |
+
+### Phase 4 Exit Contribution to BMC
+
+Upon successful Phase 4 completion, the entire BMC should be validated:
+
+1. **Cost Structure** → All operational costs identified and quantified
+2. **Revenue Streams** → Pricing model validated with sustainable unit economics
+3. **Complete BMC** → All 9 blocks validated across the validation funnel
+
+### The Complete BMC Validation Sequence
+
+| Phase | BMC Blocks | Question Answered |
+|-------|-----------|-------------------|
+| **Phase 1** | Customer Segments, Value Propositions | "Who has this problem? What value can we offer?" |
+| **Phase 2** | + Channels, Customer Relationships | "Do they want it? How do we reach them?" |
+| **Phase 3** | + Key Activities, Key Resources, Key Partners | "Can we build and deliver it?" |
+| **Phase 4** | + Cost Structure, Revenue Streams | "Can we make money doing it?" |
+
+### Strategic Pivot Impact on BMC
+
+When viability fails, strategic pivots affect specific BMC blocks:
+
+| Pivot | Primary BMC Impact | Secondary Impact |
+|-------|-------------------|------------------|
+| **PRICE_PIVOT** | Revenue Streams (pricing model) | May affect Customer Segments |
+| **COST_PIVOT** | Cost Structure, Key Resources | May affect Key Activities |
+| **MODEL_PIVOT** | All 9 blocks | Full BMC redesign required |
+
+---
+
 ## Validation Funnel Summary
 
 ```

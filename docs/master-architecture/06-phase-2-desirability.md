@@ -567,6 +567,53 @@ class DesirabilityResult(BaseModel):
 
 ---
 
+## Strategyzer Framework Mapping
+
+Phase 2 validates the **demand-side** of the Business Model Canvas. See [03-methodology.md](./03-methodology.md) for the complete VPC → BMC framework mapping.
+
+### BMC Blocks Validated in Phase 2
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    BUSINESS MODEL CANVAS                        │
+├─────────────┬─────────────┬───────────────┬─────────────────────┤
+│ Key         │ Key         │ Value         │ Customer      │ Customer   │
+│ Partners    │ Activities  │ Propositions  │ Relationships │ Segments   │
+│             │             │ ████████████  │ ████████████  │ ████████████│
+│             │             │ [VALIDATED]   │ [VALIDATED]   │ [VALIDATED]│
+├─────────────┴─────────────┼───────────────┼───────────────┴─────┤
+│ Key Resources             │               │ Channels            │
+│                           │               │ ████████████████████│
+│                           │               │ [VALIDATED]         │
+├───────────────────────────┴───────────────┴─────────────────────┤
+│ Cost Structure                 │ Revenue Streams               │
+└────────────────────────────────┴────────────────────────────────┘
+
+████ = Validated in Phase 2 (Desirability)
+```
+
+### Evidence → BMC Block Mapping
+
+| BMC Block | What's Validated | Evidence Source | Innovation Physics Signal |
+|-----------|------------------|-----------------|---------------------------|
+| **Value Propositions** | Does the value resonate? | Landing page conversions, ad engagement, signup rates | `problem_resonance ≥ 0.3` |
+| **Customer Segments** | Is this the right audience? | Demographic data from converters, segment A/B tests | `problem_resonance` by segment |
+| **Channels** | Can we reach them effectively? | Platform performance (Meta, Google, LinkedIn, TikTok) | CTR, CPA by channel |
+| **Customer Relationships** | What relationship type works? | User engagement patterns, retention signals | `zombie_ratio < 0.7` |
+
+### Phase 2 Exit Contribution to BMC
+
+Upon successful Phase 2 completion, the following BMC blocks should have validated hypotheses:
+
+1. **Value Propositions** → Confirmed that customers want the proposed value (STRONG_COMMITMENT)
+2. **Customer Segments** → Validated the target audience responds positively
+3. **Channels** → Identified which acquisition channels work best
+4. **Customer Relationships** → Understood the preferred engagement model
+
+These validated blocks provide the foundation for Phase 3 (Feasibility) to assess whether we can operationally deliver on these promises.
+
+---
+
 **Document Version**: 1.0.0
 **Last Updated**: 2026-01-06
 **Previous Phase**: [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md)

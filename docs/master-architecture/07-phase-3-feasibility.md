@@ -424,6 +424,64 @@ class FeasibilityResult(BaseModel):
 
 ---
 
+## Strategyzer Framework Mapping
+
+Phase 3 validates the **supply-side** of the Business Model Canvas. See [03-methodology.md](./03-methodology.md) for the complete VPC → BMC framework mapping.
+
+### BMC Blocks Validated in Phase 3
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    BUSINESS MODEL CANVAS                        │
+├─────────────┬─────────────┬───────────────┬─────────────────────┤
+│ Key         │ Key         │ Value         │ Customer      │ Customer   │
+│ Partners    │ Activities  │ Propositions  │ Relationships │ Segments   │
+│ ████████████│ ████████████│ ████████████  │               │            │
+│ [VALIDATED] │ [VALIDATED] │ [RE-CHECKED]  │               │            │
+├─────────────┴─────────────┼───────────────┼───────────────┴─────┤
+│ Key Resources             │               │ Channels            │
+│ ██████████████████████████│               │                     │
+│ [VALIDATED]               │               │                     │
+├───────────────────────────┴───────────────┴─────────────────────┤
+│ Cost Structure                 │ Revenue Streams               │
+└────────────────────────────────┴────────────────────────────────┘
+
+████ = Validated in Phase 3 (Feasibility)
+```
+
+### Evidence → BMC Block Mapping
+
+| BMC Block | What's Validated | Evidence Source | Feasibility Signal |
+|-----------|------------------|-----------------|-------------------|
+| **Value Propositions** | Can we technically deliver? | Architecture assessment, constraint analysis | `feasibility_signal` |
+| **Key Activities** | What must we do to deliver? | Technical breakdown, workflow mapping | Complexity scores |
+| **Key Resources** | What do we need to build it? | Infrastructure audit, tooling requirements | Cost estimates |
+| **Key Partners** | Who provides critical inputs? | Third-party API evaluation, supplier assessment | Integration feasibility |
+
+### Phase 3 Exit Contribution to BMC
+
+Upon successful Phase 3 completion, the following BMC blocks should have validated hypotheses:
+
+1. **Key Activities** → Confirmed what operations are required to deliver the value proposition
+2. **Key Resources** → Validated what assets, infrastructure, and tools are needed
+3. **Key Partners** → Identified which third-party services and partnerships are essential
+4. **Value Propositions** (Re-checked) → Confirmed technical feasibility of promised features
+
+### Downgrade Impact on BMC
+
+If `ORANGE_CONSTRAINED` signal triggers the Downgrade Protocol:
+
+| Affected Block | Impact |
+|---------------|--------|
+| **Value Propositions** | Features removed or simplified |
+| **Key Activities** | Scope reduced, complexity lowered |
+| **Key Resources** | Resource requirements reduced |
+| **Key Partners** | May eliminate need for certain partners |
+
+The downgraded VPC must be re-tested in Phase 2 (Desirability) to confirm customers still want the constrained version before proceeding to Phase 4 (Viability).
+
+---
+
 **Document Version**: 1.0.0
 **Last Updated**: 2026-01-06
 **Previous Phase**: [06-phase-2-desirability.md](./06-phase-2-desirability.md)

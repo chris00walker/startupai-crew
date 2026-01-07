@@ -7,7 +7,7 @@ vpd_compliance: true
 
 # Product App Smart Artifact Architecture
 
-> **VPD Framework**: This architecture implements Value Proposition Design (Osterwalder/Pigneur) with Testing Business Ideas methodology. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 specification.
+> **VPD Framework**: This architecture implements Value Proposition Design (Osterwalder/Pigneur) with Testing Business Ideas methodology. See [03-methodology.md](../03-methodology.md) for VPD framework reference and [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) / [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) for Phase 0-1 specifications.
 
 ## Vision: Reimagining Strategyzer Frameworks
 
@@ -211,7 +211,7 @@ The Business Model Canvas populates progressively through validation phases:
 | **Customer Relationships** | User behavior data | Relationship type preferences |
 | **Revenue Streams** | Pricing A/B tests | Validated pricing model |
 
-### Phase 2 (Feasibility) → BMC Supply-Side
+### Phase 3 (Feasibility) → BMC Supply-Side
 
 | BMC Block | Evidence Source | Populated From |
 |-----------|-----------------|----------------|
@@ -219,7 +219,7 @@ The Business Model Canvas populates progressively through validation phases:
 | **Key Resources** | Resource audit | What assets are needed |
 | **Key Partners** | Supplier evaluation | Who provides critical inputs |
 
-### Phase 3 (Viability) → BMC Economics
+### Phase 4 (Viability) → BMC Economics
 
 | BMC Block | Evidence Source | Populated From |
 |-----------|-----------------|----------------|
@@ -415,14 +415,19 @@ interface RouterStatus {
 
 ## Related Documents
 
-- [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) - Phase 0-1 VPD specification
+- [03-methodology.md](../03-methodology.md) - VPD framework and Strategyzer mapping
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 Founder's Brief capture
+- [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 VPC Discovery
+- [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 Desirability validation
+- [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 Feasibility validation
+- [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 Viability validation
 - [approval-workflows.md](./approval-workflows.md) - HITL implementation patterns
 - [database-schemas.md](./database-schemas.md) - SQL schema definitions
 - [02-organization.md](../02-organization.md) - Founder approval ownership
 - [flywheel-learning.md](./flywheel-learning.md) - Learning capture patterns
 
 ---
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-07
 
 **Latest Changes**:
 - Added VPC Fit Assessment section (fit score, evidence hierarchy)
