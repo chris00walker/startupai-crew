@@ -1,30 +1,55 @@
 ---
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
-last_reviewed: "2026-01-06"
-last_audit: "2026-01-06 - Crew 1 100% CrewAI best practices alignment"
+last_reviewed: "2026-01-07"
+last_audit: "2026-01-07 - Architecture pattern alignment with CrewAI docs"
 ---
 
 # Engineering Phases
 
+## Architecture Summary
+
+### Canonical Architecture (Per CrewAI Documentation)
+| Metric | Count |
+|--------|-------|
+| **Phases** | 5 (0-4) |
+| **Flows** | 5 (OnboardingFlow, VPCDiscoveryFlow, DesirabilityFlow, FeasibilityFlow, ViabilityFlow) |
+| **Crews** | 14 |
+| **Agents** | 44 |
+| **HITL Checkpoints** | 10 |
+
+### AMP Deployment (Platform Workaround)
+| Metric | Count |
+|--------|-------|
+| **Crews** | 3 (Intake, Validation, Decision) |
+| **Agents** | 19 |
+| **HITL Checkpoints** | 7 |
+
+**Pattern Hierarchy**: `PHASE → FLOW → CREW → AGENT → TASK`
+**Critical Rule**: A crew must have 2+ agents (per CrewAI docs)
+
+---
+
 ## Architecture Migration Notice (2025-12-05)
 
-**MAJOR CHANGE**: The Flow-based architecture has been replaced with a 3-Crew architecture.
+**MAJOR CHANGE**: The canonical Flow-based architecture is deployed as a 3-Crew workaround on AMP.
 
 - **ADR**: See `docs/adr/001-flow-to-crew-migration.md`
 - **Reason**: AMP platform has issues with `type = "flow"` projects
 - **Old code**: Archived to `archive/flow-architecture/`
+- **Canonical spec**: `docs/master-architecture/` (5 Flows, 14 Crews, 44 Agents)
 
-The phases below are being updated to reflect the new architecture.
+The phases below reflect the canonical architecture with AMP deployment notes.
 
 ---
 
-## Phase 0 - 3-Crew Architecture Deployment (COMPLETE)
+## Phase 0 - AMP Deployment (COMPLETE)
 
-Deploy the 3-Crew architecture to CrewAI AMP.
+Deploy the 3-Crew AMP workaround architecture to CrewAI AMP.
 
 **Status**: DEPLOYED (2026-01-04)
 **Crew 1 Enhanced**: 100% CrewAI Best Practices Alignment (2026-01-06)
+**Architecture Aligned**: Canonical architecture documented (2026-01-07)
 
 ### Phase 0 Complete Criteria
 
@@ -144,21 +169,23 @@ Achieve 100% alignment with CrewAI best practices for Crew 1 (Intake).
 
 ---
 
-## Phase 1 - Service Side + Desirability Validation (Paused - Superseded)
+## Phase 1 - VPC Discovery + Desirability (Canonical: VPCDiscoveryFlow + DesirabilityFlow)
 
-**Note**: This phase used the Flow architecture which has been deprecated. The functionality is now distributed across the 3-Crew architecture.
+**Canonical Architecture** (per `docs/master-architecture/`):
+- **VPCDiscoveryFlow**: 5 Crews (DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew) - 18 agents
+- **DesirabilityFlow**: 3 Crews (BuildCrew, GrowthCrew, GovernanceCrew) - 9 agents
 
-**Mapping to 3-Crew:**
-- Service Crew → Crew 1 (Intake)
-- Analysis Crew → Crew 2 (Validation - desirability phase)
-- Governance Crew → Distributed across all 3 crews
+**AMP Deployment Mapping**:
+- VPCDiscoveryFlow → Crew 1 (Intake) + partial Crew 2
+- DesirabilityFlow → Crew 2 (Validation - desirability phase)
+- GovernanceCrew → Distributed across all 3 AMP crews
 
 ### Phase 1 Complete Criteria
 Phase 1 is **complete** when all of the following are true:
 
 **Code Complete:**
 - [x] `state_schemas.py` defines ValidationState with Innovation Physics signals
-- [x] All 8 crews implemented with 18 agents
+- [x] Canonical: 8 crews with 27 agents (Phase 1 VPC + Desirability)
 - [x] Synthesis Crew complete with pivot decision logic
 - [x] Phase 1 Flow orchestrates crews with `@listen` and `@router` decorators
 - [x] `@persist()` decorators placed for state recovery (9 checkpoints)
@@ -296,19 +323,22 @@ See `docs/IMPLEMENTATION_ANALYSIS.md` for detailed evidence.
 
 ---
 
-## Phase 2 - Commercial Side + Build/Test (Queued)
-- Build Crew, Growth Crew, Synthesis Crew
-- Add pivot/proceed router logic
-- Implement evidence synthesis
-- Dependencies: Phase 1 completion
+## Phase 2 - Feasibility (Canonical: FeasibilityFlow)
+
+**Canonical Architecture** (per `docs/master-architecture/07-phase-3-feasibility.md`):
+- **FeasibilityFlow**: 2 Crews (BuildCrew, GovernanceCrew) - 4 agents
+- BuildCrew reused from Phase 1 (Desirability)
+
+**AMP Deployment Mapping**:
+- FeasibilityFlow → Crew 2 (Validation - feasibility phase)
 
 ### Phase 2 Complete Criteria
 Phase 2 is **complete** when all of the following are true:
 
 **Code Complete:**
-- [x] Build Crew functional with 3 agents (UX/UI Designer, Frontend Developer, Backend Developer)
-- [x] Growth Crew functional with 3 agents (Ad Creative, Communications, Social Media Analyst)
-- [x] Synthesis Crew functional with 1 agent (Project Manager)
+- [x] BuildCrew functional with 3 agents (Tech Architect F1, Prototype Designer F2, Launch Planner F3)
+- [x] GovernanceCrew functional with 3 agents (QA Specialist G1, Risk Assessor G2, Ethics Guardian G3)
+- [x] Canonical: 2 crews, 4 agents for feasibility gate
 - [x] Pivot/proceed router logic implemented (Innovation Physics routers)
 - [x] Evidence synthesis aggregates across experiments
 
@@ -336,18 +366,22 @@ Phase 2 is **complete** when all of the following are true:
 
 ---
 
-## Phase 3 - Governance + Viability (Planned)
-- Finance Crew
-- Enhanced Governance Crew (Audit Agent, Security Agent)
-- Flywheel learning capture
-- Dependencies: Phase 2 completion
+## Phase 3 - Viability + Decision (Canonical: ViabilityFlow)
+
+**Canonical Architecture** (per `docs/master-architecture/08-phase-4-viability.md`):
+- **ViabilityFlow**: 3 Crews (FinanceCrew, SynthesisCrew, GovernanceCrew) - 9 agents
+- Final decision: Pivot/Proceed/Pause
+
+**AMP Deployment Mapping**:
+- ViabilityFlow → Crew 2 (Validation - viability phase) + Crew 3 (Decision)
 
 ### Phase 3 Complete Criteria
 Phase 3 is **complete** when all of the following are true:
 
 **Code Complete:**
-- [x] Finance Crew functional with 2 agents (Financial Controller, Legal & Compliance)
-- [x] Enhanced Governance Crew with 3 agents (QA Auditor, Compliance Monitor, Accountability Tracker)
+- [x] FinanceCrew functional with 3 agents (Financial Modeler L1, Viability Analyst L2, Compliance Monitor L3)
+- [x] SynthesisCrew functional with 3 agents (Evidence Synthesizer C1, Insight Connector C2, Pivot Advisor C3)
+- [x] GovernanceCrew functional with 3 agents (reused)
 - [x] Full 3-gate validation flow (Desirability → Feasibility → Viability)
 
 **Flywheel Learning (Phase 3):**
@@ -377,10 +411,23 @@ Phase 3 is **complete** when all of the following are true:
 
 ## Transition Plan
 
-The current working 6-agent system will remain deployed during the Flows rebuild. The transition will occur when:
+The 3-Crew AMP deployment (19 agents) is the current production system. The canonical 5-Flow/14-Crew/44-Agent architecture represents the target state when AMP supports `type = "flow"`.
 
-1. Phase 1 is complete and tested
-2. Output quality matches or exceeds current system
+**Current State (AMP Workaround)**:
+- 3 Crews deployed: Intake (4 agents), Validation (12 agents), Decision (3 agents)
+- Crew chaining via `InvokeCrewAIAutomationTool`
+- 7 HITL checkpoints operational
+
+**Target State (Canonical)**:
+- 5 Flows with `@start`, `@listen`, `@router` orchestration
+- 14 Crews with 2+ agents each (per CrewAI docs)
+- 44 agents total across all phases
+- 10 HITL checkpoints
+
+**Transition Criteria**:
+1. AMP platform supports `type = "flow"` projects
+2. Canonical architecture tested locally
 3. Product app integration verified
+4. Output quality matches or exceeds current system
 
-At that point, the new Phase 1 Flow will replace the current deployment.
+**Reference**: See `docs/master-architecture/` for canonical architecture specifications.
