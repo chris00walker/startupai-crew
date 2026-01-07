@@ -16,8 +16,10 @@ Phase 0 captures the Founder's Brief through structured interview and validation
 |----------|--------|---------|--------|
 | `/interview/start` | POST | Start founder interview session | Planned |
 | `/interview/continue` | POST | Continue multi-turn interview | Planned |
+| `/brief/create` | POST | Create new Founder's Brief | Planned |
 | `/brief/{brief_id}` | GET | Retrieve Founder's Brief | Planned |
-| `/brief/approve` | POST | Founder approves brief → Phase 1 | Planned |
+| `/brief/{brief_id}` | PUT | Update Founder's Brief | Planned |
+| `/brief/{brief_id}/approve` | POST | Founder approves brief → Phase 1 | Planned |
 
 ### Interview Start Request
 ```bash
@@ -82,13 +84,48 @@ curl -X POST https://startupai-...crewai.com/interview/continue \
 }
 ```
 
-### Brief Approval Request
+### Create Brief Request
 ```bash
-curl -X POST https://startupai-...crewai.com/brief/approve \
+curl -X POST https://startupai-...crewai.com/brief/create \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
-    "brief_id": "uuid",
+    "project_id": "uuid",
+    "concept": "AI-powered validation for startup ideas",
+    "one_liner": "Stop building products nobody wants",
+    "target_who": "Early-stage SaaS founders",
+    "target_what": "Wasting months building unvalidated products",
+    "current_alternatives": ["Customer interviews", "Surveys", "Guesswork"],
+    "customer_segment": "Technical founders at seed stage",
+    "customer_characteristics": ["Technical background", "Limited time", "Bootstrap budget"],
+    "solution_approach": "Automated validation experiments with AI analysis",
+    "key_features": ["Landing page generation", "Ad testing", "Evidence synthesis"],
+    "key_assumptions": [
+      {"assumption": "Founders will trust AI recommendations", "risk_level": "high", "testable": true},
+      {"assumption": "Ad testing provides reliable demand signal", "risk_level": "medium", "testable": true}
+    ]
+  }'
+```
+
+### Update Brief Request
+```bash
+curl -X PUT https://startupai-...crewai.com/brief/{brief_id} \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "concept": "Updated concept description",
+    "key_assumptions": [
+      {"assumption": "Updated assumption", "risk_level": "high", "testable": true}
+    ]
+  }'
+```
+
+### Brief Approval Request
+```bash
+curl -X POST https://startupai-...crewai.com/brief/{brief_id}/approve \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
     "approval_decision": "approve|reject|revise",
     "feedback": "Optional founder feedback"
   }'
@@ -431,25 +468,78 @@ Endpoints for managing Value Proposition Canvas during Phase 1 discovery.
 | Endpoint | Method | Purpose | Status |
 |----------|--------|---------|--------|
 | `/vpc/{project_id}` | GET | Get current VPC state | Planned |
-| `/vpc/{project_id}/profile` | PUT | Update Customer Profile | Planned |
-| `/vpc/{project_id}/value-map` | PUT | Update Value Map | Planned |
-| `/vpc/{project_id}/fit` | GET | Get fit assessment | Planned |
+| `/vpc/{project_id}/profile` | GET | Get Customer Profile elements | Planned |
+| `/vpc/{project_id}/profile` | POST | Add/upsert Customer Profile element | Planned |
+| `/vpc/{project_id}/valuemap` | GET | Get Value Map elements | Planned |
+| `/vpc/{project_id}/valuemap` | POST | Add/upsert Value Map element | Planned |
+| `/vpc/{project_id}/fit` | GET | Get current fit assessment | Planned |
+| `/vpc/{project_id}/fit` | POST | Calculate/recalculate fit score | Planned |
 | `/experiments` | POST | Record experiment result | Planned |
 | `/experiments/{project_id}` | GET | Get experiment history | Planned |
+| `/experiments/test-card` | POST | Create TBI Test Card | Planned |
+| `/experiments/learning-card` | POST | Record TBI Learning Card | Planned |
 
-### Update Customer Profile Request
+### Get Customer Profile Request
 ```bash
-curl -X PUT https://startupai-...crewai.com/vpc/{project_id}/profile \
+curl -X GET https://startupai-...crewai.com/vpc/{project_id}/profile \
+  -H "Authorization: Bearer {token}"
+```
+
+### Get Customer Profile Response
+```json
+{
+  "project_id": "uuid",
+  "jobs": [
+    {
+      "id": "uuid",
+      "job_statement": "When [situation], I want to [motivation] so I can [outcome]",
+      "job_type": "functional|social|emotional",
+      "priority": 1,
+      "importance_score": 4.5,
+      "validation_status": "validated|invalidated|untested",
+      "confidence_score": 0.85,
+      "evidence_count": 3
+    }
+  ],
+  "pains": [
+    {
+      "id": "uuid",
+      "element_text": "Pain description",
+      "pain_severity": "extreme|severe|moderate|mild",
+      "priority": 1,
+      "validation_status": "validated",
+      "confidence_score": 0.78
+    }
+  ],
+  "gains": [
+    {
+      "id": "uuid",
+      "element_text": "Gain description",
+      "gain_relevance": "essential|nice_to_have|unexpected",
+      "priority": 1,
+      "validation_status": "untested",
+      "confidence_score": null
+    }
+  ]
+}
+```
+
+### Add/Upsert Customer Profile Element Request
+```bash
+curl -X POST https://startupai-...crewai.com/vpc/{project_id}/profile \
   -H "Authorization: Bearer {token}" \
   -H "Content-Type: application/json" \
   -d '{
     "element_type": "job|pain|gain",
-    "operation": "add|update|remove|rerank",
     "element": {
-      "id": "uuid (for update/remove)",
-      "statement": "Element statement",
+      "id": "uuid (optional, for upsert)",
+      "element_text": "Element statement",
+      "job_type": "functional (for jobs only)",
+      "job_statement": "When [situation], I want to [motivation] so I can [outcome] (for jobs)",
+      "pain_severity": "extreme (for pains only)",
+      "gain_relevance": "essential (for gains only)",
       "priority": 1,
-      "validation_status": "validated",
+      "validation_status": "validated|invalidated|untested",
       "confidence_score": 0.85
     },
     "evidence_source": {
@@ -457,6 +547,77 @@ curl -X PUT https://startupai-...crewai.com/vpc/{project_id}/profile \
       "evidence_type": "interview|observation|cta_test|landing_page",
       "evidence_strength": 4
     }
+  }'
+```
+
+### Get Value Map Request
+```bash
+curl -X GET https://startupai-...crewai.com/vpc/{project_id}/valuemap \
+  -H "Authorization: Bearer {token}"
+```
+
+### Get Value Map Response
+```json
+{
+  "project_id": "uuid",
+  "products_services": [
+    {
+      "id": "uuid",
+      "element_text": "Product or service name",
+      "description": "What it does",
+      "addresses_jobs": ["job_uuid_1", "job_uuid_2"],
+      "validation_status": "validated"
+    }
+  ],
+  "pain_relievers": [
+    {
+      "id": "uuid",
+      "element_text": "How it relieves pain",
+      "addresses_profile_element": "pain_uuid",
+      "effectiveness": "eliminates|reduces|none",
+      "validation_status": "validated",
+      "confidence_score": 0.82
+    }
+  ],
+  "gain_creators": [
+    {
+      "id": "uuid",
+      "element_text": "How it creates gain",
+      "addresses_profile_element": "gain_uuid",
+      "effectiveness": "exceeds|meets|misses",
+      "validation_status": "untested"
+    }
+  ]
+}
+```
+
+### Add/Upsert Value Map Element Request
+```bash
+curl -X POST https://startupai-...crewai.com/vpc/{project_id}/valuemap \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "element_type": "product_service|pain_reliever|gain_creator",
+    "element": {
+      "id": "uuid (optional, for upsert)",
+      "element_text": "Element description",
+      "description": "Detailed description (for products/services)",
+      "addresses_profile_element": "uuid of job/pain/gain being addressed",
+      "effectiveness": "eliminates|reduces|none|exceeds|meets|misses",
+      "validation_status": "validated|invalidated|untested",
+      "confidence_score": 0.85
+    }
+  }'
+```
+
+### Calculate Fit Score Request
+```bash
+curl -X POST https://startupai-...crewai.com/vpc/{project_id}/fit \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "include_wtp": true,
+    "recalculate": true
   }'
 ```
 
@@ -492,6 +653,80 @@ curl -X POST https://startupai-...crewai.com/experiments \
       {"element_type": "job", "element_id": "uuid", "new_status": "validated"}
     ]
   }'
+```
+
+### Create Test Card Request (TBI Framework)
+```bash
+curl -X POST https://startupai-...crewai.com/experiments/test-card \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_id": "uuid",
+    "tbi_experiment_id": "T1.1",
+    "hypothesis": "We believe that early-stage SaaS founders will sign up for waitlist because they struggle with customer validation",
+    "test_description": "Landing page with 3-step value prop and email capture",
+    "metric": "Conversion rate (signups / unique visitors)",
+    "criteria": "5% conversion rate with minimum 500 visitors",
+    "cost": 500.00,
+    "duration_days": 7,
+    "reliability": "medium",
+    "tests_assumption": "Founders will trust AI recommendations",
+    "tests_profile_element": "job_uuid or pain_uuid",
+    "evidence_type": "do",
+    "evidence_strength": 3
+  }'
+```
+
+### Test Card Response
+```json
+{
+  "test_card_id": "uuid",
+  "project_id": "uuid",
+  "status": "draft|approved|running|completed",
+  "tbi_experiment_id": "T1.1",
+  "hypothesis": "We believe...",
+  "test_description": "...",
+  "metric": "...",
+  "criteria": "...",
+  "created_at": "2026-01-06T12:00:00Z"
+}
+```
+
+### Create Learning Card Request (TBI Framework)
+```bash
+curl -X POST https://startupai-...crewai.com/experiments/learning-card \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "test_card_id": "uuid",
+    "project_id": "uuid",
+    "observation": "We observed 523 unique visitors with 31 signups (5.9% conversion rate)",
+    "learning": "Founders respond strongly to \"save time\" messaging; mobile conversion 2x lower than desktop",
+    "decisions_actions": "Run A/B test on pricing page with time-saving emphasis",
+    "passed": true,
+    "confidence": 0.85,
+    "sample_size": 523,
+    "vpc_updates": [
+      {"element_type": "job", "element_id": "uuid", "new_status": "validated", "new_confidence": 0.85}
+    ]
+  }'
+```
+
+### Learning Card Response
+```json
+{
+  "learning_card_id": "uuid",
+  "test_card_id": "uuid",
+  "project_id": "uuid",
+  "observation": "...",
+  "learning": "...",
+  "decisions_actions": "...",
+  "passed": true,
+  "confidence": 0.85,
+  "sample_size": 523,
+  "vpc_updates_applied": 1,
+  "created_at": "2026-01-06T12:00:00Z"
+}
 ```
 
 ### Fit Assessment Response
@@ -542,8 +777,10 @@ These were documented but do not exist yet:
 |-----------|--------|
 | `/interview/start` | ⏳ Planned |
 | `/interview/continue` | ⏳ Planned |
-| `/brief/{id}` | ⏳ Planned |
-| `/brief/approve` | ⏳ Planned |
+| `/brief/create` | ⏳ Planned |
+| `/brief/{id}` GET | ⏳ Planned |
+| `/brief/{id}` PUT | ⏳ Planned |
+| `/brief/{id}/approve` | ⏳ Planned |
 
 ### Phase 1+: Validation API
 | Component | Status |
@@ -556,11 +793,17 @@ These were documented but do not exist yet:
 ### Phase 1: VPC Canvas API
 | Component | Status |
 |-----------|--------|
-| `/vpc/{project_id}` | ⏳ Planned |
-| `/vpc/{project_id}/profile` | ⏳ Planned |
-| `/vpc/{project_id}/value-map` | ⏳ Planned |
-| `/vpc/{project_id}/fit` | ⏳ Planned |
-| `/experiments` | ⏳ Planned |
+| `/vpc/{project_id}` GET | ⏳ Planned |
+| `/vpc/{project_id}/profile` GET | ⏳ Planned |
+| `/vpc/{project_id}/profile` POST | ⏳ Planned |
+| `/vpc/{project_id}/valuemap` GET | ⏳ Planned |
+| `/vpc/{project_id}/valuemap` POST | ⏳ Planned |
+| `/vpc/{project_id}/fit` GET | ⏳ Planned |
+| `/vpc/{project_id}/fit` POST | ⏳ Planned |
+| `/experiments` POST | ⏳ Planned |
+| `/experiments/{project_id}` GET | ⏳ Planned |
+| `/experiments/test-card` POST | ⏳ Planned |
+| `/experiments/learning-card` POST | ⏳ Planned |
 
 ### Product App Integration
 | Component | Status |
@@ -573,9 +816,23 @@ These were documented but do not exist yet:
 | Metrics API | ❌ NOT IMPLEMENTED (marketing site feature) |
 
 ---
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-06
 
-**Latest Changes**:
+**Latest Changes (2026-01-06 - EVOLUTION-PLAN alignment)**:
+- Added `/brief/create` POST endpoint for creating Founder's Brief
+- Added `/brief/{id}` PUT endpoint for updating Founder's Brief
+- Updated `/brief/{id}/approve` path format (was `/brief/approve`)
+- Expanded Phase 1 VPC Canvas API with GET/POST patterns:
+  - `/vpc/{project_id}/profile` GET/POST (was PUT only)
+  - `/vpc/{project_id}/valuemap` GET/POST (was value-map PUT only)
+  - `/vpc/{project_id}/fit` GET/POST (added calculate endpoint)
+- Added TBI Framework experiment endpoints:
+  - `/experiments/test-card` POST with full Test Card schema
+  - `/experiments/learning-card` POST with full Learning Card schema
+- Added request/response examples for all new endpoints
+- Updated Implementation Status with complete endpoint list
+
+**Previous Changes (2026-01-05)**:
 - Added Phase 0 Onboarding API (interview, brief, approval endpoints)
 - Added Phase 1 VPC Canvas API (profile, value-map, experiments endpoints)
 - Expanded VPC schema with VPD framework fields (Jobs/Pains/Gains, Pain Relievers/Gain Creators)

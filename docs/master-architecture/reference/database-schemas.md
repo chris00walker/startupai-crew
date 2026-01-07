@@ -528,6 +528,80 @@ CREATE TABLE flow_executions (
 );
 ```
 
+### Crew Execution State
+
+**Status**: ⏳ Planned
+
+Stores state that persists across crew handoffs in the 3-crew architecture. Enables state recovery and crew chaining.
+
+```sql
+-- Crew execution state for cross-crew persistence
+CREATE TABLE crew_execution_state (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  kickoff_id TEXT NOT NULL UNIQUE,  -- CrewAI kickoff identifier
+
+  -- Current execution context
+  current_crew TEXT NOT NULL CHECK (current_crew IN ('intake', 'validation', 'decision')),
+  crew_sequence INTEGER DEFAULT 1,  -- 1=intake, 2=validation, 3=decision
+  execution_status TEXT DEFAULT 'running' CHECK (execution_status IN ('running', 'paused', 'completed', 'failed')),
+
+  -- State payload (passed between crews)
+  founders_brief JSONB,             -- Phase 0 output
+  customer_profile JSONB,           -- Jobs/Pains/Gains
+  value_map JSONB,                  -- Products/Pain Relievers/Gain Creators
+  fit_score INTEGER,                -- Current VPC fit score
+  validation_signals JSONB,         -- Desirability/Feasibility/Viability signals
+
+  -- Crew 1 → Crew 2 handoff
+  intake_output JSONB,              -- Full Crew 1 output
+  intake_completed_at TIMESTAMPTZ,
+
+  -- Crew 2 → Crew 3 handoff
+  validation_output JSONB,          -- Full Crew 2 output
+  validation_completed_at TIMESTAMPTZ,
+  desirability_gate_passed BOOLEAN,
+  feasibility_gate_passed BOOLEAN,
+  viability_gate_passed BOOLEAN,
+
+  -- Crew 3 output
+  decision_output JSONB,            -- Final decision output
+  decision_completed_at TIMESTAMPTZ,
+  final_recommendation TEXT CHECK (final_recommendation IN ('proceed', 'pivot', 'kill', 'pending')),
+
+  -- HITL tracking
+  pending_approval_type TEXT,       -- Which HITL checkpoint is blocking
+  pending_approval_task_id TEXT,    -- Task ID for /resume
+
+  -- Audit
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for state queries
+CREATE INDEX idx_crew_state_project ON crew_execution_state(project_id);
+CREATE INDEX idx_crew_state_kickoff ON crew_execution_state(kickoff_id);
+CREATE INDEX idx_crew_state_status ON crew_execution_state(execution_status) WHERE execution_status IN ('running', 'paused');
+CREATE INDEX idx_crew_state_crew ON crew_execution_state(current_crew, execution_status);
+```
+
+**Usage Pattern**:
+```python
+# Crew 1 writes state before invoking Crew 2
+supabase.table('crew_execution_state').upsert({
+    'kickoff_id': kickoff_id,
+    'project_id': project_id,
+    'current_crew': 'validation',
+    'crew_sequence': 2,
+    'intake_output': crew_1_result,
+    'intake_completed_at': datetime.utcnow().isoformat()
+}).execute()
+
+# Crew 2 reads state on startup
+state = supabase.table('crew_execution_state').select('*').eq('kickoff_id', kickoff_id).single().execute()
+intake_output = state.data['intake_output']
+```
+
 ## Area 3: Policy Versioning Tables
 
 **Status**: ✅ Deployed (migration 004, 005) - 2025-11-27
@@ -795,9 +869,15 @@ CREATE INDEX idx_hypotheses_status ON hypotheses(status);
 - [../03-validation-spec.md](../03-validation-spec.md) - Phase 2+ technical blueprint
 
 ---
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-06
 
-**Latest Changes (2026-01-05 - VPD Framework)**:
+**Latest Changes (2026-01-06 - EVOLUTION-PLAN alignment)**:
+- Added `crew_execution_state` table for cross-crew state persistence
+- Includes JSONB columns for crew handoff payloads (intake_output, validation_output)
+- Tracks HITL pending approvals for /resume endpoint
+- Added usage pattern example for Supabase client
+
+**Previous Changes (2026-01-05 - VPD Framework)**:
 - Added Phase 0 tables: `founders_briefs` (Founder's Brief structure)
 - Added Phase 1 VPC tables: `customer_profile_elements`, `value_map_elements`, `vpc_fit_scores`
 - Added TBI framework tables: `test_cards`, `learning_cards`
