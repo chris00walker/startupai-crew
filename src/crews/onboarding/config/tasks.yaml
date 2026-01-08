@@ -202,4 +202,3 @@ compile_founders_brief:
     - conduct_founder_interview
     - validate_concept_legitimacy
     - verify_intent_capture
-  output_pydantic: FoundersBrief

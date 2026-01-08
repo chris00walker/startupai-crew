@@ -2,26 +2,32 @@
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
 last_reviewed: "2026-01-08"
-last_synced: "2026-01-08 - Modal serverless migration proposed"
+last_synced: "2026-01-08 - Modal serverless production deployment verified"
 ---
 
 # Cross-Repository Blockers
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
 
-> **Architecture Migration**: Migrating from CrewAI AMP (3 repos) to Modal serverless (single repo). See [ADR-002](../adr/002-modal-serverless-migration.md).
+> **Modal Migration Complete**: Modal serverless infrastructure deployed to production. Crew implementation in progress. See [ADR-002](../adr/002-modal-serverless-migration.md).
 
 ## Ecosystem Status (2026-01-08)
 
-**Architecture migration in progress.** AMP deployment deprecated; migrating to Modal.
+**Modal serverless deployed to production.** Infrastructure verified, crew implementation in progress.
 
 | Service | Status | Completion | Notes |
 |---------|--------|------------|-------|
-| CrewAI Backend | Modal migration PROPOSED | ~60% | See ADR-002 |
-| Product App | Phase Alpha complete | ~85% | Pending Modal integration |
-| Marketing Site | Production, static export | ~90% | No changes needed |
+| CrewAI Backend | Modal deployed | ~70% | Infrastructure live, crews being implemented |
+| Product App | Modal integration complete | ~95% | Pointing to Modal endpoints |
+| Marketing Site | Live API integration | ~95% | Activity Feed + Metrics connected |
 
-**Key Change**: Returning to **single repository** (was 3 repos for AMP workaround).
+**Production URLs**:
+- Modal: `https://chris00walker--startupai-validation-fastapi-app.modal.run`
+- Product App: `https://app-startupai-site.netlify.app`
+- Marketing: `https://startupai.site`
+
+**Canonical Architecture**: 5 Flows, 14 Crews, 45 Agents, 10 HITL checkpoints
+**AMP (ARCHIVED)**: Legacy 3-repo workaround deprecated
 
 **Source of Truth**: `docs/master-architecture/09-status.md`
 
@@ -33,24 +39,25 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 
 | Blocker | Status | Description | Unblocks |
 |---------|--------|-------------|----------|
-| Modal Deployment | ⏳ PENDING | Modal serverless migration | Product can trigger validation |
-| Modal API Endpoints | ⏳ PENDING | `/kickoff`, `/status`, `/hitl/approve` | Full pipeline operational |
-| Supabase Realtime | ⏳ PENDING | Progress updates via Realtime | Real-time UI updates |
+| Modal Infrastructure | ✅ DEPLOYED | Production endpoints live | Product can trigger validation |
+| Modal API Endpoints | ✅ WORKING | `/kickoff`, `/status`, `/hitl/approve`, `/health` | Full API operational |
+| Supabase Tables | ✅ READY | `validation_runs`, `validation_progress`, `hitl_requests` | State persistence works |
+| Supabase Realtime | ✅ ENABLED | Progress tables publishing | Real-time UI updates |
+| 14 Crews Implementation | ⏳ IN PROGRESS | Building from master-architecture specs | Fresh build approach |
 
-**Current blockers**: Modal migration (ADR-002)
-
-**Target API Endpoints (Modal):**
-- `POST /kickoff` - Start validation (returns 202 Accepted)
+**Modal API Endpoints (Production):**
+- `POST /kickoff` - Start validation (returns 202 Accepted + run_id)
 - `GET /status/{run_id}` - Check progress from Supabase
 - `POST /hitl/approve` - Resume after human approval
+- `GET /health` - Health check
 
-### Legacy AMP Deployment (DEPRECATED)
+### Legacy AMP Deployment (ARCHIVED)
 
-| Blocker | Status | Description |
-|---------|--------|-------------|
-| 3-Crew Architecture | ⚠️ DEPRECATED | Being replaced by Modal |
-| Crew 1-3 Deployments | ⚠️ DEPRECATED | UUIDs preserved for reference only |
-| Crew Chaining | ⚠️ DEPRECATED | Will be replaced by native Python calls |
+| Item | Status | Notes |
+|------|--------|-------|
+| 3-Crew Architecture | ⚠️ DEPRECATED | Being archived |
+| `startupai-crew-validation` | ⚠️ TO ARCHIVE | Repo will be archived (read-only) |
+| `startupai-crew-decision` | ⚠️ TO ARCHIVE | Repo will be archived (read-only) |
 
 > See [ADR-002](../adr/002-modal-serverless-migration.md) for migration details.
 
@@ -103,7 +110,17 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 
 ## E2E Verification Checklist
 
-The following flow needs live verification:
+### Infrastructure Verification (2026-01-08) ✅
+
+| Endpoint | Status | Result |
+|----------|--------|--------|
+| Modal `/health` | ✅ Verified | `{"status":"healthy","service":"startupai-validation"}` |
+| Modal auth | ✅ Verified | Returns 401 for invalid tokens |
+| Product App login | ✅ Verified | Returns 200 |
+| Marketing site | ✅ Verified | Returns 200 |
+| Marketing APIs | ✅ Verified | `/public-activity`, `/public-metrics` returning JSON |
+
+### Full Flow (Pending crew completion)
 
 ```
 User lands on startupai.site
@@ -114,27 +131,28 @@ Redirects to app.startupai.site with plan
     ↓
 Completes onboarding chat (7 stages)
     ↓
-Triggers CrewAI analysis (POST /kickoff)
+Triggers Modal validation (POST /kickoff)
     ↓
-CrewAI processes through 3 crews
+Modal processes through 5 phases (14 crews)
     ↓
-Webhook persists results to Supabase
+Results persist to Supabase
     ↓
 Dashboard displays validation results
     ↓
 Marketing activity feed shows real activity
 ```
 
-**Status**: All components exist. Needs live end-to-end test.
+**Status**: Infrastructure verified. Awaiting crew implementation completion.
 
 ---
 
 ## Coordination Notes
 
-- **CrewAI backend**: Modal migration in progress (ADR-002)
-- **Product App**: Waiting for Modal endpoints to integrate
-- **Marketing site**: UNBLOCKED - Activity Feed + Metrics APIs shipped
-- **Primary work**: Complete Modal migration, then E2E verification
+- **Modal infrastructure DEPLOYED** - Production endpoints verified (2026-01-08)
+- **Product App UPDATED** - Pointing to Modal endpoints (not AMP)
+- **Marketing site CONNECTED** - Live Activity Feed + Metrics components created
+- **AMP DEPRECATED** - Legacy repos being archived
+- **Primary work**: Complete 14 crews implementation, then run first production validation
 
 **Single Repo Benefit**: Modal migration returns us to single repository (`startupai-crew`). No more cross-repo coordination for Crews 2 & 3.
 
@@ -146,19 +164,22 @@ Marketing activity feed shows real activity
 - Marketing blockers: `startupai.site/docs/work/cross-repo-blockers.md`
 - Master architecture: `docs/master-architecture/09-status.md`
 - Architecture Decision Records: `docs/adr/`
+- Migration plan: `~/.claude/plans/federated-prancing-lollipop.md`
 
 ---
 
 **Last Updated**: 2026-01-08
 
-**Changes (2026-01-08 - Modal Migration)**:
+**Changes (2026-01-08 - Modal Production Deployment)**:
+- Modal serverless deployed to production
+- Infrastructure verification passed (health, auth, endpoints)
+- Product app updated to point to Modal (not AMP)
+- Marketing site live components created (Activity Feed, Metrics)
+- AMP marked as deprecated, repos to be archived
+- Updated blockers to reflect Modal infrastructure status
+- Primary work is now crew implementation (14 crews)
+
+**Previous (2026-01-08 - Modal Migration Proposed)**:
 - Added Modal serverless migration notice (ADR-002)
 - Updated Ecosystem Status to show migration in progress
 - Noted return to single repository (was 3 repos for AMP)
-- Updated Product App blockers for Modal endpoints
-- Marked legacy AMP deployment as DEPRECATED
-- Updated Coordination Notes
-
-**Previous (2026-01-07 - Full Ecosystem Sync)**:
-- Synced with `docs/master-architecture/09-status.md` cross-repo rewrite
-- Added Ecosystem Status table
