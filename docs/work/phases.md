@@ -2,12 +2,12 @@
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
 last_reviewed: "2026-01-08"
-last_audit: "2026-01-08 - Modal serverless migration proposed (ADR-002)"
+last_audit: "2026-01-08 - Crew implementation complete (185 tests passing)"
 ---
 
 # Engineering Phases
 
-> **Architecture Migration**: Migrating from CrewAI AMP to Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md).
+> **Crew Implementation Complete**: All 14 crews with 45 agents implemented. 185 tests passing. Ready for E2E integration. See [ADR-002](../adr/002-modal-serverless-migration.md).
 
 ## Architecture Summary
 
@@ -20,12 +20,14 @@ last_audit: "2026-01-08 - Modal serverless migration proposed (ADR-002)"
 | **Agents** | 45 |
 | **HITL Checkpoints** | 10 |
 
-### Target Deployment: Modal Serverless (Proposed)
-| Component | Description |
-|-----------|-------------|
-| **Interaction Layer** | Netlify Edge Functions |
-| **Orchestration Layer** | Supabase (PostgreSQL + Realtime) |
-| **Compute Layer** | Modal (ephemeral Python, pay-per-second) |
+### Target Deployment: Modal Serverless (DEPLOYED)
+| Component | Description | Status |
+|-----------|-------------|--------|
+| **Interaction Layer** | Netlify Edge Functions | ✅ Production |
+| **Orchestration Layer** | Supabase (PostgreSQL + Realtime) | ✅ Production |
+| **Compute Layer** | Modal (ephemeral Python, pay-per-second) | ✅ Production |
+
+**Production URL**: `https://chris00walker--startupai-validation-fastapi-app.modal.run`
 
 See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
 
@@ -43,22 +45,35 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
 
 ---
 
-## Architecture Migration Notice
+## Architecture Implementation Status
 
-### Current Migration: AMP → Modal (2026-01-08)
+### Modal Serverless (DEPLOYED - 2026-01-08)
 
-**MAJOR CHANGE**: Migrating from CrewAI AMP to Modal serverless.
+**STATUS**: Infrastructure deployed, crews implemented, ready for E2E testing.
 
 - **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) (current)
-- **Reason**: AMP platform exhibited reliability issues with both `type = "flow"` and `type = "crew"`
-- **Target**: Modal serverless with Netlify + Supabase
+- **Infrastructure**: Modal + Supabase + Netlify deployed to production
+- **Crews**: All 14 crews implemented with 45 agents
+- **Tests**: 185 tests passing (all phases covered)
 - **Benefits**: $0 idle costs, platform-agnostic, single repo
 
-### Previous Migration: Flow → 3-Crew (2025-12-05) - SUPERSEDED
+### Implementation Summary
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| Modal infrastructure | ✅ Complete | Production deployment live |
+| Phase 0 (Onboarding) | ✅ Complete | 1 crew, 4 agents, 24 tests |
+| Phase 1 (VPC Discovery) | ✅ Complete | 5 crews, 18 agents, 25 tests |
+| Phase 2 (Desirability) | ✅ Complete | 3 crews, 9 agents, 42 tests |
+| Phase 3 (Feasibility) | ✅ Complete | 2 crews, 5 agents, 36 tests |
+| Phase 4 (Viability) | ✅ Complete | 3 crews, 9 agents, 58 tests |
+| E2E Integration | ⏳ Pending | Ready to test |
+
+### Previous: AMP Deployment (ARCHIVED)
 
 - **ADR**: See [ADR-001](../adr/001-flow-to-crew-migration.md) (superseded by ADR-002)
-- **Old code**: Archived to `archive/flow-architecture/`
-- **3-Crew code**: Being archived to `archive/amp-deployment/`
+- **Status**: Deprecated and archived
+- **Code**: Archived to `archive/amp-deployment/`
 
 The phases below reflect the canonical architecture (5 Flows, 14 Crews, 45 Agents).
 
@@ -430,38 +445,38 @@ Phase 3 is **complete** when all of the following are true:
 
 ---
 
-## Transition Plan: Modal Serverless Migration
+## Implementation Status: Modal Serverless
 
-The 3-Crew AMP deployment is **DEPRECATED**. Migrating to Modal serverless architecture.
+The Modal serverless architecture is **DEPLOYED** and crew implementation is **COMPLETE**.
 
-### Current State (AMP - DEPRECATED)
-- 3 Crews deployed: Intake (4 agents), Validation (12 agents), Decision (3 agents)
-- Crew chaining via `InvokeCrewAIAutomationTool`
-- 7 HITL checkpoints
-- **Issues**: Platform reliability problems, multi-repo complexity
-
-### Target State (Modal Serverless)
+### Current State (Modal - PRODUCTION)
 - Single modular monolith repo
 - 5 Flows implemented as Modal functions
 - 14 Crews with 45 agents total
 - 10 HITL checkpoints with checkpoint-and-resume pattern
 - Supabase for state persistence + Realtime for UI updates
+- **185 tests passing**
 
-### Migration Tasks
-See [ADR-002](../adr/002-modal-serverless-migration.md) for detailed migration plan.
+### Migration Tasks (Complete)
+See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details.
 
 | Phase | Task | Status |
 |-------|------|--------|
-| 1 | Infrastructure (Modal account, Supabase tables) | ⏳ Pending |
-| 2 | Code migration (modal_app/, crews/) | ⏳ Pending |
-| 3 | Testing (unit, integration, E2E) | ⏳ Pending |
-| 4 | Deployment & cutover | ⏳ Pending |
+| 1 | Infrastructure (Modal account, Supabase tables) | ✅ Complete |
+| 2 | Code migration (modal_app/, crews/) | ✅ Complete |
+| 3 | Unit testing (185 tests) | ✅ Complete |
+| 4 | E2E integration testing | ⏳ Pending |
+| 5 | Production cutover | ⏳ Pending |
 
-### Transition Criteria
-1. Modal app deployed and accessible
-2. All 5 phases functional
-3. HITL checkpoint-and-resume working
-4. Product app integration verified
-5. E2E flow completion rate >95%
+### Remaining Work
+1. E2E integration test (full Phase 0→4 flow)
+2. First live validation run with real LLM calls
+3. Tool wiring to specific agents
+4. Production cutover verification
+
+### Legacy (AMP - ARCHIVED)
+- 3 Crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)
+- **Status**: Deprecated and archived
+- **Issues**: Platform reliability problems, multi-repo complexity
 
 **Reference**: See `docs/master-architecture/` for canonical architecture specifications.

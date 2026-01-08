@@ -2,22 +2,22 @@
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
 last_reviewed: "2026-01-08"
-last_synced: "2026-01-08 - Modal serverless production deployment verified"
+last_synced: "2026-01-08 - Crew implementation complete (185 tests passing)"
 ---
 
 # Cross-Repository Blockers
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
 
-> **Modal Migration Complete**: Modal serverless infrastructure deployed to production. Crew implementation in progress. See [ADR-002](../adr/002-modal-serverless-migration.md).
+> **Crew Implementation Complete**: All 14 crews with 45 agents implemented. 185 tests passing. Ready for E2E integration. See [ADR-002](../adr/002-modal-serverless-migration.md).
 
 ## Ecosystem Status (2026-01-08)
 
-**Modal serverless deployed to production.** Infrastructure verified, crew implementation in progress.
+**Crew implementation complete.** All 14 crews implemented, 185 tests passing, ready for E2E integration.
 
 | Service | Status | Completion | Notes |
 |---------|--------|------------|-------|
-| CrewAI Backend | Modal deployed | ~70% | Infrastructure live, crews being implemented |
+| CrewAI Backend | Crews complete | ~85% | 14 crews, 45 agents, 185 tests |
 | Product App | Modal integration complete | ~95% | Pointing to Modal endpoints |
 | Marketing Site | Live API integration | ~95% | Activity Feed + Metrics connected |
 
@@ -43,7 +43,8 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 | Modal API Endpoints | ✅ WORKING | `/kickoff`, `/status`, `/hitl/approve`, `/health` | Full API operational |
 | Supabase Tables | ✅ READY | `validation_runs`, `validation_progress`, `hitl_requests` | State persistence works |
 | Supabase Realtime | ✅ ENABLED | Progress tables publishing | Real-time UI updates |
-| 14 Crews Implementation | ⏳ IN PROGRESS | Building from master-architecture specs | Fresh build approach |
+| 14 Crews Implementation | ✅ COMPLETE | 45 agents, 185 tests passing | All phases ready |
+| E2E Integration Test | ⏳ PENDING | Full Phase 0→4 flow test | Production validation |
 
 **Modal API Endpoints (Production):**
 - `POST /kickoff` - Start validation (returns 202 Accepted + run_id)
@@ -120,7 +121,7 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 | Marketing site | ✅ Verified | Returns 200 |
 | Marketing APIs | ✅ Verified | `/public-activity`, `/public-metrics` returning JSON |
 
-### Full Flow (Pending crew completion)
+### Full Flow (Ready for E2E Test)
 
 ```
 User lands on startupai.site
@@ -133,7 +134,7 @@ Completes onboarding chat (7 stages)
     ↓
 Triggers Modal validation (POST /kickoff)
     ↓
-Modal processes through 5 phases (14 crews)
+Modal processes through 5 phases (14 crews, 45 agents)
     ↓
 Results persist to Supabase
     ↓
@@ -142,17 +143,19 @@ Dashboard displays validation results
 Marketing activity feed shows real activity
 ```
 
-**Status**: Infrastructure verified. Awaiting crew implementation completion.
+**Status**: All components implemented. Ready for live E2E test.
 
 ---
 
 ## Coordination Notes
 
-- **Modal infrastructure DEPLOYED** - Production endpoints verified (2026-01-08)
+- **Crew implementation COMPLETE** - All 14 crews with 45 agents (2026-01-08)
+- **185 tests passing** - Full coverage for Phases 0-4
+- **Modal infrastructure DEPLOYED** - Production endpoints verified
 - **Product App UPDATED** - Pointing to Modal endpoints (not AMP)
-- **Marketing site CONNECTED** - Live Activity Feed + Metrics components created
-- **AMP DEPRECATED** - Legacy repos being archived
-- **Primary work**: Complete 14 crews implementation, then run first production validation
+- **Marketing site CONNECTED** - Live Activity Feed + Metrics components
+- **AMP DEPRECATED** - Legacy repos archived
+- **Primary work**: E2E integration test, then first production validation run
 
 **Single Repo Benefit**: Modal migration returns us to single repository (`startupai-crew`). No more cross-repo coordination for Crews 2 & 3.
 
@@ -170,14 +173,19 @@ Marketing activity feed shows real activity
 
 **Last Updated**: 2026-01-08
 
-**Changes (2026-01-08 - Modal Production Deployment)**:
+**Changes (2026-01-08 - Crew Implementation Complete)**:
+- All 14 crews implemented with 45 agents
+- 185 tests passing (Phases 0-4 covered)
+- Updated completion status: ~85% (was ~70%)
+- Ready for E2E integration testing
+- Primary work is now E2E test + production validation
+
+**Previous (2026-01-08 - Modal Production Deployment)**:
 - Modal serverless deployed to production
 - Infrastructure verification passed (health, auth, endpoints)
 - Product app updated to point to Modal (not AMP)
 - Marketing site live components created (Activity Feed, Metrics)
 - AMP marked as deprecated, repos to be archived
-- Updated blockers to reflect Modal infrastructure status
-- Primary work is now crew implementation (14 crews)
 
 **Previous (2026-01-08 - Modal Migration Proposed)**:
 - Added Modal serverless migration notice (ADR-002)

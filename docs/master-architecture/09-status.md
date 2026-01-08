@@ -2,6 +2,7 @@
 purpose: Authoritative ecosystem status across all three services
 status: active
 last_reviewed: 2026-01-08
+last_updated: 2026-01-08
 vpd_compliance: true
 ---
 
@@ -17,13 +18,13 @@ This document provides an **authoritative, cross-repository view** of implementa
 
 | Service | Status | Completion | Primary Blocker |
 |---------|--------|------------|-----------------|
-| **AI Founders Core** (startupai-crew) | Modal migration PROPOSED | ~60% | Migration to Modal serverless |
-| **Marketing Site** (startupai.site) | Production, static export | ~90% | Real-time data connection |
-| **Product App** (app.startupai.site) | Phase Alpha complete | ~85% | E2E flow verification |
+| **AI Founders Core** (startupai-crew) | Modal deployed, crews complete | ~85% | E2E integration test |
+| **Marketing Site** (startupai.site) | Production, static export | ~95% | None (live API connected) |
+| **Product App** (app.startupai.site) | Modal integration complete | ~95% | E2E flow verification |
 
-> **Architecture Migration**: Migrating from CrewAI AMP to Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md).
+> **Modal Migration Complete**: Infrastructure deployed to production. All 14 crews implemented with 185 tests passing. See [ADR-002](../adr/002-modal-serverless-migration.md).
 
-**Ecosystem State**: Architecture migration in progress. AMP deployment deprecated due to platform reliability issues. Modal serverless architecture provides platform-agnostic deployment with $0 idle costs.
+**Ecosystem State**: Modal serverless deployed. All 14 crews and 45 agents implemented. Ready for E2E integration testing.
 
 ---
 
@@ -78,9 +79,9 @@ StartupAI implements a 5-phase validation architecture based on Value Propositio
 | 4 | `SynthesisCrew` | C1-C3 | Evidence synthesis, decision |
 | 4 | `GovernanceCrew` | G1-G3 | Final validation, flywheel |
 
-### Modal Serverless Deployment (Target)
+### Modal Serverless Deployment (Production)
 
-> **Status**: PROPOSED - See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
+> **Status**: DEPLOYED - See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
 
 **Three-Layer Architecture:**
 
@@ -98,17 +99,20 @@ StartupAI implements a 5-phase validation architecture based on Value Propositio
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Migration Status:**
+**Production URL:** `https://chris00walker--startupai-validation-fastapi-app.modal.run`
+
+**Implementation Status:**
 
 | Task | Status | Notes |
 |------|--------|-------|
 | ADR written | ✅ Complete | [ADR-002](../adr/002-modal-serverless-migration.md) |
-| Modal account setup | ⏳ Pending | |
-| Supabase migrations | ⏳ Pending | validation_progress, hitl_requests tables |
-| modal_app/ scaffold | ⏳ Pending | |
-| Port 14 crews | ⏳ Pending | |
-| E2E testing | ⏳ Pending | |
-| Cutover | ⏳ Pending | |
+| Modal account setup | ✅ Complete | Production deployment live |
+| Supabase tables | ✅ Complete | validation_runs, validation_progress, hitl_requests |
+| modal_app/ scaffold | ✅ Complete | 5 phase modules, FastAPI app |
+| 14 crews implemented | ✅ Complete | 45 agents, 185 tests passing |
+| Phase flows | ✅ Complete | phase_0 through phase_4 |
+| E2E testing | ⏳ Pending | Ready for integration test |
+| Production cutover | ⏳ Pending | Awaiting E2E verification |
 
 ### 3-Crew Deployment (AMP Platform) - DEPRECATED
 
@@ -145,21 +149,24 @@ Legacy deployment (reference only):
 
 | Capability | Status | Notes |
 |------------|--------|-------|
-| 5-Flow/14-Crew architecture | ✅ Specified | 45 agents, 10 HITL checkpoints (canonical) |
-| 3-Crew AMP deployment | ✅ Deployed | Platform workaround for `type = "flow"` issue |
-| AMP deployment | ✅ Online | All 3 crews deployed and accessible |
-| Pydantic output schemas | ✅ Complete | 6 models enforcing structured outputs |
-| HITL integration | ✅ Complete | `human_input: true` on approval tasks |
-| Webhook to Supabase | ✅ Complete | `_persist_to_supabase()` via webhook |
-| Crew chaining | ✅ Configured | `InvokeCrewAIAutomationTool` for Crew 1→2→3 |
+| 5-Flow/14-Crew architecture | ✅ Implemented | 45 agents, 10 HITL checkpoints |
+| Modal serverless deployment | ✅ Production | Single repo, $0 idle costs |
+| 14 crews implemented | ✅ Complete | All crews with YAML configs |
+| 45 agents defined | ✅ Complete | Role, goal, backstory for each |
+| Phase flows (0-4) | ✅ Complete | phase_0.py through phase_4.py |
+| Test suite | ✅ 185 tests | All phases covered |
+| Pydantic output schemas | ✅ Complete | ValidationRunState, ViabilityEvidence, etc. |
+| HITL integration | ✅ Complete | 10 checkpoints with checkpoint-and-resume |
+| Supabase state persistence | ✅ Complete | validation_runs, validation_progress tables |
 | Tools | ✅ 18+ tools | TavilySearch, CustomerResearch, MethodologyCheck, etc. |
 
 ### What's Pending
 
 | Item | Status | Blocker |
 |------|--------|---------|
-| E2E flow verification | ⚠️ Needs testing | Run full user journey with live data |
-| Ad platform integration | ❌ Not connected | Meta/Google Ads APIs not integrated |
+| E2E flow verification | ⏳ Ready to test | None - crews implemented |
+| Tool wiring to agents | ⏳ Partial | Some tools need agent assignment |
+| Ad platform integration | ❌ Not connected | Meta/Google Ads APIs (business decision) |
 | Real analytics tracking | ⚠️ Partial | PostHog exists; ad platform analytics missing |
 
 ### HITL Checkpoints (10 canonical)
@@ -351,24 +358,25 @@ Legacy deployment (reference only):
 
 ### Completed
 
-- [x] 3-Crew architecture deployed to AMP
-- [x] CrewAI webhook infrastructure (multi-table persistence)
-- [x] Product app dashboards and evidence display
-- [x] Public APIs for marketing (Activity Feed + Metrics)
-- [x] HITL approval system (9 types)
+- [x] Modal serverless infrastructure deployed
+- [x] 14 crews implemented (45 agents)
+- [x] 5 phase flows implemented (phase_0 through phase_4)
+- [x] 185 crew tests passing
+- [x] Product app Modal integration complete
+- [x] Marketing site live API integration
+- [x] HITL approval system (10 checkpoints)
 - [x] Onboarding flow with AI coach
 - [x] Guardian showcase on marketing site
-- [x] 463+ tests passing
+- [x] Public APIs for marketing (Activity Feed + Metrics)
 
 ### Remaining Work
 
 | Priority | Task | Owner | Blocker |
 |----------|------|-------|---------|
 | **P0** | E2E flow verification | All repos | None - ready to test |
-| **P1** | Connect marketing to Public APIs | Marketing | None |
-| **P1** | Replace remaining mock data | Product | E2E verification |
-| **P2** | PostHog coverage gaps (13+ events) | Product | None |
-| **P2** | Contact form backend | Marketing | None |
+| **P1** | First live validation run | Crew | E2E verification |
+| **P1** | Tool wiring to agents | Crew | None |
+| **P2** | PostHog coverage gaps | Product | None |
 | **P3** | Ad platform integration | Crew | Business decision |
 
 ### E2E Verification Checklist
@@ -384,18 +392,18 @@ Redirects to app.startupai.site with plan
     ↓
 Completes onboarding chat (7 stages)
     ↓
-Triggers CrewAI analysis (POST /kickoff)
+Triggers Modal validation (POST /kickoff)
     ↓
-CrewAI processes through 3 crews
+Modal processes through 5 phases (14 crews, 45 agents)
     ↓
-Webhook persists results to Supabase
+Results persist to Supabase (validation_runs table)
     ↓
 Dashboard displays validation results
     ↓
 Marketing activity feed shows real activity
 ```
 
-**Status**: All components exist. Needs live end-to-end test.
+**Status**: All components implemented. Ready for live end-to-end test.
 
 ---
 
@@ -414,6 +422,12 @@ Marketing activity feed shows real activity
 
 | Date | Changes |
 |------|---------|
+| **2026-01-08** | Crew Implementation Complete |
+| | All 14 crews implemented with 45 agents |
+| | 185 crew tests passing (Phases 0-4) |
+| | Modal infrastructure deployed to production |
+| | Updated completion status: ~85% (was ~60%) |
+| | Ready for E2E integration testing |
 | **2026-01-08** | Modal Serverless Migration |
 | | Proposed migration from CrewAI AMP to Modal serverless ([ADR-002](../adr/002-modal-serverless-migration.md)) |
 | | Marked 3-Crew AMP deployment as DEPRECATED |
