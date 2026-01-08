@@ -3,9 +3,9 @@
 ## Project Identity
 **Name**: StartupAI AI Founders Engine
 **Purpose**: 5-Flow/14-Crew/45-Agent validation engine with HITL checkpoints
-**Framework**: CrewAI Flows + Crews (canonical); Crews-only (AMP deployment)
-**Deployment**: CrewAI AMP Platform (3-Crew workaround)
-**Status**: Architecture specified, AMP deployment online
+**Framework**: CrewAI Flows + Crews (platform-agnostic)
+**Deployment**: Modal Serverless (migration in progress) - see [ADR-002](docs/adr/002-modal-serverless-migration.md)
+**Status**: Architecture specified, migrating from AMP to Modal
 
 ## Critical Context
 **⚠️ IMPORTANT**: This repository is the **brain of the StartupAI ecosystem**. It powers the 6 AI Founders team that delivers Fortune 500-quality strategic analysis.
@@ -32,18 +32,48 @@ The architecture follows CrewAI's documented patterns:
 PHASE (Business Concept) → FLOW (Orchestration) → CREW (Agent Group) → AGENT → TASK
 ```
 
-| Metric | Canonical | AMP Deployed |
-|--------|-----------|--------------|
-| Phases | 5 | 5 |
-| Flows | 5 | N/A (crews only) |
-| Crews | 14 | 3 |
-| Agents | 45 | 19 |
-| HITL | 10 | 7 |
+| Metric | Canonical | Modal Target | AMP (DEPRECATED) |
+|--------|-----------|--------------|------------------|
+| Phases | 5 | 5 | 5 |
+| Flows | 5 | 5 | N/A (crews only) |
+| Crews | 14 | 14 | 3 |
+| Agents | 45 | 45 | 19 |
+| HITL | 10 | 10 | 7 |
 
 **Critical Rule**: A crew must have 2+ agents (per CrewAI docs). One agent is NOT a crew.
 
-### Why 3-Crew AMP Deployment (Workaround)
-AMP handles `type = "crew"` reliably but has issues with `type = "flow"`. The 3-Crew deployment is a **platform workaround**, not the canonical architecture:
+### Modal Serverless Architecture (Target)
+Modal enables the **canonical architecture** with platform-agnostic deployment:
+- **$0 idle costs** - containers only run during execution
+- **$0 during HITL** - checkpoint-and-resume pattern terminates containers during human review
+- **Single repository** - no more 3-repo workaround
+- See [ADR-002](docs/adr/002-modal-serverless-migration.md) for full details
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        Three-Layer Architecture                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  INTERACTION LAYER (Netlify/Product App)                                    │
+│  • User triggers validation                                                 │
+│  • Receives real-time progress updates                                      │
+│  • Handles HITL approvals                                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  ORCHESTRATION LAYER (Supabase)                                            │
+│  • State persistence (PostgreSQL)                                           │
+│  • Real-time updates (WebSocket)                                            │
+│  • Approval queue management                                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  COMPUTE LAYER (Modal)                                                      │
+│  • 5 Flow functions (one per phase)                                         │
+│  • Ephemeral containers (pay-per-second)                                    │
+│  • Checkpoint-and-resume at HITL points                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 3-Crew AMP Deployment (DEPRECATED)
+> **⚠️ DEPRECATED**: Being replaced by Modal serverless. See [ADR-002](docs/adr/002-modal-serverless-migration.md).
+
+AMP handled `type = "crew"` reliably but had issues with `type = "flow"`. The 3-Crew deployment was a **platform workaround**, not the canonical architecture:
 - Canonical: 5 Flows orchestrating 14 Crews with `@start`, `@listen`, `@router`
 - Deployed: 3 Crews chained via `InvokeCrewAIAutomationTool`
 - See `docs/master-architecture/09-status.md` for full context
@@ -85,7 +115,33 @@ Key references for development:
 
 ## Directory Structure
 ```
-# CREW 1: INTAKE (this repo, deployed to AMP)
+# TARGET: MODAL SERVERLESS (migration in progress)
+src/
+├── modal_app/                  # Modal entry points (PLANNED)
+│   ├── __init__.py
+│   ├── app.py                  # Modal App definition
+│   └── functions/              # One function per flow
+│       ├── onboarding.py       # Phase 0: OnboardingFlow
+│       ├── vpc_discovery.py    # Phase 1: VPCDiscoveryFlow
+│       ├── desirability.py     # Phase 2: DesirabilityFlow
+│       ├── feasibility.py      # Phase 3: FeasibilityFlow
+│       └── viability.py        # Phase 4: ViabilityFlow
+├── crews/                      # Shared crew definitions (PLANNED)
+│   ├── onboarding/             # OnboardingCrew
+│   ├── discovery/              # DiscoveryCrew, CustomerProfileCrew, etc.
+│   ├── build/                  # BuildCrew (reused across phases)
+│   ├── growth/                 # GrowthCrew
+│   ├── governance/             # GovernanceCrew (reused across phases)
+│   ├── finance/                # FinanceCrew
+│   └── synthesis/              # SynthesisCrew
+├── state/                      # Supabase state management (PLANNED)
+│   ├── models.py               # Pydantic state models
+│   └── persistence.py          # Checkpoint/resume logic
+└── shared/                     # Shared utilities
+    ├── tools/                  # Agent tools
+    └── schemas/                # Pydantic schemas
+
+# CURRENT: INTAKE CREW (AMP deployment - DEPRECATED)
 src/intake_crew/
 ├── __init__.py
 ├── crew.py                     # 4 agents: S1, S2, S3, G1
@@ -156,48 +212,55 @@ Makefile                        # Build commands
 # Setup
 uv sync                         # Install dependencies
 
-# Authentication
-crewai login                    # One-time setup per machine
-# Creates ~/.config/crewai/settings.json with org credentials
-
 # Local Development
 crewai run                      # Test workflow locally (requires OPENAI_API_KEY in .env)
 
-# Deployment
+# Modal Deployment (TARGET - migration in progress)
+modal setup                     # One-time Modal CLI setup
+modal deploy src/modal_app/app.py  # Deploy to Modal
+modal serve src/modal_app/app.py   # Local development with hot reload
+modal run src/modal_app/app.py::kickoff --input '{"entrepreneur_input": "..."}'
+
+# AMP Deployment (DEPRECATED - preserved for reference)
+crewai login                    # One-time setup per machine
 crewai deploy status --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 crewai deploy logs --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
-
-# Git workflow
-git add .
-git commit -m "Update agents/tasks"
-git push origin main
-crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 ```
 
 ## Deployment Configuration
 
-### 3-Crew Deployments (Active)
+### Modal Serverless (TARGET - migration in progress)
+See [ADR-002](docs/adr/002-modal-serverless-migration.md) for architecture details.
+
+**API Endpoints (Planned)**:
+```
+POST /kickoff         → Start validation (returns 202 Accepted + run_id)
+GET  /status/{run_id} → Check progress (reads from Supabase)
+POST /hitl/approve    → Resume after human approval
+```
+
+**Environment Variables (Modal Secrets)**:
+- `OPENAI_API_KEY` - OpenAI API key
+- `TAVILY_API_KEY` - Tavily API key for web search
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_KEY` - Supabase service role key
+- `NETLIFY_ACCESS_TOKEN` - Netlify personal access token for LP deployment
+
+### 3-Crew Deployments (DEPRECATED)
+> **⚠️ DEPRECATED**: Being replaced by Modal serverless. See [ADR-002](docs/adr/002-modal-serverless-migration.md).
+
 | Crew | Repository | UUID | Token |
 |------|------------|------|-------|
 | Crew 1: Intake | `chris00walker/startupai-crew` | `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | `db9f9f4c1a7a` |
 | Crew 2: Validation | `chris00walker/startupai-crew-validation` | `3135e285-c0e6-4451-b7b6-d4a061ac4437` | (check AMP dashboard) |
 | Crew 3: Decision | `chris00walker/startupai-crew-decision` | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | `988cc694f297` |
 
-### Crew Chaining Environment Variables
-**Crew 1** needs these in AMP dashboard:
-- `CREW_2_URL` = (get from AMP dashboard for Crew 2)
-- `CREW_2_BEARER_TOKEN` = `c823a366d901`
-
-**Crew 2** needs these in AMP dashboard:
-- `CREW_3_URL` = (get from AMP dashboard for Crew 3)
-- `CREW_3_BEARER_TOKEN` = `988cc694f297`
-
 **Organization**: StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
 **Dashboard**: https://app.crewai.com/deployments
 
 ### Deployment Guide
-See `docs/deployment/3-crew-deployment.md` for full deployment instructions.
+See `docs/deployment/3-crew-deployment.md` for historical AMP deployment instructions (DEPRECATED).
 
 ## Environment Variables
 ### Local Development (`.env`)
@@ -206,23 +269,32 @@ OPENAI_API_KEY=sk-...                    # Required for local testing
 TAVILY_API_KEY=tvly-...                  # For web search tool
 SUPABASE_URL=https://xxx.supabase.co     # Supabase project URL
 SUPABASE_KEY=eyJ...                      # Supabase service role key
-STARTUPAI_WEBHOOK_URL=https://app.startupai.site/api/crewai/webhook
-STARTUPAI_WEBHOOK_BEARER_TOKEN=xxx       # Shared webhook auth token
 NETLIFY_ACCESS_TOKEN=xxx                 # Netlify personal access token for LP deployment
 ```
 
-### CrewAI AMP Deployment (Dashboard → Environment Variables)
+### Modal Secrets (TARGET - migration in progress)
+Modal uses Secrets for environment variables (see `modal secret create`):
+```bash
+modal secret create startupai-secrets \
+  OPENAI_API_KEY=sk-... \
+  TAVILY_API_KEY=tvly-... \
+  SUPABASE_URL=https://eqxropalhxjeyvfcoyxg.supabase.co \
+  SUPABASE_KEY=eyJ... \
+  NETLIFY_ACCESS_TOKEN=xxx
+```
+
+### CrewAI AMP Deployment (DEPRECATED)
+> **⚠️ DEPRECATED**: All environment variables below were set in CrewAI AMP dashboard.
+
 ```env
-OPENAI_API_KEY=sk-...                    # OpenAI API key
-TAVILY_API_KEY=tvly-...                  # Tavily API key for web search
+OPENAI_API_KEY=sk-...
+TAVILY_API_KEY=tvly-...
 SUPABASE_URL=https://eqxropalhxjeyvfcoyxg.supabase.co
-SUPABASE_KEY=eyJ...                      # Supabase service role key (from dashboard)
+SUPABASE_KEY=eyJ...
 STARTUPAI_WEBHOOK_URL=https://app.startupai.site/api/crewai/webhook
 STARTUPAI_WEBHOOK_BEARER_TOKEN=startupai-webhook-secret-2024
-NETLIFY_ACCESS_TOKEN=xxx                 # Netlify personal access token for LP deployment
+NETLIFY_ACCESS_TOKEN=xxx
 ```
-
-**⚠️ CRITICAL**: `.env` files are NOT used by deployed crews. All environment variables must be set in the CrewAI AMP dashboard.
 
 ### Unified Webhook
 All CrewAI flows use a single webhook endpoint with `flow_type` differentiation:
@@ -253,8 +325,10 @@ All CrewAI flows use a single webhook endpoint with `flow_type` differentiation:
 
 **Note**: BuildCrew and GovernanceCrew are reused across phases.
 
-### AMP Deployment (3 Crews / 19 Agents)
-Due to AMP platform limitations with `type = "flow"`, the canonical architecture is deployed as 3 chained crews:
+### AMP Deployment (DEPRECATED - 3 Crews / 19 Agents)
+> **⚠️ DEPRECATED**: Being replaced by Modal serverless. See [ADR-002](docs/adr/002-modal-serverless-migration.md).
+
+Due to AMP platform limitations with `type = "flow"`, the canonical architecture was deployed as 3 chained crews:
 - **Crew 1 (Intake)**: 4 agents
 - **Crew 2 (Validation)**: 12 agents
 - **Crew 3 (Decision)**: 3 agents
@@ -278,8 +352,8 @@ Due to AMP platform limitations with `type = "flow"`, the canonical architecture
 Phase 0 → [HITL] → Phase 1 → [HITL] → Phase 2 → [HITL] → Phase 3 → [HITL] → Phase 4 → [HITL]
 ```
 
-Canonical: Orchestrated with `@start`, `@listen`, `@router` decorators in Flows.
-AMP Deployed: Orchestrated with `InvokeCrewAIAutomationTool` for crew-to-crew chaining.
+**Modal (TARGET)**: Orchestrated with `@start`, `@listen`, `@router` decorators in Flows. HITL uses checkpoint-and-resume pattern ($0 during human review).
+**AMP (DEPRECATED)**: Was orchestrated with `InvokeCrewAIAutomationTool` for crew-to-crew chaining.
 
 **Full Details**: See `docs/master-architecture/` phase documents (03-08) for authoritative implementation blueprints
 
@@ -301,11 +375,25 @@ Structured task outputs (not files):
 - QA Report (quality assessment with pass/fail)
 
 ### API Endpoints
-```bash
-# Get deployment inputs schema
-curl https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/inputs \
-  -H "Authorization: Bearer db9f9f4c1a7a"
 
+**Modal (TARGET - migration in progress)**:
+```bash
+# Kickoff validation (returns 202 Accepted + run_id)
+curl -X POST https://startupai-crew--kickoff.modal.run \
+  -H "Content-Type: application/json" \
+  -d '{"entrepreneur_input": "Business idea..."}'
+
+# Check status (reads from Supabase)
+curl https://startupai-crew--status.modal.run/{run_id}
+
+# Resume after HITL approval
+curl -X POST https://startupai-crew--hitl-approve.modal.run \
+  -H "Content-Type: application/json" \
+  -d '{"run_id": "...", "checkpoint": "approve_brief", "decision": "approved"}'
+```
+
+**AMP (DEPRECATED)**:
+```bash
 # Kickoff workflow
 curl -X POST https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/kickoff \
   -H "Authorization: Bearer db9f9f4c1a7a" \
@@ -320,7 +408,30 @@ curl https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/sta
 ## Integration with Product App
 **Frontend Trigger**: User completes onboarding → POST to `/api/crewai/analyze`
 
-**Backend Proxy**:
+**Modal Integration (TARGET)**:
+```typescript
+// Product app API route - kickoff
+export async function POST(req: Request) {
+  const { entrepreneur_input } = await req.json();
+
+  const response = await fetch(
+    'https://startupai-crew--kickoff.modal.run',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entrepreneur_input })
+    }
+  );
+
+  // Returns { run_id: "...", status: "started" }
+  return response.json();
+}
+
+// Real-time updates via Supabase Realtime subscription
+// Progress stored in `validation_runs` table, subscribed by Product App
+```
+
+**AMP Integration (DEPRECATED)**:
 ```typescript
 // Product app API route
 export async function POST(req: Request) {
@@ -383,34 +494,38 @@ export async function POST(req: Request) {
 **Methodology**: See `docs/master-architecture/03-methodology.md` for VPD framework, SAY vs DO evidence hierarchy, Test Cards, Learning Cards.
 
 ## Troubleshooting
-### "Repository wrong" error
-**Cause**: CrewAI dashboard linked to wrong GitHub repo  
-**Fix**: Check GitHub integration in CrewAI dashboard, verify `chris00walker/startupai-crew`
-
-### Authentication failed
-**Cause**: `~/.config/crewai/settings.json` missing or invalid  
-**Fix**: Run `crewai login` to re-authenticate
 
 ### Local run fails with "OPENAI_API_KEY not set"
-**Cause**: `.env` file missing or incomplete  
+**Cause**: `.env` file missing or incomplete
 **Fix**: Copy `.env.example` to `.env` and add API key
 
-### Deployment push fails
-**Cause**: Wrong deployment UUID or expired token
-**Fix**: Run `crewai deploy list` to verify UUID
+### Modal Troubleshooting (TARGET)
 
-### AMP returns `source: memory` without executing
-**Cause**: AMP infrastructure-level caching returns cached results before code runs
-**Status**: KNOWN ISSUE - awaiting CrewAI support response
+#### Modal CLI not found
+**Cause**: Modal CLI not installed
+**Fix**: `pip install modal` or `uv add modal`
+
+#### Modal secrets not found
+**Cause**: Secrets not created in Modal
+**Fix**: Run `modal secret create startupai-secrets ...` (see Environment Variables section)
+
+#### Function timeout
+**Cause**: Long-running crews exceeding timeout
+**Fix**: Modal supports up to 24h execution; ensure `timeout` parameter set in `@modal.function()`
+
+### AMP Troubleshooting (DEPRECATED)
+> **⚠️ DEPRECATED**: AMP is being replaced by Modal. Issues below preserved for historical reference.
+
+#### "Repository wrong" error
+**Cause**: CrewAI dashboard linked to wrong GitHub repo
+**Fix**: Check GitHub integration in CrewAI dashboard
+
+#### AMP returns `source: memory` without executing
+**Cause**: AMP infrastructure-level caching
+**Status**: UNRESOLVED - one of several reasons for Modal migration
 **Symptoms**:
 - `/kickoff` returns immediately with `{"state":"SUCCESS","result":"founder_validation","source":"memory"}`
 - Dashboard Traces show "Waiting for events to load..." (flow never executes)
-- Happens even with unique `cache_buster` in request body
-**Workarounds attempted** (code-level - all deployed):
-- Added `execution_id` with uuid4() default to state model
-- Added `cache_buster` field injected in kickoff()
-- Set `cache=False` on all 18 agents across 7 crew files
-**Next step**: Contact CrewAI support about disabling AMP memory/caching at infrastructure level
 
 ## Related Repositories
 - Marketing Site: `startupai.site` (lead capture)
@@ -420,9 +535,13 @@ export async function POST(req: Request) {
 
 **⚠️ This repo is UPSTREAM of all others.** Changes here unblock downstream repos.
 
+### Single Repository Benefit (Modal Migration)
+Modal migration returns us to a **single repository** (`startupai-crew`). No more cross-repo coordination for Crews 2 & 3 (was required for AMP workaround with separate repos).
+
 ### Before Starting Work
 - Check `docs/work/cross-repo-blockers.md` for current dependencies
 - Review `docs/work/phases.md` for Phase completion criteria
+- Review [ADR-002](docs/adr/002-modal-serverless-migration.md) for migration status
 
 ### When Completing Phase Milestones
 1. Update completion checkboxes in `docs/work/phases.md`
@@ -436,7 +555,7 @@ export async function POST(req: Request) {
 CrewAI (this repo) → Product App → Marketing Site
 ```
 
-**Current blocker**: Phase 1 completion criteria in `docs/work/phases.md`
+**Current blocker**: Modal migration (see ADR-002)
 
 ## Claude Code Customizations
 
@@ -489,9 +608,10 @@ docs/master-architecture/
 - CrewAI Docs: https://docs.crewai.com
 
 ---
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-08
 **Maintainer**: Chris Walker
-**Status**: Canonical architecture specified (5 Flows / 14 Crews / 45 Agents); AMP deployment online (3 Crews / 19 Agents)
+**Status**: Migrating from AMP to Modal serverless (see ADR-002)
+**Architecture**: 5 Flows / 14 Crews / 45 Agents / 10 HITL (canonical)
 **Critical Note**: This is the BRAIN of the StartupAI ecosystem
 
 ### Migration Notes (2025-12-05)
@@ -531,3 +651,17 @@ docs/master-architecture/
 - Updated all phase documents (04-08) with CrewAI Pattern Mapping sections
 - Updated `02-organization.md` with complete crew structure
 - Updated `09-status.md` with architecture metrics
+
+### Modal Serverless Migration (2026-01-08)
+- **ADR-002**: Documented decision to migrate from CrewAI AMP to Modal serverless
+- **Architecture**: Three-layer (Netlify + Supabase + Modal)
+- **Key benefits**:
+  - $0 idle costs (vs AMP's always-on containers)
+  - $0 during HITL (checkpoint-and-resume pattern terminates containers)
+  - Single repository (no more 3-repo workaround)
+  - Platform-agnostic (can migrate to any Python platform)
+- **HITL Pattern**: Checkpoint state to Supabase, terminate container, resume on approval webhook
+- **Supabase Realtime**: WebSocket updates for instant UI progress
+- **Status**: PROPOSED - implementation pending
+- **AMP**: Marked as DEPRECATED across all documentation
+- See [ADR-002](docs/adr/002-modal-serverless-migration.md) for full details

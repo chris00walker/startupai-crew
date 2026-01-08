@@ -1,6 +1,18 @@
 # 3-Crew AMP Deployment Guide
 
-This document explains the new 3-crew architecture and how to deploy it to CrewAI AMP.
+> **DEPRECATED**: This deployment approach is being replaced by Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md) for the new architecture.
+>
+> **Reason**: CrewAI AMP exhibited reliability issues with both `type = "flow"` and `type = "crew"` deployments. The Modal serverless architecture provides platform-agnostic deployment with $0 idle costs.
+>
+> **Status**: This document is preserved for historical reference only. Do not use for new deployments.
+
+---
+
+*The content below is preserved for historical reference.*
+
+---
+
+This document explains the ~~new~~ legacy 3-crew architecture and how to deploy it to CrewAI AMP.
 
 ## Architecture Overview
 

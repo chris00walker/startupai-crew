@@ -1,11 +1,13 @@
 ---
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
-last_reviewed: "2026-01-07"
-last_audit: "2026-01-07 - Architecture pattern alignment with CrewAI docs"
+last_reviewed: "2026-01-08"
+last_audit: "2026-01-08 - Modal serverless migration proposed (ADR-002)"
 ---
 
 # Engineering Phases
+
+> **Architecture Migration**: Migrating from CrewAI AMP to Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md).
 
 ## Architecture Summary
 
@@ -15,31 +17,50 @@ last_audit: "2026-01-07 - Architecture pattern alignment with CrewAI docs"
 | **Phases** | 5 (0-4) |
 | **Flows** | 5 (OnboardingFlow, VPCDiscoveryFlow, DesirabilityFlow, FeasibilityFlow, ViabilityFlow) |
 | **Crews** | 14 |
-| **Agents** | 44 |
+| **Agents** | 45 |
 | **HITL Checkpoints** | 10 |
 
-### AMP Deployment (Platform Workaround)
+### Target Deployment: Modal Serverless (Proposed)
+| Component | Description |
+|-----------|-------------|
+| **Interaction Layer** | Netlify Edge Functions |
+| **Orchestration Layer** | Supabase (PostgreSQL + Realtime) |
+| **Compute Layer** | Modal (ephemeral Python, pay-per-second) |
+
+See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
+
+### AMP Deployment (DEPRECATED)
 | Metric | Count |
 |--------|-------|
 | **Crews** | 3 (Intake, Validation, Decision) |
 | **Agents** | 19 |
 | **HITL Checkpoints** | 7 |
 
+> **DEPRECATED**: Being replaced by Modal serverless. See [ADR-001](../adr/001-flow-to-crew-migration.md) (superseded) and [ADR-002](../adr/002-modal-serverless-migration.md).
+
 **Pattern Hierarchy**: `PHASE → FLOW → CREW → AGENT → TASK`
 **Critical Rule**: A crew must have 2+ agents (per CrewAI docs)
 
 ---
 
-## Architecture Migration Notice (2025-12-05)
+## Architecture Migration Notice
 
-**MAJOR CHANGE**: The canonical Flow-based architecture is deployed as a 3-Crew workaround on AMP.
+### Current Migration: AMP → Modal (2026-01-08)
 
-- **ADR**: See `docs/adr/001-flow-to-crew-migration.md`
-- **Reason**: AMP platform has issues with `type = "flow"` projects
+**MAJOR CHANGE**: Migrating from CrewAI AMP to Modal serverless.
+
+- **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) (current)
+- **Reason**: AMP platform exhibited reliability issues with both `type = "flow"` and `type = "crew"`
+- **Target**: Modal serverless with Netlify + Supabase
+- **Benefits**: $0 idle costs, platform-agnostic, single repo
+
+### Previous Migration: Flow → 3-Crew (2025-12-05) - SUPERSEDED
+
+- **ADR**: See [ADR-001](../adr/001-flow-to-crew-migration.md) (superseded by ADR-002)
 - **Old code**: Archived to `archive/flow-architecture/`
-- **Canonical spec**: `docs/master-architecture/` (5 Flows, 14 Crews, 44 Agents)
+- **3-Crew code**: Being archived to `archive/amp-deployment/`
 
-The phases below reflect the canonical architecture with AMP deployment notes.
+The phases below reflect the canonical architecture (5 Flows, 14 Crews, 45 Agents).
 
 ---
 
@@ -409,25 +430,38 @@ Phase 3 is **complete** when all of the following are true:
 
 ---
 
-## Transition Plan
+## Transition Plan: Modal Serverless Migration
 
-The 3-Crew AMP deployment (19 agents) is the current production system. The canonical 5-Flow/14-Crew/44-Agent architecture represents the target state when AMP supports `type = "flow"`.
+The 3-Crew AMP deployment is **DEPRECATED**. Migrating to Modal serverless architecture.
 
-**Current State (AMP Workaround)**:
+### Current State (AMP - DEPRECATED)
 - 3 Crews deployed: Intake (4 agents), Validation (12 agents), Decision (3 agents)
 - Crew chaining via `InvokeCrewAIAutomationTool`
-- 7 HITL checkpoints operational
+- 7 HITL checkpoints
+- **Issues**: Platform reliability problems, multi-repo complexity
 
-**Target State (Canonical)**:
-- 5 Flows with `@start`, `@listen`, `@router` orchestration
-- 14 Crews with 2+ agents each (per CrewAI docs)
-- 44 agents total across all phases
-- 10 HITL checkpoints
+### Target State (Modal Serverless)
+- Single modular monolith repo
+- 5 Flows implemented as Modal functions
+- 14 Crews with 45 agents total
+- 10 HITL checkpoints with checkpoint-and-resume pattern
+- Supabase for state persistence + Realtime for UI updates
 
-**Transition Criteria**:
-1. AMP platform supports `type = "flow"` projects
-2. Canonical architecture tested locally
-3. Product app integration verified
-4. Output quality matches or exceeds current system
+### Migration Tasks
+See [ADR-002](../adr/002-modal-serverless-migration.md) for detailed migration plan.
+
+| Phase | Task | Status |
+|-------|------|--------|
+| 1 | Infrastructure (Modal account, Supabase tables) | ⏳ Pending |
+| 2 | Code migration (modal_app/, crews/) | ⏳ Pending |
+| 3 | Testing (unit, integration, E2E) | ⏳ Pending |
+| 4 | Deployment & cutover | ⏳ Pending |
+
+### Transition Criteria
+1. Modal app deployed and accessible
+2. All 5 phases functional
+3. HITL checkpoint-and-resume working
+4. Product app integration verified
+5. E2E flow completion rate >95%
 
 **Reference**: See `docs/master-architecture/` for canonical architecture specifications.

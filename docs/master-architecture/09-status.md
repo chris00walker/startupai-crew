@@ -1,7 +1,7 @@
 ---
 purpose: Authoritative ecosystem status across all three services
 status: active
-last_reviewed: 2026-01-07
+last_reviewed: 2026-01-08
 vpd_compliance: true
 ---
 
@@ -17,11 +17,13 @@ This document provides an **authoritative, cross-repository view** of implementa
 
 | Service | Status | Completion | Primary Blocker |
 |---------|--------|------------|-----------------|
-| **AI Founders Core** (startupai-crew) | 3 Crews deployed to AMP | ~85% | E2E verification with live data |
+| **AI Founders Core** (startupai-crew) | Modal migration PROPOSED | ~60% | Migration to Modal serverless |
 | **Marketing Site** (startupai.site) | Production, static export | ~90% | Real-time data connection |
 | **Product App** (app.startupai.site) | Phase Alpha complete | ~85% | E2E flow verification |
 
-**Ecosystem State**: All services deployed and functional. Primary work remaining is **E2E integration verification** and **connecting mock data to real APIs**.
+> **Architecture Migration**: Migrating from CrewAI AMP to Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md).
+
+**Ecosystem State**: Architecture migration in progress. AMP deployment deprecated due to platform reliability issues. Modal serverless architecture provides platform-agnostic deployment with $0 idle costs.
 
 ---
 
@@ -76,22 +78,58 @@ StartupAI implements a 5-phase validation architecture based on Value Propositio
 | 4 | `SynthesisCrew` | C1-C3 | Evidence synthesis, decision |
 | 4 | `GovernanceCrew` | G1-G3 | Final validation, flywheel |
 
-### 3-Crew Deployment (AMP Platform)
+### Modal Serverless Deployment (Target)
 
-All three crews are **deployed and online** on CrewAI AMP:
+> **Status**: PROPOSED - See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
+
+**Three-Layer Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  INTERACTION LAYER (Netlify) - Edge Functions trigger Modal │
+└─────────────────────────────────┬───────────────────────────┘
+                                  │
+┌─────────────────────────────────┼───────────────────────────┐
+│  ORCHESTRATION LAYER (Supabase) - State + Realtime + RLS   │
+└─────────────────────────────────┬───────────────────────────┘
+                                  │
+┌─────────────────────────────────┼───────────────────────────┐
+│  COMPUTE LAYER (Modal) - Ephemeral Python, pay-per-second  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Migration Status:**
+
+| Task | Status | Notes |
+|------|--------|-------|
+| ADR written | ✅ Complete | [ADR-002](../adr/002-modal-serverless-migration.md) |
+| Modal account setup | ⏳ Pending | |
+| Supabase migrations | ⏳ Pending | validation_progress, hitl_requests tables |
+| modal_app/ scaffold | ⏳ Pending | |
+| Port 14 crews | ⏳ Pending | |
+| E2E testing | ⏳ Pending | |
+| Cutover | ⏳ Pending | |
+
+### 3-Crew Deployment (AMP Platform) - DEPRECATED
+
+> **Status**: DEPRECATED due to platform reliability issues. Being replaced by Modal serverless. See [ADR-001](../adr/001-flow-to-crew-migration.md) (superseded) and [ADR-002](../adr/002-modal-serverless-migration.md).
+
+Legacy deployment (reference only):
 
 | Crew | Repository | UUID | Status |
 |------|------------|------|--------|
-| **Crew 1: Intake** | `chris00walker/startupai-crew` | `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | ✅ Deployed |
-| **Crew 2: Validation** | `chris00walker/startupai-crew-validation` | `3135e285-c0e6-4451-b7b6-d4a061ac4437` | ✅ Deployed |
-| **Crew 3: Decision** | `chris00walker/startupai-crew-decision` | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | ✅ Deployed |
+| **Crew 1: Intake** | `chris00walker/startupai-crew` | `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | ⚠️ Deprecated |
+| **Crew 2: Validation** | `chris00walker/startupai-crew-validation` | `3135e285-c0e6-4451-b7b6-d4a061ac4437` | ⚠️ Deprecated |
+| **Crew 3: Decision** | `chris00walker/startupai-crew-decision` | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | ⚠️ Deprecated |
 
-> **Note**: The 3-Crew AMP deployment is a platform-constrained workaround. The canonical architecture uses 5 Flows orchestrating 14 Crews per CrewAI documentation. See [Architecture Migration History](#architecture-migration-history) for context.
+> **Note**: The 3-Crew AMP deployment was a platform-constrained workaround that exhibited reliability issues. See [Architecture Migration History](#architecture-migration-history) for context.
 
 ### Architecture Migration History
 
 | Date | Change | Reason |
 |------|--------|--------|
+| 2026-01-08 | **Modal serverless migration proposed** | AMP reliability issues, platform-agnostic deployment, $0 idle costs |
+| 2026-01-08 | ADR-002 written, ADR-001 superseded | Document Modal architecture decision |
 | 2026-01-07 | CrewAI pattern standardization across all docs | Align with CrewAI documentation: Phase → Flow → Crew → Agent |
 | 2026-01-07 | Fixed one-agent "crews" → consolidated into proper crews | CrewAI definition: crew = collaborative group (2+ agents) |
 | 2026-01-07 | Renamed "Flow 1-7" to proper Crew names in Phase 1 | Terminology correction: those were Crews, not Flows |
@@ -352,6 +390,12 @@ Marketing activity feed shows real activity
 
 | Date | Changes |
 |------|---------|
+| **2026-01-08** | Modal Serverless Migration |
+| | Proposed migration from CrewAI AMP to Modal serverless ([ADR-002](../adr/002-modal-serverless-migration.md)) |
+| | Marked 3-Crew AMP deployment as DEPRECATED |
+| | Added Modal Serverless Deployment section with migration status |
+| | Updated Architecture Migration History |
+| | ADR-001 superseded by ADR-002 |
 | **2026-01-07** | CrewAI Pattern Standardization |
 | | Added CrewAI Pattern Hierarchy section (Phase → Flow → Crew → Agent) |
 | | Updated counts: 5 Flows, 14 Crews, 45 Agents, 10 HITL |
@@ -389,6 +433,10 @@ Marketing activity feed shows real activity
 ### Reference
 - [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
 - [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
+
+### Architecture Decision Records
+- [ADR-001](../adr/001-flow-to-crew-migration.md) - Flow to 3-Crew Migration (Superseded)
+- [ADR-002](../adr/002-modal-serverless-migration.md) - Modal Serverless Migration (Current)
 
 ### Cross-Repo Status
 - `startupai.site/docs/work/cross-repo-blockers.md`

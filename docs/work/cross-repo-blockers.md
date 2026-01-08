@@ -1,23 +1,27 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2026-01-07"
-last_synced: "2026-01-07 - Full ecosystem status sync"
+last_reviewed: "2026-01-08"
+last_synced: "2026-01-08 - Modal serverless migration proposed"
 ---
 
 # Cross-Repository Blockers
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
 
-## Ecosystem Status (2026-01-07)
+> **Architecture Migration**: Migrating from CrewAI AMP (3 repos) to Modal serverless (single repo). See [ADR-002](../adr/002-modal-serverless-migration.md).
 
-**All services deployed and functional.** Primary work is E2E verification.
+## Ecosystem Status (2026-01-08)
 
-| Service | Status | Completion |
-|---------|--------|------------|
-| CrewAI Backend | ✅ 3 Crews deployed to AMP | ~85% |
-| Product App | ✅ Phase Alpha complete | ~85% |
-| Marketing Site | ✅ Production, static export | ~90% |
+**Architecture migration in progress.** AMP deployment deprecated; migrating to Modal.
+
+| Service | Status | Completion | Notes |
+|---------|--------|------------|-------|
+| CrewAI Backend | Modal migration PROPOSED | ~60% | See ADR-002 |
+| Product App | Phase Alpha complete | ~85% | Pending Modal integration |
+| Marketing Site | Production, static export | ~90% | No changes needed |
+
+**Key Change**: Returning to **single repository** (was 3 repos for AMP workaround).
 
 **Source of Truth**: `docs/master-architecture/09-status.md`
 
@@ -29,18 +33,26 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 
 | Blocker | Status | Description | Unblocks |
 |---------|--------|-------------|----------|
-| 3-Crew Architecture | ✅ DEPLOYED | 19 agents, 32 tasks, 7 HITL | Full pipeline operational |
-| Crew 1 Deployment | ✅ DEPLOYED | UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | Product can trigger validation |
-| Crews 2 & 3 Repos | ✅ DEPLOYED | Separate GitHub repos created | Full pipeline works |
-| Crew Chaining | ✅ CONFIGURED | `InvokeCrewAIAutomationTool` wired | End-to-end validation |
-| Crew 1 Best Practices | ✅ COMPLETE | 100% CrewAI alignment (2026-01-06) | Structured outputs |
+| Modal Deployment | ⏳ PENDING | Modal serverless migration | Product can trigger validation |
+| Modal API Endpoints | ⏳ PENDING | `/kickoff`, `/status`, `/hitl/approve` | Full pipeline operational |
+| Supabase Realtime | ⏳ PENDING | Progress updates via Realtime | Real-time UI updates |
 
-**All Product App blockers resolved.**
+**Current blockers**: Modal migration (ADR-002)
 
-**API Endpoints (LIVE):**
-- `POST /kickoff` - Crew 1 entry point (token: `db9f9f4c1a7a`)
-- `GET /status/{id}` - Standard AMP endpoint
-- HITL webhooks - 7 checkpoints across 3 crews
+**Target API Endpoints (Modal):**
+- `POST /kickoff` - Start validation (returns 202 Accepted)
+- `GET /status/{run_id}` - Check progress from Supabase
+- `POST /hitl/approve` - Resume after human approval
+
+### Legacy AMP Deployment (DEPRECATED)
+
+| Blocker | Status | Description |
+|---------|--------|-------------|
+| 3-Crew Architecture | ⚠️ DEPRECATED | Being replaced by Modal |
+| Crew 1-3 Deployments | ⚠️ DEPRECATED | UUIDs preserved for reference only |
+| Crew Chaining | ⚠️ DEPRECATED | Will be replaced by native Python calls |
+
+> See [ADR-002](../adr/002-modal-serverless-migration.md) for migration details.
 
 ### Marketing Site (`startupai.site`)
 
@@ -119,10 +131,12 @@ Marketing activity feed shows real activity
 
 ## Coordination Notes
 
-- **CrewAI backend is UNBLOCKED** - All 3 crews deployed to AMP
-- **Product App UNBLOCKED** - No remaining blockers from this repo
-- **Marketing site UNBLOCKED** - Activity Feed + Metrics APIs shipped
-- **Primary work**: E2E verification with live data
+- **CrewAI backend**: Modal migration in progress (ADR-002)
+- **Product App**: Waiting for Modal endpoints to integrate
+- **Marketing site**: UNBLOCKED - Activity Feed + Metrics APIs shipped
+- **Primary work**: Complete Modal migration, then E2E verification
+
+**Single Repo Benefit**: Modal migration returns us to single repository (`startupai-crew`). No more cross-repo coordination for Crews 2 & 3.
 
 ---
 
@@ -131,15 +145,20 @@ Marketing activity feed shows real activity
 - Product app blockers: `app.startupai.site/docs/work/cross-repo-blockers.md`
 - Marketing blockers: `startupai.site/docs/work/cross-repo-blockers.md`
 - Master architecture: `docs/master-architecture/09-status.md`
+- Architecture Decision Records: `docs/adr/`
 
 ---
 
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-08
 
-**Changes (2026-01-07 - Full Ecosystem Sync)**:
+**Changes (2026-01-08 - Modal Migration)**:
+- Added Modal serverless migration notice (ADR-002)
+- Updated Ecosystem Status to show migration in progress
+- Noted return to single repository (was 3 repos for AMP)
+- Updated Product App blockers for Modal endpoints
+- Marked legacy AMP deployment as DEPRECATED
+- Updated Coordination Notes
+
+**Previous (2026-01-07 - Full Ecosystem Sync)**:
 - Synced with `docs/master-architecture/09-status.md` cross-repo rewrite
 - Added Ecosystem Status table
-- Updated Marketing Site blockers: Activity Feed + Metrics APIs now SHIPPED
-- Added E2E Verification Checklist
-- Simplified structure to match other repo blocker files
-- Primary blocker is now E2E verification, not deployment

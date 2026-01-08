@@ -19,7 +19,8 @@ Each ADR follows this template:
 
 | ID | Title | Status | Date |
 |----|-------|--------|------|
-| [001](./001-flow-to-crew-migration.md) | Flow to 3-Crew Architecture Migration | Accepted | 2025-12-05 |
+| [001](./001-flow-to-crew-migration.md) | Flow to 3-Crew Architecture Migration | Superseded | 2025-12-05 |
+| [002](./002-modal-serverless-migration.md) | Modal Serverless Architecture Migration | Proposed | 2026-01-08 |
 
 ## Creating a New ADR
 

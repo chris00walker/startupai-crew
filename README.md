@@ -1,8 +1,10 @@
 # StartupAI Crew - AI Founders Engine
 
-**3-Crew/19-Agent validation engine powering the AI Founders team**
+**5-Flow/14-Crew/45-Agent validation engine powering the AI Founders team**
 
-This repository is the brain of the StartupAI ecosystem - a multi-crew orchestration system deployed on CrewAI AMP that delivers Fortune 500-quality strategic analysis through 6 AI Founders and 19 specialist agents.
+This repository is the brain of the StartupAI ecosystem - a validation pipeline that delivers Fortune 500-quality strategic analysis through 6 AI Founders and 45 specialist agents.
+
+> **Architecture Migration in Progress**: Migrating from CrewAI AMP to Modal serverless. See [ADR-002](docs/adr/002-modal-serverless-migration.md) for details.
 
 ---
 
@@ -19,25 +21,64 @@ This repository is the brain of the StartupAI ecosystem - a multi-crew orchestra
 | **Guardian** | CGO | Governance, accountability, oversight |
 | **Ledger** | CFO | Finance, viability, compliance |
 
-### 3 Crews / 19 Agents
+### Canonical Architecture (5 Flows / 14 Crews / 45 Agents)
 
-**Deployed on CrewAI AMP:**
-
-| Crew | Repository | Agents | Purpose |
-|------|------------|--------|---------|
-| **Crew 1: Intake** | `startupai-crew` (this repo) | 4 (S1, S2, S3, G1) | VPC Discovery, brief capture |
-| **Crew 2: Validation** | `startupai-crew-validation` | 12 (P1-P3, F1-F3, L1-L3, G1-G3) | D-F-V validation |
-| **Crew 3: Decision** | `startupai-crew-decision` | 3 (C1, C2, C3) | Final synthesis |
+| Phase | Flow | Crews | Agents |
+|-------|------|-------|--------|
+| **0** | OnboardingFlow | OnboardingCrew | 4 (O1, GV1, GV2, S1) |
+| **1** | VPCDiscoveryFlow | Discovery, CustomerProfile, ValueDesign, WTP, FitAssessment | 18 |
+| **2** | DesirabilityFlow | Build, Growth, Governance | 9 |
+| **3** | FeasibilityFlow | Build, Governance | 5 |
+| **4** | ViabilityFlow | Finance, Synthesis, Governance | 9 |
 
 ### Gated Validation (VPD Framework)
 
 ```
-Phase 0 (Onboarding) → Phase 1 (VPC Discovery) → [HITL] →
-Phase 2 (Desirability) → [HITL] → Phase 3 (Feasibility) → [HITL] →
+Phase 0 (Onboarding) → [HITL] →
+Phase 1 (VPC Discovery) → [HITL] →
+Phase 2 (Desirability) → [HITL] →
+Phase 3 (Feasibility) → [HITL] →
 Phase 4 (Viability) → [HITL] → Decision
 ```
 
-**Technology:** CrewAI Crews (`type="crew"`) with `InvokeCrewAIAutomationTool` for crew chaining.
+---
+
+## Deployment Architecture
+
+### Target: Modal Serverless (Proposed)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      INTERACTION LAYER (Netlify)                             │
+│  Edge Functions trigger Modal, return 202 Accepted immediately              │
+└─────────────────────────────────┬───────────────────────────────────────────┘
+                                  │
+┌─────────────────────────────────┼───────────────────────────────────────────┐
+│                    ORCHESTRATION LAYER (Supabase)                            │
+│  PostgreSQL (state) + Realtime (WebSocket UI updates) + RLS (multi-tenant)  │
+└─────────────────────────────────┬───────────────────────────────────────────┘
+                                  │
+┌─────────────────────────────────┼───────────────────────────────────────────┐
+│                       COMPUTE LAYER (Modal)                                  │
+│  Ephemeral Python containers • Pay-per-second • Long-running (hours OK)     │
+│  CrewAI executes here → writes progress to Supabase → container terminates  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Benefits:**
+- $0 idle costs (pay only when running)
+- $0 during HITL waiting (containers terminate, resume on approval)
+- Auto-scaling (0 → 1000+ concurrent validations)
+- Platform-agnostic (runs anywhere Python runs)
+
+### Legacy: CrewAI AMP (Deprecated)
+
+> **Status**: Being phased out due to platform reliability issues. See [ADR-001](docs/adr/001-flow-to-crew-migration.md) and [ADR-002](docs/adr/002-modal-serverless-migration.md).
+
+The 3-Crew AMP deployment is deprecated but remains deployed for reference:
+- Crew 1: `startupai-crew` (this repo)
+- Crew 2: `startupai-crew-validation`
+- Crew 3: `startupai-crew-decision`
 
 ---
 
@@ -45,9 +86,9 @@ Phase 4 (Viability) → [HITL] → Decision
 
 ```
 ┌─────────────────────┐
-│   AI Founders Core  │  ← THIS REPOSITORY (Crew 1)
+│   AI Founders Core  │  ← THIS REPOSITORY
 │   (startupai-crew)  │
-│   CrewAI AMP Engine │
+│   Modal Serverless  │
 └──────────┬──────────┘
            │
     ┌──────┼──────┐
@@ -55,6 +96,7 @@ Phase 4 (Viability) → [HITL] → Decision
     ▼      ▼      ▼
 Marketing  DB   Product
   Site          App
+(Netlify) (Supa) (Netlify)
 ```
 
 **Master Architecture:** See `docs/master-architecture/` for ecosystem source of truth.
@@ -77,39 +119,78 @@ uv sync
 ### 3. Configure Environment
 ```bash
 cp .env.example .env
-# Add OPENAI_API_KEY=sk-...
+# Add OPENAI_API_KEY, SUPABASE_URL, SUPABASE_KEY, etc.
 ```
 
-### 4. Authenticate with CrewAI
+### 4. Run Locally
 ```bash
-crewai login
-```
+# Test a crew directly
+uv run python -c "from src.crews.onboarding.crew import OnboardingCrew; print(OnboardingCrew())"
 
-### 5. Run Locally
-```bash
-crewai run
+# Or use Modal local development (after Modal setup)
+modal serve src/modal_app/app.py
 ```
 
 ---
 
-## Deployment
+## Repository Structure
 
-### Crew 1 (This Repo)
-- **UUID:** `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
-- **URL:** `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
-- **Dashboard:** https://app.crewai.com/deployments
+```
+startupai-crew/
+├── src/
+│   ├── modal_app/                # NEW: Modal serverless deployment
+│   │   ├── app.py                # Web endpoints + orchestrator
+│   │   ├── phases/               # Phase-specific functions
+│   │   ├── state/                # Pydantic schemas + Supabase persistence
+│   │   └── utils/                # Auth, progress, HITL helpers
+│   │
+│   ├── crews/                    # 14 Crew definitions
+│   │   ├── phase0/               # OnboardingCrew
+│   │   ├── phase1/               # 5 crews (Discovery, CustomerProfile, etc.)
+│   │   ├── phase2/               # 3 crews (Build, Growth, Governance)
+│   │   ├── phase3/               # 2 crews (Build, Governance)
+│   │   └── phase4/               # 3 crews (Finance, Synthesis, Governance)
+│   │
+│   └── intake_crew/              # DEPRECATED: AMP Crew 1 (archived)
+│
+├── db/migrations/                # SQL migration files
+├── scripts/                      # Utility scripts
+├── tests/                        # Test suite
+├── docs/
+│   ├── master-architecture/      # ECOSYSTEM SOURCE OF TRUTH
+│   ├── adr/                      # Architecture Decision Records
+│   │   ├── 001-flow-to-crew-migration.md (Superseded)
+│   │   └── 002-modal-serverless-migration.md (Current)
+│   ├── deployment/               # Deployment guides
+│   └── work/                     # Work tracking
+├── archive/                      # Deprecated AMP code
+│   ├── amp-deployment/
+│   └── flow-architecture/
+├── CLAUDE.md                     # AI context
+├── pyproject.toml                # Dependencies
+└── modal.toml                    # Modal configuration
+```
 
-### Commands
+---
+
+## API Integration (Modal)
 
 ```bash
-# Deploy updates
-crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
+# Kickoff validation
+curl -X POST https://<your-modal-app>.modal.run/kickoff \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"project_id": "...", "entrepreneur_input": "Business idea..."}'
 
 # Check status
-crewai deploy status --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
+curl https://<your-modal-app>.modal.run/status/{run_id} \
+  -H "Authorization: Bearer <token>"
 
-# View logs
-crewai deploy logs --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
+# Approve HITL checkpoint
+curl -X POST https://<your-modal-app>.modal.run/hitl/approve \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"hitl_id": "...", "decision": "approved", "user_id": "..."}'
 ```
 
 ---
@@ -119,82 +200,32 @@ crewai deploy logs --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 ### Input
 ```json
 {
-  "entrepreneur_input": "Detailed description of startup idea, target customers, and business context"
+  "project_id": "uuid",
+  "entrepreneur_input": "Detailed description of startup idea..."
 }
 ```
 
 ### Output (VPD Framework Phases)
 
 **Phase 0 - Onboarding:**
-- Founder's Brief
+- Founder's Brief (hypothesis capture)
 
 **Phase 1 - VPC Discovery:**
 - Customer Profiles (Jobs/Pains/Gains)
-- Competitor Analysis
-- Value Proposition Canvas
-- Assumption Backlog
-- QA Report
+- Value Map (Products/Pain Relievers/Gain Creators)
+- Fit Score (≥70 to proceed)
 
-**Phase 2-4 - Validation:**
-- Test Artifacts & Evidence
-- D-F-V Scores
-- Pivot/Proceed Recommendation
+**Phase 2 - Desirability:**
+- Test Artifacts, Evidence
+- Desirability Signal (STRONG_COMMITMENT required)
 
----
+**Phase 3 - Feasibility:**
+- Technical Assessment
+- Feasibility Signal (GREEN required)
 
-## API Integration
-
-```bash
-# Get inputs schema
-curl https://startupai-...crewai.com/inputs \
-  -H "Authorization: Bearer <your-deployment-token>"
-
-# Kickoff workflow
-curl -X POST https://startupai-...crewai.com/kickoff \
-  -H "Authorization: Bearer <your-deployment-token>" \
-  -H "Content-Type: application/json" \
-  -d '{"entrepreneur_input": "Business idea..."}'
-
-# Check status
-curl https://startupai-...crewai.com/status/{kickoff_id} \
-  -H "Authorization: Bearer <your-deployment-token>"
-```
-
----
-
-## Repository Structure
-
-```
-startupai-crew/
-├── src/intake_crew/              # Crew 1: Intake (deployed to AMP)
-│   ├── __init__.py
-│   ├── crew.py                   # 4 agents: S1, S2, S3, G1
-│   ├── main.py                   # Entry point
-│   ├── schemas.py                # Pydantic output schemas
-│   ├── tools/                    # Agent tools
-│   │   ├── methodology_check.py
-│   │   └── web_search.py         # TavilySearchTool
-│   └── config/
-│       ├── agents.yaml           # Agent definitions
-│       └── tasks.yaml            # Task definitions
-├── db/migrations/                # SQL migration files
-├── scripts/                      # Utility scripts
-├── tests/                        # Test suite
-├── docs/
-│   ├── master-architecture/      # ECOSYSTEM SOURCE OF TRUTH
-│   │   ├── 00-introduction.md    # Quick start
-│   │   ├── 01-ecosystem.md       # Three-service overview
-│   │   ├── 02-organization.md    # 6 founders, 19 agents
-│   │   ├── 03-methodology.md     # VPD framework
-│   │   ├── 04-08-phase-*.md      # Phase specifications
-│   │   ├── 09-status.md          # Current status
-│   │   └── reference/            # API contracts, workflows
-│   ├── deployment/               # Deployment guides
-│   ├── testing/                  # Testing documentation
-│   └── work/                     # Work tracking
-├── CLAUDE.md                     # AI context
-└── pyproject.toml                # Dependencies (type = "crew")
-```
+**Phase 4 - Viability:**
+- Unit Economics
+- Final Recommendation (VALIDATED/PIVOT/KILL)
 
 ---
 
@@ -202,13 +233,11 @@ startupai-crew/
 
 - **Marketing Site:** [startupai.site](https://github.com/chris00walker/startupai.site) - Lead capture & transparency
 - **Product App:** [app.startupai.site](https://github.com/chris00walker/app.startupai.site) - Delivery portal
-- **Crew 2:** [startupai-crew-validation](https://github.com/chris00walker/startupai-crew-validation) - Validation crews
-- **Crew 3:** [startupai-crew-decision](https://github.com/chris00walker/startupai-crew-decision) - Decision crew
 
 **Development Ports (Canonical):**
 - **Marketing Site** (`startupai.site`): `localhost:3000`
 - **Product App** (`app.startupai.site`): `localhost:3001`
-- **This repo (CrewAI Backend)**: Deployed on CrewAI AMP (no local port needed)
+- **This repo (Modal local)**: `localhost:8000` (via `modal serve`)
 
 ---
 
@@ -216,45 +245,32 @@ startupai-crew/
 
 - **Docs Index:** `docs/README.md`
 - **Master Architecture:** `docs/master-architecture/`
+- **ADRs:** `docs/adr/` (Architecture Decision Records)
 - **Current Status:** `docs/master-architecture/09-status.md`
+- **Modal Docs:** https://modal.com/docs/guide
 - **CrewAI Docs:** https://docs.crewai.com
-
----
-
-## Troubleshooting
-
-### "Authentication failed"
-```bash
-crewai login
-```
-
-### "No OPENAI_API_KEY"
-- Local: Check `.env` file
-- Deployed: Set in CrewAI dashboard → Environment Variables
-
-### "Crew not found"
-```bash
-crewai deploy list
-```
 
 ---
 
 ## Current Status
 
-> **3-Crew Architecture DEPLOYED to AMP.** All 19 agents, 32 tasks, and 7 HITL checkpoints operational. See [09-status.md](docs/master-architecture/09-status.md) for detailed status.
+> **Modal Migration PROPOSED.** See [ADR-002](docs/adr/002-modal-serverless-migration.md) for full architecture and migration plan.
 
-**What Works:**
-- 3-Crew architecture deployed to AMP (Crew 1, 2, 3)
-- Crew chaining with `InvokeCrewAIAutomationTool`
-- 7 HITL checkpoints across all crews
-- Webhook persistence to Supabase
-- Pydantic structured outputs (100% CrewAI best practices alignment)
+**Canonical Architecture:**
+- 5 Phases, 5 Flows, 14 Crews, 45 Agents, 10 HITL checkpoints
 
-**Primary Blocker:**
-- E2E verification with live data
+**Migration Status:**
+- [ ] Infrastructure setup (Modal account, Supabase tables)
+- [ ] Code migration (modal_app/, crews/)
+- [ ] Testing (unit, integration, E2E)
+- [ ] Deployment & cutover
+
+**What's Changing:**
+- FROM: 3-Crew AMP deployment (3 repos, InvokeCrewAIAutomationTool chaining)
+- TO: Modal serverless (1 repo, native Python orchestration)
 
 ---
 
-**Status:** 3-Crew architecture DEPLOYED (~85% overall)
-**Last Updated:** 2026-01-07
+**Status:** Modal Migration PROPOSED
+**Last Updated:** 2026-01-08
 **License:** Proprietary - StartupAI Platform

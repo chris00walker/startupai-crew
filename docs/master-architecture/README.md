@@ -2,6 +2,8 @@
 
 This directory contains the **ecosystem source of truth** for StartupAI's multi-phase crew architecture.
 
+> **Architecture Migration**: Migrating from CrewAI AMP to Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md) and [09-status.md](./09-status.md) for current status.
+
 > **VPD Framework**: StartupAI implements the Value Proposition Design (VPD) framework by Osterwalder/Pigneur. The phase specifications provide authoritative VPD implementation patterns.
 
 ---
@@ -46,7 +48,7 @@ Start here and progress through the numbered documents:
 │  PHASE 1: VPC DISCOVERY                                                     │
 │  ──────────────────────                                                     │
 │  • Input: Founder's Brief                                                   │
-│  • Agents: E1, D1-D4, J1-J2, P1-P2, G1-G2, V1-V3, W1-W2, F1-F2 (18 agents)│
+│  • Agents: E1, D1-D4, J1-J2, PAIN_*, GAIN_*, V1-V3, W1-W2, FIT_* (18 agents)│
 │  • Output: Validated VPC (fit ≥ 70)                                        │
 │  • HITL: approve_experiment_plan, approve_pricing_test, approve_vpc_compl  │
 │  • Purpose: Discover customer reality, design value                         │
@@ -107,12 +109,19 @@ Detailed specifications extracted for standalone reference:
 | Document | Purpose |
 |----------|---------|
 | [reference/flywheel-learning.md](./reference/flywheel-learning.md) | **Competitive moat** - shared anonymized learning system |
-| [reference/amp-configuration.md](./reference/amp-configuration.md) | CrewAI AMP platform config and capabilities |
 | [reference/api-contracts.md](./reference/api-contracts.md) | All API endpoints, webhooks, payloads |
 | [reference/approval-workflows.md](./reference/approval-workflows.md) | Human-in-the-loop patterns |
 | [reference/marketing-integration.md](./reference/marketing-integration.md) | Marketing site AI chat and live data |
 | [reference/product-artifacts.md](./reference/product-artifacts.md) | Smart canvas architecture |
 | [reference/database-schemas.md](./reference/database-schemas.md) | SQL schema definitions |
+| [reference/amp-configuration.md](./reference/amp-configuration.md) | ~~CrewAI AMP config~~ (DEPRECATED - see ADR-002) |
+
+### Architecture Decision Records
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| [ADR-001](../adr/001-flow-to-crew-migration.md) | Flow to 3-Crew Migration | Superseded |
+| [ADR-002](../adr/002-modal-serverless-migration.md) | Modal Serverless Migration | **Current** |
 
 ---
 
@@ -133,7 +142,8 @@ Detailed specifications extracted for standalone reference:
 - **VPD Methodology**: [03-methodology.md](./03-methodology.md) (Test Cards, Learning Cards, SAY vs DO)
 - **Innovation Physics**: [concepts/innovation-physics.md](../concepts/innovation-physics.md) (non-linear routing)
 - **Flywheel Learning**: [reference/flywheel-learning.md](./reference/flywheel-learning.md) (competitive moat)
-- **AMP Platform**: [reference/amp-configuration.md](./reference/amp-configuration.md)
+- **Modal Deployment**: [ADR-002](../adr/002-modal-serverless-migration.md) (current target)
+- **AMP Platform**: [reference/amp-configuration.md](./reference/amp-configuration.md) (DEPRECATED)
 - **API Integration**: [reference/api-contracts.md](./reference/api-contracts.md)
 - **HITL Approvals**: [reference/approval-workflows.md](./reference/approval-workflows.md)
 - **Current Status**: [09-status.md](./09-status.md)
@@ -184,10 +194,11 @@ These repositories consume this architecture:
 
 ---
 
-**Last Updated**: 2026-01-06
+**Last Updated**: 2026-01-08
 
 **Latest Changes**:
-- Restructured to separate phase documents (04-08)
-- Created 03-methodology.md as reusable VPD framework reference
-- Archived monolithic specs to archive/
-- Renamed status document to 09-status.md
+- Modal serverless migration proposed (ADR-002)
+- CrewAI AMP deployment deprecated
+- Added Architecture Decision Records section
+- Fixed Phase 1 agent IDs (PAIN_*, GAIN_*, FIT_*)
+- Previous: Restructured to separate phase documents (04-08)

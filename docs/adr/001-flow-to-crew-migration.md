@@ -1,6 +1,6 @@
 # ADR-001: Migration from Flow Architecture to 3-Crew Architecture
 
-**Status**: Accepted (Audited 2026-01-06)
+**Status**: Superseded by [ADR-002](./002-modal-serverless-migration.md)
 **Date**: 2025-12-05
 **Decision Makers**: Chris Walker, Claude AI Assistant
 **Context**: CrewAI AMP deployment compatibility
@@ -203,3 +203,4 @@ However, the ADR's **core technical claims** about AMP behavior (`source: memory
 |------|--------|
 | 2025-12-05 | Initial decision and implementation |
 | 2026-01-06 | Audited against CrewAI documentation; added verification notes |
+| 2026-01-08 | Superseded by [ADR-002](./002-modal-serverless-migration.md) - Modal serverless architecture |
