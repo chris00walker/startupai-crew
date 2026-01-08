@@ -1,7 +1,7 @@
 ---
 purpose: Database schema definitions for all services
 status: mostly-implemented
-last_reviewed: 2026-01-05
+last_reviewed: 2026-01-08
 vpd_compliance: true
 ---
 
@@ -9,9 +9,15 @@ vpd_compliance: true
 
 This document consolidates all SQL schema definitions used across the StartupAI ecosystem.
 
-> **VPD Framework**: This schema implements Value Proposition Design data structures. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 specification.
+> **VPD Framework**: This schema implements Value Proposition Design data structures. See phase documents for specifications:
+> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 Founder's Brief schema
+> - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 VPC tables
+> - [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 experiment tracking
+> - [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 feasibility data
+> - [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 viability metrics
+>
+> **Modal Migration**: See [ADR-002](../../adr/002-modal-serverless-migration.md) for Modal-specific tables.
 > **Implementation Status**: Many tables are now deployed. See status indicators below.
-> **Authoritative Spec**: `../03-validation-spec.md` contains the Phase 2+ state architecture.
 
 ## Approval System Tables
 
@@ -69,6 +75,135 @@ CREATE TABLE approval_preferences (
   UNIQUE(user_id, project_id, approval_type)
 );
 ```
+
+---
+
+## Modal Serverless Tables
+
+> **Status**: ⏳ Planned (see [ADR-002](../../adr/002-modal-serverless-migration.md))
+>
+> These tables support the Modal serverless architecture, replacing the deprecated AMP `crew_execution_state` table.
+
+### Validation Runs
+
+Tracks the state of each validation run for checkpoint/resume pattern.
+
+```sql
+-- Validation run state persistence
+CREATE TABLE validation_runs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID REFERENCES projects(id),
+    status TEXT DEFAULT 'pending',  -- pending|running|paused|completed|failed
+    current_phase INTEGER DEFAULT 0,
+    phase_state JSONB DEFAULT '{}',  -- Serialized Pydantic state
+    hitl_state TEXT,  -- NULL or checkpoint name when paused
+    started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for active run queries
+CREATE INDEX idx_validation_runs_project ON validation_runs(project_id);
+CREATE INDEX idx_validation_runs_status ON validation_runs(status) WHERE status IN ('running', 'paused');
+```
+
+### Validation Progress
+
+Append-only progress log enabling Supabase Realtime updates to UI.
+
+```sql
+-- Progress log (append-only, enables Realtime)
+CREATE TABLE validation_progress (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    run_id UUID REFERENCES validation_runs(id),
+    phase INTEGER,
+    crew TEXT,
+    task TEXT,
+    status TEXT,  -- started|completed|failed
+    progress_pct INTEGER,
+    output JSONB,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Index for progress queries
+CREATE INDEX idx_validation_progress_run ON validation_progress(run_id);
+CREATE INDEX idx_validation_progress_created ON validation_progress(run_id, created_at DESC);
+
+-- Enable Realtime for instant UI updates
+ALTER PUBLICATION supabase_realtime ADD TABLE validation_progress;
+```
+
+### HITL Requests
+
+Stores HITL checkpoint state for the checkpoint-and-resume pattern.
+
+```sql
+-- HITL checkpoints for container resume
+CREATE TABLE hitl_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    run_id UUID REFERENCES validation_runs(id),
+    checkpoint_name TEXT NOT NULL,  -- e.g., 'approve_founders_brief'
+    phase INTEGER NOT NULL,
+    context JSONB NOT NULL,  -- Full context for approval decision
+    status TEXT DEFAULT 'pending',  -- pending|approved|rejected|expired
+    decision_by UUID REFERENCES auth.users(id),
+    decision_feedback TEXT,
+    expires_at TIMESTAMPTZ DEFAULT NOW() + INTERVAL '7 days',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    resolved_at TIMESTAMPTZ
+);
+
+-- Index for pending HITL queries
+CREATE INDEX idx_hitl_requests_run ON hitl_requests(run_id);
+CREATE INDEX idx_hitl_requests_status ON hitl_requests(status) WHERE status = 'pending';
+CREATE INDEX idx_hitl_requests_checkpoint ON hitl_requests(checkpoint_name, status);
+
+-- Enable Realtime for approval notifications
+ALTER PUBLICATION supabase_realtime ADD TABLE hitl_requests;
+```
+
+### Usage Pattern (Modal)
+
+```python
+from supabase import create_client
+
+supabase = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_KEY"])
+
+# Start validation run
+run = supabase.table('validation_runs').insert({
+    'project_id': project_id,
+    'status': 'running',
+    'current_phase': 0
+}).execute()
+run_id = run.data[0]['id']
+
+# Log progress (triggers Realtime to UI)
+supabase.table('validation_progress').insert({
+    'run_id': run_id,
+    'phase': 0,
+    'crew': 'OnboardingCrew',
+    'task': 'founder_interview',
+    'status': 'started',
+    'progress_pct': 0
+}).execute()
+
+# Checkpoint for HITL (container will terminate after this)
+supabase.table('hitl_requests').insert({
+    'run_id': run_id,
+    'checkpoint_name': 'approve_founders_brief',
+    'phase': 0,
+    'context': {'brief': founders_brief.dict()}
+}).execute()
+
+supabase.table('validation_runs').update({
+    'status': 'paused',
+    'hitl_state': 'approve_founders_brief'
+}).eq('id', run_id).execute()
+# Container terminates here - $0 cost while waiting for human
+```
+
+---
 
 ## Phase 0: Founder's Brief Tables
 
@@ -530,7 +665,9 @@ CREATE TABLE flow_executions (
 
 ### Crew Execution State
 
-**Status**: ⏳ Planned
+> **⚠️ DEPRECATED**: This table was designed for the AMP 3-crew workaround architecture. Use `validation_runs`, `validation_progress`, and `hitl_requests` tables instead. See [Modal Serverless Tables](#modal-serverless-tables) above and [ADR-002](../../adr/002-modal-serverless-migration.md).
+
+**Status**: ⏳ Planned (DEPRECATED - do not implement)
 
 Stores state that persists across crew handoffs in the 3-crew architecture. Enables state recovery and crew chaining.
 
@@ -862,17 +999,30 @@ CREATE INDEX idx_hypotheses_status ON hypotheses(status);
 
 ## Related Documents
 
-- [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) - Phase 0-1 VPD specification
-- [approval-workflows.md](./approval-workflows.md) - How approvals work
-- [product-artifacts.md](./product-artifacts.md) - Canvas architecture
-- [api-contracts.md](./api-contracts.md) - API specifications
-- [../03-validation-spec.md](../03-validation-spec.md) - Phase 2+ technical blueprint
+- [ADR-002: Modal Serverless Migration](../../adr/002-modal-serverless-migration.md) - Modal architecture and table specifications
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 specification
+- [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 VPC specification
+- [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 specification
+- [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 specification
+- [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 specification
+- [approval-workflows.md](./approval-workflows.md) - HITL approval patterns
+- [api-contracts.md](./api-contracts.md) - API specifications including Modal endpoints
+- [modal-configuration.md](./modal-configuration.md) - Modal platform configuration
 
 ---
-**Last Updated**: 2026-01-06
+**Last Updated**: 2026-01-08
 
-**Latest Changes (2026-01-06 - EVOLUTION-PLAN alignment)**:
-- Added `crew_execution_state` table for cross-crew state persistence
+**Latest Changes (2026-01-08 - Modal migration alignment)**:
+- Fixed cross-references to point to phase documents (04-08) instead of archived specs
+- Added Modal Serverless Tables section with 3 tables:
+  - `validation_runs` - Run state persistence
+  - `validation_progress` - Realtime progress log
+  - `hitl_requests` - HITL checkpoint/resume
+- Marked `crew_execution_state` table as DEPRECATED (AMP workaround)
+- Updated Related Documents section with links to ADR-002 and phase docs
+
+**Previous Changes (2026-01-06 - EVOLUTION-PLAN alignment)**:
+- Added `crew_execution_state` table for cross-crew state persistence (now DEPRECATED)
 - Includes JSONB columns for crew handoff payloads (intake_output, validation_output)
 - Tracks HITL pending approvals for /resume endpoint
 - Added usage pattern example for Supabase client

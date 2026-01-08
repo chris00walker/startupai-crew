@@ -1,14 +1,19 @@
 ---
 purpose: "Technical specification for the shared, anonymized learning system"
 status: "foundation-complete"
-last_reviewed: "2026-01-05"
+last_reviewed: "2026-01-08"
 priority: "critical - competitive moat"
 vpd_compliance: true
 ---
 
 # Flywheel Learning System Architecture
 
-> **VPD Framework**: The Flywheel System captures patterns from Value Proposition Design implementations. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 VPD patterns.
+> **VPD Framework**: The Flywheel System captures patterns from Value Proposition Design implementations. See phase documents for VPD patterns:
+> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Founder's Brief patterns
+> - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - VPC discovery patterns (Jobs, Pains, Gains)
+> - [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Desirability validation patterns
+> - [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Feasibility validation patterns
+> - [08-phase-4-viability.md](../08-phase-4-viability.md) - Viability and decision patterns
 
 ## Executive Summary
 
@@ -952,9 +957,14 @@ OPENAI_API_KEY=sk-...  # For embeddings
 
 ## References
 
-- [03-validation-spec.md](../03-validation-spec.md) - Main validation flow
 - [02-organization.md](../02-organization.md) - 6 Founders organization
-- [database-schemas.md](./database-schemas.md) - Existing Supabase schemas
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 specification
+- [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 VPC patterns
+- [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 patterns
+- [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 patterns
+- [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 patterns
+- [database-schemas.md](./database-schemas.md) - Supabase schemas including learnings tables
+- [ADR-002](../../adr/002-modal-serverless-migration.md) - Modal serverless migration
 - CrewAI Memory documentation
 - pgvector documentation
 
@@ -967,9 +977,10 @@ OPENAI_API_KEY=sk-...  # For embeddings
 | 2025-11-21 | Initial specification created | Claude + Chris |
 | 2025-11-26 | Updated implementation status - Phase 1 Foundation complete | Claude + Chris |
 | 2026-01-05 | Added VPD Framework Learning Patterns (Customer Profile, Value Map, Experiments, Cross-Canvas) | Claude + Chris |
+| 2026-01-08 | Fixed cross-references to point to phase documents (04-08) instead of archived specs | Claude + Chris |
 
 ---
 
 **This is StartupAI's competitive moat. Every validation makes all 6 Founders smarter.**
 
-> **Authoritative Spec**: See `../05-phase-0-1-specification.md` for Phase 0-1 VPD implementation and `../03-validation-spec.md` for Phase 2+ technical details.
+> **Authoritative Specs**: See phase documents (04-08) for VPD implementation details.

@@ -1,7 +1,7 @@
 ---
 purpose: Agent-to-tool assignments across all phases
 status: active
-last_reviewed: 2026-01-06
+last_reviewed: 2026-01-08
 vpd_compliance: true
 ---
 
@@ -10,6 +10,13 @@ vpd_compliance: true
 This document defines which tools are assigned to which agents across all phases of the StartupAI validation engine.
 
 > **Source of Truth**: This is the authoritative reference for tool assignments. Crew configurations (`agents.yaml`) should match these specifications.
+>
+> **Phase Documents**: See phase specifications for agent details:
+> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 agents (O1, GV1, GV2, S1)
+> - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 agents (18 agents)
+> - [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 agents
+> - [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 agents
+> - [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 agents
 
 ---
 
@@ -279,16 +286,25 @@ def customer_research_agent(self) -> Agent:
 
 ## Related Documents
 
-- [02-organization.md](../02-organization.md) - Agent definitions
-- [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) - Phase 0-1 agent specs
-- [03-validation-spec.md](../03-validation-spec.md) - Phase 2+ crew specs
+- [02-organization.md](../02-organization.md) - Agent definitions and 6 Founders
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 agent specs
+- [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 agent specs
+- [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 agent specs
+- [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 agent specs
+- [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 agent specs
 - [api-contracts.md](./api-contracts.md) - API specifications
+- [ADR-002](../../adr/002-modal-serverless-migration.md) - Modal serverless migration
 
 ---
 
-**Last Updated**: 2026-01-06
+**Last Updated**: 2026-01-08
 
-**Latest Changes**:
+**Latest Changes (2026-01-08 - Modal migration alignment)**:
+- Fixed cross-references to point to phase documents (04-08) instead of archived specs
+- Updated last_reviewed date in frontmatter
+- Updated Related Documents section
+
+**Previous Changes (2026-01-06)**:
 - Created comprehensive tool-to-agent mapping
 - Documented all archived tools with target assignments
 - Added Phase 0-1 tool specifications from VPD spec

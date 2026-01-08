@@ -1,7 +1,7 @@
 ---
 purpose: Three-service ecosystem architecture overview
 status: active
-last_reviewed: 2026-01-07
+last_reviewed: 2026-01-08
 vpd_compliance: true
 ---
 
@@ -9,31 +9,60 @@ vpd_compliance: true
 
 ## Overview
 
-StartupAI is a three-service ecosystem that delivers **Value Proposition Design (VPD)** validation through AI Founders. The CrewAI engine serves as the decision-making brain, with two web interfaces providing customer access and result delivery.
+StartupAI is a **three-layer ecosystem** that delivers **Value Proposition Design (VPD)** validation through AI Founders. The architecture separates concerns across Interaction (Netlify), Orchestration (Supabase), and Compute (Modal) layers.
 
 > **VPD Framework**: This ecosystem implements the Strategyzer methodology. See [03-methodology.md](./03-methodology.md) for framework details.
+>
+> **Modal Migration**: Per [ADR-002](../adr/002-modal-serverless-migration.md), the compute layer is migrating from CrewAI AMP to Modal serverless.
 
 ```
-                    ┌─────────────────────┐
-                    │   AI Founders Core  │
-                    │   (startupai-crew)  │
-                    │  CrewAI AMP Platform│
-                    └──────────┬──────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              │                │                │
-              ▼                │                ▼
-┌─────────────────────┐        │    ┌─────────────────────┐
-│   startupai.site    │        │    │ app.startupai.site  │
-│  Marketing & Trust  │        │    │ Product & Delivery  │
-│    (Netlify)        │        │    │    (Netlify)        │
-└─────────────────────┘        │    └─────────────────────┘
-                               │
-                               ▼
-                    ┌─────────────────────┐
-                    │      Supabase       │
-                    │   Shared Database   │
-                    └─────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       THREE-LAYER ARCHITECTURE                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   INTERACTION LAYER (Netlify)                                               │
+│   ───────────────────────────                                               │
+│   ┌─────────────────────┐         ┌─────────────────────┐                   │
+│   │   startupai.site    │         │ app.startupai.site  │                   │
+│   │  Marketing & Trust  │         │ Product & Delivery  │                   │
+│   │  - Lead capture     │         │  - Onboarding UI    │                   │
+│   │  - AI team display  │         │  - HITL approvals   │                   │
+│   └─────────────────────┘         │  - Results display  │                   │
+│                                   └──────────┬──────────┘                   │
+│                                              │                              │
+├──────────────────────────────────────────────┼──────────────────────────────┤
+│                                              │                              │
+│   ORCHESTRATION LAYER (Supabase)             │                              │
+│   ───────────────────────────────            │                              │
+│   ┌──────────────────────────────────────────┼───────────────────┐          │
+│   │                         PostgreSQL       │                   │          │
+│   │  - validation_runs (state persistence)   │                   │          │
+│   │  - validation_progress (Realtime → UI) ◄─┘                   │          │
+│   │  - hitl_requests (checkpoint/resume)                         │          │
+│   │  - founders_briefs, vpc_*, experiments                       │          │
+│   │                                                              │          │
+│   │  Realtime Engine: WebSocket push to Product App              │          │
+│   └───────────────────────────────┬──────────────────────────────┘          │
+│                                   │                                         │
+├───────────────────────────────────┼─────────────────────────────────────────┤
+│                                   │                                         │
+│   COMPUTE LAYER (Modal)           │                                         │
+│   ─────────────────────           │                                         │
+│   ┌───────────────────────────────┼─────────────────────────────┐           │
+│   │                               ▼                             │           │
+│   │   AI Founders Core (startupai-crew)                         │           │
+│   │   - Ephemeral Python containers (pay-per-second)            │           │
+│   │   - 5 Flows, 14 Crews, 45 Agents, 10 HITL                   │           │
+│   │   - Writes progress directly to Supabase                    │           │
+│   │   - $0 during HITL waits (checkpoint-and-resume)            │           │
+│   │                                                             │           │
+│   │   Endpoints:                                                │           │
+│   │   - POST /kickoff → Start validation                        │           │
+│   │   - GET /status/{run_id} → Check progress                   │           │
+│   │   - POST /hitl/approve → Resume after human approval        │           │
+│   └─────────────────────────────────────────────────────────────┘           │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Service Definitions
@@ -41,10 +70,11 @@ StartupAI is a three-service ecosystem that delivers **Value Proposition Design 
 ### AI Founders Core (`startupai-crew`)
 **The Brain** - Pure automation delivering strategic business analysis
 
-- **Technology**: CrewAI, Python, deployed on CrewAI AMP
+- **Technology**: CrewAI, Python, deployed on **Modal serverless**
 - **Input**: Entrepreneur business context (text)
 - **Output**: 6-part strategic analysis (Value Proposition Canvas, Validation Roadmap, etc.)
-- **Communication**: REST API (kickoff, status, results)
+- **Communication**: REST API via Modal web endpoints (kickoff, status, hitl/approve)
+- **State**: Persisted to Supabase, enabling checkpoint-and-resume for HITL
 
 ### Marketing Interface (`startupai.site`)
 **The Transparency Layer** - Public-facing lead capture and AI team visibility
@@ -64,15 +94,15 @@ StartupAI is a three-service ecosystem that delivers **Value Proposition Design 
 
 ## Phase-to-Service Mapping
 
-Each validation phase involves specific services:
+Each validation phase involves specific services across the three layers:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         VALIDATION FLOW                                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│   PRODUCT APP              CREWAI AMP                  SUPABASE             │
-│   ───────────              ──────────                  ────────             │
+│   PRODUCT APP              MODAL (Compute)             SUPABASE             │
+│   ───────────              ───────────────             ────────             │
 │                                                                              │
 │   ┌─────────────┐                                                           │
 │   │ Onboarding  │ ──────► Phase 0: Founder's Brief                          │
@@ -119,22 +149,26 @@ Each validation phase involves specific services:
 
 ## Communication Patterns
 
-### Synchronous (Request/Response)
+### Synchronous (Request/Response via Modal)
 ```
-Product App ──POST /kickoff──► CrewAI AMP
-Product App ──GET /status────► CrewAI AMP
-```
-
-### Asynchronous (Webhooks)
-```
-CrewAI AMP ──POST /webhook──► Product App (HITL triggers, results)
+Product App ──POST /kickoff──────► Modal (returns 202 Accepted)
+Product App ──GET /status/{run_id}► Modal (reads from Supabase)
+Product App ──POST /hitl/approve──► Modal (resumes checkpoint)
 ```
 
-### Shared State
+### Real-time (Supabase Realtime)
 ```
-Product App ──────► Supabase ◄────── CrewAI AMP
-                   (projects, briefs, results)
+Modal ──INSERT validation_progress──► Supabase ──WebSocket──► Product App UI
+Modal ──INSERT hitl_requests────────► Supabase ──WebSocket──► Product App UI
 ```
+
+### Shared State (Supabase PostgreSQL)
+```
+Product App ◄──────► Supabase ◄────── Modal
+                    (validation_runs, progress, HITL state, results)
+```
+
+**Key Pattern**: Modal writes progress directly to Supabase, enabling real-time UI updates via Supabase Realtime. No webhook from compute layer to Product App.
 
 ---
 
@@ -144,10 +178,11 @@ For detailed API specifications, see **[reference/api-contracts.md](./reference/
 
 | Integration | Endpoint Pattern | Purpose |
 |-------------|------------------|---------|
-| **Kickoff** | `POST /kickoff` | Start validation workflow |
-| **Status** | `GET /status/{id}` | Poll for completion |
-| **Resume** | `POST /resume` | Continue after HITL approval |
-| **Webhook** | `POST /api/crewai/webhook` | Async notifications to Product App |
+| **Kickoff** | `POST /kickoff` | Start validation (returns 202 + run_id) |
+| **Status** | `GET /status/{run_id}` | Check progress (reads Supabase) |
+| **HITL Approve** | `POST /hitl/approve` | Resume after human approval |
+
+> **Note**: All endpoints served by Modal. No webhook callback pattern - Modal writes directly to Supabase, Product App subscribes via Realtime.
 
 ---
 
@@ -156,16 +191,22 @@ For detailed API specifications, see **[reference/api-contracts.md](./reference/
 For detailed patterns, see **[reference/approval-workflows.md](./reference/approval-workflows.md)**.
 
 ```
-CrewAI AMP                           Product App
-    │                                     │
-    │ Task pauses (human_input: true)     │
-    │ ──────── POST /webhook ───────────► │
-    │                                     │ User reviews in UI
-    │                                     │ User approves/rejects
-    │ ◄─────── POST /resume ───────────── │
-    │ Flow continues                      │
-    └─────────────────────────────────────┘
+Modal (Compute)                      Supabase                    Product App
+      │                                  │                           │
+      │ HITL checkpoint reached          │                           │
+      │ ────INSERT hitl_requests────────►│                           │
+      │                                  │ ───Realtime WebSocket────►│
+      │ Container terminates             │                           │ User reviews
+      X ($0 while waiting)               │                           │ User approves
+                                         │                           │
+                                         │ ◄───POST /hitl/approve─── │
+      │ New container spawns             │                           │
+      │ ◄────Read approved state─────────│                           │
+      │ Resumes from checkpoint          │                           │
+      └──────────────────────────────────┴───────────────────────────┘
 ```
+
+**Key Benefit**: $0 compute cost during human review (containers terminate, state in Supabase).
 
 ---
 
@@ -175,6 +216,7 @@ CrewAI AMP                           Product App
 - [00-introduction.md](./00-introduction.md) - Quick start and orientation
 - [02-organization.md](./02-organization.md) - 6 AI Founders and agents
 - [03-methodology.md](./03-methodology.md) - VPD framework reference
+- [ADR-002](../adr/002-modal-serverless-migration.md) - Modal serverless migration decision
 
 ### Phase Specifications
 - [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
@@ -188,3 +230,16 @@ CrewAI AMP                           Product App
 - [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
 - [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
 - [reference/database-schemas.md](./reference/database-schemas.md) - Supabase schemas
+- [reference/modal-configuration.md](./reference/modal-configuration.md) - Modal platform configuration
+
+---
+
+**Last Updated**: 2026-01-08
+
+**Latest Changes (2026-01-08 - Modal migration alignment)**:
+- Updated main diagram to show three-layer architecture (Netlify → Supabase → Modal)
+- Updated Service Definitions to reference Modal serverless
+- Updated Communication Patterns to show Supabase Realtime pattern
+- Updated API Contracts table with Modal endpoints
+- Updated Approval Workflows diagram for checkpoint-and-resume pattern
+- Added link to ADR-002 in Related Documents

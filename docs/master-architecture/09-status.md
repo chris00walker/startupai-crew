@@ -162,28 +162,52 @@ Legacy deployment (reference only):
 | Ad platform integration | ❌ Not connected | Meta/Google Ads APIs not integrated |
 | Real analytics tracking | ⚠️ Partial | PostHog exists; ad platform analytics missing |
 
-### HITL Checkpoints (11 total)
+### HITL Checkpoints (10 canonical)
 
-#### Phase 0-1 (VPD Framework)
+> **Canonical Count**: 10 HITL checkpoints across all 5 phases. The AMP 3-crew deployment had an additional crew-chaining checkpoint (`approve_intake_to_validation`) which is not part of the canonical architecture.
 
-| Phase | Checkpoint | Owner |
-|-------|------------|-------|
-| 0 | `approve_founders_brief` | Founder + Guardian |
-| 1 | `approve_experiment_plan` | Sage (E1) |
-| 1 | `approve_pricing_test` | Ledger (W1, W2) |
-| 1 | `approve_vpc_completion` | Compass (F1) |
+#### Phase 0: Onboarding
 
-#### Phase 2+ (Deployed Crews)
+| Checkpoint | Owner | Purpose |
+|------------|-------|---------|
+| `approve_founders_brief` | Founder + Guardian | Founder's Brief approval |
 
-| Crew | Checkpoint | Purpose |
-|------|------------|---------|
-| 1 | `approve_intake_to_validation` | Gate: Intake → Validation |
-| 2 | `approve_campaign_launch` | Ad creative approval |
-| 2 | `approve_spend_increase` | Budget approval |
-| 2 | `approve_desirability_gate` | Gate: Desirability → Feasibility |
-| 2 | `approve_feasibility_gate` | Gate: Feasibility → Viability |
-| 2 | `approve_viability_gate` | Gate: Viability → Decision |
-| 3 | `request_human_decision` | Final pivot/proceed decision |
+#### Phase 1: VPC Discovery
+
+| Checkpoint | Owner | Purpose |
+|------------|-------|---------|
+| `approve_experiment_plan` | Sage (E1) | Experiment design approval |
+| `approve_pricing_test` | Ledger (W1, W2) | Pricing test approval |
+| `approve_vpc_completion` | Compass (F1) | VPC gate (fit ≥ 70) |
+
+#### Phase 2: Desirability
+
+| Checkpoint | Owner | Purpose |
+|------------|-------|---------|
+| `approve_campaign_launch` | Forge + Pulse | Ad creative approval |
+| `approve_spend_increase` | Guardian | Budget approval |
+| `approve_desirability_gate` | Guardian | Gate: Desirability → Feasibility |
+
+#### Phase 3: Feasibility
+
+| Checkpoint | Owner | Purpose |
+|------------|-------|---------|
+| `approve_feasibility_gate` | Guardian | Gate: Feasibility → Viability |
+
+#### Phase 4: Viability
+
+| Checkpoint | Owner | Purpose |
+|------------|-------|---------|
+| `approve_viability_gate` | Guardian | Gate: Viability → Decision |
+| `request_human_decision` | Founder | Final pivot/proceed decision |
+
+#### AMP-Only Checkpoint (DEPRECATED)
+
+> **⚠️ NOT CANONICAL**: This checkpoint existed only in the AMP 3-crew workaround architecture.
+
+| Checkpoint | Purpose | Status |
+|------------|---------|--------|
+| `approve_intake_to_validation` | Gate: Crew 1 → Crew 2 | DEPRECATED (AMP workaround) |
 
 ### Crew 1 Architecture (Latest)
 

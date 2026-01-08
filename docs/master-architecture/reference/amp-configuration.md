@@ -1,15 +1,25 @@
 ---
 purpose: "CrewAI AMP platform configuration and capabilities reference"
-status: "active"
-last_reviewed: "2026-01-05"
+status: "deprecated"
+last_reviewed: "2026-01-08"
 vpd_compliance: true
+superseded_by: "modal-configuration.md"
 ---
 
 # CrewAI AMP Platform Configuration
 
+> **⚠️ DEPRECATED**: This document describes the CrewAI AMP platform configuration which is being replaced by Modal serverless.
+>
+> - **Replacement**: [modal-configuration.md](./modal-configuration.md)
+> - **Migration Decision**: [ADR-002](../../adr/002-modal-serverless-migration.md)
+>
+> This document is preserved for historical reference only. Do not use for new implementations.
+
+---
+
 This document clarifies what CrewAI AMP provides out-of-the-box versus what StartupAI must configure or implement.
 
-> **VPD Framework**: AMP deployment supports the multi-phase VPD architecture. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 crew configurations.
+> **VPD Framework**: AMP deployment supports the multi-phase VPD architecture. See phase documents (04-08) for crew configurations.
 
 ---
 

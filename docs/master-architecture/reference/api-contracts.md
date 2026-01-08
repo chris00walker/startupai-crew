@@ -2,7 +2,120 @@
 
 All API endpoints, webhooks, and payloads for StartupAI services.
 
-> **VPD Framework**: This API implements the Value Proposition Design (VPD) framework by Osterwalder/Pigneur. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for the authoritative specification.
+> **VPD Framework**: This API implements the Value Proposition Design (VPD) framework by Osterwalder/Pigneur. See phase documents for authoritative specifications:
+> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Founder's Brief capture
+> - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - VPC Discovery
+> - [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Desirability validation
+> - [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Feasibility validation
+> - [08-phase-4-viability.md](../08-phase-4-viability.md) - Viability validation
+
+---
+
+## Modal Serverless API (Target Architecture)
+
+> **Status**: Target architecture per [ADR-002](../../adr/002-modal-serverless-migration.md). Replaces CrewAI AMP endpoints.
+
+**Base URL**: `https://startupai-crew--{endpoint}.modal.run`
+
+### Endpoints
+
+| Endpoint | Method | Purpose | Status |
+|----------|--------|---------|--------|
+| `/kickoff` | POST | Start validation run | Planned |
+| `/status/{run_id}` | GET | Check progress (reads Supabase) | Planned |
+| `/hitl/approve` | POST | Resume after human approval | Planned |
+
+### Kickoff Request (Modal)
+
+```bash
+curl -X POST https://startupai-crew--kickoff.modal.run \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project_id": "uuid",
+    "user_id": "uuid",
+    "entrepreneur_input": "Business idea description..."
+  }'
+```
+
+### Kickoff Response
+
+```json
+{
+  "run_id": "uuid",
+  "status": "started",
+  "message": "Validation run initiated"
+}
+```
+
+**HTTP Status**: 202 Accepted (async processing)
+
+### Status Request (Modal)
+
+```bash
+curl https://startupai-crew--status.modal.run/{run_id} \
+  -H "Authorization: Bearer {token}"
+```
+
+### Status Response
+
+```json
+{
+  "run_id": "uuid",
+  "status": "running|paused|completed|failed",
+  "current_phase": 1,
+  "progress": [
+    {
+      "phase": 0,
+      "crew": "OnboardingCrew",
+      "task": "founder_interview",
+      "status": "completed",
+      "progress_pct": 100
+    },
+    {
+      "phase": 1,
+      "crew": "DiscoveryCrew",
+      "task": "segment_discovery",
+      "status": "in_progress",
+      "progress_pct": 45
+    }
+  ],
+  "hitl_pending": null,
+  "started_at": "2026-01-08T10:00:00Z",
+  "updated_at": "2026-01-08T10:15:00Z"
+}
+```
+
+### HITL Approve Request (Modal)
+
+```bash
+curl -X POST https://startupai-crew--hitl-approve.modal.run \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "run_id": "uuid",
+    "checkpoint": "approve_founders_brief",
+    "decision": "approved",
+    "feedback": "Optional human feedback"
+  }'
+```
+
+### HITL Approve Response
+
+```json
+{
+  "status": "resumed",
+  "next_phase": 1,
+  "message": "Validation resumed from checkpoint"
+}
+```
+
+### Authentication
+
+All Modal endpoints require bearer token authentication:
+```
+Authorization: Bearer {STARTUPAI_WEBHOOK_BEARER_TOKEN}
+```
 
 ---
 
@@ -135,9 +248,11 @@ curl -X POST https://startupai-...crewai.com/brief/{brief_id}/approve \
 
 ## Phase 1+: Validation API (CrewAI AMP Endpoints)
 
+> **⚠️ DEPRECATED**: These AMP endpoints are being replaced by Modal serverless. See [Modal Serverless API](#modal-serverless-api-target-architecture) above and [ADR-002](../../adr/002-modal-serverless-migration.md) for migration details.
+
 **Base URL**: `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
 
-### Working Endpoints
+### Working Endpoints (DEPRECATED)
 
 | Endpoint | Method | Purpose | Status |
 |----------|--------|---------|--------|
@@ -815,10 +930,35 @@ These were documented but do not exist yet:
 | Activity feed API | ❌ NOT IMPLEMENTED (marketing site feature) |
 | Metrics API | ❌ NOT IMPLEMENTED (marketing site feature) |
 
----
-**Last Updated**: 2026-01-06
+### Modal Serverless API
+| Component | Status |
+|-----------|--------|
+| Modal `/kickoff` | ⏳ Planned |
+| Modal `/status/{run_id}` | ⏳ Planned |
+| Modal `/hitl/approve` | ⏳ Planned |
 
-**Latest Changes (2026-01-06 - EVOLUTION-PLAN alignment)**:
+---
+
+## Related Documents
+
+- [ADR-002: Modal Serverless Migration](../../adr/002-modal-serverless-migration.md) - Architecture decision
+- [database-schemas.md](./database-schemas.md) - Modal tables (validation_runs, validation_progress, hitl_requests)
+- [modal-configuration.md](./modal-configuration.md) - Modal platform configuration
+- [approval-workflows.md](./approval-workflows.md) - HITL checkpoint patterns
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 specification
+- [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 specification
+
+---
+**Last Updated**: 2026-01-08
+
+**Latest Changes (2026-01-08 - Modal migration alignment)**:
+- Fixed cross-references to point to phase documents (04-08) instead of archived specs
+- Added Modal Serverless API section with 3 endpoints: `/kickoff`, `/status/{run_id}`, `/hitl/approve`
+- Marked AMP endpoints as DEPRECATED
+- Added Modal Implementation Status section
+- Added Related Documents section with links to ADR-002 and phase docs
+
+**Previous Changes (2026-01-06 - EVOLUTION-PLAN alignment)**:
 - Added `/brief/create` POST endpoint for creating Founder's Brief
 - Added `/brief/{id}` PUT endpoint for updating Founder's Brief
 - Updated `/brief/{id}/approve` path format (was `/brief/approve`)

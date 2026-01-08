@@ -2,7 +2,12 @@
 
 Human-in-the-loop (HITL) patterns for StartupAI's gated validation system.
 
-> **VPD Framework**: Approval workflows implement governance patterns from the Value Proposition Design framework. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for Phase 0-1 HITL specification.
+> **VPD Framework**: Approval workflows implement governance patterns from the Value Proposition Design framework. See phase documents for HITL specifications:
+> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 HITL (approve_founders_brief)
+> - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 HITL (experiment, pricing, VPC completion)
+> - [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 HITL (campaign, spend, gate)
+> - [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 HITL (feasibility gate)
+> - [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 HITL (viability gate, final decision)
 
 ## Overview
 
@@ -17,6 +22,51 @@ Certain AI decisions require human approval before proceeding. This document con
 | **Phase 2+** | Desirability → Feasibility → Viability | 7 | Campaign, spend, stage gates, pivots |
 
 ## Approval Flow Architecture
+
+### Modal Serverless Pattern (Target)
+
+> **Architecture**: Per [ADR-002](../../adr/002-modal-serverless-migration.md), HITL uses checkpoint-and-resume pattern with $0 cost during human review.
+
+```
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│  Modal Function │      │    Supabase     │      │   Product App   │
+│  (ephemeral)    │      │  (persistent)   │      │  (app.startupai │
+└────────┬────────┘      └────────┬────────┘      │    .site)       │
+         │                        │               └────────┬────────┘
+         │ 1. HITL checkpoint     │                        │
+         │    reached             │                        │
+         │                        │                        │
+         │ 2. INSERT hitl_requests│                        │
+         │ ───────────────────────►                        │
+         │                        │                        │
+         │ 3. Container terminates│                        │
+         │    ($0 while waiting)  │                        │
+         X                        │                        │
+                                  │ 4. Realtime notifies   │
+                                  │ ───────────────────────►
+                                  │                        │
+                                  │               5. User reviews in UI
+                                  │               6. User approves
+                                  │                        │
+                                  │ 7. POST /hitl/approve  │
+         ┌─────────────────────── │ ◄───────────────────────
+         │ 8. New container       │                        │
+         │    spawns              │                        │
+         │                        │                        │
+         │ 9. Resume from         │                        │
+         │    checkpoint          │                        │
+         │                        │                        │
+         └────────────────────────────────────────────────────
+```
+
+**Key Benefits**:
+- **$0 during human review**: Container terminates, no compute costs while waiting
+- **Hours/days supported**: No timeout limits on human decisions
+- **State in Supabase**: Full audit trail, Realtime updates to UI
+
+### AMP Pattern (DEPRECATED)
+
+> **⚠️ DEPRECATED**: Being replaced by Modal serverless. See [ADR-002](../../adr/002-modal-serverless-migration.md).
 
 ```
 ┌─────────────────┐                    ┌─────────────────┐
@@ -248,15 +298,27 @@ def output_deliverables(self):
 
 ## Related Documents
 
-- **Phase 0-1 Specification**: `../05-phase-0-1-specification.md` (VPD framework implementation)
-- **API payloads**: `api-contracts.md`
-- **Founder ownership**: `../02-organization.md`
-- **Implementation details**: `../03-validation-spec.md` (Phase 2+ blueprint)
+- [ADR-002: Modal Serverless Migration](../../adr/002-modal-serverless-migration.md) - HITL checkpoint-and-resume architecture
+- [api-contracts.md](./api-contracts.md) - API payloads including Modal `/hitl/approve`
+- [database-schemas.md](./database-schemas.md) - `hitl_requests` table schema
+- [modal-configuration.md](./modal-configuration.md) - Modal platform configuration
+- [02-organization.md](../02-organization.md) - Founder ownership for approvals
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 HITL specification
+- [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 HITL specification
+- [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 HITL specification
+- [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 HITL specification
+- [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 HITL specification
 
 ---
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-08
 
-**Latest Changes**:
+**Latest Changes (2026-01-08 - Modal migration alignment)**:
+- Fixed cross-references to point to phase documents (04-08) instead of archived specs
+- Added Modal Serverless Pattern diagram showing checkpoint-and-resume flow
+- Marked AMP Pattern as DEPRECATED
+- Updated Related Documents section with links to ADR-002 and phase docs
+
+**Previous Changes (2026-01-05)**:
 - Added Phase 0 Onboarding Approvals (approve_founders_brief)
 - Added Phase 1 VPC Discovery Approvals (approve_experiment_plan, approve_pricing_test, approve_vpc_completion)
 - Added approval context documentation for VPD-specific checkpoints
