@@ -354,4 +354,4 @@ PHASE 4 (Viability)
 - Added Example Artifacts (anonymized Customer Profile, Value Map, BMC)
 - Added Experiment Visibility dashboard metrics
 - Added Success Definition transparency
-- Added Methodology Transparency (11 HITL checkpoints, timeline)
+- Added Methodology Transparency (10 HITL checkpoints, timeline)

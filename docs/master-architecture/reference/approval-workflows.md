@@ -220,7 +220,7 @@ def viability_gate(self) -> str:
         return "strategic_pivot_required"  # Choose: increase price or reduce cost
 ```
 
-See `03-validation-spec.md` section "Innovation Physics - Non-Linear Flow Logic" for full router details.
+See [03-methodology.md](../03-methodology.md) section "Routing Logic (Innovation Physics)" and [concepts/innovation-physics.md](../../concepts/innovation-physics.md) for full router details.
 
 ### Ownership Rationale
 
