@@ -61,7 +61,7 @@ StartupAI implements a 5-phase validation architecture based on Value Propositio
 
 | Phase | Crew | Agents | Purpose |
 |-------|------|--------|---------|
-| 0 | `OnboardingCrew` | O1, G1, G2, S1 | Interview, validate, compile brief |
+| 0 | `OnboardingCrew` | O1, GV1, GV2, S1 | Interview, validate, compile brief |
 | 1 | `DiscoveryCrew` | E1, D1-D4 | Experiment design, evidence collection |
 | 1 | `CustomerProfileCrew` | J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK | Jobs, Pains, Gains discovery |
 | 1 | `ValueDesignCrew` | V1-V3 | Products, Pain Relievers, Gain Creators |

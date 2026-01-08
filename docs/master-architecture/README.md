@@ -35,7 +35,7 @@ Start here and progress through the numbered documents:
 │  PHASE 0: ONBOARDING                                                        │
 │  ────────────────────                                                       │
 │  • Input: Raw founder idea                                                  │
-│  • Agents: O1, G1, G2, S1 (4 agents)                                       │
+│  • Agents: O1, GV1, GV2, S1 (4 agents)                                     │
 │  • Output: Founder's Brief                                                  │
 │  • HITL: approve_founders_brief                                             │
 │  • Purpose: Capture hypothesis (NOT validate)                               │

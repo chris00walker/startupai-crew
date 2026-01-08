@@ -68,7 +68,7 @@ PHASE (Business Concept)
 
 | Phase | Flow | Crew | Agents |
 |-------|------|------|--------|
-| 0: Onboarding | `OnboardingFlow` | `OnboardingCrew` | O1, G1, G2, S1 |
+| 0: Onboarding | `OnboardingFlow` | `OnboardingCrew` | O1, GV1, GV2, S1 |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `DiscoveryCrew` | E1, D1, D2, D3, D4 |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `CustomerProfileCrew` | J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `ValueDesignCrew` | V1, V2, V3 |
@@ -408,9 +408,9 @@ Human-in-the-loop (HITL) approvals are distributed across founders based on doma
 
 | Approval Type | Primary Owner | Prepares Request | Governance Review |
 |---------------|---------------|------------------|-------------------|
-| **Founder's Brief** (`approve_founders_brief`) | Sage + Founder | Brief content, hypothesis capture | Guardian (G1, G2) |
-| **Concept Legitimacy** | Guardian (G1) | Legal, ethical, feasibility screening | Sage |
-| **Intent Verification** | Guardian (G2) | Brief accuracy vs founder intent | Sage |
+| **Founder's Brief** (`approve_founders_brief`) | Sage + Founder | Brief content, hypothesis capture | Guardian (GV1, GV2) |
+| **Concept Legitimacy** | Guardian (GV1) | Legal, ethical, feasibility screening | Sage |
+| **Intent Verification** | Guardian (GV2) | Brief accuracy vs founder intent | Sage |
 
 #### Phase 1 Approvals (VPC Discovery)
 
@@ -498,8 +498,8 @@ Phase 0 agents capture the founder's business hypothesis and create the **Founde
 | ID | Agent | Founder | Crew | Task Focus |
 |----|-------|---------|------|------------|
 | **O1** | Founder Interview Agent | Sage | OnboardingCrew | 7-area discovery interview (idea, motivation, customer, problem, solution, assumptions, success criteria) |
-| **G1** | Concept Validator Agent | Guardian | OnboardingCrew | Legitimacy screening (legal, ethical, feasible, sane) |
-| **G2** | Intent Verification Agent | Guardian | OnboardingCrew | Ensures Founder's Brief accurately captures founder's intent |
+| **GV1** | Concept Validator Agent | Guardian | OnboardingCrew | Legitimacy screening (legal, ethical, feasible, sane) |
+| **GV2** | Intent Verification Agent | Guardian | OnboardingCrew | Ensures Founder's Brief accurately captures founder's intent |
 | **S1** | Brief Compiler Agent | Sage | OnboardingCrew | Synthesizes interview and QA outputs into structured Founder's Brief |
 
 **Phase 0 HITL Checkpoint**: `approve_founders_brief` - Founder reviews and approves their brief before Phase 1 begins.

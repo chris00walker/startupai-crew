@@ -121,11 +121,11 @@ PHASE (Business Concept)
 
 | Crew | Agents | Focus | Output |
 |------|--------|-------|--------|
-| OnboardingCrew | O1, G1, G2, S1 | Interview, validation, synthesis | **Founder's Brief** |
+| OnboardingCrew | O1, GV1, GV2, S1 | Interview, validation, synthesis | **Founder's Brief** |
 
 - **O1**: Founder Interview Agent (7-area discovery)
-- **G1**: Concept Validator Agent (legitimacy screening)
-- **G2**: Intent Verification Agent (capture accuracy)
+- **GV1**: Concept Validator Agent (legitimacy screening)
+- **GV2**: Intent Verification Agent (capture accuracy)
 - **S1**: Brief Compiler Agent (synthesize hypothesis)
 
 **HITL**: `approve_founders_brief` - Founder approves brief before Phase 1

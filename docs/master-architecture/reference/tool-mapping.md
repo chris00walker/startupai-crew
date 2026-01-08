@@ -73,13 +73,13 @@ This document defines which tools are assigned to which agents across all phases
 | Agent ID | Agent Name | Founder | Tools |
 |----------|------------|---------|-------|
 | O1 | Founder Interview Agent | Sage | `ConversationTool`, `NoteStructurerTool`, `LearningRetrievalTool` |
-| G1 | Concept Validator Agent | Guardian | *(Pure LLM - no tools)* |
-| G2 | Intent Verification Agent | Guardian | *(Pure LLM - no tools)* |
+| GV1 | Concept Validator Agent | Guardian | *(Pure LLM - no tools)* |
+| GV2 | Intent Verification Agent | Guardian | *(Pure LLM - no tools)* |
 | S1 | Brief Compiler Agent | Sage | *(Pure LLM - no tools)* |
 
 **Notes:**
 - O1 is the only Phase 0 agent requiring tools
-- G1/G2/S1 use LLM reasoning for validation and synthesis
+- GV1/GV2/S1 use LLM reasoning for validation and synthesis
 
 ---
 

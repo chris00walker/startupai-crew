@@ -56,7 +56,7 @@ Phase 0 has a single critical approval checkpoint gating entry to Phase 1.
 
 | Approval Type | Approver | Agents | Task | Rationale |
 |---------------|----------|--------|------|-----------|
-| `approve_founders_brief` | Founder + Guardian | O1, G1, G2, S1 | brief_approval | Ensure Brief accurately captures founder intent before analysis |
+| `approve_founders_brief` | Founder + Guardian | O1, GV1, GV2, S1 | brief_approval | Ensure Brief accurately captures founder intent before analysis |
 
 ### Founder's Brief Approval Context
 

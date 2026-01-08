@@ -245,7 +245,7 @@ All CrewAI flows use a single webhook endpoint with `flow_type` differentiation:
 
 | Phase | Flow | Crews | Agents |
 |-------|------|-------|--------|
-| **Phase 0** | OnboardingFlow | OnboardingCrew | 4 (O1, G1, G2, S1) |
+| **Phase 0** | OnboardingFlow | OnboardingCrew | 4 (O1, GV1, GV2, S1) |
 | **Phase 1** | VPCDiscoveryFlow | DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew | 18 |
 | **Phase 2** | DesirabilityFlow | BuildCrew, GrowthCrew, GovernanceCrew | 9 |
 | **Phase 3** | FeasibilityFlow | BuildCrew, GovernanceCrew | 4 |
@@ -367,7 +367,7 @@ export async function POST(req: Request) {
 ### Validation Funnel (5 Phases)
 | Phase | Purpose | Agents | Key Output |
 |-------|---------|--------|------------|
-| **Phase 0** | Onboarding | 4 (O1, G1, G2, S1) | Founder's Brief |
+| **Phase 0** | Onboarding | 4 (O1, GV1, GV2, S1) | Founder's Brief |
 | **Phase 1** | VPC Discovery | 18 | Validated VPC (fit ≥ 70) |
 | **Phase 2** | Desirability | 9 | STRONG_COMMITMENT signal |
 | **Phase 3** | Feasibility | 4 | GREEN signal |

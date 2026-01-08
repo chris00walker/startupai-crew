@@ -49,7 +49,7 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 | **Phase** | Phase 0: Onboarding (business concept) |
 | **Flow** | `OnboardingFlow` (orchestrates the crew) |
 | **Crew** | `OnboardingCrew` (4 collaborative agents) |
-| **Agents** | O1, G1, G2, S1 |
+| **Agents** | O1, GV1, GV2, S1 |
 
 ---
 
@@ -63,7 +63,7 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │  Exit: Approved Founder's Brief ready for Phase 1                           │
 │                                                                              │
 │  Flow: OnboardingFlow                                                        │
-│  Crew: OnboardingCrew (O1, G1, G2, S1)                                      │
+│  Crew: OnboardingCrew (O1, GV1, GV2, S1)                                    │
 │                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
@@ -95,7 +95,7 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │  │                                    │                                │   │
 │  │                                    ▼                                │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  G1: CONCEPT VALIDATOR AGENT                                 │   │   │
+│  │  │  GV1: CONCEPT VALIDATOR AGENT                                │   │   │
 │  │  │                                                              │   │   │
 │  │  │  Validates the concept is legitimate:                        │   │   │
 │  │  │  • NOT illegal (drugs, weapons, fraud, etc.)                │   │   │
@@ -109,7 +109,7 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │  │                                    │                                │   │
 │  │                                    ▼                                │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  G2: INTENT VERIFICATION AGENT                               │   │   │
+│  │  │  GV2: INTENT VERIFICATION AGENT                              │   │   │
 │  │  │                                                              │   │   │
 │  │  │  Verifies the interview captured intent correctly:           │   │   │
 │  │  │  • Does the summary reflect what Founder said?              │   │   │
@@ -251,11 +251,11 @@ to understand the "why" behind every "what."
 
 ---
 
-### G1: Concept Validator Agent
+### GV1: Concept Validator Agent
 
 | Attribute | Value |
 |-----------|-------|
-| **ID** | G1 |
+| **ID** | GV1 |
 | **Name** | Concept Validator Agent |
 | **Founder** | Guardian |
 | **Role** | Validate that the concept is legitimate and worth pursuing |
@@ -335,11 +335,11 @@ BUSINESS SANITY CHECK
 
 ---
 
-### G2: Intent Verification Agent
+### GV2: Intent Verification Agent
 
 | Attribute | Value |
 |-----------|-------|
-| **ID** | G2 |
+| **ID** | GV2 |
 | **Name** | Intent Verification Agent |
 | **Founder** | Guardian |
 | **Role** | Verify that the interview accurately captured the Founder's intent |
@@ -612,8 +612,8 @@ This phase implements VPD patterns from [03-methodology.md](./03-methodology.md)
 | ID | Agent | Founder | Role | Output |
 |----|-------|---------|------|--------|
 | O1 | Founder Interview Agent | Sage | Conduct 7-area discovery interview | Interview Transcript + Structured Notes |
-| G1 | Concept Validator Agent | Guardian | Legitimacy screening | Legitimacy Report |
-| G2 | Intent Verification Agent | Guardian | Verify capture accuracy | Intent Verification Report |
+| GV1 | Concept Validator Agent | Guardian | Legitimacy screening | Legitimacy Report |
+| GV2 | Intent Verification Agent | Guardian | Verify capture accuracy | Intent Verification Report |
 | S1 | Brief Compiler Agent | Sage | Synthesize into Brief | **Founder's Brief** |
 
 **Phase 0 Totals:**
