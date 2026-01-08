@@ -307,8 +307,11 @@ crewai run
 ## References
 
 - [CLAUDE.md](../../../CLAUDE.md) - Deployment details
-- [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) - Phase 0-1 VPD specification
-- [03-validation-spec.md](../03-validation-spec.md) - Phase 2+ flow architecture
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 specification
+- [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 specification
+- [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 specification
+- [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 specification
+- [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 specification
 - [flywheel-learning.md](./flywheel-learning.md) - Learning system
 - [approval-workflows.md](./approval-workflows.md) - HITL patterns
 - CrewAI AMP documentation: https://docs.crewai.com

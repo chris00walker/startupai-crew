@@ -1,3 +1,10 @@
+---
+purpose: Human-in-the-loop approval workflow patterns
+status: active
+last_reviewed: 2026-01-08
+vpd_compliance: true
+---
+
 # Approval Workflows
 
 Human-in-the-loop (HITL) patterns for StartupAI's gated validation system.

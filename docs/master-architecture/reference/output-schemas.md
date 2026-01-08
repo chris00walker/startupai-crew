@@ -1,13 +1,33 @@
 ---
-purpose: Pydantic output schema definitions for Crew 1 (Intake)
+purpose: Pydantic output schema definitions for all phases
 status: active
-created: 2026-01-06
-schema_location: src/intake_crew/schemas.py
+last_reviewed: 2026-01-08
+vpd_compliance: true
 ---
 
-# Crew 1 Output Schemas
+# Output Schemas
 
-This document defines the Pydantic output schemas for all 6 tasks in Crew 1 (Intake). These schemas enforce structured outputs and enable reliable crew-to-crew data transfer.
+This document defines the Pydantic output schemas for all phases in the validation pipeline. These schemas enforce structured outputs and enable reliable phase-to-phase data transfer.
+
+> **Modal Migration**: This document supports the Modal serverless architecture. See [ADR-002](../../adr/002-modal-serverless-migration.md) for migration context.
+
+---
+
+## Phase Overview
+
+| Phase | Key Schemas | Status |
+|-------|-------------|--------|
+| **Phase 0** (Onboarding) | `FounderBrief`, `ValuePropositionCanvas`, `QAGateOutput` | Implemented |
+| **Phase 1** (VPC Discovery) | `CustomerProfile`, `ValueMap`, `FitAssessment` | TBD |
+| **Phase 2** (Desirability) | `DesirabilityResult`, `DesirabilityMetrics` | TBD |
+| **Phase 3** (Feasibility) | `FeasibilityArtifact`, `FeasibilityResult` | TBD |
+| **Phase 4** (Viability) | `ViabilityMetrics`, `FinalValidationReport` | TBD |
+
+---
+
+# Phase 0: Onboarding Schemas
+
+This section defines the Pydantic output schemas for Phase 0 (Onboarding/Intake). These schemas enforce structured outputs and enable reliable crew-to-crew data transfer.
 
 ## Schema Overview
 
@@ -308,7 +328,7 @@ Task 6 (CrewInvocationResult) ← depends on Task 5
 
 ---
 
-## Related Files
+## Phase 0 Related Files
 
 | File | Purpose |
 |------|---------|
@@ -316,3 +336,114 @@ Task 6 (CrewInvocationResult) ← depends on Task 5
 | `src/intake_crew/crew.py` | Schema wiring via `output_pydantic` |
 | `src/intake_crew/config/tasks.yaml` | Task descriptions with schema alignment |
 | `tests/test_intake_schemas.py` | Unit tests (28 tests) |
+
+---
+
+# Phase 1: VPC Discovery Schemas
+
+> **Status**: TBD during Modal implementation. See [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) for authoritative specification.
+
+## Key Schemas
+
+### CustomerProfile
+
+```python
+# TODO: Define during implementation
+# Components: Jobs, Pains, Gains (ranked and weighted)
+```
+
+### ValueMap
+
+```python
+# TODO: Define during implementation
+# Components: Products/Services, Pain Relievers, Gain Creators
+```
+
+### FitAssessment
+
+```python
+# TODO: Define during implementation
+# fit_score: 0-100, fit_level: enum, coverage_analysis
+```
+
+---
+
+# Phase 2: Desirability Schemas
+
+> **Status**: TBD during Modal implementation. See [06-phase-2-desirability.md](../06-phase-2-desirability.md) for authoritative specification.
+
+## Key Schemas
+
+### DesirabilityResult
+
+```python
+# TODO: Define during implementation
+# problem_resonance, zombie_ratio, commitment_level
+```
+
+### DesirabilityMetrics
+
+```python
+# TODO: Define during implementation
+# Experiment results, evidence quality scores
+```
+
+---
+
+# Phase 3: Feasibility Schemas
+
+> **Status**: TBD during Modal implementation. See [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) for authoritative specification.
+
+## Key Schemas
+
+### FeasibilityArtifact
+
+```python
+# TODO: Define during implementation
+# Build complexity, resource requirements, timeline
+```
+
+### FeasibilityResult
+
+```python
+# TODO: Define during implementation
+# feasibility_status: GREEN/YELLOW/RED, blockers, mitigations
+```
+
+---
+
+# Phase 4: Viability Schemas
+
+> **Status**: TBD during Modal implementation. See [08-phase-4-viability.md](../08-phase-4-viability.md) for authoritative specification.
+
+## Key Schemas
+
+### ViabilityMetrics
+
+```python
+# TODO: Define during implementation
+# ltv_cac_ratio, payback_period, gross_margin
+```
+
+### FinalValidationReport
+
+```python
+# TODO: Define during implementation
+# decision: PROCEED/PIVOT/KILL, pivot_type, evidence_summary
+```
+
+---
+
+## Related Documents
+
+- [state-schemas.md](./state-schemas.md) - State persistence models
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 specification
+- [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 specification
+- [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 specification
+- [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 specification
+- [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 specification
+- [ADR-002](../../adr/002-modal-serverless-migration.md) - Modal migration decision
+
+---
+**Last Updated**: 2026-01-08
+**Status**: Phase 0 implemented; Phases 1-4 TBD during Modal implementation

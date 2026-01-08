@@ -1,3 +1,10 @@
+---
+purpose: API endpoint contracts for all StartupAI services
+status: active
+last_reviewed: 2026-01-08
+vpd_compliance: true
+---
+
 # API Contracts
 
 All API endpoints, webhooks, and payloads for StartupAI services.

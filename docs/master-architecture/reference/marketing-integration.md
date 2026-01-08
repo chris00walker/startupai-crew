@@ -1,13 +1,13 @@
 ---
 purpose: Marketing site AI integration architecture
 status: planning
-last_reviewed: 2026-01-05
+last_reviewed: 2026-01-08
 vpd_compliance: true
 ---
 
 # Marketing Site AI Integration
 
-> **VPD Framework**: The marketing site showcases StartupAI's Value Proposition Design methodology. See [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) for framework details.
+> **VPD Framework**: The marketing site showcases StartupAI's Value Proposition Design methodology. See [03-methodology.md](../03-methodology.md) for framework details.
 
 The marketing site (startupai.site) requires AI integration to embody our transparency values and demonstrate the AI Founders' capabilities before conversion.
 
@@ -299,7 +299,7 @@ Clear thresholds for what "validated" means at each gate:
 
 ## Methodology Transparency
 
-### 11 HITL Checkpoints Diagram
+### 10 HITL Checkpoints Diagram
 
 Visual showing all human approval points:
 
@@ -312,16 +312,17 @@ PHASE 1 (VPC Discovery)
     ├─ [3] approve_pricing_test ← Founder consents to pricing experiments
     └─ [4] approve_vpc_completion ← Founder confirms fit score ≥70
 
-PHASE 2+ (Validation)
-    ├─ [5] approve_intake_to_validation ← Gate to start validation
-    ├─ [6] approve_campaign_launch ← Creative approval
-    ├─ [7] approve_spend_increase ← Budget approval
-    ├─ [8] approve_desirability_gate ← Evidence review
-    ├─ [9] approve_feasibility_gate ← Technical review
-    └─ [10] approve_viability_gate ← Economics review
+PHASE 2 (Desirability)
+    ├─ [5] approve_campaign_launch ← Creative approval
+    ├─ [6] approve_spend_increase ← Budget approval
+    └─ [7] approve_desirability_gate ← Evidence review
 
-PHASE 3 (Decision)
-    └─ [11] request_human_decision ← Final pivot/proceed decision
+PHASE 3 (Feasibility)
+    └─ [8] approve_feasibility_gate ← Technical review
+
+PHASE 4 (Viability)
+    ├─ [9] approve_viability_gate ← Economics review
+    └─ [10] request_human_decision ← Final pivot/proceed decision
 ```
 
 ### Typical Timeline Expectations
@@ -338,13 +339,15 @@ PHASE 3 (Decision)
 
 ## Related Documents
 
-- [05-phase-0-1-specification.md](../05-phase-0-1-specification.md) - Phase 0-1 VPD specification
+- [03-methodology.md](../03-methodology.md) - VPD framework and methodology
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 specification
+- [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 specification
 - [02-organization.md](../02-organization.md) - Founder roles and personalities
 - [api-contracts.md](./api-contracts.md) - API specifications
 - [product-artifacts.md](./product-artifacts.md) - Canvas architecture
 
 ---
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-08
 
 **Latest Changes**:
 - Added VPD Framework Demonstration section
