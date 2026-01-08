@@ -1,0 +1,115 @@
+# ValueDesignCrew Task Definitions
+# Phase 1: VPC Discovery - Value Map Design
+
+design_products_services:
+  description: >
+    Design Products & Services that address the top-ranked customer Jobs.
+
+    Customer Profile: {customer_profile}
+    Top Jobs to address: {top_jobs}
+    Founder's solution hypothesis: {solution_hypothesis}
+
+    Design products/services that:
+    1. Help customers complete their most important functional jobs
+    2. Make them feel the way they want (emotional jobs)
+    3. Help them be perceived the way they want (social jobs)
+    4. Consider the full job lifecycle (before, during, after)
+
+    For each product/service:
+    - Name and description
+    - Which jobs it addresses (with job IDs)
+    - How it helps with each job
+    - Key features that enable job completion
+  expected_output: >
+    List of designed products/services with:
+    - Product ID
+    - Name and description
+    - Jobs addressed (list of job IDs)
+    - Features that address each job
+    - Expected impact on job completion
+  agent: v1_solution_designer
+
+design_pain_relievers:
+  description: >
+    Design Pain Relievers for the most severe customer pains.
+
+    Customer Profile: {customer_profile}
+    Top Pains to relieve: {top_pains}
+    Products designed: {products_services}
+
+    Design pain relievers that:
+    1. ELIMINATE extreme pains completely
+    2. REDUCE high severity pains significantly
+    3. MITIGATE moderate pains where possible
+
+    For each pain reliever:
+    - Description of the mechanism
+    - Which pains it addresses (with pain IDs)
+    - Effectiveness level (eliminates/reduces/mitigates)
+    - How it integrates with products/services
+  expected_output: >
+    List of designed pain relievers with:
+    - Reliever ID
+    - Description
+    - Pains addressed (list of pain IDs)
+    - Effectiveness for each pain
+    - Integration with products
+  agent: v2_pain_reliever_designer
+  context:
+    - design_products_services
+
+design_gain_creators:
+  description: >
+    Design Gain Creators for the most important customer gains.
+
+    Customer Profile: {customer_profile}
+    Top Gains to create: {top_gains}
+    Products designed: {products_services}
+
+    Design gain creators that:
+    1. PRODUCE required gains (must have)
+    2. INCREASE expected gains (should have)
+    3. EXCEED desired gains (could have)
+    4. SURPRISE with unexpected gains (might have)
+
+    For each gain creator:
+    - Description of the mechanism
+    - Which gains it creates (with gain IDs)
+    - Level of creation (produces/increases/exceeds)
+    - How it integrates with products/services
+  expected_output: >
+    List of designed gain creators with:
+    - Creator ID
+    - Description
+    - Gains created (list of gain IDs)
+    - Creation level for each gain
+    - Integration with products
+  agent: v3_gain_creator_designer
+  context:
+    - design_products_services
+    - design_pain_relievers
+
+compile_value_map:
+  description: >
+    Compile all designed elements into a complete Value Map
+    (left side of Value Proposition Canvas).
+
+    Products/Services: {products_services}
+    Pain Relievers: {pain_relievers}
+    Gain Creators: {gain_creators}
+
+    Create a ValueMap that includes:
+    - All products and services
+    - All pain relievers with mappings
+    - All gain creators with mappings
+    - Coverage statistics
+  expected_output: >
+    Complete ValueMap object with:
+    - products_services (list with job mappings)
+    - pain_relievers (list with pain mappings and effectiveness)
+    - gain_creators (list with gain mappings and levels)
+  agent: v1_solution_designer
+  context:
+    - design_products_services
+    - design_pain_relievers
+    - design_gain_creators

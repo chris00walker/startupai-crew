@@ -1,0 +1,152 @@
+# ViabilityGovernanceCrew Task Definitions
+# Phase 4: Viability - Final Governance
+
+final_validation_check:
+  description: >
+    Perform final validation compliance check.
+
+    Complete validation record: {validation_record}
+
+    Verify:
+    1. Phase completion
+       - Phase 0: Founder's Brief captured ✓
+       - Phase 1: VPC validated (fit ≥ 70) ✓
+       - Phase 2: Desirability tested ✓
+       - Phase 3: Feasibility assessed ✓
+       - Phase 4: Viability calculated ✓
+
+    2. HITL checkpoints
+       - All required HITL decisions obtained
+       - Decisions properly recorded
+       - No skipped approvals
+
+    3. Methodology compliance
+       - VPD framework followed
+       - SAY vs DO evidence categorized
+       - Test Cards and Learning Cards used
+
+    4. Decision quality
+       - Evidence-based decisions
+       - Clear rationale documented
+  expected_output: >
+    Final compliance report:
+    - Overall compliance: PASS/FAIL
+    - Phase completion checklist
+    - HITL checkpoint verification
+    - Methodology compliance score
+    - Issues found (if any)
+  agent: g1_qa_agent
+
+scrub_pii:
+  description: >
+    Scrub all PII from outputs before final persistence.
+
+    Outputs to scrub: {all_outputs}
+
+    Scan and scrub:
+    1. Personal identifiers
+       - Names → [PERSON_X]
+       - Email addresses → [EMAIL_REDACTED]
+       - Phone numbers → [PHONE_REDACTED]
+       - Addresses → [ADDRESS_REDACTED]
+
+    2. Company confidentials
+       - Internal metrics → [METRIC_REDACTED] (if sensitive)
+       - Trade secrets → [CONFIDENTIAL]
+
+    3. Interview data
+       - Participant names → [PARTICIPANT_A], [PARTICIPANT_B]
+       - Specific quotes (if identifying) → [QUOTE_REDACTED]
+
+    4. Financial data
+       - Specific amounts (if sensitive) → [AMOUNT_REDACTED]
+
+    Preserve non-PII data needed for learning.
+  expected_output: >
+    PII scrubbing report:
+    - Items scrubbed: [count]
+    - Categories scrubbed
+    - Scrubbed outputs ready for persistence
+    - Verification: CLEAN/NEEDS_REVIEW
+  agent: g2_security_agent
+  context:
+    - final_validation_check
+
+create_audit_trail:
+  description: >
+    Create complete audit trail for the validation run.
+
+    Complete validation history: {validation_history}
+    Scrubbed outputs: {scrubbed_outputs}
+
+    Document:
+    1. Timeline
+       - Start date/time
+       - Key milestones
+       - End date/time
+       - Total duration
+
+    2. Decision trail
+       - Each decision point
+       - Decision maker (human/auto)
+       - Rationale
+       - Evidence referenced
+
+    3. Pivot history
+       - Each pivot taken
+       - Trigger signal
+       - Outcome
+
+    4. Final outcome
+       - Terminal state
+       - Summary metrics
+  expected_output: >
+    Audit trail document:
+    - Validation timeline
+    - Decision log
+    - Pivot history
+    - Final outcome
+    - Audit trail ID
+  agent: g3_audit_agent
+  context:
+    - final_validation_check
+    - scrub_pii
+
+persist_to_flywheel:
+  description: >
+    Persist learnings to the flywheel database.
+
+    Audit trail: {audit_trail}
+    Learnings: {learnings}
+
+    Persist:
+    1. Project record
+       - Project ID
+       - Final outcome (VALIDATED/KILLED/PIVOTING)
+       - Key metrics
+
+    2. Learnings
+       - What worked
+       - What didn't
+       - Methodology improvements
+
+    3. Reusable patterns
+       - Successful experiment designs
+       - Effective signals
+       - Useful benchmarks
+
+    4. Search tags
+       - Industry
+       - Business model
+       - Outcome type
+
+    Confirm persistence to Supabase flywheel table.
+  expected_output: >
+    Flywheel persistence confirmation:
+    - Flywheel entry ID
+    - Records persisted: [count]
+    - Search tags applied
+    - Persistence status: SUCCESS/FAILED
+  agent: g3_audit_agent
+  context:
+    - create_audit_trail

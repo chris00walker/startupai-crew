@@ -1,0 +1,119 @@
+# FeasibilityGovernanceCrew Task Definitions
+# Phase 3: Feasibility - Gate Validation
+
+validate_assessment_methodology:
+  description: >
+    Validate that the technical feasibility assessment follows proper methodology.
+
+    Feasibility assessment: {feasibility_assessment}
+
+    Check:
+    1. All required components assessed (frontend, backend, integrations)
+    2. Complexity scores justified
+    3. Cost estimates have supporting rationale
+    4. Signal determination follows Innovation Physics criteria:
+       - GREEN: No constraints blocking core features
+       - ORANGE_CONSTRAINED: Specific features identified for removal
+       - RED_IMPOSSIBLE: Clear technical impossibility documented
+
+    Flag any methodology deviations or gaps.
+  expected_output: >
+    Methodology compliance report:
+    - Assessment completeness: PASS/FAIL
+    - Complexity scoring: PASS/FAIL
+    - Cost estimate validity: PASS/FAIL
+    - Signal determination: PASS/FAIL
+    - Issues identified (if any)
+    - Recommendations
+  agent: g1_qa_agent
+
+verify_constraint_documentation:
+  description: >
+    Ensure all technical constraints are properly documented.
+
+    Feasibility assessment: {feasibility_assessment}
+
+    Verify:
+    1. Technical constraints clearly stated
+    2. Each constraint has:
+       - Description
+       - Impact on feasibility
+       - Mitigation options (if any)
+    3. Constraints categorized (technical, regulatory, resource)
+    4. If ORANGE: Downgrade features mapped to constraints
+    5. If RED: Blocking constraints clearly identified
+  expected_output: >
+    Constraint documentation review:
+    - Completeness: PASS/FAIL
+    - Categorization: PASS/FAIL
+    - Impact assessment: PASS/FAIL
+    - Missing documentation (if any)
+    - Recommendations
+  agent: g1_qa_agent
+  context:
+    - validate_assessment_methodology
+
+review_architecture_security:
+  description: >
+    Review proposed architecture for security concerns.
+
+    Technical architecture: {technical_architecture}
+    Integrations: {integrations}
+
+    Review:
+    1. Authentication approach (if applicable)
+    2. Data handling (PII, encryption)
+    3. API security (auth, rate limiting)
+    4. Third-party integration risks
+    5. Compliance implications
+
+    Flag security constraints that affect feasibility:
+    - Required security features
+    - Compliance requirements
+    - Risk factors
+  expected_output: >
+    Security review report:
+    - Security posture assessment
+    - Identified risks
+    - Required security features
+    - Compliance requirements
+    - Recommendations
+    - Impact on feasibility signal
+  agent: g2_security_agent
+  context:
+    - validate_assessment_methodology
+
+confirm_gate_readiness:
+  description: >
+    Confirm that Phase 3 exit criteria are met.
+
+    All reviews: {all_reviews}
+    Feasibility signal: {feasibility_signal}
+
+    Gate criteria:
+    1. Feasibility signal determined
+    2. Methodology compliance passed
+    3. Constraints documented
+    4. Security review completed
+    5. If ORANGE:
+       - Lite variant defined
+       - Re-test desirability required
+    6. If RED:
+       - Kill decision documented
+       - Learnings captured
+
+    Determine: Ready for HITL approve_feasibility_gate?
+  expected_output: >
+    Gate readiness report:
+    - Gate ready: YES/NO
+    - Criteria checklist (all items)
+    - Blockers (if not ready)
+    - Next steps:
+      - If GREEN: Proceed to Phase 4 Viability
+      - If ORANGE: Re-test desirability with lite variant
+      - If RED: Kill project, capture learnings
+  agent: g1_qa_agent
+  context:
+    - validate_assessment_methodology
+    - verify_constraint_documentation
+    - review_architecture_security

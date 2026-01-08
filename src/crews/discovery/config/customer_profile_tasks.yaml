@@ -1,0 +1,204 @@
+# CustomerProfileCrew Task Definitions
+# Phase 1: VPC Discovery - Jobs, Pains, Gains Discovery
+
+discover_jobs:
+  description: >
+    Discover all customer jobs using JTBD methodology. Analyze the evidence
+    collected to identify what customers are trying to accomplish.
+
+    Evidence to analyze: {discovery_evidence}
+    Customer segment: {customer_segment}
+
+    Discover:
+    1. FUNCTIONAL JOBS - Tasks they're trying to complete
+    2. EMOTIONAL JOBS - How they want to feel
+    3. SOCIAL JOBS - How they want to be perceived
+    4. SUPPORTING JOBS - Buyer, co-creator, transferrer roles
+
+    For each job, capture:
+    - Job statement ("When [situation], I want to [motivation] so I can [outcome]")
+    - Job type (functional/emotional/social/supporting)
+    - Evidence sources
+  expected_output: >
+    A comprehensive list of customer jobs with:
+    - Job ID
+    - Job statement in proper format
+    - Job type classification
+    - Evidence sources supporting this job
+    - Initial importance estimate
+  agent: j1_jtbd_researcher
+
+rank_jobs:
+  description: >
+    Rank the discovered jobs by importance using evidence-based criteria.
+
+    Jobs to rank: {discovered_jobs}
+
+    Ranking criteria (1-10 scale):
+    - Frequency: How often does this job come up?
+    - Significance: How important is it when it comes up?
+    - Urgency: How pressing is the need?
+    - Willingness to pay: Would they pay to solve this?
+    - Competitive gap: How poorly served is this job?
+
+    Calculate weighted importance score and assign priority rank.
+  expected_output: >
+    Ranked list of jobs with:
+    - Priority rank (1 = most important)
+    - Importance score (1-10)
+    - Breakdown by ranking criteria
+    - Top 5 jobs that MUST be addressed
+  agent: j2_job_ranking
+  context:
+    - discover_jobs
+
+discover_pains:
+  description: >
+    Discover all customer pains from the evidence collected.
+
+    Evidence to analyze: {discovery_evidence}
+    Customer segment: {customer_segment}
+    Related jobs: {ranked_jobs}
+
+    Discover pains in three categories:
+    1. UNDESIRED OUTCOMES
+       - Functional outcomes they want to avoid
+       - Negative emotions they experience
+       - Social consequences they fear
+
+    2. OBSTACLES
+       - What prevents them from getting jobs done
+       - What makes current solutions hard to use
+       - What slows them down
+
+    3. RISKS
+       - What could go wrong
+       - What they're afraid of
+       - What keeps them up at night
+  expected_output: >
+    A comprehensive list of customer pains with:
+    - Pain ID
+    - Pain statement
+    - Category (undesired_outcome/obstacle/risk)
+    - Related job(s)
+    - Evidence sources
+    - Initial severity estimate
+  agent: pain_researcher
+  context:
+    - rank_jobs
+
+rank_pains:
+  description: >
+    Rank the discovered pains by severity.
+
+    Pains to rank: {discovered_pains}
+
+    Severity scoring:
+    - EXTREME (10): Showstopper - they'll do anything to avoid
+    - HIGH (7-9): Major frustration - actively seeking solutions
+    - MODERATE (4-6): Annoying but tolerable
+    - LOW (1-3): Mild inconvenience
+
+    Consider:
+    - How much does this pain cost them (time, money, reputation)?
+    - How frequently do they experience it?
+    - How much effort are they putting into avoiding it?
+  expected_output: >
+    Ranked list of pains with:
+    - Severity rank (1 = most severe)
+    - Severity score (1-10)
+    - Severity classification (EXTREME/HIGH/MODERATE/LOW)
+    - Top 5 pains that MUST be relieved
+  agent: pain_ranking
+  context:
+    - discover_pains
+
+discover_gains:
+  description: >
+    Discover all customer gains from the evidence collected.
+
+    Evidence to analyze: {discovery_evidence}
+    Customer segment: {customer_segment}
+    Related jobs: {ranked_jobs}
+
+    Discover gains in four categories:
+    1. REQUIRED (Must-have)
+       - Minimum outcomes any solution must produce
+       - Table-stakes features
+
+    2. EXPECTED (Standard)
+       - Outcomes they expect from any solution
+       - Considered normal/baseline
+
+    3. DESIRED (Nice-to-have)
+       - What would delight them
+       - What would exceed expectations
+
+    4. UNEXPECTED (Delighters)
+       - Beyond their imagination
+       - Innovation opportunities
+  expected_output: >
+    A comprehensive list of customer gains with:
+    - Gain ID
+    - Gain statement
+    - Category (required/expected/desired/unexpected)
+    - Related job(s)
+    - Evidence sources
+    - Initial importance estimate
+  agent: gain_researcher
+  context:
+    - rank_jobs
+
+rank_gains:
+  description: >
+    Rank the discovered gains by importance.
+
+    Gains to rank: {discovered_gains}
+
+    Importance hierarchy:
+    - REQUIRED gains must be created (table stakes)
+    - EXPECTED gains should be created (baseline)
+    - DESIRED gains could be created (differentiation)
+    - UNEXPECTED gains might be created (delight)
+
+    Within each category, rank by customer value.
+  expected_output: >
+    Ranked list of gains with:
+    - Importance rank (1 = most important)
+    - Importance score (1-10)
+    - Category classification
+    - Top 5 gains that MUST be created
+  agent: gain_ranking
+  context:
+    - discover_gains
+
+compile_customer_profile:
+  description: >
+    Compile all discovered and ranked Jobs, Pains, and Gains into a complete
+    Customer Profile (right side of Value Proposition Canvas).
+
+    Ranked jobs: {ranked_jobs}
+    Ranked pains: {ranked_pains}
+    Ranked gains: {ranked_gains}
+
+    Create a CustomerProfile that includes:
+    - Segment name and description
+    - All jobs (with priority ranks)
+    - All pains (with severity ranks)
+    - All gains (with importance ranks)
+    - Summary statistics
+  expected_output: >
+    Complete CustomerProfile object with:
+    - segment_name
+    - segment_description
+    - jobs (list with ranks and evidence)
+    - pains (list with severity and evidence)
+    - gains (list with importance and evidence)
+    - jobs_validated count
+    - pains_validated count
+    - gains_validated count
+  agent: j1_jtbd_researcher
+  context:
+    - rank_jobs
+    - rank_pains
+    - rank_gains

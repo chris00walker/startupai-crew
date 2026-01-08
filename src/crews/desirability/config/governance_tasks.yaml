@@ -1,0 +1,87 @@
+# GovernanceCrew Task Definitions
+# Phase 2/3/4: Governance and Oversight
+
+methodology_compliance_check:
+  description: >
+    Review all validation activities for VPD methodology compliance.
+
+    Activities to review: {activities}
+    Expected methodology: VPD framework
+
+    Check:
+    1. Are Test Cards properly structured?
+    2. Are Learning Cards being captured?
+    3. Is evidence being categorized (SAY vs DO)?
+    4. Are assumptions properly prioritized?
+    5. Are exit criteria clearly defined?
+  expected_output: >
+    Methodology compliance report:
+    - Compliance status (PASS/FAIL/NEEDS_REVIEW)
+    - Deviations identified
+    - Recommendations for correction
+    - Risk assessment
+  agent: g1_qa_agent
+
+creative_qa:
+  description: >
+    Review all creative assets for quality and brand safety.
+
+    Assets to review: {creative_assets}
+
+    Check:
+    1. Brand safety (no controversial content)
+    2. Accuracy (no false claims)
+    3. Compliance (no misleading statements)
+    4. Quality (professional appearance)
+    5. Consistency (brand alignment)
+  expected_output: >
+    Creative QA report:
+    - QA status for each asset
+    - Issues identified
+    - Required corrections
+    - Approval recommendation
+  agent: g1_qa_agent
+
+security_review:
+  description: >
+    Review for PII exposure and security concerns.
+
+    Data to review: {experiment_data}
+    Systems involved: {systems}
+
+    Check:
+    1. PII identification and scrubbing
+    2. Consent compliance
+    3. Data handling security
+    4. Access control
+    5. Retention policy compliance
+  expected_output: >
+    Security review report:
+    - PII risks identified
+    - Scrubbing recommendations
+    - Compliance status
+    - Security recommendations
+  agent: g2_security_agent
+
+log_decisions:
+  description: >
+    Log all decisions for audit trail and flywheel learning.
+
+    Decisions to log: {decisions}
+    Phase context: {phase_context}
+
+    Log:
+    1. HITL decisions (with rationale)
+    2. Experiment configurations
+    3. Pivot recommendations
+    4. Gate progression decisions
+    5. Evidence quality assessments
+  expected_output: >
+    Audit log entry with:
+    - Decision ID
+    - Decision type
+    - Decision maker
+    - Rationale
+    - Evidence supporting decision
+    - Timestamp
+  agent: g3_audit_agent

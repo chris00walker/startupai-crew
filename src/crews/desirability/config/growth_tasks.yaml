@@ -1,0 +1,134 @@
+# GrowthCrew Task Definitions
+# Phase 2: Desirability - Ad Campaigns and Evidence Collection
+
+create_ad_variants:
+  description: >
+    Create ad creative variants for desirability testing.
+
+    Value Proposition: {value_proposition}
+    Target audience: {target_audience}
+    Landing page URLs: {landing_page_urls}
+
+    Create ad variants testing:
+    1. Problem-focused headline vs solution-focused headline
+    2. Different visual approaches
+    3. Different CTAs
+    4. Platform-specific variations (Meta, Google)
+
+    Each variant should test a specific hypothesis about what resonates.
+  expected_output: >
+    Ad creative package including:
+    - 3-5 ad variants with unique angles
+    - Headline variations
+    - Visual concepts
+    - CTA variations
+    - Hypothesis being tested by each variant
+  agent: p1_ad_creative
+
+write_copy_variants:
+  description: >
+    Write copy variants for ads and landing pages.
+
+    Ad concepts: {ad_concepts}
+    Customer pains: {customer_pains}
+    Value proposition: {value_proposition}
+
+    Write:
+    - Ad headlines (5+ variants)
+    - Ad body copy (3+ variants)
+    - Landing page headlines
+    - Landing page body copy
+    - CTA button text variants
+  expected_output: >
+    Copy package including:
+    - Ad headline variants with testing rationale
+    - Ad body copy variants
+    - Landing page copy variants
+    - CTA text variants
+  agent: p2_communications
+  context:
+    - create_ad_variants
+
+configure_experiments:
+  description: >
+    Configure the experiment setup for desirability testing.
+
+    Ad variants: {ad_variants}
+    Copy variants: {copy_variants}
+    Landing pages: {landing_pages}
+    Budget: {budget}
+
+    Configuration:
+    1. Platform setup (Meta Ads, Google Ads)
+    2. Audience targeting
+    3. Budget allocation
+    4. A/B test configuration
+    5. Tracking pixel setup
+    6. Conversion goals
+  expected_output: >
+    Experiment configuration including:
+    - Platform configurations
+    - Audience targeting specs
+    - Budget allocation by variant
+    - Tracking setup
+    - Success criteria
+  agent: p3_analytics
+  context:
+    - create_ad_variants
+    - write_copy_variants
+
+run_experiments:
+  description: >
+    Execute the configured experiments and collect data.
+
+    Experiment config: {experiment_config}
+    HITL approval: {hitl_approval}
+
+    Execute:
+    1. Launch ad campaigns
+    2. Monitor performance
+    3. Collect data (impressions, clicks, conversions)
+    4. Track form submissions
+    5. Aggregate results
+
+    Note: This task runs after approve_campaign_launch HITL.
+  expected_output: >
+    Raw experiment data including:
+    - Impressions by variant
+    - Clicks by variant
+    - Signups/conversions by variant
+    - Cost per result
+    - Campaign duration
+  agent: p3_analytics
+  context:
+    - configure_experiments
+
+compute_desirability_signals:
+  description: >
+    Compute Innovation Physics signals from experiment data.
+
+    Experiment results: {experiment_results}
+
+    Calculate:
+    1. problem_resonance = (clicks + signups) / impressions
+       - Target: ≥ 0.3 (30% resonance)
+
+    2. zombie_ratio = (clicks - signups) / clicks
+       - Target: < 0.7 (less than 70% zombies)
+
+    Determine desirability_signal:
+    - problem_resonance < 0.3: NO_INTEREST → SEGMENT_PIVOT
+    - problem_resonance ≥ 0.3 AND zombie_ratio ≥ 0.7: MILD_INTEREST → VALUE_PIVOT
+    - problem_resonance ≥ 0.3 AND zombie_ratio < 0.7: STRONG_COMMITMENT → Proceed
+  expected_output: >
+    DesirabilityEvidence object containing:
+    - ad_impressions, ad_clicks, ad_signups, ad_spend
+    - landing_page_visitors, cta_clicks, signups
+    - problem_resonance (calculated)
+    - zombie_ratio (calculated)
+    - conversion_rate
+    - commitment_type (evidence type)
+    - signal (STRONG_COMMITMENT / MILD_INTEREST / NO_INTEREST)
+  agent: p3_analytics
+  context:
+    - run_experiments

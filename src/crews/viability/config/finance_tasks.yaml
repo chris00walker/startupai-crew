@@ -1,0 +1,202 @@
+# FinanceCrew Task Definitions
+# Phase 4: Viability - Unit Economics
+
+calculate_cac:
+  description: >
+    Calculate Customer Acquisition Cost from experiment data.
+
+    Experiment data: {experiment_data}
+    Desirability evidence: {desirability_evidence}
+
+    CAC Calculation:
+    - Total ad spend from Phase 2
+    - Number of conversions (signups, trials, purchases)
+    - CAC = Total Spend / Conversions
+
+    Break down CAC by channel if data available:
+    - Paid acquisition (ads)
+    - Organic (if tracked)
+    - Referral (if tracked)
+  expected_output: >
+    CAC analysis:
+    - Total CAC: $X
+    - CAC breakdown by channel
+    - Data sources used
+    - Confidence level
+  agent: l1_financial_controller
+
+calculate_ltv:
+  description: >
+    Calculate Lifetime Value from pricing and retention data.
+
+    Pricing data: {pricing_data}
+    Business model: {business_model}
+
+    LTV Calculation approaches by model:
+    1. Subscription: ARPU × Gross Margin × (1 / Churn Rate)
+    2. E-commerce: AOV × Purchase Frequency × Customer Lifespan
+    3. Transaction: Revenue per Transaction × Transactions per Customer
+
+    Estimate churn if not available:
+    - Use industry benchmarks
+    - Be conservative (higher churn = lower LTV)
+  expected_output: >
+    LTV analysis:
+    - Total LTV: $X
+    - LTV breakdown
+    - Assumptions used
+    - Churn estimate and source
+    - Confidence level
+  agent: l1_financial_controller
+  context:
+    - calculate_cac
+
+compute_ltv_cac_ratio:
+  description: >
+    Compute LTV:CAC ratio and supporting metrics.
+
+    CAC: {cac}
+    LTV: {ltv}
+
+    Calculate:
+    1. LTV:CAC ratio
+    2. Payback period (months to recover CAC)
+    3. Gross margin percentage
+    4. Customer profitability
+
+    Thresholds:
+    - LTV:CAC ≥ 3.0: Healthy
+    - LTV:CAC 1.0-3.0: Marginal (watch carefully)
+    - LTV:CAC < 1.0: Underwater (losing money)
+  expected_output: >
+    Unit economics summary:
+    - LTV:CAC ratio: X:1
+    - Payback period: X months
+    - Gross margin: X%
+    - Customer profitability: $X
+    - Health assessment
+  agent: l1_financial_controller
+  context:
+    - calculate_cac
+    - calculate_ltv
+
+analyze_tam:
+  description: >
+    Analyze Total Addressable Market.
+
+    Customer segment: {customer_segment}
+    Pricing: {pricing}
+
+    Calculate:
+    - TAM: Total market if 100% share
+    - SAM: Serviceable market (geographic, capability limits)
+    - SOM: Realistic obtainable market (1-5 year target)
+
+    Check for "zombie market" risk:
+    - If TAM < $10M annual: Small market risk
+    - If SOM < $1M annual: Zombie market (not worth pursuing)
+  expected_output: >
+    Market analysis:
+    - TAM: $X
+    - SAM: $X
+    - SOM: $X
+    - Zombie market risk: YES/NO
+    - Market attractiveness assessment
+  agent: l1_financial_controller
+  context:
+    - compute_ltv_cac_ratio
+
+identify_regulatory_constraints:
+  description: >
+    Identify regulatory and compliance constraints affecting viability.
+
+    Business description: {business_description}
+    Target market: {target_market}
+
+    Review:
+    1. Industry-specific regulations
+    2. Data protection requirements (GDPR, CCPA, HIPAA)
+    3. Financial regulations (if money-handling)
+    4. Licensing requirements
+    5. Geographic restrictions
+
+    Estimate compliance costs:
+    - One-time setup costs
+    - Ongoing compliance costs
+    - Legal fees
+  expected_output: >
+    Compliance assessment:
+    - Applicable regulations
+    - Compliance cost estimate
+    - Licensing requirements
+    - Geographic restrictions
+    - Impact on viability
+  agent: l2_legal_compliance
+  context:
+    - compute_ltv_cac_ratio
+
+validate_assumptions:
+  description: >
+    Validate unit economics assumptions against industry benchmarks.
+
+    All calculations: {all_calculations}
+    Business model type: {business_model_type}
+
+    Validate:
+    1. CAC assumptions
+       - Is the conversion rate realistic?
+       - Does CAC include all costs?
+    2. LTV assumptions
+       - Is churn estimate realistic?
+       - Is pricing validated?
+    3. Margin assumptions
+       - Are all costs included?
+       - Is there hidden cost creep?
+
+    Apply benchmarks for business model type.
+    Flag any optimistic bias.
+  expected_output: >
+    Validation report:
+    - Assumption validity scores
+    - Benchmark comparisons
+    - Optimistic bias flags
+    - Adjusted estimates (if needed)
+    - Confidence assessment
+  agent: l3_economics_reviewer
+  context:
+    - calculate_cac
+    - calculate_ltv
+    - compute_ltv_cac_ratio
+    - analyze_tam
+    - identify_regulatory_constraints
+
+set_viability_signal:
+  description: >
+    Set the overall viability signal based on unit economics.
+
+    All analyses: {all_analyses}
+    Validated assumptions: {validated_assumptions}
+
+    Signal determination:
+    - PROFITABLE: LTV:CAC ≥ 3.0 AND TAM adequate
+    - MARGINAL: LTV:CAC 1.0-3.0 (needs optimization)
+    - UNDERWATER: LTV:CAC < 1.0 (losing money)
+    - ZOMBIE_MARKET: LTV:CAC okay but TAM too small
+
+    If not PROFITABLE, identify pivot options:
+    - PRICE_PIVOT: Increase prices
+    - COST_PIVOT: Reduce CAC or costs
+    - MODEL_PIVOT: Change business model
+    - KILL: No viable path
+  expected_output: >
+    Viability verdict:
+    - Signal: PROFITABLE/MARGINAL/UNDERWATER/ZOMBIE_MARKET
+    - Key metrics summary
+    - Pivot recommendations (if not profitable)
+    - Decision rationale
+    - Confidence level
+  agent: l1_financial_controller
+  context:
+    - compute_ltv_cac_ratio
+    - analyze_tam
+    - validate_assumptions

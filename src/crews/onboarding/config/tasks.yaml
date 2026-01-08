@@ -1,0 +1,205 @@
+# OnboardingCrew Task Definitions
+# Phase 0: Transform Founder's raw idea into structured Founder's Brief
+
+conduct_founder_interview:
+  description: >
+    Conduct a comprehensive conversational interview with the founder to understand
+    their business idea. Cover all 7 key areas:
+
+    1. THE IDEA: Ask them to describe their idea in their own words. Get the
+       one-sentence version they'd tell their grandmother.
+
+    2. THE MOTIVATION: Understand what made them want to build this. Is it a
+       problem they've personally experienced? Why them, why now?
+
+    3. CUSTOMER HYPOTHESIS: Who do they imagine using this? Can they describe
+       their ideal first customer? Where would they find these people?
+
+    4. PROBLEM HYPOTHESIS: What problem are they solving? How are customers
+       solving this today? What's painful about current alternatives?
+
+    5. SOLUTION HYPOTHESIS: How does their solution work? What's different about
+       their approach? What are the 2-3 key features that matter most?
+
+    6. KEY ASSUMPTIONS: What has to be true for this to work? What's the riskiest
+       assumption they're making? What would make them abandon this idea?
+
+    7. SUCCESS CRITERIA: What would make this worth pursuing? What metrics would
+       indicate they're on the right track? What's "good enough" to keep going?
+
+    Founder's input to analyze:
+    {entrepreneur_input}
+  expected_output: >
+    A structured interview summary containing:
+    - Raw interview notes organized by the 7 areas
+    - Key quotes from the founder (verbatim)
+    - Identified gaps or areas needing clarification
+    - Initial hypothesis statements extracted from responses
+    - Confidence level in each area (high/medium/low)
+  agent: o1_founder_interview
+
+validate_concept_legitimacy:
+  description: >
+    Review the interview output and validate that the business concept is legitimate.
+    Apply rigorous screening criteria:
+
+    LEGAL CHECK:
+    - Not involved in illegal goods/services (drugs, weapons, trafficking)
+    - Not facilitating fraud or financial crimes
+    - Not violating intellectual property laws
+    - Not circumventing regulations (securities, healthcare, etc.)
+    - Compliant with major jurisdiction laws (US, EU)
+
+    ETHICAL CHECK:
+    - Not exploiting vulnerable populations
+    - Not causing environmental harm
+    - Not enabling harassment or discrimination
+    - Not spreading misinformation
+    - Transparent about what it does
+
+    FEASIBILITY CHECK:
+    - Not requiring technology that doesn't exist
+    - Not violating laws of physics
+    - Not requiring impossible resources
+    - Has some plausible path to execution
+
+    BUSINESS SANITY CHECK:
+    - Has identifiable potential customers
+    - Solves a problem someone might have
+    - Has some conceivable revenue model
+    - Not already tried and failed catastrophically
+
+    Interview output to review:
+    {interview_output}
+  expected_output: >
+    A legitimacy report in JSON format:
+    {
+      "legitimacy_status": "PASS | FAIL | NEEDS_REVIEW",
+      "legal_check": {"status": "PASS|FAIL", "flags": [], "notes": ""},
+      "ethical_check": {"status": "PASS|FAIL", "flags": [], "notes": ""},
+      "feasibility_check": {"status": "PASS|FAIL", "flags": [], "notes": ""},
+      "business_sanity_check": {"status": "PASS|FAIL", "flags": [], "notes": ""},
+      "overall_recommendation": "Summary of why concept should/shouldn't proceed",
+      "concerns_to_address": ["List of specific concerns if any"]
+    }
+  agent: gv1_concept_validator
+  context:
+    - conduct_founder_interview
+
+verify_intent_capture:
+  description: >
+    Compare the interview output with the founder's original input to verify
+    that their intent was captured correctly. Check for:
+
+    COMPLETENESS:
+    - Were all 7 interview areas covered?
+    - Is the customer hypothesis captured?
+    - Is the problem hypothesis captured?
+    - Is the solution hypothesis captured?
+    - Are key assumptions identified?
+    - Are success criteria defined?
+
+    ACCURACY:
+    - Does the summary reflect what was said?
+    - Are there words put in the founder's mouth?
+    - Are nuances preserved?
+    - Is the enthusiasm level captured?
+
+    CLARITY:
+    - Are ambiguous terms clarified?
+    - Is industry jargon explained?
+    - Is the scope clearly bounded?
+    - Is the target market defined?
+
+    CONSISTENCY:
+    - Do customer and problem align?
+    - Does the solution address the stated problem?
+    - Are success criteria measurable?
+    - Are assumptions testable?
+
+    Original founder input:
+    {entrepreneur_input}
+
+    Interview output to verify:
+    {interview_output}
+  expected_output: >
+    An intent verification report:
+    {
+      "verification_status": "PASS | FAIL | NEEDS_FOLLOWUP",
+      "completeness": {"status": "PASS|FAIL", "gaps": []},
+      "accuracy": {"status": "PASS|FAIL", "issues": []},
+      "clarity": {"status": "PASS|FAIL", "ambiguities": []},
+      "consistency": {"status": "PASS|FAIL", "contradictions": []},
+      "followup_questions": ["List of questions if status is NEEDS_FOLLOWUP"],
+      "overall_assessment": "Summary of verification findings"
+    }
+  agent: gv2_intent_verification
+  context:
+    - conduct_founder_interview
+
+compile_founders_brief:
+  description: >
+    Synthesize all inputs (interview output, legitimacy report, intent verification)
+    into a complete, structured Founder's Brief. This is the PRIME ARTIFACT that
+    will guide all downstream validation work.
+
+    The Founder's Brief must include:
+
+    1. THE IDEA
+       - one_liner: Single sentence description
+       - description: Full explanation
+       - inspiration: What motivated this idea
+       - unique_insight: What the founder sees that others don't
+
+    2. PROBLEM HYPOTHESIS (marked as HYPOTHESIS - NOT VALIDATED)
+       - problem_statement: Clear articulation of the problem
+       - who_has_this_problem: Target customer description
+       - frequency: How often they face this problem
+       - current_alternatives: How they solve it today
+       - why_alternatives_fail: Pain points with current solutions
+
+    3. CUSTOMER HYPOTHESIS (marked as HYPOTHESIS - NOT VALIDATED)
+       - primary_segment: Who this is for
+       - segment_description: Detailed characteristics
+       - where_to_find_them: Acquisition channels
+
+    4. SOLUTION HYPOTHESIS (marked as HYPOTHESIS - NOT VALIDATED)
+       - proposed_solution: How it works
+       - key_features: Top 2-3 features
+       - differentiation: What makes it different
+
+    5. KEY ASSUMPTIONS (ranked by risk)
+       - List each assumption with: category, risk_level, how_to_test
+
+    6. SUCCESS CRITERIA
+       - minimum_viable_signal: What "validated" looks like
+       - deal_breakers: What would kill the idea
+       - target_metrics: Quantitative goals
+
+    7. FOUNDER CONTEXT
+       - background: Relevant experience
+       - motivation: Why they're doing this
+       - time_commitment: Full-time, part-time, exploring
+       - resources_available: What they can invest
+
+    8. QA STATUS
+       - legitimacy_check: From GV1
+       - intent_verification: From GV2
+       - overall_status: APPROVED, REJECTED, or PENDING
+
+    Interview output: {interview_output}
+    Legitimacy report: {legitimacy_report}
+    Intent verification: {intent_verification}
+  expected_output: >
+    A complete Founder's Brief as a structured JSON document ready for human
+    approval at the approve_founders_brief HITL checkpoint. The brief should be:
+    - Complete: All sections filled out
+    - Accurate: Reflects founder's actual intent
+    - Actionable: Clear enough to guide Phase 1 validation
+    - Honest: Hypotheses clearly marked as unvalidated
+  agent: s1_brief_compiler
+  context:
+    - conduct_founder_interview
+    - validate_concept_legitimacy
+    - verify_intent_capture
+  output_pydantic: FoundersBrief

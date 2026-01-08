@@ -1,0 +1,239 @@
+# FeasibilityBuildCrew Task Definitions
+# Phase 3: Feasibility - Technical Assessment
+
+extract_feature_requirements:
+  description: >
+    Extract features from the VPC Value Map and map to technical requirements.
+
+    Value Map: {value_map}
+    Customer Profile: {customer_profile}
+
+    Extract:
+    1. Products/Services → Technical components
+    2. Pain Relievers → Required functionality
+    3. Gain Creators → Feature specifications
+
+    Map each feature to:
+    - Technical implementation approach
+    - Required technologies
+    - Integration points
+    - Dependencies
+  expected_output: >
+    Feature requirements document:
+    - Feature list with technical mapping
+    - Technology requirements
+    - Integration requirements
+    - Dependency list
+  agent: f1_requirements_analyst
+
+assess_ui_complexity:
+  description: >
+    Assess the UI/UX complexity on a 1-10 scale.
+
+    Feature requirements: {feature_requirements}
+
+    Evaluate:
+    1. Number of unique screens/views
+    2. Interaction complexity
+    3. Data visualization needs
+    4. Real-time update requirements
+    5. Responsive design complexity
+    6. Accessibility requirements
+  expected_output: >
+    UI complexity assessment:
+    - Complexity score (1-10)
+    - Breakdown by area
+    - Key challenges identified
+    - Risk factors
+  agent: f1_requirements_analyst
+  context:
+    - extract_feature_requirements
+
+assess_frontend_complexity:
+  description: >
+    Assess frontend build complexity and development effort.
+
+    Feature requirements: {feature_requirements}
+    UI complexity: {ui_complexity}
+
+    Evaluate:
+    1. Component count and complexity
+    2. State management requirements
+    3. API integration patterns
+    4. Performance requirements
+    5. Testing requirements
+  expected_output: >
+    Frontend assessment:
+    - Complexity score (1-10)
+    - Framework recommendation
+    - Development hours estimate
+    - Key risks and constraints
+  agent: f2_frontend_assessor
+  context:
+    - extract_feature_requirements
+    - assess_ui_complexity
+
+identify_framework_requirements:
+  description: >
+    Identify required frameworks, libraries, and technologies.
+
+    Frontend assessment: {frontend_assessment}
+
+    Identify:
+    1. Core framework (Next.js, React, etc.)
+    2. UI component library
+    3. State management
+    4. API client libraries
+    5. Testing frameworks
+    6. Build tools
+  expected_output: >
+    Technology stack specification:
+    - Core technologies
+    - Supporting libraries
+    - Development tools
+    - Version requirements
+  agent: f2_frontend_assessor
+  context:
+    - assess_frontend_complexity
+
+design_lite_variant:
+  description: >
+    Design a minimal viable feature set for the downgrade protocol.
+
+    Full feature requirements: {feature_requirements}
+
+    If feasibility is constrained (ORANGE), design a "lite" version:
+    1. Core features that must be retained
+    2. Features that can be removed or simplified
+    3. Impact of each removal on value proposition
+    4. Minimum viable experience
+
+    Remember: Customers must still want the lite version.
+  expected_output: >
+    Lite variant specification:
+    - Core features (must have)
+    - Optional features (can remove)
+    - Impact analysis for each removal
+    - Minimum viable feature set
+  agent: f1_requirements_analyst
+  context:
+    - extract_feature_requirements
+    - assess_ui_complexity
+
+assess_backend_architecture:
+  description: >
+    Assess backend architecture requirements and complexity.
+
+    Feature requirements: {feature_requirements}
+
+    Evaluate:
+    1. Database design (schema complexity, relationships)
+    2. API architecture (REST, GraphQL, WebSockets)
+    3. Business logic complexity
+    4. Data processing requirements
+    5. Security requirements (auth, encryption)
+    6. Scalability requirements
+  expected_output: >
+    Backend architecture assessment:
+    - Complexity score (1-10)
+    - Database design approach
+    - API architecture recommendation
+    - Security considerations
+    - Scalability approach
+  agent: f3_backend_assessor
+  context:
+    - extract_feature_requirements
+    - identify_framework_requirements
+
+evaluate_api_integrations:
+  description: >
+    Evaluate required third-party API integrations.
+
+    Backend architecture: {backend_architecture}
+
+    For each integration:
+    1. API availability and reliability
+    2. Cost per call/request
+    3. Rate limits and constraints
+    4. Data privacy implications
+    5. Fallback options
+  expected_output: >
+    Integration assessment:
+    - Required integrations list
+    - Cost estimates per integration
+    - Risk assessment
+    - Fallback strategies
+  agent: f3_backend_assessor
+  context:
+    - assess_backend_architecture
+
+estimate_costs:
+  description: >
+    Estimate infrastructure and development costs.
+
+    All assessments: {assessments}
+
+    Estimate:
+    1. Development cost (one-time)
+       - Frontend development hours × rate
+       - Backend development hours × rate
+       - Integration work
+       - Testing and QA
+
+    2. Infrastructure cost (monthly)
+       - Hosting (compute, storage)
+       - Database
+       - Third-party APIs
+       - CDN and bandwidth
+
+    3. Operational cost (monthly)
+       - Monitoring
+       - Support tools
+       - Maintenance
+  expected_output: >
+    Cost estimates:
+    - Development cost (one-time): $X
+    - Infrastructure cost (monthly): $X
+    - API costs (monthly): $X
+    - Total monthly operational cost: $X
+    - Assumptions and caveats
+  agent: f3_backend_assessor
+  context:
+    - assess_backend_architecture
+    - evaluate_api_integrations
+
+set_feasibility_signal:
+  description: >
+    Set the overall feasibility signal based on all assessments.
+
+    All assessments: {all_assessments}
+    Cost estimates: {cost_estimates}
+    Lite variant: {lite_variant}
+
+    Signal determination:
+    - GREEN: All features feasible, reasonable costs
+    - ORANGE_CONSTRAINED: Feasible with feature removal
+      - Must specify which features to remove
+      - Lite variant becomes the new target
+    - RED_IMPOSSIBLE: Not feasible
+      - Technical impossibility OR
+      - Prohibitive costs (>$50k/month infrastructure)
+
+    If ORANGE: Specify downgrade requirements
+    If RED: Document blocking constraints
+  expected_output: >
+    Feasibility verdict:
+    - Signal: GREEN/ORANGE_CONSTRAINED/RED_IMPOSSIBLE
+    - Confidence: 0.0-1.0
+    - Key findings summary
+    - If ORANGE: Features to remove
+    - If RED: Blocking constraints
+    - Cost summary
+    - Recommendation
+  agent: f3_backend_assessor
+  context:
+    - assess_frontend_complexity
+    - assess_backend_architecture
+    - evaluate_api_integrations
+    - estimate_costs
+    - design_lite_variant

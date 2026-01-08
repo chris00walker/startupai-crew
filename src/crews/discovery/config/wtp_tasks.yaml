@@ -1,0 +1,94 @@
+# WTPCrew Task Definitions
+# Phase 1: VPC Discovery - Willingness to Pay Validation
+
+design_wtp_experiments:
+  description: >
+    Design WTP (Willingness to Pay) experiments to validate that customers
+    will pay for the proposed value.
+
+    Value Map: {value_map}
+    Customer Profile: {customer_profile}
+    Founder's pricing hypothesis: {pricing_hypothesis}
+
+    Design a mix of experiments:
+
+    1. DISCOVERY (Stated) - understand price sensitivity
+       - Van Westendorp: Too expensive, Expensive but consider, Good deal, Too cheap
+       - Conjoint: Trade-off between features and price
+
+    2. VALIDATION (Behavioral) - confirm with actions
+       - A/B Price Testing: Same offer, different prices
+       - Mock Sale: Full checkout flow, payment not processed
+       - Pre-sale: Actual payment collected (requires HITL)
+
+    For each experiment design:
+    - Experiment type
+    - Methodology
+    - Target sample size
+    - Success criteria
+    - Cost estimate
+    - Risk of real $ involved (triggers HITL)
+  expected_output: >
+    WTP experiment design document with:
+    - Recommended experiment sequence
+    - Each experiment's methodology and setup
+    - Success criteria for each
+    - Overall validation strategy
+    - Flag if HITL approval needed (real $ involved)
+  agent: w1_pricing_experiment
+
+execute_payment_tests:
+  description: >
+    Execute the designed payment tests to collect behavioral WTP evidence.
+
+    Experiment designs: {wtp_experiments}
+    HITL approval status: {hitl_approval}
+
+    Execute tests in order of cost/reliability:
+    1. Start with stated preference tests (Van Westendorp)
+    2. Progress to mock checkout tests
+    3. Only execute real payment tests if HITL approved
+
+    Collect data on:
+    - Price points tested
+    - Conversion rates at each price
+    - Optimal price range
+    - Price ceiling and floor
+    - Elasticity indicators
+  expected_output: >
+    Payment test results with:
+    - Tests executed (with methodology)
+    - Sample sizes achieved
+    - Conversion rates at each price point
+    - Optimal price recommendation
+    - Confidence level in WTP validation
+  agent: w2_payment_test
+  context:
+    - design_wtp_experiments
+
+synthesize_wtp_evidence:
+  description: >
+    Synthesize all WTP evidence into a validation verdict.
+
+    Stated preference data: {stated_preference_data}
+    Behavioral test results: {behavioral_results}
+
+    Determine:
+    1. Is there validated WTP for this value proposition?
+    2. What is the optimal price range?
+    3. What is the confidence level?
+
+    WTP is considered validated if:
+    - Behavioral evidence shows > 3% conversion at target price
+    - OR stated + behavioral evidence align on price range
+  expected_output: >
+    WTP synthesis report with:
+    - WTP validation verdict (validated/not_validated)
+    - Optimal price range
+    - Recommended price point
+    - Evidence strength (behavioral vs stated)
+    - Confidence score
+    - Implications for business model
+  agent: w1_pricing_experiment
+  context:
+    - execute_payment_tests

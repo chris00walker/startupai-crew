@@ -1,0 +1,105 @@
+# FitAssessmentCrew Task Definitions
+# Phase 1: VPC Discovery - Fit Scoring + Iteration Routing
+
+calculate_fit_score:
+  description: >
+    Calculate the Problem-Solution Fit score by comparing the Value Map
+    against the Customer Profile.
+
+    Customer Profile: {customer_profile}
+    Value Map: {value_map}
+    WTP validation: {wtp_validation}
+
+    Calculate:
+    1. JOBS ADDRESSED %
+       - Count top jobs with products/services addressing them
+       - Threshold: ≥ 75%
+
+    2. PAINS ADDRESSED %
+       - Count severe pains with pain relievers
+       - Threshold: ≥ 75%
+
+    3. GAINS ADDRESSED %
+       - Count important gains with gain creators
+       - Threshold: ≥ 70%
+
+    4. WTP VALIDATED
+       - Binary: Is WTP evidence sufficient?
+       - Threshold: true
+
+    FIT SCORE = (Jobs*0.30) + (Pains*0.35) + (Gains*0.25) + (WTP*0.10)
+  expected_output: >
+    Fit score calculation with:
+    - Jobs addressed percentage
+    - Pains addressed percentage
+    - Gains addressed percentage
+    - WTP validation status
+    - Overall fit score (0-100)
+    - Exit criteria met (true/false for each)
+  agent: fit_score_analyst
+
+determine_routing:
+  description: >
+    Determine the routing decision based on the fit score calculation.
+
+    Fit score results: {fit_score_results}
+
+    Apply routing logic:
+
+    IF fit_score < 40:
+      RETURN "SEGMENT_PIVOT"
+      # Wrong customer segment - needs radical change
+
+    ELIF fit_score < 70:
+      IF jobs_addressed < 75%:
+        RETURN "ITERATE_JOBS"
+      ELIF pains_addressed < 75%:
+        RETURN "ITERATE_PAINS"
+      ELIF gains_addressed < 70%:
+        RETURN "ITERATE_GAINS"
+      ELSE:
+        RETURN "ITERATE_VALUE_MAP"
+      # Right customer, wrong value - iterate on weak areas
+
+    ELSE:
+      RETURN "VPC_COMPLETE"
+      # Fit achieved - proceed to HITL approval
+  expected_output: >
+    Routing decision with:
+    - Route selected (SEGMENT_PIVOT, ITERATE_*, VPC_COMPLETE)
+    - Rationale for routing
+    - If iterate: specific areas to improve
+    - If complete: summary for HITL approval
+  agent: fit_route_agent
+  context:
+    - calculate_fit_score
+
+compile_fit_assessment:
+  description: >
+    Compile the final fit assessment for Phase 1 completion.
+
+    Fit score calculation: {fit_score_results}
+    Routing decision: {routing_decision}
+    Customer Profile: {customer_profile}
+    Value Map: {value_map}
+
+    Create a comprehensive FitAssessment that:
+    - Summarizes Problem-Solution Fit status
+    - Documents all metrics and thresholds
+    - Provides evidence summary
+    - States gate readiness
+  expected_output: >
+    Complete FitAssessment object with:
+    - fit_score (0-100)
+    - fit_status (strong/moderate/weak/none)
+    - profile_completeness (0-1)
+    - value_map_coverage (0-1)
+    - evidence_strength (strong/weak/none)
+    - experiments_run count
+    - experiments_passed count
+    - gate_ready (boolean)
+    - blockers (list if not ready)
+  agent: fit_score_analyst
+  context:
+    - calculate_fit_score
+    - determine_routing

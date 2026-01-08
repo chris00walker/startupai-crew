@@ -1,0 +1,184 @@
+# DiscoveryCrew Task Definitions
+# Phase 1: VPC Discovery - Segment Validation + Evidence Collection
+
+map_assumptions:
+  description: >
+    Analyze the Founder's Brief and map all assumptions on a 2×2 matrix
+    (importance × evidence). Identify the riskiest assumptions that need
+    testing first.
+
+    Founder's Brief: {founders_brief}
+
+    Create an Assumptions Map with:
+    1. Extract all assumptions from the brief (customer, problem, solution)
+    2. Rate each assumption's importance (how critical if wrong)
+    3. Rate current evidence level (how well-tested already)
+    4. Position on 2×2 matrix
+    5. Prioritize top-left quadrant (important but unproven)
+  expected_output: >
+    An assumptions map containing:
+    - List of all assumptions with category (customer/problem/solution)
+    - Importance rating (1-10) for each
+    - Evidence rating (1-10) for each
+    - Priority ranking (1=test first)
+    - Top 5 assumptions to test immediately
+  agent: e1_experiment_designer
+
+design_test_cards:
+  description: >
+    Design Test Cards for the top assumptions identified in the assumptions
+    mapping. Each Test Card should follow the Testing Business Ideas format.
+
+    Top assumptions to test: {assumptions_to_test}
+
+    For each assumption, create a Test Card with:
+    1. Hypothesis: Clear, testable statement
+    2. Test: Specific experiment to run
+    3. Metric: What to measure
+    4. Criteria: Clear pass/fail threshold
+    5. Time box: Duration limit
+    6. Cost estimate: Resources required
+  expected_output: >
+    A set of Test Cards, each containing:
+    - Test Card ID
+    - Hypothesis statement
+    - Test description
+    - Metric to measure
+    - Success criteria (specific threshold)
+    - Estimated time and cost
+    - Experiment type (interview, observation, CTA)
+  agent: e1_experiment_designer
+  context:
+    - map_assumptions
+
+conduct_discovery_interviews:
+  description: >
+    Conduct discovery interviews with potential customers using The Mom Test
+    methodology. Focus on understanding their problems, needs, and behaviors
+    in the PAST rather than hypothetical futures.
+
+    Customer segment to interview: {customer_segment}
+    Jobs to explore: {jobs_to_explore}
+    Pains to explore: {pains_to_explore}
+
+    Interview Guide:
+    1. "Tell me about the last time you [did relevant activity]"
+    2. "What was the hardest part?"
+    3. "How did you deal with [specific pain]?"
+    4. "What solutions have you tried?"
+    5. "What happened when you tried [solution]?"
+
+    Remember: Focus on PAST behaviors and FACTS, not opinions about the future.
+  expected_output: >
+    Interview insights containing:
+    - Number of interviews conducted
+    - Key themes identified
+    - Jobs discovered (with frequency count)
+    - Pains discovered (with severity indicators)
+    - Gains discovered (with importance indicators)
+    - Direct quotes supporting findings
+    - Confidence level in each finding
+  agent: d1_customer_interview
+  context:
+    - design_test_cards
+
+mine_behavioral_evidence:
+  description: >
+    Collect DO-indirect evidence from existing customer behavior. Search for
+    behavioral signals in:
+    - Discussion forums (Reddit, industry forums, LinkedIn groups)
+    - Reviews (App stores, G2, Capterra, industry review sites)
+    - Search trends (Google Trends, keyword volumes)
+    - Social media discussions
+
+    Customer segment to research: {customer_segment}
+    Problems to investigate: {problems_to_investigate}
+
+    Look for:
+    - What questions are customers asking?
+    - What problems are they discussing?
+    - What solutions have they tried?
+    - What language do they use?
+    - What do they love/hate about alternatives?
+  expected_output: >
+    Behavioral evidence report containing:
+    - Sources analyzed (forums, reviews, trends)
+    - Problem validation evidence (with source links)
+    - Current alternatives mentioned
+    - Sentiment toward alternatives
+    - Language patterns customers use
+    - Search volume trends
+    - Evidence strength rating (strong/moderate/weak)
+  agent: d2_observation_agent
+  context:
+    - conduct_discovery_interviews
+
+execute_cta_experiments:
+  description: >
+    Design and execute CTA (call-to-action) experiments to collect DO-direct
+    evidence of customer interest. These tests measure actual behavior, not
+    just stated interest.
+
+    Value proposition to test: {value_proposition}
+    Target segment: {customer_segment}
+
+    Experiment types to consider:
+    1. Smoke Test (Landing Page)
+       - Measure: Signup rate
+       - Pass: 5% signup
+
+    2. Explainer Video
+       - Measure: Watch-through rate + CTA
+       - Pass: 40% complete, 10% CTA
+
+    3. Online Ad Campaign
+       - Measure: CTR + conversion
+       - Pass: 1% CTR, 5% conversion
+
+    Design the most cost-effective experiment that will produce reliable
+    behavioral evidence.
+  expected_output: >
+    CTA experiment results containing:
+    - Experiment type selected
+    - Test setup details
+    - Sample size reached
+    - Key metrics measured
+    - Pass/fail against criteria
+    - Conversion data
+    - Statistical confidence level
+    - Key insights from behavioral data
+  agent: d3_cta_test_agent
+  context:
+    - mine_behavioral_evidence
+
+triangulate_evidence:
+  description: >
+    Synthesize all evidence collected (SAY from interviews, DO-indirect from
+    observations, DO-direct from CTA tests) and identify discrepancies.
+
+    Evidence sources:
+    - Interview insights: {interview_insights}
+    - Behavioral evidence: {behavioral_evidence}
+    - CTA experiment results: {cta_results}
+
+    Triangulation process:
+    1. Weight evidence by hierarchy (DO > SAY)
+    2. Calculate overall confidence score
+    3. Identify discrepancies:
+       - SAYING_YES_DOING_NO = Major red flag (false positive risk)
+       - SAYING_NO_DOING_YES = Latent demand (opportunity signal)
+    4. Determine segment validation status
+  expected_output: >
+    Evidence synthesis report containing:
+    - Total evidence collected by type
+    - Weighted confidence score (0-100)
+    - SAY vs DO alignment analysis
+    - Discrepancies identified (with implications)
+    - Segment validation verdict (exists/not_found)
+    - Customer profile confidence level
+    - Recommendations for next steps
+  agent: d4_evidence_triangulation
+  context:
+    - conduct_discovery_interviews
+    - mine_behavioral_evidence
+    - execute_cta_experiments

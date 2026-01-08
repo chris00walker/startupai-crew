@@ -1,0 +1,81 @@
+# BuildCrew Task Definitions
+# Phase 2: Desirability - Build Testable Artifacts
+
+design_landing_page:
+  description: >
+    Design landing page wireframes that communicate the value proposition
+    and test desirability.
+
+    Value Proposition: {value_proposition}
+    Customer Profile: {customer_profile}
+    Key messaging: {key_messaging}
+
+    Design elements to include:
+    1. Hero section with value proposition headline
+    2. Problem/pain acknowledgment
+    3. Solution/benefit showcase
+    4. Social proof elements
+    5. Clear CTA (signup, waitlist, etc.)
+    6. Mobile responsive layout
+
+    Create at least 2 variants for A/B testing:
+    - Variant A: Problem-focused headline
+    - Variant B: Solution-focused headline
+  expected_output: >
+    Landing page design specs including:
+    - Wireframe descriptions for each section
+    - Copy placeholders with messaging strategy
+    - CTA button text and placement
+    - A/B test variants
+    - Mobile layout specifications
+  agent: f1_ux_designer
+
+build_landing_page:
+  description: >
+    Build the landing pages based on the design specifications.
+
+    Design specs: {design_specs}
+    Brand guidelines: {brand_guidelines}
+
+    Technical requirements:
+    - Next.js with TypeScript
+    - Tailwind CSS for styling
+    - shadcn/ui components
+    - Form submission handling
+    - Analytics event tracking
+    - A/B test variant support
+  expected_output: >
+    Built landing page with:
+    - Component code (React/Next.js)
+    - Styling (Tailwind classes)
+    - Form handling logic
+    - Analytics integration points
+    - A/B test variant logic
+  agent: f2_frontend_developer
+  context:
+    - design_landing_page
+
+deploy_artifacts:
+  description: >
+    Deploy the landing pages to Netlify for the validation experiments.
+
+    Built pages: {built_pages}
+    Domain configuration: {domain_config}
+
+    Deployment tasks:
+    1. Configure Netlify site
+    2. Set up environment variables
+    3. Configure form handling
+    4. Set up analytics
+    5. Configure A/B test routing
+    6. SSL certificate verification
+  expected_output: >
+    Deployment report with:
+    - Live URLs for each variant
+    - Analytics dashboard access
+    - Form submission webhook URLs
+    - A/B test configuration
+    - SSL status
+  agent: f3_backend_developer
+  context:
+    - build_landing_page

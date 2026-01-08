@@ -1,0 +1,173 @@
+# SynthesisCrew Task Definitions
+# Phase 4: Viability - Evidence Synthesis and Decision
+
+synthesize_evidence:
+  description: >
+    Synthesize all evidence from the validation funnel.
+
+    Phase evidence:
+    - Phase 0: {founders_brief}
+    - Phase 1: {vpc_evidence}
+    - Phase 2: {desirability_evidence}
+    - Phase 3: {feasibility_evidence}
+    - Phase 4: {viability_evidence}
+
+    Create comprehensive synthesis:
+    1. Phase-by-phase summary
+    2. Key signals at each phase
+    3. Pivots taken (if any)
+    4. Evidence strength assessment
+    5. Critical insights
+  expected_output: >
+    Evidence synthesis:
+    - Executive summary (2-3 sentences)
+    - Phase summaries with signals
+    - Total experiments run
+    - Total pivots taken
+    - Evidence strength: STRONG/MODERATE/WEAK
+    - Key insights
+  agent: c1_product_pm
+
+propose_options:
+  description: >
+    Generate evidence-based pivot/proceed options.
+
+    Evidence synthesis: {evidence_synthesis}
+    Viability signal: {viability_signal}
+
+    For each viable option:
+    1. Option name and description
+    2. What it would change
+    3. Evidence supporting it
+    4. Risks and trade-offs
+    5. Effort/timeline estimate
+    6. Success criteria
+
+    Standard options:
+    - If PROFITABLE: PROCEED to execution
+    - If MARGINAL/UNDERWATER: PRICE_PIVOT, COST_PIVOT, MODEL_PIVOT, KILL
+    - If ZOMBIE_MARKET: MODEL_PIVOT, KILL
+  expected_output: >
+    Decision options:
+    - Recommended option (with reasoning)
+    - All viable options with:
+      - Description
+      - Trade-offs
+      - Success criteria
+      - Risk level
+    - Options NOT recommended (with reasoning)
+  agent: c1_product_pm
+  context:
+    - synthesize_evidence
+
+present_viability_decision:
+  description: >
+    Present options for HITL decision (request_human_decision).
+
+    Evidence synthesis: {evidence_synthesis}
+    Decision options: {decision_options}
+
+    Create HITL presentation:
+    1. Clear statement of the situation
+    2. Key metrics summary
+    3. Options with trade-offs
+    4. Recommended action (if any)
+    5. Required decision from founder
+
+    Note: This generates the HITL checkpoint content.
+    The actual decision comes from human input.
+  expected_output: >
+    HITL presentation:
+    - Situation summary
+    - Viability signal explanation
+    - Unit economics summary
+    - Decision options (formatted for UI)
+    - Recommendation
+    - Required input: [PRICE_PIVOT/COST_PIVOT/MODEL_PIVOT/PROCEED/KILL]
+  agent: c2_human_approval
+  context:
+    - synthesize_evidence
+    - propose_options
+
+document_decision:
+  description: >
+    Document the final decision and rationale.
+
+    Human decision: {human_decision}
+    Evidence synthesis: {evidence_synthesis}
+
+    Create decision record:
+    1. Decision made
+    2. Who made it (HITL/auto)
+    3. Rationale
+    4. Evidence supporting decision
+    5. Next steps
+
+    If PROCEED:
+    - Validated business model summary
+    - Key metrics
+    - Recommended next actions
+
+    If PIVOT:
+    - Pivot type and target
+    - What will change
+    - Success criteria for pivot
+
+    If KILL:
+    - Termination reason
+    - Key learnings
+    - Postmortem summary
+  expected_output: >
+    Decision document:
+    - Decision: [PROCEED/PRICE_PIVOT/COST_PIVOT/MODEL_PIVOT/KILL]
+    - Rationale
+    - Evidence summary
+    - Next steps
+    - Validation status: VALIDATED/KILLED/PIVOTING
+  agent: c3_roadmap_writer
+  context:
+    - synthesize_evidence
+    - present_viability_decision
+
+capture_learnings:
+  description: >
+    Capture learnings for the flywheel.
+
+    Full validation history: {validation_history}
+    Decision document: {decision_document}
+
+    Extract and document:
+    1. What worked well
+       - Effective experiments
+       - Useful signals
+       - Good pivot decisions
+
+    2. What didn't work
+       - Failed experiments
+       - Misleading signals
+       - Delayed pivots
+
+    3. Methodology improvements
+       - Process refinements
+       - Better metrics
+       - Tool improvements
+
+    4. Business model insights
+       - Customer insights
+       - Pricing learnings
+       - Channel learnings
+
+    5. Reusable patterns
+       - What could help future projects
+  expected_output: >
+    Flywheel entry:
+    - Project summary
+    - Final outcome
+    - Key learnings (5-10 items)
+    - Methodology improvements
+    - Reusable patterns
+    - Warnings for future projects
+  agent: c3_roadmap_writer
+  context:
+    - synthesize_evidence
+    - document_decision

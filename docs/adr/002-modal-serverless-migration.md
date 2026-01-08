@@ -1,6 +1,6 @@
 # ADR-002: Migration to Modal Serverless Architecture
 
-**Status**: Proposed
+**Status**: Accepted
 **Date**: 2026-01-08
 **Decision Makers**: Chris Walker, Claude AI Assistant
 **Context**: Platform-agnostic deployment after CrewAI AMP failures
@@ -102,6 +102,58 @@ Modal App: startupai-validation
 └── @periodic hitl_expiration_check  → Every 6h: expire stale approvals
 ```
 
+### Function Configuration
+
+Each phase function is configured for long-running LLM workloads:
+
+```python
+@app.function(
+    secrets=[modal.Secret.from_name("startupai-secrets")],
+    timeout=3600,      # 1 hour per phase (24h max supported)
+    cpu=2.0,           # 2 cores for LLM orchestration
+    memory=4096,       # 4 GiB RAM for agent state
+    retries=modal.Retries(max_retries=3, initial_delay=1.0),
+    enable_memory_snapshot=True,  # Faster cold starts
+)
+def phase_1_vpc_discovery(run_id: str):
+    ...
+```
+
+| Setting | Value | Rationale |
+|---------|-------|-----------|
+| `timeout` | 3600 (1 hour) | Conservative; individual phases typically <30 min |
+| `cpu` | 2.0 | LLM orchestration is CPU-bound when not waiting |
+| `memory` | 4096 MiB | Agent state + CrewAI + dependencies |
+| `retries` | 3 | Resilience against preemption and transient failures |
+| `enable_memory_snapshot` | True | Cache initialized Python state for faster cold starts |
+
+**Preemption Handling**: Modal may preempt long-running functions (rare). The retry configuration provides resilience. For phases >1 hour, consider mid-phase checkpoints to Supabase.
+
+### Web Endpoint Configuration
+
+The FastAPI ASGI app requires CORS middleware (not auto-enabled like `@web_endpoint`):
+
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+web_app = FastAPI(title="StartupAI Validation API")
+
+web_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://app.startupai.site", "https://startupai.site"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.function()
+@modal.asgi_app()
+def fastapi_app():
+    return web_app
+```
+
+**HTTP Timeout**: Modal has a 150-second HTTP timeout. Our architecture correctly uses the polling pattern (kickoff returns 202, client polls /status).
+
 ### HITL Checkpoint-and-Resume Pattern
 
 Critical insight: **containers don't wait for humans**. They checkpoint to Supabase and terminate.
@@ -198,6 +250,63 @@ def verify_auth(authorization: str) -> bool:
     return True
 ```
 
+### Observability
+
+**Logging Strategy**: Use structured JSON logging for queryable logs:
+
+```python
+import logging
+import json
+
+logging.basicConfig(
+    format='{"timestamp":"%(asctime)s","level":"%(levelname)s","message":"%(message)s"}',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+@app.function()
+def phase_1_vpc_discovery(run_id: str):
+    logger.info(json.dumps({
+        "event": "phase_start",
+        "run_id": run_id,
+        "phase": 1,
+        "crew": "discovery"
+    }))
+```
+
+**Log Retention**: Starter plan = 1 day, Team plan = 7 days. For longer retention, push logs to an external system or use Supabase.
+
+**Alerting**: Enable Slack integration in Modal dashboard for:
+- Container crashes
+- Failed scheduled functions
+- GPU resource constraints (if used)
+
+**Custom Metrics**: Push business metrics to Supabase `validation_metrics` table:
+
+```python
+async def log_metric(run_id: str, metric: str, value: float):
+    await supabase.table("validation_metrics").insert({
+        "run_id": run_id,
+        "metric": metric,
+        "value": value,
+        "created_at": datetime.utcnow().isoformat()
+    })
+```
+
+### Modal Plan Constraints
+
+**Starter Plan** (free tier) constraints:
+
+| Resource | Limit | Our Usage |
+|----------|-------|-----------|
+| Containers | 100 max | ~5-10 ✅ |
+| Deployed endpoints | 8 max | 5 needed ✅ |
+| Cron jobs | 5 max | 1 needed ✅ |
+| Log retention | 1 day | May need upgrade |
+| Rollbacks | Not available | Keep deployment scripts |
+
+**Recommendation**: Start with Starter plan for MVP. Consider Team plan for production if log retention or rollback capabilities become important.
+
 ## Consequences
 
 ### Positive
@@ -221,7 +330,7 @@ def verify_auth(authorization: str) -> bool:
 
 ### Neutral
 
-1. **Cost Structure**: ~$0.06/run Modal compute + ~$2-5 OpenAI tokens = $2.06-5.06/validation
+1. **Cost Structure**: ~$0.08/run Modal compute + ~$2-5 OpenAI tokens = $2.08-5.08/validation
 2. **Latency**: Similar to AMP (Modal has no cold starts after first request)
 3. **Debugging**: Different tools (Modal dashboard vs AMP dashboard)
 
@@ -230,18 +339,22 @@ def verify_auth(authorization: str) -> bool:
 ### Modal (Recommended)
 
 ```
-CPU: $0.047/core-hour
-Memory: $0.008/GiB-hour
+CPU: $0.0000131/core-second ($0.047/core-hour)
+Memory: $0.00000222/GiB-second ($0.008/GiB-hour)
 
-Per validation run (typical):
-- Phase 0: 2 min @ 2 cores = $0.003
-- Phase 1: 15 min @ 2 cores = $0.023
-- Phase 2: 10 min @ 2 cores = $0.015
-- Phase 3: 5 min @ 2 cores = $0.008
-- Phase 4: 8 min @ 2 cores = $0.012
-Total compute: ~$0.06/run
+Per validation run (typical 40 min total execution):
+- CPU: 2 cores × 2400 sec × $0.0000131 = $0.063
+- Memory: 4 GiB × 2400 sec × $0.00000222 = $0.021
+Total compute: ~$0.08/run
 
-Free tier: $30/month (~500 runs)
+Breakdown by phase:
+- Phase 0: 2 min = $0.004
+- Phase 1: 15 min = $0.030
+- Phase 2: 10 min = $0.020
+- Phase 3: 5 min = $0.010
+- Phase 4: 8 min = $0.016
+
+Free tier: $30/month (~375 runs)
 ```
 
 ### Railway (Previous Recommendation)
@@ -307,29 +420,40 @@ Reliability: Platform issues blocking execution
 
 ### Phase 1: Infrastructure Setup (Day 1)
 - [ ] Create Modal account and organization
-- [ ] Configure secrets in Modal dashboard (OPENAI_API_KEY, SUPABASE_*, etc.)
+- [ ] Create `dev` and `staging` environments: `modal environment create dev`
+- [ ] Configure secrets: `modal secret create startupai-secrets ...`
+- [ ] Set up GitHub Actions with `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET`
+- [ ] Enable Slack integration for alerts in Modal dashboard
 - [ ] Run Supabase migrations for new tables
 - [ ] Enable Realtime on progress/HITL tables
 
 ### Phase 2: Code Migration (Days 2-3)
 - [ ] Create `src/modal_app/` directory structure
-- [ ] Implement `app.py` with web endpoints
-- [ ] Port phase functions from existing crews
+- [ ] Implement `app.py` with image definition and function configuration
+- [ ] Implement FastAPI web endpoints with CORS middleware
+- [ ] Port phase functions from existing crews (with proper timeouts)
 - [ ] Implement state persistence helpers
 - [ ] Implement HITL checkpoint/resume logic
+- [ ] Add structured JSON logging
 
 ### Phase 3: Testing (Days 4-5)
+- [ ] Deploy to `dev` environment: `modal deploy --env=dev`
 - [ ] Unit tests for state serialization
 - [ ] Integration tests for Modal endpoints
+- [ ] Test cold start times (target: <20 seconds)
+- [ ] Test full HITL checkpoint/resume flow
+- [ ] Test preemption recovery (force-kill and retry)
 - [ ] E2E test with real validation run
-- [ ] HITL checkpoint flow testing
 - [ ] Load testing (10 concurrent runs)
 
 ### Phase 4: Deployment & Cutover (Day 6)
-- [ ] Deploy Modal app: `modal deploy src/modal_app/app.py`
+- [ ] Deploy to staging: `modal deploy --env=staging`
+- [ ] Run staging E2E verification
+- [ ] Deploy to production: `modal deploy src/modal_app/app.py`
 - [ ] Update product app to use Modal endpoints
 - [ ] Update Netlify edge functions
 - [ ] Run E2E verification with production data
+- [ ] Monitor first production runs
 - [ ] Archive AMP deployment code to `archive/amp-deployment/`
 - [ ] Update CLAUDE.md with new deployment instructions
 
@@ -377,6 +501,8 @@ startupai-crew/
 
 ## Risk Assessment
 
+### Original Risks
+
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
 | Modal downtime | Low | High | Implement retry logic, monitor status page |
@@ -385,6 +511,16 @@ startupai-crew/
 | Cost overruns | Low | Low | Set Modal spend alerts, monitor usage |
 | Learning curve | Medium | Low | Modal has excellent docs, Python-native |
 
+### Additional Risks (Identified in Validation)
+
+| Risk | Probability | Impact | Mitigation |
+|------|-------------|--------|------------|
+| Function preemption | Low | Medium | `retries=3` config; mid-phase checkpoints for >1h phases |
+| 7-day result expiration | Low | Low | Already mitigated: Supabase is source of truth |
+| Log retention (1 day) | Medium | Low | Upgrade to Team plan or push logs to Supabase |
+| Rollback limitations | Medium | Medium | Keep deployment scripts; test in staging first |
+| Cold start latency | Low | Low | `enable_memory_snapshot=True`; `scaledown_window=300` |
+
 ## Success Metrics
 
 | Metric | Target | Measurement |
@@ -392,12 +528,14 @@ startupai-crew/
 | Deployment success rate | >99% | Modal dashboard |
 | E2E validation completion | >95% | Supabase query |
 | HITL checkpoint reliability | 100% | No lost approvals |
-| Cost per validation | <$6 | Modal billing |
+| Cost per validation | <$6 | Modal billing (~$0.08 compute + ~$2-5 LLM) |
 | UI update latency | <500ms | Realtime subscription |
+| Cold start time | <20s | Modal dashboard |
 
 ## Related Documents
 
 - [ADR-001: Flow to 3-Crew Migration](./001-flow-to-crew-migration.md) - Superseded by this ADR
+- [Modal Validation Report](../architecture-audit/modal-validation-report.md) - Detailed architecture validation
 - `docs/master-architecture/09-status.md` - Current implementation status
 - `docs/deployment/3-crew-deployment.md` - To be deprecated
 - Modal Documentation: https://modal.com/docs/guide
@@ -407,3 +545,10 @@ startupai-crew/
 | Date | Change |
 |------|--------|
 | 2026-01-08 | Initial proposal |
+| 2026-01-08 | Added function configuration (timeout, cpu, memory, retries) based on Modal docs validation |
+| 2026-01-08 | Added CORS middleware requirement for FastAPI ASGI app |
+| 2026-01-08 | Added observability section (structured logging, alerting, custom metrics) |
+| 2026-01-08 | Added Modal plan constraints (Starter vs Team) |
+| 2026-01-08 | Updated cost estimate: ~$0.08/run (was $0.06) |
+| 2026-01-08 | Added additional risks: preemption, log retention, rollback limitations |
+| 2026-01-08 | Expanded migration path with environment setup and CI/CD |
