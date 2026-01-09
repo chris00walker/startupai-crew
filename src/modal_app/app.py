@@ -335,19 +335,23 @@ async def hitl_approve(
     current_phase = run["current_phase"]
 
     if request.decision == "approved":
-        # Clear HITL state and resume
+        # Advance to next phase after HITL approval
+        next_phase = current_phase + 1
+
+        # Clear HITL state, advance phase, and resume
         supabase.table("validation_runs").update({
             "hitl_state": None,
             "status": "running",
+            "current_phase": next_phase,
         }).eq("id", str(request.run_id)).execute()
 
-        # Spawn resume function
+        # Spawn resume function to continue from next phase
         resume_from_checkpoint.spawn(str(request.run_id), request.checkpoint)
 
         return HITLApproveResponse(
             status="resumed",
-            next_phase=current_phase,  # May advance after resume
-            message=f"Validation resumed from checkpoint '{request.checkpoint}'",
+            next_phase=next_phase,
+            message=f"Validation resumed from checkpoint '{request.checkpoint}'. Advancing to Phase {next_phase}.",
         )
     else:
         # Record rejection, workflow will handle pivot logic

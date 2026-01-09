@@ -3,11 +3,9 @@
 
 discover_jobs:
   description: >
-    Discover all customer jobs using JTBD methodology. Analyze the evidence
-    collected to identify what customers are trying to accomplish.
-
-    Evidence to analyze: {discovery_evidence}
-    Customer segment: {customer_segment}
+    Discover all customer jobs using JTBD methodology. Analyze the Founder's
+    Brief and discovery results (provided in inputs) to identify what customers
+    are trying to accomplish.
 
     Discover:
     1. FUNCTIONAL JOBS - Tasks they're trying to complete
@@ -31,8 +29,7 @@ discover_jobs:
 rank_jobs:
   description: >
     Rank the discovered jobs by importance using evidence-based criteria.
-
-    Jobs to rank: {discovered_jobs}
+    Use the jobs discovered in the previous task (provided in context).
 
     Ranking criteria (1-10 scale):
     - Frequency: How often does this job come up?
@@ -54,11 +51,8 @@ rank_jobs:
 
 discover_pains:
   description: >
-    Discover all customer pains from the evidence collected.
-
-    Evidence to analyze: {discovery_evidence}
-    Customer segment: {customer_segment}
-    Related jobs: {ranked_jobs}
+    Discover all customer pains from the Founder's Brief and discovery
+    results. Use the ranked jobs from context to identify related pains.
 
     Discover pains in three categories:
     1. UNDESIRED OUTCOMES
@@ -89,9 +83,7 @@ discover_pains:
 
 rank_pains:
   description: >
-    Rank the discovered pains by severity.
-
-    Pains to rank: {discovered_pains}
+    Rank the discovered pains by severity. Use the pains from context.
 
     Severity scoring:
     - EXTREME (10): Showstopper - they'll do anything to avoid
@@ -115,11 +107,8 @@ rank_pains:
 
 discover_gains:
   description: >
-    Discover all customer gains from the evidence collected.
-
-    Evidence to analyze: {discovery_evidence}
-    Customer segment: {customer_segment}
-    Related jobs: {ranked_jobs}
+    Discover all customer gains from the Founder's Brief and discovery
+    results. Use the ranked jobs from context to identify related gains.
 
     Discover gains in four categories:
     1. REQUIRED (Must-have)
@@ -151,9 +140,7 @@ discover_gains:
 
 rank_gains:
   description: >
-    Rank the discovered gains by importance.
-
-    Gains to rank: {discovered_gains}
+    Rank the discovered gains by importance. Use the gains from context.
 
     Importance hierarchy:
     - REQUIRED gains must be created (table stakes)
@@ -177,11 +164,8 @@ compile_customer_profile:
     Compile all discovered and ranked Jobs, Pains, and Gains into a complete
     Customer Profile (right side of Value Proposition Canvas).
 
-    Ranked jobs: {ranked_jobs}
-    Ranked pains: {ranked_pains}
-    Ranked gains: {ranked_gains}
-
-    Create a CustomerProfile that includes:
+    Use the ranked jobs, pains, and gains from context to create a complete
+    CustomerProfile that includes:
     - Segment name and description
     - All jobs (with priority ranks)
     - All pains (with severity ranks)

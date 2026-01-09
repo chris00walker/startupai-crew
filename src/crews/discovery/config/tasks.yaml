@@ -27,11 +27,11 @@ map_assumptions:
 design_test_cards:
   description: >
     Design Test Cards for the top assumptions identified in the assumptions
-    mapping. Each Test Card should follow the Testing Business Ideas format.
+    mapping (provided in context). Each Test Card should follow the Testing
+    Business Ideas format.
 
-    Top assumptions to test: {assumptions_to_test}
-
-    For each assumption, create a Test Card with:
+    Using the assumptions map from the previous task, for each high-priority
+    assumption create a Test Card with:
     1. Hypothesis: Clear, testable statement
     2. Test: Specific experiment to run
     3. Metric: What to measure
@@ -57,9 +57,8 @@ conduct_discovery_interviews:
     methodology. Focus on understanding their problems, needs, and behaviors
     in the PAST rather than hypothetical futures.
 
-    Customer segment to interview: {customer_segment}
-    Jobs to explore: {jobs_to_explore}
-    Pains to explore: {pains_to_explore}
+    Use the Test Cards from context to guide which customer segment to interview
+    and what jobs/pains to explore.
 
     Interview Guide:
     1. "Tell me about the last time you [did relevant activity]"
@@ -91,8 +90,8 @@ mine_behavioral_evidence:
     - Search trends (Google Trends, keyword volumes)
     - Social media discussions
 
-    Customer segment to research: {customer_segment}
-    Problems to investigate: {problems_to_investigate}
+    Use the customer segment and problems identified in interview insights
+    (from context) to focus the research.
 
     Look for:
     - What questions are customers asking?
@@ -119,8 +118,8 @@ execute_cta_experiments:
     evidence of customer interest. These tests measure actual behavior, not
     just stated interest.
 
-    Value proposition to test: {value_proposition}
-    Target segment: {customer_segment}
+    Use the value proposition from the Founder's Brief and target segment
+    identified from behavioral evidence (in context) to design experiments.
 
     Experiment types to consider:
     1. Smoke Test (Landing Page)
@@ -156,10 +155,10 @@ triangulate_evidence:
     Synthesize all evidence collected (SAY from interviews, DO-indirect from
     observations, DO-direct from CTA tests) and identify discrepancies.
 
-    Evidence sources:
-    - Interview insights: {interview_insights}
-    - Behavioral evidence: {behavioral_evidence}
-    - CTA experiment results: {cta_results}
+    Evidence sources are provided in context:
+    - Interview insights from discovery interviews
+    - Behavioral evidence from observation research
+    - CTA experiment results from experiments
 
     Triangulation process:
     1. Weight evidence by hierarchy (DO > SAY)

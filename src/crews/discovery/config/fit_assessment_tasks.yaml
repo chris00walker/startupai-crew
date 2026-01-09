@@ -6,22 +6,20 @@ calculate_fit_score:
     Calculate the Problem-Solution Fit score by comparing the Value Map
     against the Customer Profile.
 
-    Customer Profile: {customer_profile}
-    Value Map: {value_map}
-    WTP validation: {wtp_validation}
+    Use the Customer Profile, Value Map, and WTP validation results (from
+    inputs) to calculate:
 
-    Calculate:
     1. JOBS ADDRESSED %
        - Count top jobs with products/services addressing them
-       - Threshold: ≥ 75%
+       - Threshold: >= 75%
 
     2. PAINS ADDRESSED %
        - Count severe pains with pain relievers
-       - Threshold: ≥ 75%
+       - Threshold: >= 75%
 
     3. GAINS ADDRESSED %
        - Count important gains with gain creators
-       - Threshold: ≥ 70%
+       - Threshold: >= 70%
 
     4. WTP VALIDATED
        - Binary: Is WTP evidence sufficient?
@@ -40,9 +38,8 @@ calculate_fit_score:
 
 determine_routing:
   description: >
-    Determine the routing decision based on the fit score calculation.
-
-    Fit score results: {fit_score_results}
+    Determine the routing decision based on the fit score calculation
+    from context.
 
     Apply routing logic:
 
@@ -78,12 +75,9 @@ compile_fit_assessment:
   description: >
     Compile the final fit assessment for Phase 1 completion.
 
-    Fit score calculation: {fit_score_results}
-    Routing decision: {routing_decision}
-    Customer Profile: {customer_profile}
-    Value Map: {value_map}
-
-    Create a comprehensive FitAssessment that:
+    Use the fit score calculation and routing decision from context along
+    with the Customer Profile and Value Map (from inputs) to create a
+    comprehensive FitAssessment that:
     - Summarizes Problem-Solution Fit status
     - Documents all metrics and thresholds
     - Provides evidence summary

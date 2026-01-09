@@ -6,11 +6,8 @@ design_wtp_experiments:
     Design WTP (Willingness to Pay) experiments to validate that customers
     will pay for the proposed value.
 
-    Value Map: {value_map}
-    Customer Profile: {customer_profile}
-    Founder's pricing hypothesis: {pricing_hypothesis}
-
-    Design a mix of experiments:
+    Use the Value Map and Customer Profile (from inputs) along with the
+    Founder's pricing hypothesis to design a mix of experiments:
 
     1. DISCOVERY (Stated) - understand price sensitivity
        - Van Westendorp: Too expensive, Expensive but consider, Good deal, Too cheap
@@ -41,10 +38,8 @@ execute_payment_tests:
   description: >
     Execute the designed payment tests to collect behavioral WTP evidence.
 
-    Experiment designs: {wtp_experiments}
-    HITL approval status: {hitl_approval}
-
-    Execute tests in order of cost/reliability:
+    Use the experiment designs from context and execute tests in order of
+    cost/reliability:
     1. Start with stated preference tests (Van Westendorp)
     2. Progress to mock checkout tests
     3. Only execute real payment tests if HITL approved
@@ -70,10 +65,7 @@ synthesize_wtp_evidence:
   description: >
     Synthesize all WTP evidence into a validation verdict.
 
-    Stated preference data: {stated_preference_data}
-    Behavioral test results: {behavioral_results}
-
-    Determine:
+    Use the payment test results from context to determine:
     1. Is there validated WTP for this value proposition?
     2. What is the optimal price range?
     3. What is the confidence level?

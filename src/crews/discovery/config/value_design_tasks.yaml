@@ -5,11 +5,8 @@ design_products_services:
   description: >
     Design Products & Services that address the top-ranked customer Jobs.
 
-    Customer Profile: {customer_profile}
-    Top Jobs to address: {top_jobs}
-    Founder's solution hypothesis: {solution_hypothesis}
-
-    Design products/services that:
+    Use the Customer Profile and Founder's Brief (provided in inputs) to design
+    products/services that:
     1. Help customers complete their most important functional jobs
     2. Make them feel the way they want (emotional jobs)
     3. Help them be perceived the way they want (social jobs)
@@ -33,11 +30,8 @@ design_pain_relievers:
   description: >
     Design Pain Relievers for the most severe customer pains.
 
-    Customer Profile: {customer_profile}
-    Top Pains to relieve: {top_pains}
-    Products designed: {products_services}
-
-    Design pain relievers that:
+    Use the Customer Profile from inputs and products designed in context to
+    design pain relievers that:
     1. ELIMINATE extreme pains completely
     2. REDUCE high severity pains significantly
     3. MITIGATE moderate pains where possible
@@ -62,11 +56,8 @@ design_gain_creators:
   description: >
     Design Gain Creators for the most important customer gains.
 
-    Customer Profile: {customer_profile}
-    Top Gains to create: {top_gains}
-    Products designed: {products_services}
-
-    Design gain creators that:
+    Use the Customer Profile from inputs and products designed in context to
+    design gain creators that:
     1. PRODUCE required gains (must have)
     2. INCREASE expected gains (should have)
     3. EXCEED desired gains (could have)
@@ -94,11 +85,8 @@ compile_value_map:
     Compile all designed elements into a complete Value Map
     (left side of Value Proposition Canvas).
 
-    Products/Services: {products_services}
-    Pain Relievers: {pain_relievers}
-    Gain Creators: {gain_creators}
-
-    Create a ValueMap that includes:
+    Use the products, pain relievers, and gain creators from context to create
+    a ValueMap that includes:
     - All products and services
     - All pain relievers with mappings
     - All gain creators with mappings
