@@ -28,7 +28,7 @@ This document captures issues discovered, fixes applied, and lessons learned dur
 | 3 | Customer Profile completely wrong | Agents never saw `{founders_brief}` - hallucinated generic output | Add template vars back with clear section headers | `b96e7a7` |
 | 4 | Phase 2 'key_messaging' not found | Same template interpolation issue in Phase 2 tasks | Fix Phase 2 task files (build, growth, governance) | `346e02e` |
 | 5 | HITL always shows `approve_desirability_gate` | No signal-based routing - proceeds even with NO_INTEREST | Implement signal-based checkpoint routing | `e6ce56b` |
-| 6 | **Segment pivot doesn't change segment** | Agents re-run discovery with no guidance on new segment | Propose alternatives + founder selects | *pending* |
+| 6 | **Segment pivot doesn't change segment** | Agents re-run discovery with no guidance on new segment | Propose alternatives + founder selects | `e54a2d2` |
 
 #### Key Learnings
 
