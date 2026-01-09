@@ -18,7 +18,7 @@ This document provides an **authoritative, cross-repository view** of implementa
 
 | Service | Status | Completion | Primary Blocker |
 |---------|--------|------------|-----------------|
-| **AI Founders Core** (startupai-crew) | Live testing Phase 0-2 | ~92% | Phase 3-4 live validation |
+| **AI Founders Core** (startupai-crew) | Live testing Phase 0-2 complete | ~95% | Phase 3-4 live validation |
 | **Marketing Site** (startupai.site) | Production, static export | ~95% | None (live API connected) |
 | **Product App** (app.startupai.site) | Modal integration complete | ~95% | Live E2E verification |
 
@@ -154,7 +154,7 @@ Legacy deployment (reference only):
 | 14 crews implemented | ✅ Complete | All crews with YAML configs |
 | 45 agents defined | ✅ Complete | Role, goal, backstory for each |
 | Phase flows (0-4) | ✅ Complete | phase_0.py through phase_4.py |
-| Test suite | ✅ 202 tests | 185 crew + 17 E2E integration |
+| Test suite | ✅ 555 tests | Crew tests + E2E + live testing suite |
 | Pydantic output schemas | ✅ Complete | ValidationRunState, ViabilityEvidence, etc. |
 | HITL integration | ✅ Complete | 10 checkpoints with checkpoint-and-resume |
 | Supabase state persistence | ✅ Complete | validation_runs, validation_progress tables |
@@ -361,7 +361,7 @@ Legacy deployment (reference only):
 - [x] Modal serverless infrastructure deployed
 - [x] 14 crews implemented (45 agents)
 - [x] 5 phase flows implemented (phase_0 through phase_4)
-- [x] 202 tests passing (185 crew + 17 E2E)
+- [x] 555 tests (crew + E2E + live testing suite)
 - [x] E2E integration tests (Phase 0→4 flow validated)
 - [x] Product app Modal integration complete
 - [x] Marketing site live API integration
@@ -422,6 +422,11 @@ Marketing activity feed shows real activity
 
 | Date | Changes |
 |------|---------|
+| **2026-01-09** | Live Testing & Test Suite Expansion |
+| | Phase 0-2 validated with real LLM calls |
+| | 6 issues discovered and fixed during live testing |
+| | Test suite expanded: 555 total tests |
+| | Updated completion status: ~95% (was ~92%) |
 | **2026-01-08** | E2E Integration Tests Complete |
 | | Added 17 E2E integration tests (Phase 0→4 flow) |
 | | Total: 202 tests passing (185 crew + 17 E2E) |

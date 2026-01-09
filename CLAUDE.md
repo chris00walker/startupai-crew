@@ -4,8 +4,8 @@
 **Name**: StartupAI AI Founders Engine
 **Purpose**: 5-Flow/14-Crew/45-Agent validation engine with HITL checkpoints
 **Framework**: CrewAI Flows + Crews (platform-agnostic)
-**Deployment**: Modal Serverless (migration in progress) - see [ADR-002](docs/adr/002-modal-serverless-migration.md)
-**Status**: Architecture specified, migrating from AMP to Modal
+**Deployment**: Modal Serverless (production) - see [ADR-002](docs/adr/002-modal-serverless-migration.md)
+**Status**: Deployed to Modal, live testing Phase 0-2 complete
 
 ## Critical Context
 **⚠️ IMPORTANT**: This repository is the **brain of the StartupAI ecosystem**. It powers the 6 AI Founders team that delivers Fortune 500-quality strategic analysis.
@@ -42,7 +42,7 @@ PHASE (Business Concept) → FLOW (Orchestration) → CREW (Agent Group) → AGE
 
 **Critical Rule**: A crew must have 2+ agents (per CrewAI docs). One agent is NOT a crew.
 
-### Modal Serverless Architecture (Target)
+### Modal Serverless Architecture (Production)
 Modal enables the **canonical architecture** with platform-agnostic deployment:
 - **$0 idle costs** - containers only run during execution
 - **$0 during HITL** - checkpoint-and-resume pattern terminates containers during human review
@@ -98,7 +98,7 @@ AMP handled `type = "crew"` reliably but had issues with `type = "flow"`. The 3-
 **Phase Documents** follow a consistent template with: Purpose, Entry/Exit criteria, Flow diagrams, Agent specs, Output schemas, HITL checkpoints.
 
 ### CrewAI Documentation
-**Location**: `docs/crewai-documentation/` (34 files, comprehensive reference)
+**Location**: `docs/crewai-documentation/` (38 files, comprehensive reference)
 **Index**: `docs/crewai-documentation/INDEX.md` - Topic-to-file mapping
 
 Key references for development:
@@ -115,33 +115,34 @@ Key references for development:
 
 ## Directory Structure
 ```
-# TARGET: MODAL SERVERLESS (migration in progress)
+# PRODUCTION: MODAL SERVERLESS
 src/
-├── modal_app/                  # Modal entry points (PLANNED)
+├── modal_app/                  # Modal entry points
 │   ├── __init__.py
-│   ├── app.py                  # Modal App definition
-│   └── functions/              # One function per flow
-│       ├── onboarding.py       # Phase 0: OnboardingFlow
-│       ├── vpc_discovery.py    # Phase 1: VPCDiscoveryFlow
-│       ├── desirability.py     # Phase 2: DesirabilityFlow
-│       ├── feasibility.py      # Phase 3: FeasibilityFlow
-│       └── viability.py        # Phase 4: ViabilityFlow
-├── crews/                      # Shared crew definitions (PLANNED)
-│   ├── onboarding/             # OnboardingCrew
-│   ├── discovery/              # DiscoveryCrew, CustomerProfileCrew, etc.
-│   ├── build/                  # BuildCrew (reused across phases)
-│   ├── growth/                 # GrowthCrew
-│   ├── governance/             # GovernanceCrew (reused across phases)
-│   ├── finance/                # FinanceCrew
-│   └── synthesis/              # SynthesisCrew
-├── state/                      # Supabase state management (PLANNED)
-│   ├── models.py               # Pydantic state models
-│   └── persistence.py          # Checkpoint/resume logic
+│   ├── app.py                  # FastAPI app + Modal endpoints (812 lines)
+│   ├── config.py               # Modal configuration
+│   ├── phases/                 # Phase-specific functions
+│   │   ├── phase_0.py          # Phase 0: OnboardingFlow
+│   │   ├── phase_1.py          # Phase 1: VPCDiscoveryFlow
+│   │   ├── phase_2.py          # Phase 2: DesirabilityFlow
+│   │   ├── phase_3.py          # Phase 3: FeasibilityFlow
+│   │   └── phase_4.py          # Phase 4: ViabilityFlow
+│   └── helpers/                # Helper functions
+│       └── segment_alternatives.py  # Pivot selection logic
+├── crews/                      # 14 Crew definitions (all implemented)
+│   ├── onboarding/             # OnboardingCrew (4 agents)
+│   ├── discovery/              # 5 crews: Discovery, CustomerProfile, ValueDesign, WTP, FitAssessment
+│   ├── desirability/           # 3 crews: Build, Growth, Governance
+│   ├── feasibility/            # 2 crews: Build, Governance
+│   └── viability/              # 3 crews: Finance, Synthesis, Governance
+├── state/                      # Supabase state management
+│   ├── models.py               # Pydantic state models (612 lines)
+│   └── persistence.py          # Checkpoint/resume logic (370 lines)
 └── shared/                     # Shared utilities
     ├── tools/                  # Agent tools
     └── schemas/                # Pydantic schemas
 
-# CURRENT: INTAKE CREW (AMP deployment - DEPRECATED)
+# DEPRECATED: INTAKE CREW (AMP deployment)
 src/intake_crew/
 ├── __init__.py
 ├── crew.py                     # 4 agents: S1, S2, S3, G1
@@ -215,11 +216,10 @@ uv sync                         # Install dependencies
 # Local Development
 crewai run                      # Test workflow locally (requires OPENAI_API_KEY in .env)
 
-# Modal Deployment (TARGET - migration in progress)
+# Modal Deployment (Production)
 modal setup                     # One-time Modal CLI setup
 modal deploy src/modal_app/app.py  # Deploy to Modal
 modal serve src/modal_app/app.py   # Local development with hot reload
-modal run src/modal_app/app.py::kickoff --input '{"entrepreneur_input": "..."}'
 
 # AMP Deployment (DEPRECATED - preserved for reference)
 crewai login                    # One-time setup per machine
@@ -230,14 +230,17 @@ crewai deploy logs --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
 
 ## Deployment Configuration
 
-### Modal Serverless (TARGET - migration in progress)
+### Modal Serverless (Production)
 See [ADR-002](docs/adr/002-modal-serverless-migration.md) for architecture details.
 
-**API Endpoints (Planned)**:
+**Production URL**: `https://chris00walker--startupai-validation-fastapi-app.modal.run`
+
+**API Endpoints**:
 ```
 POST /kickoff         → Start validation (returns 202 Accepted + run_id)
 GET  /status/{run_id} → Check progress (reads from Supabase)
 POST /hitl/approve    → Resume after human approval
+GET  /health          → Health check
 ```
 
 **Environment Variables (Modal Secrets)**:
@@ -272,7 +275,7 @@ SUPABASE_KEY=eyJ...                      # Supabase service role key
 NETLIFY_ACCESS_TOKEN=xxx                 # Netlify personal access token for LP deployment
 ```
 
-### Modal Secrets (TARGET - migration in progress)
+### Modal Secrets (Production)
 Modal uses Secrets for environment variables (see `modal secret create`):
 ```bash
 modal secret create startupai-secrets \
@@ -352,7 +355,7 @@ Due to AMP platform limitations with `type = "flow"`, the canonical architecture
 Phase 0 → [HITL] → Phase 1 → [HITL] → Phase 2 → [HITL] → Phase 3 → [HITL] → Phase 4 → [HITL]
 ```
 
-**Modal (TARGET)**: Orchestrated with `@start`, `@listen`, `@router` decorators in Flows. HITL uses checkpoint-and-resume pattern ($0 during human review).
+**Modal (Production)**: Orchestrated with phase functions in `src/modal_app/phases/`. HITL uses checkpoint-and-resume pattern ($0 during human review).
 **AMP (DEPRECATED)**: Was orchestrated with `InvokeCrewAIAutomationTool` for crew-to-crew chaining.
 
 **Full Details**: See `docs/master-architecture/` phase documents (03-08) for authoritative implementation blueprints
@@ -376,18 +379,18 @@ Structured task outputs (not files):
 
 ### API Endpoints
 
-**Modal (TARGET - migration in progress)**:
+**Modal (Production)**:
 ```bash
 # Kickoff validation (returns 202 Accepted + run_id)
-curl -X POST https://startupai-crew--kickoff.modal.run \
+curl -X POST https://chris00walker--startupai-validation-fastapi-app.modal.run/kickoff \
   -H "Content-Type: application/json" \
-  -d '{"entrepreneur_input": "Business idea..."}'
+  -d '{"project_id": "...", "entrepreneur_input": "Business idea..."}'
 
 # Check status (reads from Supabase)
-curl https://startupai-crew--status.modal.run/{run_id}
+curl https://chris00walker--startupai-validation-fastapi-app.modal.run/status/{run_id}
 
 # Resume after HITL approval
-curl -X POST https://startupai-crew--hitl-approve.modal.run \
+curl -X POST https://chris00walker--startupai-validation-fastapi-app.modal.run/hitl/approve \
   -H "Content-Type: application/json" \
   -d '{"run_id": "...", "checkpoint": "approve_brief", "decision": "approved"}'
 ```
@@ -408,18 +411,18 @@ curl https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com/sta
 ## Integration with Product App
 **Frontend Trigger**: User completes onboarding → POST to `/api/crewai/analyze`
 
-**Modal Integration (TARGET)**:
+**Modal Integration (Production)**:
 ```typescript
 // Product app API route - kickoff
 export async function POST(req: Request) {
-  const { entrepreneur_input } = await req.json();
+  const { project_id, entrepreneur_input } = await req.json();
 
   const response = await fetch(
-    'https://startupai-crew--kickoff.modal.run',
+    'https://chris00walker--startupai-validation-fastapi-app.modal.run/kickoff',
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ entrepreneur_input })
+      body: JSON.stringify({ project_id, entrepreneur_input })
     }
   );
 
@@ -499,7 +502,7 @@ export async function POST(req: Request) {
 **Cause**: `.env` file missing or incomplete
 **Fix**: Copy `.env.example` to `.env` and add API key
 
-### Modal Troubleshooting (TARGET)
+### Modal Troubleshooting (Production)
 
 #### Modal CLI not found
 **Cause**: Modal CLI not installed
@@ -555,7 +558,7 @@ Modal migration returns us to a **single repository** (`startupai-crew`). No mor
 CrewAI (this repo) → Product App → Marketing Site
 ```
 
-**Current blocker**: Modal migration (see ADR-002)
+**Current blocker**: None - Modal deployed, live testing in progress
 
 ## Claude Code Customizations
 
@@ -608,9 +611,9 @@ docs/master-architecture/
 - CrewAI Docs: https://docs.crewai.com
 
 ---
-**Last Updated**: 2026-01-08
+**Last Updated**: 2026-01-09
 **Maintainer**: Chris Walker
-**Status**: Migrating from AMP to Modal serverless (see ADR-002)
+**Status**: Modal serverless deployed, live testing Phase 0-2 complete
 **Architecture**: 5 Flows / 14 Crews / 45 Agents / 10 HITL (canonical)
 **Critical Note**: This is the BRAIN of the StartupAI ecosystem
 
@@ -662,6 +665,18 @@ docs/master-architecture/
   - Platform-agnostic (can migrate to any Python platform)
 - **HITL Pattern**: Checkpoint state to Supabase, terminate container, resume on approval webhook
 - **Supabase Realtime**: WebSocket updates for instant UI progress
-- **Status**: PROPOSED - implementation pending
 - **AMP**: Marked as DEPRECATED across all documentation
 - See [ADR-002](docs/adr/002-modal-serverless-migration.md) for full details
+
+### Modal Deployment Complete (2026-01-09)
+- **Status**: DEPLOYED to production
+- **URL**: `https://chris00walker--startupai-validation-fastapi-app.modal.run`
+- **Implementation complete**:
+  - 14 crews implemented (45 agents)
+  - 5 phase flows (phase_0.py through phase_4.py)
+  - State management (models.py, persistence.py)
+  - HITL checkpoint-and-resume pattern
+  - Signal-based routing for validation gates
+- **Live testing**: Phase 0-2 validated with real LLM calls
+- **Issues fixed**: 6 bugs discovered and resolved during live testing
+- **Tests**: 500+ tests passing (crew tests + E2E integration)

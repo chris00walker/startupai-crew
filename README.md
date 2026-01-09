@@ -4,7 +4,7 @@
 
 This repository is the brain of the StartupAI ecosystem - a validation pipeline that delivers Fortune 500-quality strategic analysis through 6 AI Founders and 45 specialist agents.
 
-> **Architecture Migration in Progress**: Migrating from CrewAI AMP to Modal serverless. See [ADR-002](docs/adr/002-modal-serverless-migration.md) for details.
+> **Architecture Migration Complete**: Deployed to Modal serverless. Live testing Phase 0-2 complete. See [ADR-002](docs/adr/002-modal-serverless-migration.md) for details.
 
 ---
 
@@ -45,7 +45,7 @@ Phase 4 (Viability) → [HITL] → Decision
 
 ## Deployment Architecture
 
-### Target: Modal Serverless (Proposed)
+### Production: Modal Serverless
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -138,20 +138,24 @@ modal serve src/modal_app/app.py
 ```
 startupai-crew/
 ├── src/
-│   ├── modal_app/                # NEW: Modal serverless deployment
-│   │   ├── app.py                # Web endpoints + orchestrator
-│   │   ├── phases/               # Phase-specific functions
-│   │   ├── state/                # Pydantic schemas + Supabase persistence
-│   │   └── utils/                # Auth, progress, HITL helpers
+│   ├── modal_app/                # Modal serverless deployment (Production)
+│   │   ├── app.py                # FastAPI + Modal endpoints (812 lines)
+│   │   ├── config.py             # Modal configuration
+│   │   ├── phases/               # Phase-specific functions (phase_0.py - phase_4.py)
+│   │   └── helpers/              # Pivot selection, segment alternatives
 │   │
-│   ├── crews/                    # 14 Crew definitions
-│   │   ├── phase0/               # OnboardingCrew
-│   │   ├── phase1/               # 5 crews (Discovery, CustomerProfile, etc.)
-│   │   ├── phase2/               # 3 crews (Build, Growth, Governance)
-│   │   ├── phase3/               # 2 crews (Build, Governance)
-│   │   └── phase4/               # 3 crews (Finance, Synthesis, Governance)
+│   ├── crews/                    # 14 Crew definitions (all implemented)
+│   │   ├── onboarding/           # OnboardingCrew (4 agents)
+│   │   ├── discovery/            # 5 crews: Discovery, CustomerProfile, ValueDesign, WTP, FitAssessment
+│   │   ├── desirability/         # 3 crews: Build, Growth, Governance
+│   │   ├── feasibility/          # 2 crews: Build, Governance
+│   │   └── viability/            # 3 crews: Finance, Synthesis, Governance
 │   │
-│   └── intake_crew/              # DEPRECATED: AMP Crew 1 (archived)
+│   ├── state/                    # Supabase state management
+│   │   ├── models.py             # Pydantic state models (612 lines)
+│   │   └── persistence.py        # Checkpoint/resume logic (370 lines)
+│   │
+│   └── intake_crew/              # DEPRECATED: AMP Crew 1
 │
 ├── db/migrations/                # SQL migration files
 ├── scripts/                      # Utility scripts
@@ -175,22 +179,24 @@ startupai-crew/
 
 ## API Integration (Modal)
 
+**Production URL**: `https://chris00walker--startupai-validation-fastapi-app.modal.run`
+
 ```bash
 # Kickoff validation
-curl -X POST https://<your-modal-app>.modal.run/kickoff \
-  -H "Authorization: Bearer <token>" \
+curl -X POST https://chris00walker--startupai-validation-fastapi-app.modal.run/kickoff \
   -H "Content-Type: application/json" \
   -d '{"project_id": "...", "entrepreneur_input": "Business idea..."}'
 
 # Check status
-curl https://<your-modal-app>.modal.run/status/{run_id} \
-  -H "Authorization: Bearer <token>"
+curl https://chris00walker--startupai-validation-fastapi-app.modal.run/status/{run_id}
 
 # Approve HITL checkpoint
-curl -X POST https://<your-modal-app>.modal.run/hitl/approve \
-  -H "Authorization: Bearer <token>" \
+curl -X POST https://chris00walker--startupai-validation-fastapi-app.modal.run/hitl/approve \
   -H "Content-Type: application/json" \
-  -d '{"hitl_id": "...", "decision": "approved", "user_id": "..."}'
+  -d '{"run_id": "...", "checkpoint": "approve_brief", "decision": "approved"}'
+
+# Health check
+curl https://chris00walker--startupai-validation-fastapi-app.modal.run/health
 ```
 
 ---
@@ -254,23 +260,25 @@ curl -X POST https://<your-modal-app>.modal.run/hitl/approve \
 
 ## Current Status
 
-> **Modal Migration PROPOSED.** See [ADR-002](docs/adr/002-modal-serverless-migration.md) for full architecture and migration plan.
+> **Modal Migration COMPLETE.** Live testing Phase 0-2 validated. See [ADR-002](docs/adr/002-modal-serverless-migration.md) for architecture details.
 
 **Canonical Architecture:**
 - 5 Phases, 5 Flows, 14 Crews, 45 Agents, 10 HITL checkpoints
 
 **Migration Status:**
-- [ ] Infrastructure setup (Modal account, Supabase tables)
-- [ ] Code migration (modal_app/, crews/)
-- [ ] Testing (unit, integration, E2E)
-- [ ] Deployment & cutover
+- [x] Infrastructure setup (Modal account, Supabase tables)
+- [x] Code migration (modal_app/, crews/, state/)
+- [x] Testing (500+ tests: crew tests + E2E integration)
+- [x] Deployment (Production URL live)
+- [x] Live testing Phase 0-2 (6 issues found and fixed)
+- [ ] Live testing Phase 3-4
 
-**What's Changing:**
+**What Changed:**
 - FROM: 3-Crew AMP deployment (3 repos, InvokeCrewAIAutomationTool chaining)
 - TO: Modal serverless (1 repo, native Python orchestration)
 
 ---
 
-**Status:** Modal Migration PROPOSED
-**Last Updated:** 2026-01-08
+**Status:** Modal Deployed, Live Testing In Progress
+**Last Updated:** 2026-01-09
 **License:** Proprietary - StartupAI Platform

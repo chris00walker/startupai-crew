@@ -418,44 +418,59 @@ Reliability: Platform issues blocking execution
 
 ## Migration Path
 
-### Phase 1: Infrastructure Setup (Day 1)
-- [ ] Create Modal account and organization
-- [ ] Create `dev` and `staging` environments: `modal environment create dev`
-- [ ] Configure secrets: `modal secret create startupai-secrets ...`
-- [ ] Set up GitHub Actions with `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET`
-- [ ] Enable Slack integration for alerts in Modal dashboard
-- [ ] Run Supabase migrations for new tables
-- [ ] Enable Realtime on progress/HITL tables
+### Phase 1: Infrastructure Setup (Day 1) ✅ COMPLETE
+- [x] Create Modal account and organization
+- [x] Create `dev` and `staging` environments: `modal environment create dev`
+- [x] Configure secrets: `modal secret create startupai-secrets ...`
+- [x] Set up GitHub Actions with `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET`
+- [x] Enable Slack integration for alerts in Modal dashboard
+- [x] Run Supabase migrations for new tables
+- [x] Enable Realtime on progress/HITL tables
 
-### Phase 2: Code Migration (Days 2-3)
-- [ ] Create `src/modal_app/` directory structure
-- [ ] Implement `app.py` with image definition and function configuration
-- [ ] Implement FastAPI web endpoints with CORS middleware
-- [ ] Port phase functions from existing crews (with proper timeouts)
-- [ ] Implement state persistence helpers
-- [ ] Implement HITL checkpoint/resume logic
-- [ ] Add structured JSON logging
+### Phase 2: Code Migration (Days 2-3) ✅ COMPLETE
+- [x] Create `src/modal_app/` directory structure
+- [x] Implement `app.py` with image definition and function configuration
+- [x] Implement FastAPI web endpoints with CORS middleware
+- [x] Port phase functions from existing crews (with proper timeouts)
+- [x] Implement state persistence helpers
+- [x] Implement HITL checkpoint/resume logic
+- [x] Add structured JSON logging
 
-### Phase 3: Testing (Days 4-5)
-- [ ] Deploy to `dev` environment: `modal deploy --env=dev`
-- [ ] Unit tests for state serialization
-- [ ] Integration tests for Modal endpoints
-- [ ] Test cold start times (target: <20 seconds)
-- [ ] Test full HITL checkpoint/resume flow
-- [ ] Test preemption recovery (force-kill and retry)
-- [ ] E2E test with real validation run
-- [ ] Load testing (10 concurrent runs)
+### Phase 3: Testing (Days 4-5) ✅ COMPLETE
+- [x] Deploy to `dev` environment: `modal deploy --env=dev`
+- [x] Unit tests for state serialization
+- [x] Integration tests for Modal endpoints
+- [x] Test cold start times (target: <20 seconds)
+- [x] Test full HITL checkpoint/resume flow
+- [x] Test preemption recovery (force-kill and retry)
+- [x] E2E test with real validation run
+- [x] Load testing (10 concurrent runs)
 
-### Phase 4: Deployment & Cutover (Day 6)
-- [ ] Deploy to staging: `modal deploy --env=staging`
-- [ ] Run staging E2E verification
-- [ ] Deploy to production: `modal deploy src/modal_app/app.py`
-- [ ] Update product app to use Modal endpoints
-- [ ] Update Netlify edge functions
-- [ ] Run E2E verification with production data
-- [ ] Monitor first production runs
-- [ ] Archive AMP deployment code to `archive/amp-deployment/`
-- [ ] Update CLAUDE.md with new deployment instructions
+### Phase 4: Deployment & Cutover (Day 6) ✅ COMPLETE
+- [x] Deploy to staging: `modal deploy --env=staging`
+- [x] Run staging E2E verification
+- [x] Deploy to production: `modal deploy src/modal_app/app.py`
+- [x] Update product app to use Modal endpoints
+- [x] Update Netlify edge functions
+- [x] Run E2E verification with production data
+- [x] Monitor first production runs
+- [x] Archive AMP deployment code to `archive/amp-deployment/`
+- [x] Update CLAUDE.md with new deployment instructions
+
+### Phase 5: Live Testing (Ongoing) 🔄 IN PROGRESS
+- [x] Phase 0 (Onboarding) validated with real LLM calls
+- [x] Phase 1 (VPC Discovery) validated with real LLM calls
+- [x] Phase 2 (Desirability) validated with real LLM calls
+- [ ] Phase 3 (Feasibility) live testing
+- [ ] Phase 4 (Viability) live testing
+
+**Issues Discovered & Fixed During Live Testing:**
+1. HITL approval re-runs same phase → Fixed: increment phase before resume
+2. Template variable timing issues → Fixed: removed context-dependent vars
+3. Customer Profile hallucination → Fixed: added template vars with clear headers
+4. Phase 2 missing template vars → Fixed: updated task files
+5. HITL always same checkpoint → Fixed: signal-based checkpoint routing
+6. Segment pivot not changing → Fixed: alternative selection logic
 
 ## Directory Structure
 
@@ -552,3 +567,6 @@ startupai-crew/
 | 2026-01-08 | Updated cost estimate: ~$0.08/run (was $0.06) |
 | 2026-01-08 | Added additional risks: preemption, log retention, rollback limitations |
 | 2026-01-08 | Expanded migration path with environment setup and CI/CD |
+| 2026-01-09 | **MIGRATION COMPLETE**: All Phases 1-4 completed, production deployment live |
+| 2026-01-09 | Added Phase 5 (Live Testing) - Phase 0-2 validated, 6 issues fixed |
+| 2026-01-09 | Marked all migration checklist items as complete |
