@@ -29,6 +29,7 @@
       "Skill(crewai-integration-check)",
       "Skill(cross-repo-sync)",
       "Skill(modal-docs)",
+      "Skill(docs-cache-sync)",
       "WebFetch(domain:modal.com)",
       "mcp__supabase__list_projects",
       "mcp__supabase__get_advisors",

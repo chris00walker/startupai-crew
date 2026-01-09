@@ -1,0 +1,92 @@
+{
+  "source": {
+    "name": "Modal",
+    "base_url": "https://modal.com/docs/guide",
+    "llm_friendly_url": "https://modal.com/llms-full.txt",
+    "description": "Modal serverless Python deployment documentation"
+  },
+  "last_full_sync": "2026-01-09T00:00:00Z",
+  "staleness_days": 30,
+  "entries": {
+    "INDEX.md": {
+      "source_url": null,
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "local_only": true,
+      "topics": ["index", "topic lookup", "quick reference"]
+    },
+    "functions.md": {
+      "source_url": "https://modal.com/docs/guide/modal-functions",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["@app.function", "timeout", "retries", "cpu", "memory", "Retries"]
+    },
+    "web-endpoints.md": {
+      "source_url": "https://modal.com/docs/guide/webhooks",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["@modal.asgi_app", "FastAPI", "CORS", "web_endpoint", "authentication"]
+    },
+    "images.md": {
+      "source_url": "https://modal.com/docs/guide/custom-containers",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["Container", "pip_install", "debian_slim", "add_local_dir", "Image"]
+    },
+    "secrets.md": {
+      "source_url": "https://modal.com/docs/guide/secrets",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["modal.Secret", "environment variables", "secret create", "Secret.from_name"]
+    },
+    "deployment.md": {
+      "source_url": "https://modal.com/docs/guide/managing-deployments",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["modal deploy", "modal serve", "modal run", "GitHub Actions", "CI/CD", "environments"]
+    },
+    "startupai-patterns.md": {
+      "source_url": null,
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "local_only": true,
+      "topics": ["HITL", "checkpoint", "resume", "Supabase", "StartupAI", "validation engine"]
+    },
+    "gpus.md": {
+      "source_url": "https://modal.com/docs/guide/gpu",
+      "fetched_at": "2026-01-09T12:00:00Z",
+      "topics": ["GPU", "CUDA", "nvidia", "A100", "T4", "H100", "L40S", "multi-GPU"]
+    }
+  },
+  "missing_topics": [
+    {
+      "topic": "volumes",
+      "url": "https://modal.com/docs/guide/volumes",
+      "priority": "high",
+      "keywords": ["Volume", "persistent storage", "modal.Volume"]
+    },
+    {
+      "topic": "sandboxes",
+      "url": "https://modal.com/docs/guide/sandbox",
+      "priority": "low",
+      "keywords": ["sandbox", "isolated execution"]
+    },
+    {
+      "topic": "networking",
+      "url": "https://modal.com/docs/guide/network",
+      "priority": "low",
+      "keywords": ["tunnels", "proxies", "network"]
+    },
+    {
+      "topic": "regions",
+      "url": "https://modal.com/docs/guide/regions",
+      "priority": "low",
+      "keywords": ["region", "cloud regions", "aws", "gcp"]
+    },
+    {
+      "topic": "scaling",
+      "url": "https://modal.com/docs/guide/scaling",
+      "priority": "medium",
+      "keywords": ["concurrency", "autoscaling", "cold starts", "warm pools"]
+    },
+    {
+      "topic": "cli",
+      "url": "https://modal.com/docs/reference/cli",
+      "priority": "high",
+      "keywords": ["modal deploy", "modal serve", "modal run", "CLI commands"]
+    }
+  ]
+}

@@ -5,6 +5,18 @@ Quick reference for Modal serverless deployment patterns used in the StartupAI e
 **Last Updated**: 2026-01-09
 **Modal Version**: v0.73+
 
+## Cache Status
+
+| Metric | Value |
+|--------|-------|
+| **Last Full Sync** | 2026-01-09 |
+| **Staleness Threshold** | 30 days |
+| **Total Cached Files** | 8 |
+| **Missing Topics** | 6 (see below) |
+| **Cache Manifest** | `MANIFEST.json` |
+
+> **Self-Learning Cache**: This documentation cache automatically updates when new content is fetched from online sources. Check MANIFEST.json for detailed tracking.
+
 ---
 
 ## Quick Topic Reference
@@ -16,6 +28,7 @@ Quick reference for Modal serverless deployment patterns used in the StartupAI e
 | **Images** | `images.md` | Container images, `pip_install`, `add_local_dir` |
 | **Secrets** | `secrets.md` | `modal.Secret`, environment variables |
 | **Deployment** | `deployment.md` | CLI commands, environments, GitHub Actions |
+| **GPUs** | `gpus.md` | GPU types (A100, H100, T4), multi-GPU, CUDA |
 | **StartupAI Patterns** | `startupai-patterns.md` | HITL checkpoint-resume, architecture |
 
 ---
@@ -34,6 +47,8 @@ Quick reference for Modal serverless deployment patterns used in the StartupAI e
 | `modal deploy`, `modal serve`, `modal run` | `deployment.md` |
 | GitHub Actions, CI/CD | `deployment.md` |
 | `--env`, environments | `deployment.md` |
+| GPU, CUDA, A100, H100, T4, L40S | `gpus.md` |
+| multi-GPU, distributed training | `gpus.md` |
 | HITL, checkpoint, resume | `startupai-patterns.md` |
 | Supabase integration | `startupai-patterns.md` |
 
@@ -59,16 +74,16 @@ For StartupAI's Modal deployment, these are the most relevant:
 
 ## Topics NOT in This Cache
 
-This cache covers ~7 essential patterns. For these topics, **use WebFetch**:
+This cache covers ~8 essential patterns. For these topics, **use WebFetch**:
 
 | Topic | Online URL |
 |-------|------------|
-| GPUs and CUDA | https://modal.com/docs/guide/gpu |
 | Volumes | https://modal.com/docs/guide/volumes |
 | Networking | https://modal.com/docs/guide/network-file-systems |
 | Sandboxes | https://modal.com/docs/guide/sandbox |
 | Scaling | https://modal.com/docs/guide/scale |
 | Regions | https://modal.com/docs/guide/region-selection |
+| CLI Reference | https://modal.com/docs/reference/cli |
 
 **For comprehensive searches**:
 ```
