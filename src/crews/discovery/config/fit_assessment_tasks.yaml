@@ -6,8 +6,26 @@ calculate_fit_score:
     Calculate the Problem-Solution Fit score by comparing the Value Map
     against the Customer Profile.
 
-    Use the Customer Profile, Value Map, and WTP validation results (from
-    inputs) to calculate:
+    ==========================================================================
+    CUSTOMER PROFILE:
+    ==========================================================================
+    {customer_profile}
+
+    ==========================================================================
+    VALUE MAP:
+    ==========================================================================
+    {value_map}
+
+    ==========================================================================
+    WTP VALIDATION RESULTS:
+    ==========================================================================
+    {wtp_results}
+
+    ==========================================================================
+    YOUR TASK: Calculate fit score based on the above inputs.
+    ==========================================================================
+
+    Calculate:
 
     1. JOBS ADDRESSED %
        - Count top jobs with products/services addressing them

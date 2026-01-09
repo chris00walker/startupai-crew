@@ -4,8 +4,21 @@
 discover_jobs:
   description: >
     Discover all customer jobs using JTBD methodology. Analyze the Founder's
-    Brief and discovery results (provided in inputs) to identify what customers
-    are trying to accomplish.
+    Brief and discovery results to identify what customers are trying to accomplish.
+
+    ==========================================================================
+    FOUNDER'S BRIEF (your source of truth):
+    ==========================================================================
+    {founders_brief}
+
+    ==========================================================================
+    DISCOVERY RESULTS (evidence from DiscoveryCrew):
+    ==========================================================================
+    {discovery_results}
+
+    ==========================================================================
+    YOUR TASK: Discover customer jobs based on the above inputs.
+    ==========================================================================
 
     Discover:
     1. FUNCTIONAL JOBS - Tasks they're trying to complete

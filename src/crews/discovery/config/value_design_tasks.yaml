@@ -5,8 +5,21 @@ design_products_services:
   description: >
     Design Products & Services that address the top-ranked customer Jobs.
 
-    Use the Customer Profile and Founder's Brief (provided in inputs) to design
-    products/services that:
+    ==========================================================================
+    FOUNDER'S BRIEF (original business idea):
+    ==========================================================================
+    {founders_brief}
+
+    ==========================================================================
+    CUSTOMER PROFILE (Jobs, Pains, Gains discovered):
+    ==========================================================================
+    {customer_profile}
+
+    ==========================================================================
+    YOUR TASK: Design products/services based on the above inputs.
+    ==========================================================================
+
+    Design products/services that:
     1. Help customers complete their most important functional jobs
     2. Make them feel the way they want (emotional jobs)
     3. Help them be perceived the way they want (social jobs)

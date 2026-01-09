@@ -6,8 +6,21 @@ design_wtp_experiments:
     Design WTP (Willingness to Pay) experiments to validate that customers
     will pay for the proposed value.
 
-    Use the Value Map and Customer Profile (from inputs) along with the
-    Founder's pricing hypothesis to design a mix of experiments:
+    ==========================================================================
+    CUSTOMER PROFILE:
+    ==========================================================================
+    {customer_profile}
+
+    ==========================================================================
+    VALUE MAP:
+    ==========================================================================
+    {value_map}
+
+    ==========================================================================
+    YOUR TASK: Design WTP experiments based on the above inputs.
+    ==========================================================================
+
+    Design a mix of experiments:
 
     1. DISCOVERY (Stated) - understand price sensitivity
        - Van Westendorp: Too expensive, Expensive but consider, Good deal, Too cheap
