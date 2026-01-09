@@ -244,17 +244,13 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         recommendation = "proceed"
 
     # ==========================================================================
-    # Prepare HITL Checkpoint: approve_desirability_gate
+    # Signal-Based HITL Checkpoint Routing
     # ==========================================================================
-
-    logger.info(json.dumps({
-        "event": "phase_2_hitl_checkpoint",
-        "run_id": run_id,
-        "checkpoint": "approve_desirability_gate",
-        "signal": signal,
-        "problem_resonance": problem_resonance,
-        "zombie_ratio": zombie_ratio,
-    }))
+    #
+    # Per VPD methodology, the HITL checkpoint depends on the desirability signal:
+    # - STRONG_COMMITMENT: approve_desirability_gate → proceed to Phase 3
+    # - NO_INTEREST: approve_segment_pivot → loop back to Phase 1
+    # - MILD_INTEREST: approve_value_pivot → loop back to Phase 1
 
     # Update state with Phase 2 outputs
     updated_state = {
@@ -262,31 +258,105 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         "build_results": build_results_dict,
         "desirability_evidence": desirability_dict,
         "desirability_signal": signal,
+        "desirability_recommendation": recommendation,
     }
 
-    gate_ready = signal == "strong_commitment"
+    # Determine checkpoint based on signal
+    if signal == "strong_commitment":
+        checkpoint = "approve_desirability_gate"
+        title = "Desirability Validated - Ready for Feasibility"
+        description = (
+            f"STRONG COMMITMENT achieved. "
+            f"Problem resonance: {problem_resonance:.1%} (≥30% threshold met). "
+            f"Zombie ratio: {zombie_ratio:.1%} (<70% threshold met). "
+            "Customers want this. Ready to assess if we can build it."
+        )
+        options = [
+            {
+                "id": "approved",
+                "label": "Proceed to Feasibility",
+                "description": "Continue to Phase 3 to assess technical feasibility",
+            },
+            {
+                "id": "iterate",
+                "label": "Run More Experiments",
+                "description": "Gather additional evidence before proceeding",
+            },
+        ]
+        recommended = "approved"
 
-    # Build description
-    signal_display = signal.upper().replace("_", " ")
-    rec_display = recommendation.upper().replace("_", " ")
-    if gate_ready:
+    elif signal == "no_interest":
+        checkpoint = "approve_segment_pivot"
+        title = "Segment Pivot Recommended"
         description = (
-            f"Signal: {signal_display}. "
-            f"Problem resonance: {problem_resonance:.0%}, Zombie ratio: {zombie_ratio:.0%}. "
-            "Ready for feasibility assessment."
+            f"NO INTEREST signal detected. "
+            f"Problem resonance: {problem_resonance:.1%} (below 30% threshold). "
+            "The target customer segment does not resonate with the problem. "
+            "Recommend pivoting to a different customer segment."
         )
-    else:
+        options = [
+            {
+                "id": "approved",
+                "label": "Approve Segment Pivot",
+                "description": "Return to Phase 1 with new customer segment hypothesis",
+            },
+            {
+                "id": "override_proceed",
+                "label": "Override - Proceed Anyway",
+                "description": "Ignore signal and continue to Phase 3 (requires justification)",
+            },
+            {
+                "id": "iterate",
+                "label": "Run More Experiments",
+                "description": "Gather additional evidence with current segment",
+            },
+        ]
+        recommended = "approved"
+
+    else:  # mild_interest
+        checkpoint = "approve_value_pivot"
+        title = "Value Pivot Recommended"
         description = (
-            f"Signal: {signal_display}. "
-            f"Problem resonance: {problem_resonance:.0%}, Zombie ratio: {zombie_ratio:.0%}. "
-            f"Recommended: {rec_display}"
+            f"MILD INTEREST signal detected. "
+            f"Problem resonance: {problem_resonance:.1%} (≥30% - customers notice the problem). "
+            f"Zombie ratio: {zombie_ratio:.1%} (≥70% - but they don't commit). "
+            "Customers acknowledge the problem but don't take action. "
+            "Recommend refining the value proposition."
         )
+        options = [
+            {
+                "id": "approved",
+                "label": "Approve Value Pivot",
+                "description": "Return to Phase 1 to refine value proposition",
+            },
+            {
+                "id": "override_proceed",
+                "label": "Override - Proceed Anyway",
+                "description": "Ignore signal and continue to Phase 3 (requires justification)",
+            },
+            {
+                "id": "iterate",
+                "label": "Run More Experiments",
+                "description": "Gather additional evidence with current value prop",
+            },
+        ]
+        recommended = "approved"
+
+    logger.info(json.dumps({
+        "event": "phase_2_hitl_checkpoint",
+        "run_id": run_id,
+        "checkpoint": checkpoint,
+        "signal": signal,
+        "problem_resonance": problem_resonance,
+        "zombie_ratio": zombie_ratio,
+        "recommendation": recommendation,
+    }))
 
     # Return HITL checkpoint for human approval
     return {
         "state": updated_state,
-        "hitl_checkpoint": "approve_desirability_gate",
-        "hitl_title": "Desirability Validation Complete",
+        "hitl_checkpoint": checkpoint,
+        "hitl_title": title,
         "hitl_description": description,
         "hitl_context": {
             "signal": signal,
@@ -301,27 +371,6 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             },
             "recommendation": recommendation,
         },
-        "hitl_options": [
-            {
-                "id": "approve",
-                "label": "Approve",
-                "description": "Proceed to Phase 3 Feasibility assessment",
-            },
-            {
-                "id": "segment_pivot",
-                "label": "Segment Pivot",
-                "description": "Low resonance - target different customers",
-            },
-            {
-                "id": "value_pivot",
-                "label": "Value Pivot",
-                "description": "High zombie ratio - refine value proposition",
-            },
-            {
-                "id": "iterate",
-                "label": "Iterate",
-                "description": "Run more experiments with current hypothesis",
-            },
-        ],
-        "hitl_recommended": "approve" if gate_ready else recommendation,
+        "hitl_options": options,
+        "hitl_recommended": recommended,
     }

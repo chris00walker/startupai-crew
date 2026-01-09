@@ -131,14 +131,23 @@ class HITLApproveRequest(BaseModel):
     """Request to approve/reject HITL checkpoint."""
     run_id: UUID
     checkpoint: str
-    decision: str = Field(..., pattern="^(approved|rejected)$")
+    # Decision options:
+    # - approved: Proceed to next phase
+    # - rejected: Stop and pause workflow
+    # - override_proceed: Override pivot recommendation and proceed anyway
+    # - iterate: Re-run current phase with same hypothesis
+    decision: str = Field(
+        ...,
+        pattern="^(approved|rejected|override_proceed|iterate)$"
+    )
     feedback: Optional[str] = None
 
 
 class HITLApproveResponse(BaseModel):
     """Response from HITL approval endpoint."""
-    status: str  # resumed, rejected
+    status: str  # resumed, rejected, pivot, iterate
     next_phase: Optional[int] = None
+    pivot_type: Optional[str] = None  # segment_pivot, value_pivot
     message: str
 
 
@@ -299,8 +308,11 @@ async def hitl_approve(
     """
     Process HITL approval/rejection and resume validation.
 
-    On approval: Spawns new container to continue from checkpoint.
-    On rejection: Records decision, may trigger pivot flow.
+    Decision handling:
+    - approved: Proceed to next phase (or loopback for pivot checkpoints)
+    - rejected: Pause workflow for review
+    - override_proceed: Override pivot recommendation and force proceed
+    - iterate: Re-run current phase with same hypothesis
     """
     verify_bearer_token(authorization)
 
@@ -333,16 +345,82 @@ async def hitl_approve(
 
     run = run_result.data
     current_phase = run["current_phase"]
+    phase_state = run.get("phase_state", {})
 
+    # -------------------------------------------------------------------------
+    # Handle: APPROVED
+    # -------------------------------------------------------------------------
     if request.decision == "approved":
-        # Advance to next phase after HITL approval
+        # Check if this is a pivot checkpoint (approved = loop back to Phase 1)
+        if request.checkpoint in ("approve_segment_pivot", "approve_value_pivot"):
+            # Pivot approved: Loop back to Phase 1
+            pivot_type = (
+                "segment_pivot" if request.checkpoint == "approve_segment_pivot"
+                else "value_pivot"
+            )
+
+            # Store pivot context for Phase 1 to use
+            updated_state = {
+                **phase_state,
+                "pivot_type": pivot_type,
+                "pivot_reason": request.feedback or f"Pivot approved from Phase 2: {pivot_type}",
+                "pivot_from_phase": current_phase,
+            }
+
+            supabase.table("validation_runs").update({
+                "hitl_state": None,
+                "status": "running",
+                "current_phase": 1,  # Loop back to Phase 1
+                "phase_state": updated_state,
+            }).eq("id", str(request.run_id)).execute()
+
+            # Spawn resume function to continue from Phase 1
+            resume_from_checkpoint.spawn(str(request.run_id), request.checkpoint)
+
+            return HITLApproveResponse(
+                status="pivot",
+                next_phase=1,
+                pivot_type=pivot_type,
+                message=f"Pivot approved. Returning to Phase 1 for {pivot_type.replace('_', ' ')}.",
+            )
+        else:
+            # Standard approval: Advance to next phase
+            next_phase = current_phase + 1
+
+            supabase.table("validation_runs").update({
+                "hitl_state": None,
+                "status": "running",
+                "current_phase": next_phase,
+            }).eq("id", str(request.run_id)).execute()
+
+            # Spawn resume function to continue from next phase
+            resume_from_checkpoint.spawn(str(request.run_id), request.checkpoint)
+
+            return HITLApproveResponse(
+                status="resumed",
+                next_phase=next_phase,
+                message=f"Validation resumed from checkpoint '{request.checkpoint}'. Advancing to Phase {next_phase}.",
+            )
+
+    # -------------------------------------------------------------------------
+    # Handle: OVERRIDE_PROCEED (ignore pivot signal, force proceed)
+    # -------------------------------------------------------------------------
+    elif request.decision == "override_proceed":
         next_phase = current_phase + 1
 
-        # Clear HITL state, advance phase, and resume
+        # Store override context
+        updated_state = {
+            **phase_state,
+            "override_applied": True,
+            "override_reason": request.feedback or "Human override: proceeding despite pivot signal",
+            "override_checkpoint": request.checkpoint,
+        }
+
         supabase.table("validation_runs").update({
             "hitl_state": None,
             "status": "running",
             "current_phase": next_phase,
+            "phase_state": updated_state,
         }).eq("id", str(request.run_id)).execute()
 
         # Spawn resume function to continue from next phase
@@ -351,10 +429,40 @@ async def hitl_approve(
         return HITLApproveResponse(
             status="resumed",
             next_phase=next_phase,
-            message=f"Validation resumed from checkpoint '{request.checkpoint}'. Advancing to Phase {next_phase}.",
+            message=f"Override applied. Proceeding to Phase {next_phase} despite pivot recommendation.",
         )
+
+    # -------------------------------------------------------------------------
+    # Handle: ITERATE (re-run current phase)
+    # -------------------------------------------------------------------------
+    elif request.decision == "iterate":
+        # Mark for iteration and re-run current phase
+        updated_state = {
+            **phase_state,
+            "iteration_count": phase_state.get("iteration_count", 0) + 1,
+            "iteration_reason": request.feedback or "Additional experiments requested",
+        }
+
+        supabase.table("validation_runs").update({
+            "hitl_state": None,
+            "status": "running",
+            "phase_state": updated_state,
+        }).eq("id", str(request.run_id)).execute()
+
+        # Spawn resume function to re-run current phase
+        resume_from_checkpoint.spawn(str(request.run_id), request.checkpoint)
+
+        return HITLApproveResponse(
+            status="iterate",
+            next_phase=current_phase,
+            message=f"Iteration requested. Re-running Phase {current_phase} with additional experiments.",
+        )
+
+    # -------------------------------------------------------------------------
+    # Handle: REJECTED
+    # -------------------------------------------------------------------------
     else:
-        # Record rejection, workflow will handle pivot logic
+        # Record rejection, workflow pauses
         supabase.table("validation_runs").update({
             "hitl_state": f"rejected_{request.checkpoint}",
             "status": "paused",
