@@ -102,7 +102,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             phase=3,
             crew="FeasibilityBuildCrew",
             status="failed",
-            error=str(e),
+            error_message=str(e),
         )
         raise
 
@@ -150,7 +150,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             phase=3,
             crew="FeasibilityGovernanceCrew",
             status="failed",
-            error=str(e),
+            error_message=str(e),
         )
         raise
 

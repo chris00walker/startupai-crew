@@ -69,8 +69,8 @@ validate_concept_legitimacy:
     - Has some conceivable revenue model
     - Not already tried and failed catastrophically
 
-    Interview output to review:
-    {interview_output}
+    Review the interview output provided by the previous task (conduct_founder_interview)
+    to validate the business concept's legitimacy.
   expected_output: >
     A legitimacy report in JSON format:
     {
@@ -117,11 +117,8 @@ verify_intent_capture:
     - Are success criteria measurable?
     - Are assumptions testable?
 
-    Original founder input:
-    {entrepreneur_input}
-
-    Interview output to verify:
-    {interview_output}
+    Review the interview output from the previous task (conduct_founder_interview)
+    and compare it against the founder's original input to verify accuracy.
   expected_output: >
     An intent verification report:
     {
@@ -187,9 +184,10 @@ compile_founders_brief:
        - intent_verification: From GV2
        - overall_status: APPROVED, REJECTED, or PENDING
 
-    Interview output: {interview_output}
-    Legitimacy report: {legitimacy_report}
-    Intent verification: {intent_verification}
+    Use the outputs from the previous tasks in the context:
+    - Interview output from conduct_founder_interview
+    - Legitimacy report from validate_concept_legitimacy
+    - Intent verification from verify_intent_capture
   expected_output: >
     A complete Founder's Brief as a structured JSON document ready for human
     approval at the approve_founders_brief HITL checkpoint. The brief should be:

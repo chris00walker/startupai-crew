@@ -124,7 +124,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             phase=4,
             crew="FinanceCrew",
             status="failed",
-            error=str(e),
+            error_message=str(e),
         )
         raise
 
@@ -181,7 +181,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             phase=4,
             crew="SynthesisCrew",
             status="failed",
-            error=str(e),
+            error_message=str(e),
         )
         raise
 
@@ -244,7 +244,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             phase=4,
             crew="ViabilityGovernanceCrew",
             status="failed",
-            error=str(e),
+            error_message=str(e),
         )
         raise
 

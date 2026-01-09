@@ -15,12 +15,19 @@ Usage:
 """
 
 import os
+import sys
 import json
 import hmac
 import logging
 from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID, uuid4
+
+# Add src directory to Python path for Modal container
+if "/root/src" not in sys.path:
+    sys.path.insert(0, "/root/src")
+if "/root" not in sys.path:
+    sys.path.insert(0, "/root")
 
 import modal
 from fastapi import FastAPI, HTTPException, Header, BackgroundTasks
@@ -39,16 +46,21 @@ logger = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 
 # Define the container image with all dependencies
-image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "crewai>=0.80.0",
-    "crewai-tools>=0.14.0",
-    "fastapi>=0.115.0",
-    "pydantic>=2.0.0",
-    "pydantic-settings>=2.0.0",
-    "supabase>=2.0.0",
-    "openai>=1.0.0",
-    "tavily-python>=0.3.0",
-    "httpx>=0.27.0",
+# Use add_local_dir to include the src directory for imports
+image = (
+    modal.Image.debian_slim(python_version="3.11")
+    .pip_install(
+        "crewai>=0.80.0",
+        "crewai-tools>=0.14.0",
+        "fastapi>=0.115.0",
+        "pydantic>=2.0.0",
+        "pydantic-settings>=2.0.0",
+        "supabase>=2.0.0",
+        "openai>=1.0.0",
+        "tavily-python>=0.3.0",
+        "httpx>=0.27.0",
+    )
+    .add_local_dir("src", remote_path="/root/src")
 )
 
 # Create the Modal App
@@ -257,9 +269,14 @@ async def get_status(
     hitl_pending = hitl_result.data[0] if hitl_result.data else None
 
     # Get phase name from config
-    from .config import PHASE_CONFIG
-    phase_config = PHASE_CONFIG.get(run["current_phase"], {})
-    phase_name = phase_config.get("name", f"Phase {run['current_phase']}")
+    phase_names = {
+        0: "Onboarding",
+        1: "VPC Discovery",
+        2: "Desirability",
+        3: "Feasibility",
+        4: "Viability",
+    }
+    phase_name = phase_names.get(run["current_phase"], f"Phase {run['current_phase']}")
 
     return StatusResponse(
         run_id=run_id,
@@ -392,7 +409,7 @@ def run_validation(run_id: str):
         phase_state = run.get("phase_state", {})
 
         # Execute phases sequentially
-        from .phases import (
+        from src.modal_app.phases import (
             phase_0_onboarding,
             phase_1_vpc_discovery,
             phase_2_desirability,

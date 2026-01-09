@@ -127,7 +127,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             crew="OnboardingCrew",
             status="failed",
             progress_pct=0,
-            error=str(e),
+            error_message=str(e),
         )
 
         raise
