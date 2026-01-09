@@ -26,7 +26,15 @@
       "Skill(crewai-docs)",
       "WebFetch(domain:stackoverflow.com)",
       "WebFetch(domain:community.crewai.com)",
-      "Skill(crewai-integration-check)"
+      "Skill(crewai-integration-check)",
+      "Skill(cross-repo-sync)",
+      "Skill(modal-docs)",
+      "WebFetch(domain:modal.com)",
+      "mcp__supabase__list_projects",
+      "mcp__supabase__get_advisors",
+      "WebFetch(domain:startupai-site.netlify.app)",
+      "WebFetch(domain:app-startupai-site.netlify.app)",
+      "WebFetch(domain:startupai-app.netlify.app)"
     ],
     "deny": [
       "Bash(rm:*)",
