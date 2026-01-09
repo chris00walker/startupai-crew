@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Standard test scenarios for CrewAI AMP Trigger Crew testing",
+  "description": "Standard test scenarios for Modal serverless validation testing",
   "version": "1.0.0",
   "scenarios": [
     {
