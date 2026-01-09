@@ -2,22 +2,22 @@
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
 last_reviewed: "2026-01-08"
-last_synced: "2026-01-08 - Crew implementation complete (185 tests passing)"
+last_synced: "2026-01-08 - E2E integration tests complete (202 tests passing)"
 ---
 
 # Cross-Repository Blockers
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
 
-> **Crew Implementation Complete**: All 14 crews with 45 agents implemented. 185 tests passing. Ready for E2E integration. See [ADR-002](../adr/002-modal-serverless-migration.md).
+> **E2E Integration Tests Complete**: All 14 crews with 45 agents implemented. 202 tests passing (185 crew + 17 E2E). Ready for live production validation. See [ADR-002](../adr/002-modal-serverless-migration.md).
 
 ## Ecosystem Status (2026-01-08)
 
-**Crew implementation complete.** All 14 crews implemented, 185 tests passing, ready for E2E integration.
+**E2E integration tests complete.** All 14 crews implemented, 202 tests passing, ready for live production validation.
 
 | Service | Status | Completion | Notes |
 |---------|--------|------------|-------|
-| CrewAI Backend | Crews complete | ~85% | 14 crews, 45 agents, 185 tests |
+| CrewAI Backend | E2E tested | ~90% | 14 crews, 45 agents, 202 tests |
 | Product App | Modal integration complete | ~95% | Pointing to Modal endpoints |
 | Marketing Site | Live API integration | ~95% | Activity Feed + Metrics connected |
 
@@ -44,7 +44,7 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 | Supabase Tables | ✅ READY | `validation_runs`, `validation_progress`, `hitl_requests` | State persistence works |
 | Supabase Realtime | ✅ ENABLED | Progress tables publishing | Real-time UI updates |
 | 14 Crews Implementation | ✅ COMPLETE | 45 agents, 185 tests passing | All phases ready |
-| E2E Integration Test | ⏳ PENDING | Full Phase 0→4 flow test | Production validation |
+| E2E Integration Test | ✅ COMPLETE | 17 tests, Phase 0→4 flow validated | Production validation ready |
 
 **Modal API Endpoints (Production):**
 - `POST /kickoff` - Start validation (returns 202 Accepted + run_id)
@@ -87,7 +87,7 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 
 | Item | Status | Owner | Notes |
 |------|--------|-------|-------|
-| E2E flow verification | ⚠️ Ready to test | All repos | All components exist |
+| Live production validation | ⏳ Ready | All repos | E2E tests passing, needs real run |
 | Ad platform integration | ❌ Not connected | Crew | Meta/Google Ads APIs - deferred |
 | Real analytics tracking | ⚠️ Partial | Crew | PostHog exists; ad analytics pending |
 
@@ -143,19 +143,20 @@ Dashboard displays validation results
 Marketing activity feed shows real activity
 ```
 
-**Status**: All components implemented. Ready for live E2E test.
+**Status**: E2E integration tests complete (17 tests). Ready for live production validation.
 
 ---
 
 ## Coordination Notes
 
-- **Crew implementation COMPLETE** - All 14 crews with 45 agents (2026-01-08)
-- **185 tests passing** - Full coverage for Phases 0-4
+- **E2E integration tests COMPLETE** - 17 tests validating Phase 0→4 flow (2026-01-08)
+- **202 tests passing** - 185 crew tests + 17 E2E integration tests
+- **Crew implementation COMPLETE** - All 14 crews with 45 agents
 - **Modal infrastructure DEPLOYED** - Production endpoints verified
 - **Product App UPDATED** - Pointing to Modal endpoints (not AMP)
 - **Marketing site CONNECTED** - Live Activity Feed + Metrics components
 - **AMP DEPRECATED** - Legacy repos archived
-- **Primary work**: E2E integration test, then first production validation run
+- **Primary work**: First live production validation run
 
 **Single Repo Benefit**: Modal migration returns us to single repository (`startupai-crew`). No more cross-repo coordination for Crews 2 & 3.
 
@@ -173,7 +174,13 @@ Marketing activity feed shows real activity
 
 **Last Updated**: 2026-01-08
 
-**Changes (2026-01-08 - Crew Implementation Complete)**:
+**Changes (2026-01-08 - E2E Integration Tests Complete)**:
+- Added 17 E2E integration tests (Phase 0→4 flow)
+- 202 tests passing (185 crew + 17 E2E)
+- Updated completion status: ~90% (was ~85%)
+- Ready for live production validation run
+
+**Previous (2026-01-08 - Crew Implementation Complete)**:
 - All 14 crews implemented with 45 agents
 - 185 tests passing (Phases 0-4 covered)
 - Updated completion status: ~85% (was ~70%)
