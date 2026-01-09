@@ -6,9 +6,19 @@ design_landing_page:
     Design landing page wireframes that communicate the value proposition
     and test desirability.
 
-    Value Proposition: {value_proposition}
-    Customer Profile: {customer_profile}
-    Key messaging: {key_messaging}
+    ==========================================================================
+    VALUE PROPOSITION:
+    ==========================================================================
+    {value_proposition}
+
+    ==========================================================================
+    CUSTOMER PROFILE:
+    ==========================================================================
+    {customer_profile}
+
+    ==========================================================================
+    YOUR TASK: Design landing pages based on the above inputs.
+    ==========================================================================
 
     Design elements to include:
     1. Hero section with value proposition headline
@@ -32,10 +42,7 @@ design_landing_page:
 
 build_landing_page:
   description: >
-    Build the landing pages based on the design specifications.
-
-    Design specs: {design_specs}
-    Brand guidelines: {brand_guidelines}
+    Build the landing pages based on the design specifications from context.
 
     Technical requirements:
     - Next.js with TypeScript
@@ -58,9 +65,7 @@ build_landing_page:
 deploy_artifacts:
   description: >
     Deploy the landing pages to Netlify for the validation experiments.
-
-    Built pages: {built_pages}
-    Domain configuration: {domain_config}
+    Use the built pages from context.
 
     Deployment tasks:
     1. Configure Netlify site

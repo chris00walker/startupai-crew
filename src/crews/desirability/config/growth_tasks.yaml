@@ -5,9 +5,29 @@ create_ad_variants:
   description: >
     Create ad creative variants for desirability testing.
 
-    Value Proposition: {value_proposition}
-    Target audience: {target_audience}
-    Landing page URLs: {landing_page_urls}
+    ==========================================================================
+    VALUE PROPOSITION:
+    ==========================================================================
+    {value_proposition}
+
+    ==========================================================================
+    CUSTOMER PAINS:
+    ==========================================================================
+    {customer_pains}
+
+    ==========================================================================
+    AD CONCEPTS (from BuildCrew):
+    ==========================================================================
+    {ad_concepts}
+
+    ==========================================================================
+    LANDING PAGES:
+    ==========================================================================
+    {landing_pages}
+
+    ==========================================================================
+    YOUR TASK: Create ad variants based on the above inputs.
+    ==========================================================================
 
     Create ad variants testing:
     1. Problem-focused headline vs solution-focused headline
@@ -28,10 +48,7 @@ create_ad_variants:
 write_copy_variants:
   description: >
     Write copy variants for ads and landing pages.
-
-    Ad concepts: {ad_concepts}
-    Customer pains: {customer_pains}
-    Value proposition: {value_proposition}
+    Use the ad concepts from context.
 
     Write:
     - Ad headlines (5+ variants)
@@ -52,11 +69,7 @@ write_copy_variants:
 configure_experiments:
   description: >
     Configure the experiment setup for desirability testing.
-
-    Ad variants: {ad_variants}
-    Copy variants: {copy_variants}
-    Landing pages: {landing_pages}
-    Budget: {budget}
+    Use the ad variants and copy from context.
 
     Configuration:
     1. Platform setup (Meta Ads, Google Ads)
@@ -80,9 +93,7 @@ configure_experiments:
 run_experiments:
   description: >
     Execute the configured experiments and collect data.
-
-    Experiment config: {experiment_config}
-    HITL approval: {hitl_approval}
+    Use the experiment configuration from context.
 
     Execute:
     1. Launch ad campaigns
@@ -90,8 +101,6 @@ run_experiments:
     3. Collect data (impressions, clicks, conversions)
     4. Track form submissions
     5. Aggregate results
-
-    Note: This task runs after approve_campaign_launch HITL.
   expected_output: >
     Raw experiment data including:
     - Impressions by variant
@@ -106,20 +115,19 @@ run_experiments:
 compute_desirability_signals:
   description: >
     Compute Innovation Physics signals from experiment data.
-
-    Experiment results: {experiment_results}
+    Use the experiment results from context.
 
     Calculate:
     1. problem_resonance = (clicks + signups) / impressions
-       - Target: ≥ 0.3 (30% resonance)
+       - Target: >= 0.3 (30% resonance)
 
     2. zombie_ratio = (clicks - signups) / clicks
        - Target: < 0.7 (less than 70% zombies)
 
     Determine desirability_signal:
-    - problem_resonance < 0.3: NO_INTEREST → SEGMENT_PIVOT
-    - problem_resonance ≥ 0.3 AND zombie_ratio ≥ 0.7: MILD_INTEREST → VALUE_PIVOT
-    - problem_resonance ≥ 0.3 AND zombie_ratio < 0.7: STRONG_COMMITMENT → Proceed
+    - problem_resonance < 0.3: NO_INTEREST -> SEGMENT_PIVOT
+    - problem_resonance >= 0.3 AND zombie_ratio >= 0.7: MILD_INTEREST -> VALUE_PIVOT
+    - problem_resonance >= 0.3 AND zombie_ratio < 0.7: STRONG_COMMITMENT -> Proceed
   expected_output: >
     DesirabilityEvidence object containing:
     - ad_impressions, ad_clicks, ad_signups, ad_spend

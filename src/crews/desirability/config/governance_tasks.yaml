@@ -5,8 +5,14 @@ methodology_compliance_check:
   description: >
     Review all validation activities for VPD methodology compliance.
 
-    Activities to review: {activities}
-    Expected methodology: VPD framework
+    ==========================================================================
+    ACTIVITIES TO REVIEW:
+    ==========================================================================
+    {activities}
+
+    ==========================================================================
+    YOUR TASK: Check methodology compliance.
+    ==========================================================================
 
     Check:
     1. Are Test Cards properly structured?
@@ -26,7 +32,14 @@ creative_qa:
   description: >
     Review all creative assets for quality and brand safety.
 
-    Assets to review: {creative_assets}
+    ==========================================================================
+    CREATIVE ASSETS TO REVIEW:
+    ==========================================================================
+    {creative_assets}
+
+    ==========================================================================
+    YOUR TASK: Review creative quality.
+    ==========================================================================
 
     Check:
     1. Brand safety (no controversial content)
@@ -41,13 +54,21 @@ creative_qa:
     - Required corrections
     - Approval recommendation
   agent: g1_qa_agent
+  context:
+    - methodology_compliance_check
 
 security_review:
   description: >
     Review for PII exposure and security concerns.
 
-    Data to review: {experiment_data}
-    Systems involved: {systems}
+    ==========================================================================
+    EXPERIMENT DATA TO REVIEW:
+    ==========================================================================
+    {experiment_data}
+
+    ==========================================================================
+    YOUR TASK: Conduct security review.
+    ==========================================================================
 
     Check:
     1. PII identification and scrubbing
@@ -62,13 +83,14 @@ security_review:
     - Compliance status
     - Security recommendations
   agent: g2_security_agent
+  context:
+    - methodology_compliance_check
+    - creative_qa
 
 log_decisions:
   description: >
     Log all decisions for audit trail and flywheel learning.
-
-    Decisions to log: {decisions}
-    Phase context: {phase_context}
+    Use information from context for decisions and phase context.
 
     Log:
     1. HITL decisions (with rationale)
@@ -85,3 +107,7 @@ log_decisions:
     - Evidence supporting decision
     - Timestamp
   agent: g3_audit_agent
+  context:
+    - methodology_compliance_check
+    - creative_qa
+    - security_review
