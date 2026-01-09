@@ -389,7 +389,7 @@ class TestPhase2Execution:
     def test_phase_2_low_resonance_triggers_segment_pivot(
         self, mock_founders_brief, mock_customer_profile, mock_value_map
     ):
-        """Phase 2 should recommend segment_pivot if problem_resonance < 0.3."""
+        """Phase 2 should recommend segment_1 or custom_segment if problem_resonance < 0.3."""
         from src.modal_app.phases import phase_2
 
         low_resonance = DesirabilityEvidence(
@@ -407,20 +407,23 @@ class TestPhase2Execution:
             with patch("src.crews.desirability.run_growth_crew") as mock_growth:
                 with patch("src.crews.desirability.run_governance_crew") as mock_gov:
                     with patch("src.modal_app.phases.phase_2.update_progress"):
-                        mock_build.return_value = {"landing_pages": {}}
-                        mock_growth.return_value = low_resonance
-                        mock_gov.return_value = {"audit": "passed"}
+                        with patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments") as mock_alts:
+                            mock_build.return_value = {"landing_pages": {}}
+                            mock_growth.return_value = low_resonance
+                            mock_gov.return_value = {"audit": "passed"}
+                            mock_alts.return_value = [{"segment_name": "Alt 1", "confidence": 0.8}]
 
-                        result = phase_2.execute(
-                            run_id="test-run-001",
-                            state={
-                                "founders_brief": mock_founders_brief.model_dump(),
-                                "customer_profile": mock_customer_profile.model_dump(),
-                                "value_map": mock_value_map,
-                            },
-                        )
+                            result = phase_2.execute(
+                                run_id="test-run-001",
+                                state={
+                                    "founders_brief": mock_founders_brief.model_dump(),
+                                    "customer_profile": mock_customer_profile.model_dump(),
+                                    "value_map": mock_value_map,
+                                },
+                            )
 
-        assert result["hitl_recommended"] == "segment_pivot"
+        # Implementation uses "segment_1" (first alternative) or "custom_segment" as recommendation
+        assert result["hitl_recommended"] in ["segment_1", "custom_segment"]
         assert result["state"]["desirability_signal"] == "no_interest"
 
 

@@ -219,8 +219,8 @@ class TestDesirabilityGateContract:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_desirability_gate_structure(
         self,
         mock_progress,
@@ -256,8 +256,8 @@ class TestSegmentPivotContract:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_segment_pivot_includes_alternatives(
         self,
         mock_progress,
@@ -300,8 +300,8 @@ class TestSegmentPivotContract:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_segment_options_have_segment_data(
         self,
         mock_progress,
@@ -343,8 +343,8 @@ class TestValuePivotContract:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_value_pivot_structure(
         self,
         mock_progress,

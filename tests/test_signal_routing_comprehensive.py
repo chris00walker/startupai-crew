@@ -8,7 +8,6 @@ All tests use mocks (no API keys required).
 """
 
 import pytest
-import importlib
 from unittest.mock import Mock, patch, MagicMock
 from typing import Any
 
@@ -43,8 +42,8 @@ class TestPhase2SignalRouting:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_strong_commitment_returns_desirability_gate(
         self,
         mock_progress,
@@ -64,7 +63,6 @@ class TestPhase2SignalRouting:
         mock_governance.return_value = {}
 
         from src.modal_app.phases import phase_2
-        importlib.reload(phase_2)
 
         result = phase_2.execute("test-run-id", self._create_mock_state())
 
@@ -76,8 +74,8 @@ class TestPhase2SignalRouting:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_no_interest_returns_segment_pivot_checkpoint(
         self,
         mock_progress,
@@ -101,7 +99,6 @@ class TestPhase2SignalRouting:
         ]
 
         from src.modal_app.phases import phase_2
-        importlib.reload(phase_2)
 
         result = phase_2.execute("test-run-id", self._create_mock_state())
 
@@ -117,8 +114,8 @@ class TestPhase2SignalRouting:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_mild_interest_returns_value_pivot_checkpoint(
         self,
         mock_progress,
@@ -138,7 +135,6 @@ class TestPhase2SignalRouting:
         mock_governance.return_value = {}
 
         from src.modal_app.phases import phase_2
-        importlib.reload(phase_2)
 
         result = phase_2.execute("test-run-id", self._create_mock_state())
 
@@ -150,8 +146,8 @@ class TestPhase2SignalRouting:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_segment_pivot_includes_alternatives(
         self,
         mock_progress,
@@ -176,7 +172,6 @@ class TestPhase2SignalRouting:
         ]
 
         from src.modal_app.phases import phase_2
-        importlib.reload(phase_2)
 
         result = phase_2.execute("test-run-id", self._create_mock_state())
 
@@ -224,7 +219,7 @@ class TestPhase3SignalRouting:
 
     @patch("src.crews.feasibility.run_feasibility_build_crew")
     @patch("src.crews.feasibility.run_feasibility_governance_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_3.update_progress")
     def test_green_signal_returns_feasibility_gate(
         self,
         mock_progress,
@@ -240,7 +235,6 @@ class TestPhase3SignalRouting:
         mock_governance.return_value = {}
 
         from src.modal_app.phases import phase_3
-        importlib.reload(phase_3)
 
         result = phase_3.execute("test-run-id", self._create_mock_state())
 
@@ -250,7 +244,7 @@ class TestPhase3SignalRouting:
 
     @patch("src.crews.feasibility.run_feasibility_build_crew")
     @patch("src.crews.feasibility.run_feasibility_governance_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_3.update_progress")
     def test_orange_signal_returns_feature_pivot_checkpoint(
         self,
         mock_progress,
@@ -267,7 +261,6 @@ class TestPhase3SignalRouting:
         mock_governance.return_value = {}
 
         from src.modal_app.phases import phase_3
-        importlib.reload(phase_3)
 
         result = phase_3.execute("test-run-id", self._create_mock_state())
 
@@ -278,7 +271,7 @@ class TestPhase3SignalRouting:
 
     @patch("src.crews.feasibility.run_feasibility_build_crew")
     @patch("src.crews.feasibility.run_feasibility_governance_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_3.update_progress")
     def test_red_signal_returns_kill_checkpoint(
         self,
         mock_progress,
@@ -331,7 +324,7 @@ class TestPhase4SignalRouting:
     @patch("src.crews.viability.run_finance_crew")
     @patch("src.crews.viability.run_synthesis_crew")
     @patch("src.crews.viability.run_viability_governance_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_4.update_progress")
     def test_profitable_signal_returns_proceed_checkpoint(
         self,
         mock_progress,
@@ -360,7 +353,7 @@ class TestPhase4SignalRouting:
     @patch("src.crews.viability.run_finance_crew")
     @patch("src.crews.viability.run_synthesis_crew")
     @patch("src.crews.viability.run_viability_governance_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_4.update_progress")
     def test_marginal_signal_returns_price_pivot_checkpoint(
         self,
         mock_progress,
@@ -388,7 +381,7 @@ class TestPhase4SignalRouting:
     @patch("src.crews.viability.run_finance_crew")
     @patch("src.crews.viability.run_synthesis_crew")
     @patch("src.crews.viability.run_viability_governance_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_4.update_progress")
     def test_underwater_signal_returns_strategic_pivot_checkpoint(
         self,
         mock_progress,
@@ -424,8 +417,8 @@ class TestHITLCheckpointOptions:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_desirability_gate_has_correct_options(
         self,
         mock_progress,
@@ -461,8 +454,8 @@ class TestHITLCheckpointOptions:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_value_pivot_has_override_option(
         self,
         mock_progress,
@@ -562,8 +555,8 @@ class TestSignalContextInHITL:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_hitl_context_contains_signal(
         self,
         mock_progress,

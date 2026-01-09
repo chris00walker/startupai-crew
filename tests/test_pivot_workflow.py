@@ -275,7 +275,7 @@ class TestPhase1PivotContext:
     @patch("src.crews.discovery.run_value_design_crew")
     @patch("src.crews.discovery.run_wtp_crew")
     @patch("src.crews.discovery.run_fit_assessment_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_1.update_progress")
     def test_phase1_receives_target_segment_hypothesis(
         self,
         mock_progress,
@@ -327,7 +327,7 @@ class TestPhase1PivotContext:
     @patch("src.crews.discovery.run_value_design_crew")
     @patch("src.crews.discovery.run_wtp_crew")
     @patch("src.crews.discovery.run_fit_assessment_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_1.update_progress")
     def test_phase1_pivot_context_includes_instructions(
         self,
         mock_progress,
@@ -379,7 +379,7 @@ class TestPhase1PivotContext:
     @patch("src.crews.discovery.run_value_design_crew")
     @patch("src.crews.discovery.run_wtp_crew")
     @patch("src.crews.discovery.run_fit_assessment_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_1.update_progress")
     def test_phase1_without_pivot_has_no_pivot_context(
         self,
         mock_progress,

@@ -21,7 +21,7 @@ class TestPhase0Context:
     """Test that Phase 0 receives and processes entrepreneur input correctly."""
 
     @patch("src.crews.onboarding.run_onboarding_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_0.update_progress")
     def test_onboarding_receives_entrepreneur_input(
         self,
         mock_progress,
@@ -103,7 +103,7 @@ class TestPhase1Context:
     @patch("src.crews.discovery.run_value_design_crew")
     @patch("src.crews.discovery.run_wtp_crew")
     @patch("src.crews.discovery.run_fit_assessment_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_1.update_progress")
     def test_discovery_crew_receives_founders_brief(
         self,
         mock_progress,
@@ -141,7 +141,7 @@ class TestPhase1Context:
     @patch("src.crews.discovery.run_value_design_crew")
     @patch("src.crews.discovery.run_wtp_crew")
     @patch("src.crews.discovery.run_fit_assessment_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_1.update_progress")
     def test_customer_profile_crew_receives_founders_brief(
         self,
         mock_progress,
@@ -216,8 +216,8 @@ class TestPhase2Context:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_build_crew_receives_customer_profile(
         self,
         mock_progress,
@@ -248,8 +248,8 @@ class TestPhase2Context:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_build_crew_receives_value_proposition(
         self,
         mock_progress,
@@ -281,8 +281,8 @@ class TestPhase2Context:
     @patch("src.crews.desirability.run_build_crew")
     @patch("src.crews.desirability.run_growth_crew")
     @patch("src.crews.desirability.run_governance_crew")
-    @patch("src.modal_app.helpers.segment_alternatives.generate_alternative_segments")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_2.generate_alternative_segments")
+    @patch("src.modal_app.phases.phase_2.update_progress")
     def test_growth_crew_receives_customer_pains(
         self,
         mock_progress,
@@ -338,7 +338,7 @@ class TestPhase3Context:
 
     @patch("src.crews.feasibility.run_feasibility_build_crew")
     @patch("src.crews.feasibility.run_feasibility_governance_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_3.update_progress")
     def test_feasibility_crew_receives_desirability_evidence(
         self,
         mock_progress,
@@ -391,7 +391,7 @@ class TestPhase4Context:
     @patch("src.crews.viability.run_finance_crew")
     @patch("src.crews.viability.run_synthesis_crew")
     @patch("src.crews.viability.run_viability_governance_crew")
-    @patch("src.state.update_progress")
+    @patch("src.modal_app.phases.phase_4.update_progress")
     def test_finance_crew_receives_prior_evidence(
         self,
         mock_progress,
