@@ -11,8 +11,8 @@ Quick reference for Modal serverless deployment patterns used in the StartupAI e
 |--------|-------|
 | **Last Full Sync** | 2026-01-09 |
 | **Staleness Threshold** | 30 days |
-| **Total Cached Files** | 8 |
-| **Missing Topics** | 6 (see below) |
+| **Total Cached Files** | 9 |
+| **Missing Topics** | 5 (see below) |
 | **Cache Manifest** | `MANIFEST.json` |
 
 > **Self-Learning Cache**: This documentation cache automatically updates when new content is fetched from online sources. Check MANIFEST.json for detailed tracking.
@@ -27,7 +27,8 @@ Quick reference for Modal serverless deployment patterns used in the StartupAI e
 | **Web Endpoints** | `web-endpoints.md` | `@modal.asgi_app`, FastAPI, CORS, auth |
 | **Images** | `images.md` | Container images, `pip_install`, `add_local_dir` |
 | **Secrets** | `secrets.md` | `modal.Secret`, environment variables |
-| **Deployment** | `deployment.md` | CLI commands, environments, GitHub Actions |
+| **Deployment** | `deployment.md` | CI/CD patterns, environments, GitHub Actions |
+| **CLI Reference** | `cli-reference.md` | `modal deploy`, `serve`, `run`, `secret`, `app` |
 | **GPUs** | `gpus.md` | GPU types (A100, H100, T4), multi-GPU, CUDA |
 | **StartupAI Patterns** | `startupai-patterns.md` | HITL checkpoint-resume, architecture |
 
@@ -44,7 +45,8 @@ Quick reference for Modal serverless deployment patterns used in the StartupAI e
 | `modal.Image`, `pip_install`, container | `images.md` |
 | `add_local_dir`, `debian_slim` | `images.md` |
 | `modal.Secret`, environment variables | `secrets.md` |
-| `modal deploy`, `modal serve`, `modal run` | `deployment.md` |
+| `modal deploy`, `modal serve`, `modal run` | `cli-reference.md` |
+| `modal secret`, `modal app`, `modal environment` | `cli-reference.md` |
 | GitHub Actions, CI/CD | `deployment.md` |
 | `--env`, environments | `deployment.md` |
 | GPU, CUDA, A100, H100, T4, L40S | `gpus.md` |
@@ -74,7 +76,7 @@ For StartupAI's Modal deployment, these are the most relevant:
 
 ## Topics NOT in This Cache
 
-This cache covers ~8 essential patterns. For these topics, **use WebFetch**:
+This cache covers ~9 essential patterns. For these topics, **use WebFetch**:
 
 | Topic | Online URL |
 |-------|------------|
@@ -83,7 +85,6 @@ This cache covers ~8 essential patterns. For these topics, **use WebFetch**:
 | Sandboxes | https://modal.com/docs/guide/sandbox |
 | Scaling | https://modal.com/docs/guide/scale |
 | Regions | https://modal.com/docs/guide/region-selection |
-| CLI Reference | https://modal.com/docs/reference/cli |
 
 **For comprehensive searches**:
 ```

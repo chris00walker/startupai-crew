@@ -49,6 +49,11 @@
       "source_url": "https://modal.com/docs/guide/gpu",
       "fetched_at": "2026-01-09T12:00:00Z",
       "topics": ["GPU", "CUDA", "nvidia", "A100", "T4", "H100", "L40S", "multi-GPU"]
+    },
+    "cli-reference.md": {
+      "source_url": "https://modal.com/docs/guide",
+      "fetched_at": "2026-01-09T12:00:00Z",
+      "topics": ["CLI", "modal deploy", "modal serve", "modal run", "modal secret", "modal app", "modal environment"]
     }
   },
   "missing_topics": [
@@ -81,12 +86,6 @@
       "url": "https://modal.com/docs/guide/scaling",
       "priority": "medium",
       "keywords": ["concurrency", "autoscaling", "cold starts", "warm pools"]
-    },
-    {
-      "topic": "cli",
-      "url": "https://modal.com/docs/reference/cli",
-      "priority": "high",
-      "keywords": ["modal deploy", "modal serve", "modal run", "CLI commands"]
     }
   ]
 }
