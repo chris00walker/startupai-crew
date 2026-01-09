@@ -70,6 +70,22 @@ RIGHT: Only use {input_var} in task description for values passed as crew inputs
 - Zombie Ratio: 82.7% (above 70% threshold)
 - Correct checkpoint: `approve_segment_pivot`
 
+**Pivot Loopback Test**: PASSED
+- Approved `approve_segment_pivot` with decision `approved`
+- HITL handler correctly returned `status: "pivot"`, `next_phase: 1`
+- Phase 1 re-ran with all 5 crews completing successfully:
+  - DiscoveryCrew: 14:18:38 → 14:20:36
+  - CustomerProfileCrew: 14:20:37 → 14:23:25
+  - ValueDesignCrew: 14:23:25 → 14:25:34
+  - WTPCrew: → 14:26:53
+  - FitAssessmentCrew: 14:26:53 → 14:27:22
+- New fit score: 72/100 (vs 83/100 in first run)
+- Pivot context preserved in phase_state:
+  - `pivot_type: segment_pivot`
+  - `pivot_reason: "Pivot approved - target different customer segment"`
+  - `pivot_from_phase: 2`
+- New HITL: `approve_vpc_completion` (ready to proceed to Phase 2 again)
+
 ---
 
 ## Issue Patterns
@@ -167,11 +183,12 @@ GET /validation_progress?run_id=eq.{run_id}&phase=eq.{phase}&order=created_at.de
 
 ## Next Steps
 
-1. **Test pivot loopback**: Approve segment pivot, verify Phase 1 re-runs with pivot context
-2. **Test override_proceed**: Verify force-proceed works despite pivot signal
-3. **Test iterate**: Verify Phase 2 re-runs with same hypothesis
-4. **Phase 3 live test**: After desirability gate passes
-5. **Phase 4 live test**: Full viability assessment
+1. ~~**Test pivot loopback**: Approve segment pivot, verify Phase 1 re-runs with pivot context~~ ✅ DONE
+2. **Continue to Phase 2 (round 2)**: Approve `approve_vpc_completion` to test Phase 2 with pivoted segment
+3. **Test override_proceed**: Verify force-proceed works despite pivot signal
+4. **Test iterate**: Verify Phase 2 re-runs with same hypothesis
+5. **Phase 3 live test**: After desirability gate passes
+6. **Phase 4 live test**: Full viability assessment
 
 ---
 
