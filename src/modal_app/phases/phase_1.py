@@ -38,12 +38,46 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     Returns:
         Updated state with Phase 1 outputs and HITL checkpoint
     """
+    # Check for pivot context (segment pivot from Phase 2)
+    pivot_type = state.get("pivot_type")
+    target_segment = state.get("target_segment_hypothesis")
+    failed_segment = state.get("failed_segment")
+
     logger.info(json.dumps({
         "event": "phase_1_start",
         "run_id": run_id,
+        "is_pivot": pivot_type is not None,
+        "pivot_type": pivot_type,
+        "target_segment": target_segment.get("segment_name") if target_segment else None,
     }))
 
     founders_brief = state.get("founders_brief", {})
+
+    # If this is a segment pivot, augment founder's brief with pivot context
+    if pivot_type == "segment_pivot" and target_segment:
+        pivot_context = {
+            "is_pivot": True,
+            "target_segment_hypothesis": target_segment,
+            "failed_segment": failed_segment,
+            "pivot_instructions": (
+                f"IMPORTANT: This is a SEGMENT PIVOT. The previous customer segment "
+                f"'{failed_segment}' did not show interest (low problem resonance). "
+                f"\n\nYou MUST target a DIFFERENT segment: '{target_segment.get('segment_name')}'."
+                f"\nDescription: {target_segment.get('segment_description', '')}"
+                f"\nRationale: {target_segment.get('why_better_fit', '')}"
+                f"\n\nDo NOT rediscover the same segment. Focus on the new target segment."
+            ),
+        }
+        # Merge pivot context into founders_brief for crews to use
+        founders_brief = {
+            **founders_brief,
+            "pivot_context": pivot_context,
+        }
+        logger.info(json.dumps({
+            "event": "phase_1_pivot_context_applied",
+            "run_id": run_id,
+            "target_segment": target_segment.get("segment_name"),
+        }))
 
     # ==========================================================================
     # Crew 1: DiscoveryCrew - Segment validation and evidence collection
@@ -316,6 +350,17 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         "fit_assessment": fit_assessment_dict,
     }
 
+    # Clear pivot context after successful completion (don't carry forward)
+    if "target_segment_hypothesis" in updated_state:
+        # Keep record of pivot but clear the hypothesis since it's been applied
+        updated_state["last_pivot"] = {
+            "target_segment": updated_state.pop("target_segment_hypothesis"),
+            "failed_segment": updated_state.pop("failed_segment", None),
+            "pivot_type": updated_state.pop("pivot_type", None),
+            "pivot_from_phase": updated_state.pop("pivot_from_phase", None),
+            "pivot_reason": updated_state.pop("pivot_reason", None),
+        }
+
     # Check if fit score meets threshold (70)
     fit_score = fit_assessment_dict.get("fit_score", 0)
     gate_ready = fit_score >= 70
@@ -332,6 +377,8 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         "hitl_context": {
             "fit_score": fit_score,
             "gate_ready": gate_ready,
+            "was_pivot": "last_pivot" in updated_state,
+            "pivot_details": updated_state.get("last_pivot"),
             "customer_profile_summary": {
                 "segment": customer_profile_dict.get("segment_name", "Unknown"),
                 "jobs_count": len(customer_profile_dict.get("jobs", [])),

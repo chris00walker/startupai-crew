@@ -13,7 +13,7 @@ Agents: 9 total
 HITL Checkpoints:
     - approve_campaign_launch
     - approve_spend_increase
-    - approve_desirability_gate
+    - approve_desirability_gate (or approve_segment_pivot / approve_value_pivot)
 """
 
 import json
@@ -21,6 +21,10 @@ import logging
 from typing import Any
 
 from src.state import update_progress
+from src.modal_app.helpers.segment_alternatives import (
+    generate_alternative_segments,
+    format_segment_options,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -287,31 +291,53 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
 
     elif signal == "no_interest":
         checkpoint = "approve_segment_pivot"
-        title = "Segment Pivot Recommended"
-        description = (
-            f"NO INTEREST signal detected. "
-            f"Problem resonance: {problem_resonance:.1%} (below 30% threshold). "
-            "The target customer segment does not resonate with the problem. "
-            "Recommend pivoting to a different customer segment."
+        title = "Segment Pivot Recommended - Choose New Target"
+
+        # Generate alternative segments for founder to choose from
+        logger.info(json.dumps({
+            "event": "generating_segment_alternatives",
+            "run_id": run_id,
+        }))
+
+        alternative_segments = generate_alternative_segments(
+            founders_brief=founders_brief,
+            failed_segment=customer_profile,
+            desirability_evidence=desirability_dict,
+            num_alternatives=3,
         )
-        options = [
-            {
-                "id": "approved",
-                "label": "Approve Segment Pivot",
-                "description": "Return to Phase 1 with new customer segment hypothesis",
-            },
-            {
-                "id": "override_proceed",
-                "label": "Override - Proceed Anyway",
-                "description": "Ignore signal and continue to Phase 3 (requires justification)",
-            },
-            {
-                "id": "iterate",
-                "label": "Run More Experiments",
-                "description": "Gather additional evidence with current segment",
-            },
-        ]
-        recommended = "approved"
+
+        # Format alternatives as HITL options
+        options = format_segment_options(
+            alternatives=alternative_segments,
+            include_custom=True,
+            include_override=True,
+            include_iterate=True,
+        )
+
+        # Build description with alternatives summary
+        if alternative_segments:
+            top_segment = alternative_segments[0]
+            description = (
+                f"NO INTEREST signal detected. "
+                f"Problem resonance: {problem_resonance:.1%} (below 30% threshold). "
+                f"The target segment '{customer_profile.get('segment_name', 'Unknown')}' "
+                "does not resonate with the problem.\n\n"
+                f"**Recommended pivot**: {top_segment['segment_name']} "
+                f"(confidence: {top_segment.get('confidence', 0):.0%})\n\n"
+                "Select which customer segment to test next, or specify your own."
+            )
+            recommended = "segment_1"  # Recommend highest-confidence alternative
+        else:
+            description = (
+                f"NO INTEREST signal detected. "
+                f"Problem resonance: {problem_resonance:.1%} (below 30% threshold). "
+                "The target customer segment does not resonate with the problem. "
+                "Recommend pivoting to a different customer segment."
+            )
+            recommended = "custom_segment"
+
+        # Store alternatives in state for use during pivot
+        updated_state["segment_alternatives"] = alternative_segments
 
     else:  # mild_interest
         checkpoint = "approve_value_pivot"
@@ -352,25 +378,33 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         "recommendation": recommendation,
     }))
 
+    # Build HITL context
+    hitl_context = {
+        "signal": signal,
+        "problem_resonance": problem_resonance,
+        "zombie_ratio": zombie_ratio,
+        "conversion_rate": desirability_dict.get("conversion_rate", 0.0),
+        "ad_metrics": {
+            "impressions": desirability_dict.get("ad_impressions", 0),
+            "clicks": desirability_dict.get("ad_clicks", 0),
+            "signups": desirability_dict.get("ad_signups", 0),
+            "spend": desirability_dict.get("ad_spend", 0.0),
+        },
+        "recommendation": recommendation,
+        "failed_segment": customer_profile.get("segment_name", "Unknown"),
+    }
+
+    # Add segment alternatives for pivot scenarios
+    if signal == "no_interest" and "segment_alternatives" in updated_state:
+        hitl_context["segment_alternatives"] = updated_state["segment_alternatives"]
+
     # Return HITL checkpoint for human approval
     return {
         "state": updated_state,
         "hitl_checkpoint": checkpoint,
         "hitl_title": title,
         "hitl_description": description,
-        "hitl_context": {
-            "signal": signal,
-            "problem_resonance": problem_resonance,
-            "zombie_ratio": zombie_ratio,
-            "conversion_rate": desirability_dict.get("conversion_rate", 0.0),
-            "ad_metrics": {
-                "impressions": desirability_dict.get("ad_impressions", 0),
-                "clicks": desirability_dict.get("ad_clicks", 0),
-                "signups": desirability_dict.get("ad_signups", 0),
-                "spend": desirability_dict.get("ad_spend", 0.0),
-            },
-            "recommendation": recommendation,
-        },
+        "hitl_context": hitl_context,
         "hitl_options": options,
         "hitl_recommended": recommended,
     }

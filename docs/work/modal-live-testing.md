@@ -28,6 +28,7 @@ This document captures issues discovered, fixes applied, and lessons learned dur
 | 3 | Customer Profile completely wrong | Agents never saw `{founders_brief}` - hallucinated generic output | Add template vars back with clear section headers | `b96e7a7` |
 | 4 | Phase 2 'key_messaging' not found | Same template interpolation issue in Phase 2 tasks | Fix Phase 2 task files (build, growth, governance) | `346e02e` |
 | 5 | HITL always shows `approve_desirability_gate` | No signal-based routing - proceeds even with NO_INTEREST | Implement signal-based checkpoint routing | `e6ce56b` |
+| 6 | **Segment pivot doesn't change segment** | Agents re-run discovery with no guidance on new segment | Propose alternatives + founder selects | *pending* |
 
 #### Key Learnings
 
@@ -141,6 +142,57 @@ elif signal == "no_interest":
     checkpoint = "approve_segment_pivot"  # → Phase 1
 else:  # mild_interest
     checkpoint = "approve_value_pivot"  # → Phase 1
+```
+
+### Pattern 4: Segment Pivot Produces Same Segment (BUG #6)
+
+**Symptom**: After segment pivot approval, Phase 1 re-runs but produces the same customer segment
+
+**Evidence from Live Test**:
+| | Before Pivot | After Pivot |
+|---|---|---|
+| Segment | SMB E-commerce (Customer Support) | SMB E-commerce (Customer Support) |
+| Fit Score | 83/100 | 72/100 |
+
+**Root Cause**: Pivot context only says "target different segment" but doesn't:
+1. Tell agents WHICH segment to target
+2. Provide alternative segment hypotheses
+3. Capture founder input on new direction
+
+Agents re-run discovery with same founder's brief → arrive at same conclusion.
+
+**Solution** (Implementing):
+1. **Phase 2**: When NO_INTEREST signal detected, have agents propose 2-3 alternative segments with confidence scores
+2. **HITL**: Present alternatives to founder, let them choose which to test next
+3. **Phase 1**: Use selected segment hypothesis to guide discovery
+
+```python
+# Phase 2 segment pivot HITL options (new structure)
+options = [
+    {
+        "id": "segment_1",
+        "label": "Enterprise E-commerce (Recommended)",
+        "description": "Large retailers with $50M+ revenue, dedicated support teams",
+        "confidence": 0.72,
+    },
+    {
+        "id": "segment_2",
+        "label": "SaaS Customer Success Teams",
+        "description": "B2B SaaS companies with 1000+ customers needing proactive support",
+        "confidence": 0.65,
+    },
+    {
+        "id": "segment_3",
+        "label": "Healthcare Patient Support",
+        "description": "Healthcare providers handling patient inquiries and appointments",
+        "confidence": 0.48,
+    },
+    {
+        "id": "custom",
+        "label": "Specify Different Segment",
+        "description": "Enter your own segment hypothesis to test",
+    },
+]
 ```
 
 ---

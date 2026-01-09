@@ -136,11 +136,15 @@ class HITLApproveRequest(BaseModel):
     # - rejected: Stop and pause workflow
     # - override_proceed: Override pivot recommendation and proceed anyway
     # - iterate: Re-run current phase with same hypothesis
+    # - segment_1, segment_2, segment_3: Select alternative segment for pivot
+    # - custom_segment: Custom segment hypothesis (requires feedback with details)
     decision: str = Field(
         ...,
-        pattern="^(approved|rejected|override_proceed|iterate)$"
+        pattern="^(approved|rejected|override_proceed|iterate|segment_[1-9]|custom_segment)$"
     )
     feedback: Optional[str] = None
+    # For segment pivot: custom segment details if decision is custom_segment
+    custom_segment_data: Optional[dict] = None
 
 
 class HITLApproveResponse(BaseModel):
@@ -348,10 +352,85 @@ async def hitl_approve(
     phase_state = run.get("phase_state", {})
 
     # -------------------------------------------------------------------------
+    # Handle: SEGMENT SELECTION (segment_1, segment_2, segment_3, custom_segment)
+    # -------------------------------------------------------------------------
+    if request.decision.startswith("segment_") or request.decision == "custom_segment":
+        # This is a segment pivot with a specific segment selected
+        if request.checkpoint != "approve_segment_pivot":
+            raise HTTPException(
+                status_code=400,
+                detail="Segment selection is only valid for approve_segment_pivot checkpoint"
+            )
+
+        # Get segment alternatives from HITL request context
+        hitl_result = supabase.table("hitl_requests").select("context").eq(
+            "run_id", str(request.run_id)
+        ).eq("checkpoint_name", request.checkpoint).single().execute()
+
+        hitl_context = hitl_result.data.get("context", {}) if hitl_result.data else {}
+        segment_alternatives = hitl_context.get("segment_alternatives", [])
+
+        # Determine selected segment
+        if request.decision == "custom_segment":
+            # Custom segment from founder
+            selected_segment = {
+                "segment_name": request.custom_segment_data.get("segment_name") if request.custom_segment_data else request.feedback,
+                "segment_description": request.custom_segment_data.get("segment_description", "") if request.custom_segment_data else "",
+                "confidence": 0.5,  # Unknown confidence for custom
+                "is_custom": True,
+            }
+        else:
+            # Selected from alternatives (segment_1, segment_2, etc.)
+            segment_index = int(request.decision.split("_")[1]) - 1
+            if segment_index < len(segment_alternatives):
+                selected_segment = segment_alternatives[segment_index]
+                selected_segment["is_custom"] = False
+            else:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid segment selection: {request.decision}"
+                )
+
+        logger.info(json.dumps({
+            "event": "segment_pivot_selected",
+            "run_id": str(request.run_id),
+            "selected_segment": selected_segment.get("segment_name"),
+            "confidence": selected_segment.get("confidence"),
+        }))
+
+        # Store pivot context with selected segment for Phase 1 to use
+        updated_state = {
+            **phase_state,
+            "pivot_type": "segment_pivot",
+            "pivot_reason": request.feedback or f"Segment pivot to: {selected_segment.get('segment_name')}",
+            "pivot_from_phase": current_phase,
+            "target_segment_hypothesis": selected_segment,  # NEW: Phase 1 will use this
+            "failed_segment": hitl_context.get("failed_segment"),
+        }
+
+        supabase.table("validation_runs").update({
+            "hitl_state": None,
+            "status": "running",
+            "current_phase": 1,  # Loop back to Phase 1
+            "phase_state": updated_state,
+        }).eq("id", str(request.run_id)).execute()
+
+        # Spawn resume function to continue from Phase 1
+        resume_from_checkpoint.spawn(str(request.run_id), request.checkpoint)
+
+        return HITLApproveResponse(
+            status="pivot",
+            next_phase=1,
+            pivot_type="segment_pivot",
+            message=f"Segment pivot approved. Targeting '{selected_segment.get('segment_name')}' in Phase 1.",
+        )
+
+    # -------------------------------------------------------------------------
     # Handle: APPROVED
     # -------------------------------------------------------------------------
     if request.decision == "approved":
         # Check if this is a pivot checkpoint (approved = loop back to Phase 1)
+        # Note: segment_pivot now uses segment_* decisions above, but keep fallback
         if request.checkpoint in ("approve_segment_pivot", "approve_value_pivot"):
             # Pivot approved: Loop back to Phase 1
             pivot_type = (
