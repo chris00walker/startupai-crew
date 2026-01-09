@@ -1,8 +1,8 @@
 ---
 purpose: Authoritative ecosystem status across all three services
 status: active
-last_reviewed: 2026-01-08
-last_updated: 2026-01-08
+last_reviewed: 2026-01-09
+last_updated: 2026-01-09
 vpd_compliance: true
 ---
 
@@ -18,13 +18,13 @@ This document provides an **authoritative, cross-repository view** of implementa
 
 | Service | Status | Completion | Primary Blocker |
 |---------|--------|------------|-----------------|
-| **AI Founders Core** (startupai-crew) | Modal deployed, E2E tested | ~90% | Live production run |
+| **AI Founders Core** (startupai-crew) | Live testing Phase 0-2 | ~92% | Phase 3-4 live validation |
 | **Marketing Site** (startupai.site) | Production, static export | ~95% | None (live API connected) |
 | **Product App** (app.startupai.site) | Modal integration complete | ~95% | Live E2E verification |
 
-> **E2E Integration Tests Complete**: 202 tests passing (185 crew + 17 E2E). Full Phase 0→4 flow validated with mocked crews. See [ADR-002](../adr/002-modal-serverless-migration.md).
+> **Live Testing In Progress (2026-01-09)**: Phase 0-2 validated with real LLM calls. 5 issues discovered and fixed. Signal-based HITL routing implemented. See [modal-live-testing.md](../work/modal-live-testing.md).
 
-**Ecosystem State**: Modal serverless deployed. All 14 crews and 45 agents implemented. E2E integration tests passing. Ready for live production validation.
+**Ecosystem State**: Modal serverless deployed and live testing in progress. Phase 0 (Onboarding), Phase 1 (VPC Discovery), and Phase 2 (Desirability) validated with real LLM calls. Key fixes: template variable timing, HITL phase advancement, signal-based routing.
 
 ---
 

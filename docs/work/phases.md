@@ -447,7 +447,7 @@ Phase 3 is **complete** when all of the following are true:
 
 ## Implementation Status: Modal Serverless
 
-The Modal serverless architecture is **DEPLOYED** and crew implementation is **COMPLETE**.
+The Modal serverless architecture is **DEPLOYED** and live testing is **IN PROGRESS**.
 
 ### Current State (Modal - PRODUCTION)
 - Single modular monolith repo
@@ -455,9 +455,11 @@ The Modal serverless architecture is **DEPLOYED** and crew implementation is **C
 - 14 Crews with 45 agents total
 - 10 HITL checkpoints with checkpoint-and-resume pattern
 - Supabase for state persistence + Realtime for UI updates
-- **185 tests passing**
+- **185 unit tests passing**
+- **Live testing: Phase 0-2 validated** (2026-01-09)
 
-### Migration Tasks (Complete)
+### Migration Tasks
+
 See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details.
 
 | Phase | Task | Status |
@@ -465,14 +467,34 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 | 1 | Infrastructure (Modal account, Supabase tables) | ✅ Complete |
 | 2 | Code migration (modal_app/, crews/) | ✅ Complete |
 | 3 | Unit testing (185 tests) | ✅ Complete |
-| 4 | E2E integration testing | ⏳ Pending |
-| 5 | Production cutover | ⏳ Pending |
+| 4 | E2E integration testing (mocked) | ✅ Complete (17 tests) |
+| 5 | **Live testing with real LLM calls** | 🔄 In Progress |
+| 6 | Production cutover | ⏳ Pending |
+
+### Live Testing Progress (2026-01-09)
+
+> **Details**: See [modal-live-testing.md](./modal-live-testing.md) for full learnings.
+
+| Phase | Status | Issues Found | Issues Fixed |
+|-------|--------|--------------|--------------|
+| Phase 0 (Onboarding) | ✅ PASSED | 1 | 1 |
+| Phase 1 (VPC Discovery) | ✅ PASSED | 2 | 2 |
+| Phase 2 (Desirability) | ✅ PASSED | 2 | 2 |
+| Phase 3 (Feasibility) | ⏳ Pending | - | - |
+| Phase 4 (Viability) | ⏳ Pending | - | - |
+
+**Key Fixes Applied**:
+1. HITL phase advancement bug (commit `46c7da6`)
+2. Template variable interpolation timing (commits `46c7da6`, `b96e7a7`, `346e02e`)
+3. Signal-based HITL routing for VPD compliance (commit `e6ce56b`)
 
 ### Remaining Work
-1. E2E integration test (full Phase 0→4 flow)
-2. First live validation run with real LLM calls
-3. Tool wiring to specific agents
-4. Production cutover verification
+1. ~~E2E integration test (full Phase 0→4 flow)~~ - Mocked tests complete
+2. ~~First live validation run with real LLM calls~~ - In progress (Phase 0-2 done)
+3. Test pivot loopback (approve_segment_pivot → Phase 1)
+4. Complete Phase 3-4 live testing
+5. Tool wiring to specific agents (LandingPageDeploymentTool, etc.)
+6. Production cutover verification
 
 ### Legacy (AMP - ARCHIVED)
 - 3 Crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)
