@@ -48,11 +48,19 @@ class PivotRecommendation(str, Enum):
 
 
 class JobType(str, Enum):
-    """Types of customer jobs (VPD framework)."""
+    """Types of customer jobs (VPD framework).
+
+    Four job types per Osterwalder/Pigneur VPD:
+    - Functional: Tasks to complete
+    - Emotional: How they want to feel
+    - Social: How they want to be perceived
+    - Supporting: Buyer, co-creator, transferrer roles
+    """
 
     FUNCTIONAL = "functional"
     SOCIAL = "social"
     EMOTIONAL = "emotional"
+    SUPPORTING = "supporting"  # Buyer, co-creator, transferrer jobs
 
 
 class PainSeverity(str, Enum):
@@ -65,11 +73,19 @@ class PainSeverity(str, Enum):
 
 
 class GainRelevance(str, Enum):
-    """Relevance levels for customer gains."""
+    """Relevance levels for customer gains (VPD Kano model).
 
-    ESSENTIAL = "essential"
-    NICE_TO_HAVE = "nice_to_have"
-    UNEXPECTED = "unexpected"
+    Four levels per Osterwalder/Pigneur VPD:
+    - Essential: Required gains (must-haves)
+    - Expected: Baseline gains (standard expectations)
+    - Nice-to-have: Desired gains (differentiation)
+    - Unexpected: Delighter gains (wow factor)
+    """
+
+    ESSENTIAL = "essential"  # Required, must-have gains
+    EXPECTED = "expected"  # Baseline expectations
+    NICE_TO_HAVE = "nice_to_have"  # Desired, would be nice
+    UNEXPECTED = "unexpected"  # Delighters, wow factor
 
 
 class ValidationStatus(str, Enum):
