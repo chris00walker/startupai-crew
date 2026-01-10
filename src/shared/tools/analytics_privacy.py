@@ -21,6 +21,34 @@ from pydantic import Field, BaseModel
 
 
 # =======================================================================================
+# INPUT SCHEMAS (for CrewAI tool args_schema)
+# =======================================================================================
+
+
+class AnalyticsInput(BaseModel):
+    """Input schema for AnalyticsTool."""
+
+    site_id: str = Field(..., description="Netlify site ID")
+    days: int = Field(default=7, description="Number of days to fetch (default: 7)")
+
+
+class AdPlatformInput(BaseModel):
+    """Input schema for AdPlatformTool."""
+
+    platform: str = Field(default="meta", description="Ad platform: 'meta' or 'google'")
+    campaign_id: Optional[str] = Field(default=None, description="Optional campaign ID")
+    days: int = Field(default=7, description="Number of days to fetch (default: 7)")
+
+
+class CalendarInput(BaseModel):
+    """Input schema for CalendarTool."""
+
+    days_ahead: int = Field(default=7, description="Days to look ahead (default: 7)")
+    duration_minutes: int = Field(default=30, description="Interview duration in minutes (default: 30)")
+    timezone: str = Field(default="UTC", description="Timezone for slots (default: UTC)")
+
+
+# =======================================================================================
 # OUTPUT MODELS
 # =======================================================================================
 
@@ -141,16 +169,9 @@ class AnalyticsTool(BaseTool):
     - Track bounce rates and session durations
     - Analyze daily trends over a date range
 
-    Input should be a JSON string with:
-    {
-        "site_id": "netlify-site-id",
-        "days": 7  // Optional, defaults to 7 days
-    }
-
-    Or just the site_id as a string for default 7-day analytics.
-
     Returns structured analytics data for validation decisions.
     """
+    args_schema: type[BaseModel] = AnalyticsInput
 
     def _get_netlify_client(self):
         """Get Netlify API access token."""
@@ -159,26 +180,18 @@ class AnalyticsTool(BaseTool):
             raise ValueError("NETLIFY_ACCESS_TOKEN environment variable not set")
         return token
 
-    def _run(self, input_data: str) -> str:
+    def _run(self, site_id: str, days: int = 7) -> str:
         """
         Fetch analytics from Netlify API.
 
         Args:
-            input_data: JSON with site_id and optional days, or just site_id string
+            site_id: Netlify site ID
+            days: Number of days to fetch (default: 7)
 
         Returns:
             Formatted analytics data
         """
         try:
-            # Parse input
-            if input_data.startswith("{"):
-                data = json.loads(input_data)
-                site_id = data.get("site_id", "")
-                days = data.get("days", 7)
-            else:
-                site_id = input_data.strip()
-                days = 7
-
             if not site_id:
                 return "Error: site_id is required"
 
@@ -196,8 +209,6 @@ class AnalyticsTool(BaseTool):
 
         except ValueError as e:
             return f"Configuration error: {str(e)}"
-        except json.JSONDecodeError as e:
-            return f"Invalid JSON input: {str(e)}"
         except Exception as e:
             return f"Analytics fetch failed: {str(e)}"
 
@@ -379,9 +390,9 @@ class AnalyticsTool(BaseTool):
 
         return "\n".join(lines)
 
-    async def _arun(self, input_data: str) -> str:
+    async def _arun(self, site_id: str, days: int = 7) -> str:
         """Async version - delegates to sync."""
-        return self._run(input_data)
+        return self._run(site_id, days)
 
 
 # =======================================================================================
@@ -560,40 +571,23 @@ class AdPlatformTool(BaseTool):
     - Track ad spend and ROI
     - Compare variant performance in ad experiments
 
-    Input should be a JSON string with:
-    {
-        "platform": "meta" or "google",
-        "campaign_id": "campaign-id",  // Optional, omit for all campaigns
-        "days": 7  // Optional, defaults to 7 days
-    }
-
     Returns structured ad performance data.
     """
+    args_schema: type[BaseModel] = AdPlatformInput
 
-    platform: str = Field(default="meta", description="Ad platform: 'meta' or 'google'")
-
-    def _run(self, input_data: str) -> str:
+    def _run(self, platform: str = "meta", campaign_id: Optional[str] = None, days: int = 7) -> str:
         """
         Fetch ad metrics from specified platform.
 
         Args:
-            input_data: JSON with platform, campaign_id, and days
+            platform: Ad platform ('meta' or 'google')
+            campaign_id: Optional specific campaign ID
+            days: Number of days to fetch (default: 7)
 
         Returns:
             Formatted ad performance data
         """
         try:
-            # Parse input
-            if input_data.startswith("{"):
-                data = json.loads(input_data)
-                platform = data.get("platform", self.platform)
-                campaign_id = data.get("campaign_id")
-                days = data.get("days", 7)
-            else:
-                platform = self.platform
-                campaign_id = input_data.strip() if input_data.strip() else None
-                days = 7
-
             # Check for platform credentials
             if platform == "meta":
                 token = os.environ.get("META_ACCESS_TOKEN")
@@ -614,8 +608,6 @@ class AdPlatformTool(BaseTool):
             else:
                 return f"Error: Unknown platform '{platform}'. Use 'meta' or 'google'."
 
-        except json.JSONDecodeError as e:
-            return f"Invalid JSON input: {str(e)}"
         except Exception as e:
             return f"Ad metrics fetch failed: {str(e)}"
 
@@ -700,9 +692,9 @@ class AdPlatformTool(BaseTool):
 
         return "\n".join(lines)
 
-    async def _arun(self, input_data: str) -> str:
+    async def _arun(self, platform: str = "meta", campaign_id: Optional[str] = None, days: int = 7) -> str:
         """Async version - delegates to sync."""
-        return self._run(input_data)
+        return self._run(platform, campaign_id, days)
 
 
 # =======================================================================================
@@ -729,50 +721,31 @@ class CalendarTool(BaseTool):
     - Find open slots in the next N days
     - Suggest times for discovery calls
 
-    Input should be a JSON string with:
-    {
-        "days_ahead": 7,  // Optional, defaults to 7
-        "duration_minutes": 30,  // Optional, defaults to 30
-        "timezone": "America/New_York"  // Optional
-    }
-
-    Or just a number for days_ahead with defaults.
-
     Returns list of available interview time slots.
     """
+    args_schema: type[BaseModel] = CalendarInput
 
-    def _run(self, input_data: str) -> str:
+    def _run(self, days_ahead: int = 7, duration_minutes: int = 30, timezone: str = "UTC") -> str:
         """
         Find available interview slots.
 
         Args:
-            input_data: JSON with scheduling parameters
+            days_ahead: Days to look ahead (default: 7)
+            duration_minutes: Interview duration in minutes (default: 30)
+            timezone: Timezone for slots (default: UTC)
 
         Returns:
             Formatted available slots
         """
         try:
-            # Parse input
-            if input_data.startswith("{"):
-                data = json.loads(input_data)
-                days_ahead = data.get("days_ahead", 7)
-                duration = data.get("duration_minutes", 30)
-                timezone = data.get("timezone", "UTC")
-            else:
-                days_ahead = int(input_data) if input_data.strip().isdigit() else 7
-                duration = 30
-                timezone = "UTC"
-
             # Check for calendar credentials
             creds = os.environ.get("GOOGLE_CALENDAR_CREDENTIALS")
             if not creds:
-                return self._create_placeholder_response(days_ahead, duration, timezone)
+                return self._create_placeholder_response(days_ahead, duration_minutes, timezone)
 
             # Full implementation would use Google Calendar API
-            return self._fetch_calendar_slots(creds, days_ahead, duration, timezone)
+            return self._fetch_calendar_slots(creds, days_ahead, duration_minutes, timezone)
 
-        except json.JSONDecodeError as e:
-            return f"Invalid JSON input: {str(e)}"
         except Exception as e:
             return f"Calendar fetch failed: {str(e)}"
 
@@ -872,9 +845,9 @@ class CalendarTool(BaseTool):
 
         return "\n".join(lines)
 
-    async def _arun(self, input_data: str) -> str:
+    async def _arun(self, days_ahead: int = 7, duration_minutes: int = 30, timezone: str = "UTC") -> str:
         """Async version - delegates to sync."""
-        return self._run(input_data)
+        return self._run(days_ahead, duration_minutes, timezone)
 
 
 # =======================================================================================
@@ -894,7 +867,7 @@ def get_analytics(site_id: str, days: int = 7) -> str:
         Formatted analytics data
     """
     tool = AnalyticsTool()
-    return tool._run(json.dumps({"site_id": site_id, "days": days}))
+    return tool._run(site_id=site_id, days=days)
 
 
 def anonymize_data(text: str) -> str:
@@ -924,9 +897,7 @@ def get_ad_metrics(platform: str, campaign_id: Optional[str] = None, days: int =
         Formatted ad performance data
     """
     tool = AdPlatformTool()
-    return tool._run(
-        json.dumps({"platform": platform, "campaign_id": campaign_id, "days": days})
-    )
+    return tool._run(platform=platform, campaign_id=campaign_id, days=days)
 
 
 def find_interview_slots(days_ahead: int = 7, duration_minutes: int = 30) -> str:
@@ -941,6 +912,4 @@ def find_interview_slots(days_ahead: int = 7, duration_minutes: int = 30) -> str
         Formatted available slots
     """
     tool = CalendarTool()
-    return tool._run(
-        json.dumps({"days_ahead": days_ahead, "duration_minutes": duration_minutes})
-    )
+    return tool._run(days_ahead=days_ahead, duration_minutes=duration_minutes)

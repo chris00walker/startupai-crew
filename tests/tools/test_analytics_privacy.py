@@ -260,7 +260,7 @@ class TestAdPlatformTool:
     def test_handles_meta_without_token(self, ad_platform_tool):
         """Tool should handle missing Meta token gracefully."""
         with patch.dict("os.environ", {}, clear=True):
-            result = ad_platform_tool._run('{"platform": "meta"}')
+            result = ad_platform_tool._run(platform="meta")
 
             assert "Meta Ads" in result
             assert "Configuration Required" in result
@@ -269,7 +269,7 @@ class TestAdPlatformTool:
     def test_handles_google_without_token(self, ad_platform_tool):
         """Tool should handle missing Google token gracefully."""
         with patch.dict("os.environ", {}, clear=True):
-            result = ad_platform_tool._run('{"platform": "google"}')
+            result = ad_platform_tool._run(platform="google")
 
             assert "Google Ads" in result
             assert "Configuration Required" in result
@@ -278,21 +278,21 @@ class TestAdPlatformTool:
     def test_provides_setup_instructions(self, ad_platform_tool):
         """Tool should provide setup instructions when not configured."""
         with patch.dict("os.environ", {}, clear=True):
-            result = ad_platform_tool._run('{"platform": "meta"}')
+            result = ad_platform_tool._run(platform="meta")
 
             assert "Setup Instructions" in result
             assert "MCP Alternative" in result
 
     def test_handles_unknown_platform(self, ad_platform_tool):
         """Tool should reject unknown platforms."""
-        result = ad_platform_tool._run('{"platform": "tiktok"}')
+        result = ad_platform_tool._run(platform="tiktok")
         assert "Unknown platform" in result or "error" in result.lower()
 
-    def test_accepts_string_input(self, ad_platform_tool):
-        """Tool should accept simple string campaign_id."""
+    def test_accepts_campaign_id(self, ad_platform_tool):
+        """Tool should accept campaign_id parameter."""
         with patch.dict("os.environ", {}, clear=True):
             # Default platform is meta
-            result = ad_platform_tool._run("campaign-123")
+            result = ad_platform_tool._run(campaign_id="campaign-123")
 
             assert "Meta Ads" in result
 
@@ -316,21 +316,21 @@ class TestCalendarTool:
 
     def test_returns_available_slots(self, calendar_tool):
         """Tool should return available time slots."""
-        result = calendar_tool._run('{"days_ahead": 7}')
+        result = calendar_tool._run(days_ahead=7)
 
         assert "# Available Interview Slots" in result
         assert "| Date | Start | End |" in result
 
     def test_respects_duration_parameter(self, calendar_tool):
         """Tool should respect duration parameter."""
-        result = calendar_tool._run('{"days_ahead": 7, "duration_minutes": 45}')
+        result = calendar_tool._run(days_ahead=7, duration_minutes=45)
 
         assert "Duration" in result
         assert "45" in result
 
     def test_skips_weekends(self, calendar_tool):
         """Tool should only suggest weekday slots."""
-        result = calendar_tool._run('{"days_ahead": 14}')
+        result = calendar_tool._run(days_ahead=14)
 
         # Count rows in the table - should be less than 14 days * 6 slots
         lines = result.split("\n")
@@ -340,16 +340,16 @@ class TestCalendarTool:
         assert len(table_rows) > 0
         assert len(table_rows) <= 60  # 10 days * 6 slots max
 
-    def test_accepts_integer_input(self, calendar_tool):
-        """Tool should accept integer days_ahead."""
-        result = calendar_tool._run("5")
+    def test_accepts_days_ahead_parameter(self, calendar_tool):
+        """Tool should accept days_ahead parameter."""
+        result = calendar_tool._run(days_ahead=5)
 
         assert "# Available Interview Slots" in result
         assert "5 days" in result
 
     def test_provides_setup_instructions(self, calendar_tool):
         """Tool should provide setup instructions."""
-        result = calendar_tool._run('{"days_ahead": 7}')
+        result = calendar_tool._run(days_ahead=7)
 
         assert "Setup Instructions" in result or "MCP Alternative" in result
 

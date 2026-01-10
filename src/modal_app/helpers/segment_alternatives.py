@@ -35,17 +35,47 @@ def generate_alternative_segments(
     Returns:
         List of alternative segments with confidence scores, sorted by confidence
     """
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    # Input validation - log what we receive for debugging
+    logger.info(json.dumps({
+        "event": "segment_alternatives_input",
+        "founders_brief_keys": list(founders_brief.keys()) if founders_brief else [],
+        "failed_segment_keys": list(failed_segment.keys()) if failed_segment else [],
+        "desirability_evidence_keys": list(desirability_evidence.keys()) if desirability_evidence else [],
+    }))
+
+    # Check for missing/empty inputs
+    if not founders_brief:
+        logger.warning("generate_alternative_segments called with empty founders_brief")
+        return [{
+            "segment_name": "Custom Segment (Missing Data)",
+            "segment_description": "No founder's brief data available for segment generation.",
+            "why_better_fit": "Please specify a custom segment.",
+            "confidence": 0.0,
+            "_error": "missing_founders_brief",
+        }]
+
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        logger.error("OPENAI_API_KEY not set")
+        return [{
+            "segment_name": "Custom Segment (API Error)",
+            "segment_description": "OpenAI API key not configured.",
+            "why_better_fit": "Please specify a custom segment.",
+            "confidence": 0.0,
+            "_error": "missing_api_key",
+        }]
+
+    client = OpenAI(api_key=api_key)
 
     # Extract key info
     one_liner = founders_brief.get("the_idea", {}).get("one_liner", "")
     problem = founders_brief.get("the_idea", {}).get("problem_statement", "")
-    failed_segment_name = failed_segment.get("segment_name", "Unknown")
-    failed_segment_desc = failed_segment.get("segment_description", "")
+    failed_segment_name = failed_segment.get("segment_name", "Unknown") if failed_segment else "Unknown"
+    failed_segment_desc = failed_segment.get("segment_description", "") if failed_segment else ""
 
-    # Extract failure evidence
-    problem_resonance = desirability_evidence.get("problem_resonance", 0)
-    zombie_ratio = desirability_evidence.get("zombie_ratio", 1)
+    # Extract failure evidence (be defensive about missing/malformed data)
+    problem_resonance = desirability_evidence.get("problem_resonance", 0) if desirability_evidence else 0
+    zombie_ratio = desirability_evidence.get("zombie_ratio", 1) if desirability_evidence else 1
 
     prompt = f"""You are a startup strategy expert. A validation test has failed, and we need alternative customer segments to test.
 
@@ -119,12 +149,24 @@ IMPORTANT: The alternatives should be meaningfully DIFFERENT from the failed seg
         return alternatives
 
     except Exception as e:
+        error_msg = str(e)
         logger.error(json.dumps({
             "event": "segment_alternatives_error",
-            "error": str(e),
+            "error": error_msg,
+            "founders_brief_keys": list(founders_brief.keys()) if founders_brief else [],
+            "failed_segment_name": failed_segment.get("segment_name", "unknown"),
         }))
-        # Return empty list on error - HITL will still work, just without suggestions
-        return []
+        # Return a fallback alternative with error info so HITL has something to show
+        # This ensures the pivot flow doesn't break silently
+        return [
+            {
+                "segment_name": "Custom Segment (Generation Failed)",
+                "segment_description": f"Automatic segment generation failed: {error_msg}. Please specify a custom segment.",
+                "why_better_fit": "Unable to generate alternatives - please choose 'Specify Different Segment' option.",
+                "confidence": 0.0,
+                "_error": error_msg,
+            }
+        ]
 
 
 def format_segment_options(
