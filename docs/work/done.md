@@ -6,6 +6,78 @@ last_reviewed: "2026-01-09"
 
 # Recently Delivered
 
+## Phase C: Analytics & Privacy Tools (2026-01-10)
+
+Completed Phase C tool integration with 4 new tools wired to 8 agents.
+
+### Tools Implemented
+
+| Tool | Purpose | Agents |
+|------|---------|--------|
+| `AnalyticsTool` | Netlify Analytics API for LP metrics | P3, D3, L1, W1, W2 |
+| `AnonymizerTool` | PII removal (regex + optional Presidio) | Learning pipeline |
+| `AdPlatformTool` | MCP wrapper for Meta/Google Ads | P1, P2, P3, D3 |
+| `CalendarTool` | Interview scheduling via Calendar MCP | D1 |
+
+### Files Created
+
+- `src/shared/tools/analytics_privacy.py` - 4 tools (~700 lines)
+- `tests/tools/test_analytics_privacy.py` - 42 tests (~430 lines)
+
+### Crews Modified
+
+- `src/crews/discovery/discovery_crew.py` - D1, D3 tools wired
+- `src/crews/discovery/wtp_crew.py` - W1, W2 tools wired
+- `src/crews/desirability/growth_crew.py` - P1, P2, P3 tools wired
+- `src/crews/viability/finance_crew.py` - L1 tools wired
+
+### Validation
+
+- 632 tests pass (42 new)
+- Commit `c6f8043`
+
+---
+
+## Phase B: Advanced Analysis Tools (2026-01-10)
+
+Completed Phase B tool integration with 4 advanced tools.
+
+### Tools Implemented
+
+| Tool | Purpose | Agents |
+|------|---------|--------|
+| `TranscriptionTool` | Whisper API integration for audio | D1 |
+| `InsightExtractorTool` | LLM-based interview pattern extraction | D1, D4 |
+| `BehaviorPatternTool` | Statistical behavior analysis | D2, D3, D4 |
+| `ABTestTool` | Experiment design with stats | P1, P2, W1, D3 |
+
+### Validation
+
+- 590 tests pass (35 new)
+- Commit `5577720`
+
+---
+
+## Phase A: Customer Research Tools (2026-01-10)
+
+Completed Phase A tool integration with 4 customer research tools.
+
+### Tools Implemented
+
+| Tool | Purpose | Agents |
+|------|---------|--------|
+| `ForumSearchTool` | Reddit/StackOverflow search | D2, J1, PAIN_RES, GAIN_RES |
+| `ReviewAnalysisTool` | Product review aggregation | D2, J1, PAIN_RES, GAIN_RES |
+| `SocialListeningTool` | Social platform monitoring | D2 |
+| `TrendAnalysisTool` | Trend search integration | D2 |
+
+### Validation
+
+- 555 tests pass (31 new)
+- Commit `7a4ab1f`
+
+---
+
 ## Tool Integration Immediate Actions (2026-01-09)
 
 Completed all unblocking actions for tool integration.
