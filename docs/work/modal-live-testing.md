@@ -152,6 +152,66 @@ Modal redeployed with tool integration code:
 
 ---
 
+### Session 3: 2026-01-10 (Bug #9 Verification - StartupAI Dogfood)
+
+**Validation Run ID**: `e3368f64-89e9-49c0-8d42-d5cbc16f8eeb`
+**Business Context**: StartupAI itself - 6 AI Co-Founders validation platform
+**Key Objective**: Verify Bug #9 fix (HITL duplicate key on pivot)
+
+#### Deployment
+
+All 4 critical fixes deployed:
+- Bug #9: Expire pending HITLs before insert
+- Tool Gap: F1, F2, F3, G3 now have tools (100% coverage)
+- Timeout: Container timeout increased to 2 hours
+- RLS: Security policies verified
+
+#### Phase Results
+
+**Phase 0 (Onboarding)**: ✅ PASSED
+- Founder's Brief generated with 85% confidence
+- Business: AI-powered startup validation platform for non-technical founders
+- 6 AI Co-Founders concept captured
+- HITL `approve_founders_brief` → Approved
+
+**Phase 1 (VPC Discovery)**: ✅ PASSED
+- All 5 crews completed successfully
+- Fit Score: 70/100 (threshold met)
+- Customer Segment: Non-Technical Startup Founders
+- HITL `approve_vpc_completion` → Approved
+
+**Phase 2 (Desirability)**: ✅ PASSED (Pivot Triggered)
+- All 3 crews completed (BuildCrew, GrowthCrew, GovernanceCrew)
+- Signal: NO_INTEREST
+- Zombie Ratio: 80%
+- Problem Resonance: 18%
+- HITL `approve_segment_pivot` #1 → Approved
+
+**Phase 1 (Pivot Run)**: ✅ PASSED
+- Fit Score improved: 78/100 (from 70)
+- Same segment (alternative generation failed)
+- HITL `approve_vpc_completion` #2 → Approved
+
+**Phase 2 (Second Attempt)**: ✅ PASSED (Bug #9 Verified!)
+- All 3 crews completed
+- Signal: NO_INTEREST (still)
+- Zombie Ratio: 90%
+- Problem Resonance: 5.5%
+- HITL `approve_segment_pivot` #2 created WITHOUT duplicate key error!
+
+#### Bug #9 Verification
+
+**Key Evidence**:
+- Two `approve_segment_pivot` checkpoints created for same run
+- First: `4e224eb2-700d-4024-aa88-f0a209198252` (approved 17:45:15)
+- Second: `2dd5cf05-0b5b-430d-b3a4-c8181db9f718` (pending 18:07:50)
+- NO duplicate key constraint violation
+- System correctly handles multiple pivot iterations
+
+**Conclusion**: Bug #9 fix working correctly - pivot workflow executes without HITL conflicts.
+
+---
+
 ## Issue Patterns
 
 ### Pattern 1: Template Interpolation at Wrong Time

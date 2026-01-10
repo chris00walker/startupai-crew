@@ -15,7 +15,8 @@ last_reviewed: "2026-01-10"
 | 2026-01-10 | Schema alignment | Modal migrations deployed to Supabase |
 | 2026-01-10 15:08 | Bug fixes deployed | #10-12 fixed, Phase 2 retry running |
 | 2026-01-10 | **4 Critical Issues Fixed** | Bug #9, tool gap, timeout, RLS |
-| **Next** | Complete Phase 2-4 live test | All blockers resolved |
+| 2026-01-10 18:07 | **Bug #9 Verified** | StartupAI dogfood run, pivot workflow working |
+| **Next** | Complete Phase 3-4 live test | Phase 2 verified, Phase 3-4 pending |
 
 ---
 
@@ -48,6 +49,40 @@ Fixed all blocking issues from system assessment for production readiness.
 - 678 tests passing (all pass)
 - Modal deployed successfully
 - RLS policies verified: 16 policies active on 3 tables
+
+---
+
+## Bug #9 Live Verification (2026-01-10 18:07)
+
+**Objective**: Verify Bug #9 fix (HITL duplicate key on pivot) with real LLM calls.
+
+### Test Approach: StartupAI Dogfood
+
+Used StartupAI itself as the business case for validation - the 6 AI Co-Founders platform validating itself.
+
+**Run ID**: `e3368f64-89e9-49c0-8d42-d5cbc16f8eeb`
+
+### Results
+
+| Phase | Status | Key Metrics |
+|-------|--------|-------------|
+| Phase 0 (Onboarding) | ✅ PASSED | Founder's Brief, 85% confidence |
+| Phase 1 (VPC Discovery) | ✅ PASSED | Fit score 70/100 |
+| Phase 2 (Desirability) | ✅ PASSED | NO_INTEREST, pivot triggered |
+| Phase 1 (Pivot) | ✅ PASSED | Fit score 78/100 (improved) |
+| Phase 2 (Retry) | ✅ PASSED | Bug #9 verified |
+
+### Bug #9 Verification Evidence
+
+Two `approve_segment_pivot` checkpoints created for same run:
+1. `4e224eb2-700d-4024-aa88-f0a209198252` - status: `approved` (17:45:15)
+2. `2dd5cf05-0b5b-430d-b3a4-c8181db9f718` - status: `pending` (18:07:50)
+
+**NO duplicate key constraint violation** - the fix correctly handles multiple pivot iterations.
+
+### Conclusion
+
+Bug #9 fix working correctly. The system can execute multiple pivot-iterate cycles without HITL conflicts.
 
 ---
 

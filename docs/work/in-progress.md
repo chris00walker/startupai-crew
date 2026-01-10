@@ -21,12 +21,12 @@ last_reviewed: "2026-01-10"
 
 ---
 
-## Active Work: Resume Phase 2-4 Live Testing
+## Active Work: Phase 3-4 Live Testing
 
-**Status**: ✅ READY TO TEST
-**Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b` (or start new run)
-**Current Phase**: Ready for Phase 2 re-test (all blockers resolved)
-**Next**: Start fresh validation run to test all fixes
+**Status**: 🔄 BUG #9 VERIFIED - Pivot Scenario Passed
+**Run ID**: `e3368f64-89e9-49c0-8d42-d5cbc16f8eeb` (StartupAI dogfood)
+**Current Phase**: Phase 2 - Second pivot checkpoint pending
+**Next**: Decide on pivot or proceed to Phase 3
 
 ### Critical Fixes Deployed (2026-01-10)
 
@@ -180,20 +180,22 @@ Without tools, agents **hallucinate** outputs instead of collecting real evidenc
 
 ## Live Testing Progress (With Tools)
 
-> **Session 2 (2026-01-10)**: Tool input and error handling bugs fixed. Phase 2 running with fixes.
-> **Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b`
+> **Session 3 (2026-01-10)**: StartupAI dogfood run - Bug #9 pivot fix verified!
+> **Run ID**: `e3368f64-89e9-49c0-8d42-d5cbc16f8eeb`
 
 See [modal-live-testing.md](./modal-live-testing.md) for full details.
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| Phase 0 (Onboarding) | ✅ PASSED | Founder's Brief generated, HITL approved |
-| Phase 1 (VPC Discovery) | ✅ PASSED | Fixed enum bugs (#7, #8), fit score 78/100 |
-| Phase 2 (Desirability) | ✅ PASSED | NO_INTEREST signal → Segment pivot |
-| Phase 1 (Pivot) | ✅ PASSED | New segment: Healthcare Online Platforms |
-| Phase 2 (Retry) | 🔄 Running | Fixed #10-12, BuildCrew executing |
-| Phase 3 (Feasibility) | ⏳ Pending | - |
+| Phase 0 (Onboarding) | ✅ PASSED | StartupAI Founder's Brief, 85% confidence |
+| Phase 1 (VPC Discovery) | ✅ PASSED | Fit score 70/100, Non-Technical Founders |
+| Phase 2 (Desirability) | ✅ PASSED | NO_INTEREST → Segment pivot triggered |
+| Phase 1 (Pivot) | ✅ PASSED | Fit score 78/100 (improved!) |
+| Phase 2 (Retry) | ✅ PASSED | Bug #9 verified - 2nd pivot checkpoint OK |
+| Phase 3 (Feasibility) | ⏳ Pending | Awaiting pivot decision |
 | Phase 4 (Viability) | ⏳ Pending | - |
+
+**Bug #9 Verification**: Two `approve_segment_pivot` checkpoints created successfully without duplicate key error.
 
 ### Issues Found and Fixed
 
@@ -248,6 +250,11 @@ The original Flow-based architecture had runtime bugs that were fixed before the
 **Last Updated**: 2026-01-10
 
 **Latest Changes**:
+- **BUG #9 VERIFIED** (2026-01-10 18:07)
+  - StartupAI dogfood run completed Phase 0-2 with pivot
+  - Two `approve_segment_pivot` checkpoints created without duplicate key error
+  - Pivot workflow functioning correctly
+  - Run ID: `e3368f64-89e9-49c0-8d42-d5cbc16f8eeb`
 - **4 CRITICAL ISSUES RESOLVED** (2026-01-10)
   - Bug #9: HITL duplicate key - expire pending before insert
   - Tool Gap: F1, F2, F3, G3 agents now have tools (was 56% → 100%)
