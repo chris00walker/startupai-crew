@@ -686,65 +686,321 @@ These tools are already implemented and ready to wire.
 
 | Attribute | Value |
 |-----------|-------|
-| **Status** | LLM-Based (Template + LLM Copy) |
+| **Status** | LLM-Based (Blueprint + Assembly) |
 | **Location** | `src/shared/tools/landing_page_generator.py` |
 | **Category** | Asset Generation |
 
-**Purpose**: Generate deployable landing page HTML from VPC data.
+**Purpose**: Generate deployable landing page HTML from VPC data using a structured blueprint pattern.
 
-**Approach**: Template-based with LLM copy generation. Templates provide consistent structure and responsive design; LLM generates compelling copy for each section.
+**Architecture**: Assembly, not Generation.
 
-**Why Template-Based**:
-- Higher quality than pure LLM HTML generation
-- Consistent responsive structure
-- Faster generation (LLM only does copy)
-- Easier to validate output
+> "The biggest mistake is asking an LLM to write raw HTML from scratch. This leads to 'div soup,' broken layouts, and inconsistent styling."
 
-**Input Schema**:
+The tool uses a **Component Registry** of pre-built, responsive Tailwind sections. The LLM doesn't write code—it selects components and generates copy to "hydrate" them.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    BLUEPRINT PATTERN                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│  1. VPC Input → STRATEGIST → Page structure (which sections)        │
+│  2. Structure → COPYWRITER → Compelling copy per section            │
+│  3. Copy → ASSEMBLER → Select components, inject copy, fetch assets │
+│  4. Assembly → VALIDATOR → Check structure, store blueprint + HTML  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Why Blueprint Pattern**:
+- **No hallucinated code**: Components are pre-built and tested
+- **Re-generation**: Store JSON blueprint in DB, HTML in Storage
+- **Editing**: Change one section without re-running full agent chain
+- **No "AI look"**: Design tokens enforce consistent spacing, colors, typography
+- **Asset resolution**: Keywords → Unsplash API → Verified URLs
+
+---
+
+#### Component Registry
+
+The agent can ONLY use components from this registry. Each component is a pre-built, mobile-responsive Tailwind section.
+
+| Component | Props | Use Case |
+|-----------|-------|----------|
+| `HeroSection` | headline, subheadline, cta_text, cta_url, image_keyword | Above the fold |
+| `PainPoints` | pains: [{icon, title, description}] | Problem agitation |
+| `SolutionSection` | headline, description, image_keyword | Bridge to solution |
+| `FeatureGrid` | features: [{icon, title, description}] | 3-4 key features |
+| `Testimonials` | testimonials: [{quote, name, role, avatar_keyword}] | Social proof |
+| `PricingCard` | plan_name, price, features, cta_text | WTP validation |
+| `FAQ` | items: [{question, answer}] | Objection handling |
+| `CTASection` | headline, subheadline, cta_text, form_enabled | Final conversion |
+| `Footer` | company_name, links: [{label, url}] | Navigation |
+
+**Icon Constraints** (Lucide subset to prevent hallucination):
+```
+Zap, Check, Star, Shield, Clock, Users, TrendingUp, Target,
+Heart, Award, Rocket, Globe, Lock, Mail, Phone, MapPin,
+ChevronRight, ArrowRight, Sparkles, Lightbulb
+```
+
+---
+
+#### Input Schema
+
 ```python
 class LandingPageInput(BaseModel):
     """Input for landing page generation."""
-    value_proposition: str      # Core VP from VPC
+    # From VPC
+    value_proposition: str      # Core VP from Value Map
     target_customer: str        # Customer segment description
     pain_points: list[str]      # Top 3 pains being addressed
     gain_creators: list[str]    # Top 3 gains being created
+
+    # Page configuration
     product_name: str           # Name of product/service
-    cta_text: str               # Call-to-action text (e.g., "Get Early Access")
+    cta_text: str               # Call-to-action text
     variant_id: str             # A/B test variant identifier
-    style: str = "modern"       # Template style: modern | minimal | bold
+
+    # Style tokens
+    style: str = "modern"       # modern | minimal | bold | warm
+    primary_color: str = "#3b82f6"  # Brand primary color
+
+    # Optional sections
     include_testimonials: bool = False
+    include_pricing: bool = False
     include_faq: bool = False
 ```
 
-**Output Schema**:
+---
+
+#### Blueprint Schema (Stored in Supabase DB)
+
+The blueprint is the **source of truth** for the page. It enables re-generation without re-running the full agent chain.
+
 ```python
-class LandingPageOutput(BaseModel):
-    """Output from landing page generation."""
-    html: str                   # Complete HTML with Tailwind CSS
-    sections: list[str]         # Sections included (hero, features, cta, etc.)
-    tracking_enabled: bool      # Whether analytics JS is injected
-    form_enabled: bool          # Whether signup form is included
-    copy: dict                  # Generated copy by section
-    validation_errors: list[str] = []  # Any structural issues found
+class ThemeConfig(BaseModel):
+    """Design tokens for consistent styling."""
+    primary_color: str          # e.g., "#3b82f6"
+    secondary_color: str        # e.g., "#10b981"
+    font_family: str            # e.g., "Inter"
+    border_radius: str          # e.g., "rounded-lg"
+    spacing: str                # e.g., "relaxed" | "compact"
+
+class SectionConfig(BaseModel):
+    """Configuration for a single page section."""
+    type: str                   # Must match Component Registry
+    content: dict               # Props for the component
+    order: int                  # Position on page
+
+class ImageAsset(BaseModel):
+    """Resolved image asset."""
+    keyword: str                # Original keyword for Unsplash
+    url: str                    # Resolved Unsplash URL
+    alt_text: str               # Accessibility text
+
+class LandingPageBlueprint(BaseModel):
+    """
+    JSON blueprint stored in Supabase DB.
+    Enables editing and re-generation without full agent run.
+    """
+    # Metadata
+    project_id: str
+    variant_id: str
+    created_at: datetime
+
+    # Design
+    theme: ThemeConfig
+
+    # Structure
+    sections: list[SectionConfig]
+
+    # Assets (resolved from keywords)
+    images: list[ImageAsset]
+
+    # Copy (for easy editing)
+    copy: dict[str, str]        # section_id → generated copy
 ```
 
-**Template Sections**:
-1. **Hero**: Headline, subheadline, CTA button, hero image placeholder
-2. **Pain Points**: 3 pain points with icons
-3. **Solution**: How product addresses pains
-4. **Features**: 3-4 key features with descriptions
-5. **Social Proof**: Testimonials placeholder or trust badges
-6. **CTA**: Final call-to-action with form
-7. **Footer**: Basic footer with links
+---
 
-**Validation Rules**:
-- HTML must be valid (no unclosed tags)
-- All required sections present
-- CTA button exists
-- Form action configured for Supabase
-- Tracking script injected
+#### Output Schema
+
+```python
+class LandingPageOutput(BaseModel):
+    """
+    Output from landing page generation.
+    Blueprint stored in DB, HTML stored in Storage.
+    """
+    # The blueprint (for re-generation)
+    blueprint: LandingPageBlueprint
+    blueprint_stored: bool      # Saved to Supabase DB
+
+    # The HTML (for deployment)
+    html: str                   # Complete HTML with Tailwind CDN
+    html_url: str               # Supabase Storage URL
+
+    # Validation
+    sections_rendered: list[str]
+    assets_resolved: bool       # All images fetched successfully
+    tracking_enabled: bool      # Analytics JS injected
+    form_enabled: bool          # Signup form included
+    validation_errors: list[str] = []
+```
+
+---
+
+#### Asset Resolution
+
+Images are resolved OUTSIDE the LLM to prevent hallucinated URLs.
+
+```python
+class AssetResolver:
+    """Resolve image keywords to verified Unsplash URLs."""
+
+    UNSPLASH_ACCESS_KEY = os.environ["UNSPLASH_ACCESS_KEY"]
+
+    def resolve(self, keyword: str) -> ImageAsset:
+        """
+        Fetch a real image URL from Unsplash API.
+
+        Example: "startup team working" → verified Unsplash URL
+        """
+        response = httpx.get(
+            "https://api.unsplash.com/search/photos",
+            params={"query": keyword, "per_page": 1},
+            headers={"Authorization": f"Client-ID {self.UNSPLASH_ACCESS_KEY}"}
+        )
+
+        if response.status_code == 200 and response.json()["results"]:
+            photo = response.json()["results"][0]
+            return ImageAsset(
+                keyword=keyword,
+                url=photo["urls"]["regular"],
+                alt_text=photo["alt_description"] or keyword
+            )
+
+        # Fallback to placeholder
+        return ImageAsset(
+            keyword=keyword,
+            url=f"https://placehold.co/800x600?text={keyword.replace(' ', '+')}",
+            alt_text=keyword
+        )
+```
+
+---
+
+#### Implementation Flow
+
+```python
+class LandingPageGeneratorTool(BaseTool):
+    """
+    Generate landing page using Blueprint pattern.
+
+    Flow:
+    1. Generate page structure (which sections)
+    2. Generate copy for each section
+    3. Resolve image keywords → Unsplash URLs
+    4. Assemble HTML from component templates
+    5. Store blueprint in DB, HTML in Storage
+    """
+
+    name: str = "landing_page_generator"
+    description: str = "Generate a landing page from VPC data using blueprint pattern"
+    args_schema: type[BaseModel] = LandingPageInput
+
+    # Component templates (pre-built Tailwind HTML)
+    COMPONENTS: dict[str, str] = {
+        "HeroSection": load_template("hero.html"),
+        "PainPoints": load_template("pain_points.html"),
+        "FeatureGrid": load_template("features.html"),
+        # ... etc
+    }
+
+    def _run(self, **kwargs) -> LandingPageOutput:
+        input_data = LandingPageInput(**kwargs)
+
+        # 1. Strategist: Determine page structure
+        sections = self._plan_structure(input_data)
+
+        # 2. Copywriter: Generate compelling copy
+        copy = self._generate_copy(input_data, sections)
+
+        # 3. Asset Resolver: Keywords → Real URLs
+        images = self._resolve_assets(sections)
+
+        # 4. Assembler: Inject copy into templates
+        html = self._assemble_html(sections, copy, images, input_data)
+
+        # 5. Create blueprint
+        blueprint = LandingPageBlueprint(
+            project_id=input_data.project_id,
+            variant_id=input_data.variant_id,
+            created_at=datetime.now(),
+            theme=self._create_theme(input_data),
+            sections=sections,
+            images=images,
+            copy=copy
+        )
+
+        # 6. Store blueprint in DB
+        self._store_blueprint(blueprint)
+
+        # 7. Store HTML in Storage
+        html_url = self._upload_html(html, input_data.variant_id)
+
+        return LandingPageOutput(
+            blueprint=blueprint,
+            blueprint_stored=True,
+            html=html,
+            html_url=html_url,
+            sections_rendered=[s.type for s in sections],
+            assets_resolved=all(img.url for img in images),
+            tracking_enabled=True,
+            form_enabled=True
+        )
+```
+
+---
+
+#### Validation Rules
+
+| Rule | Check | Failure Action |
+|------|-------|----------------|
+| **Component exists** | `section.type in COMPONENTS` | Reject unknown component |
+| **Icon valid** | `icon in ALLOWED_ICONS` | Replace with fallback icon |
+| **Image resolved** | `image.url is not placeholder` | Log warning, use placeholder |
+| **HTML valid** | BeautifulSoup parse succeeds | Raise validation error |
+| **CTA exists** | At least one CTASection | Add default CTA |
+| **Form configured** | Form action → Supabase | Inject correct endpoint |
+| **Tracking injected** | Analytics script present | Inject PostHog/GA |
+
+---
+
+#### Database Schema
+
+```sql
+-- Blueprint storage for re-generation
+CREATE TABLE landing_page_blueprints (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id),
+    variant_id TEXT NOT NULL,
+    blueprint JSONB NOT NULL,          -- Full LandingPageBlueprint
+    html_url TEXT,                      -- Supabase Storage URL
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+    UNIQUE(project_id, variant_id)
+);
+
+-- Enable re-generation queries
+CREATE INDEX idx_blueprints_project ON landing_page_blueprints(project_id);
+```
+
+---
 
 **Target Agents:** F2 (Frontend Developer)
+
+**Related Tools:**
+- `LandingPageDeploymentTool` - Deploys HTML to Supabase Storage
+- `CodeValidatorTool` - Validates HTML structure
 
 ---
 
@@ -1197,6 +1453,11 @@ NETLIFY_ACCESS_TOKEN=...
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-10 | **Blueprint Pattern** for LandingPageGeneratorTool | Assembly > Generation - prevents "AI slop" |
+| 2026-01-10 | Added Component Registry with 9 pre-built sections | Constrained components prevent hallucinated code |
+| 2026-01-10 | Added Blueprint schema (JSON stored in DB) | Enables re-generation without full agent chain |
+| 2026-01-10 | Added Asset Resolution (Unsplash API) | Prevents hallucinated image URLs |
+| 2026-01-10 | Added `landing_page_blueprints` table schema | Dual storage: blueprint in DB, HTML in Storage |
 | 2026-01-10 | Added LandingPageGeneratorTool full specification | Asset generation gap - F2 needs tool to create HTML |
 | 2026-01-10 | Added AdCreativeGeneratorTool full specification | Asset generation gap - P1/P2 need tool to create ad copy |
 | 2026-01-10 | Updated Tool Summary with Asset Generation category | Clear visibility into new tools |
