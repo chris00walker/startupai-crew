@@ -1,319 +1,181 @@
 ---
 purpose: "Private technical source of truth for active work"
 status: "active"
-last_reviewed: "2025-12-05"
+last_reviewed: "2026-01-09"
 ---
 
 # In Progress
 
-## Architecture Change Notice (2025-12-05)
+## Architecture Status (2026-01-09)
 
-**MAJOR**: The Flow-based architecture has been replaced with a 3-Crew architecture.
-- **ADR**: See `docs/adr/001-flow-to-crew-migration.md`
-- **Reason**: AMP platform has issues with `type = "flow"` projects
-- All previous Flow-related work is now archived
+**CURRENT**: Modal serverless deployed to production. Tool integration ready for implementation.
 
----
+| Layer | Status | Notes |
+|-------|--------|-------|
+| Interaction (Netlify) | ✅ Production | Edge Functions |
+| Orchestration (Supabase) | ✅ Production | PostgreSQL + Realtime |
+| Compute (Modal) | ✅ Production | Pay-per-second, $0 idle |
+| **Tool Integration** | 🟡 IN PROGRESS | 9/45 agents wired, pattern applied to all |
 
-## Phase 0: 3-Crew AMP Deployment (Active)
-
-Deploy the new 3-Crew architecture to CrewAI AMP.
-
-### Current Status
-
-| Item | Status | Notes |
-|------|--------|-------|
-| Crew 1 code | ✅ Complete | `src/intake_crew/` at repo root |
-| Crew 2 code | ✅ Complete | `startupai-crews/crew-2-validation/` |
-| Crew 3 code | ✅ Complete | `startupai-crews/crew-3-decision/` |
-| pyproject.toml | ✅ Updated | `type = "crew"` |
-| CrewAI login | ⚠️ Pending | Session expired, needs re-auth |
-| Crew 1 deployment | ⚠️ Pending | Blocked on login |
-| Crews 2 & 3 repos | ⚠️ Pending | Need separate GitHub repos |
-
-### Next Steps
-
-1. Run `crewai login` to authenticate
-2. Run `crewai deploy push` for Crew 1
-3. Create `startupai-crew-validation` repo for Crew 2
-4. Create `startupai-crew-decision` repo for Crew 3
-5. Configure `InvokeCrewAIAutomationTool` for crew chaining
-
-### Architecture Summary
-
-```
-Crew 1: Intake (4 agents, 6 tasks, 1 HITL)
-    ↓ InvokeCrewAIAutomationTool
-Crew 2: Validation (12 agents, 21 tasks, 5 HITL)
-    ↓ InvokeCrewAIAutomationTool
-Crew 3: Decision (3 agents, 5 tasks, 1 HITL)
-```
+**ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture.
 
 ---
 
-## E2E Flow Verification (Archived - Flow Architecture)
+## Active Work: MCP-First Tool Integration
 
-**Status**: Superseded by 3-Crew architecture.
+**Status**: READY FOR IMPLEMENTATION
+**Total Effort**: 60 hours over 4 weeks
+**Designed**: 2026-01-09
 
-The bugs fixed below were for the Flow architecture which is now archived. The new 3-Crew architecture will need its own testing once deployed.
+### Why This Matters
 
-### Bugs Fixed (2025-12-03)
+Without tools, agents **hallucinate** outputs instead of collecting real evidence:
 
-| Bug | Status | File:Line | Notes |
-|-----|--------|-----------|-------|
-| Assumption schema mismatch | ✅ Fixed | `founder_validation_flow.py:110-168` | `crew_outputs.Assumption` → `state_schemas.Assumption` converter |
-| AnalysisCrew missing template vars | ✅ Fixed | `founder_validation_flow.py:264-276` | Added placeholders for `iterate_value_proposition` task |
-| GrowthCrew missing template vars | ✅ Fixed | `founder_validation_flow.py:344-372` | Added placeholders for all 4 tasks |
-| pivot_value_proposition KeyError | ✅ Fixed | `founder_validation_flow.py:780-832` | Defensive checks + all template vars |
-| refine_desirability_tests template vars | ✅ Fixed | `founder_validation_flow.py:839-862` | Added all GrowthCrew template placeholders |
-| Netlify token name mismatch | ✅ Fixed | `landing_page_deploy.py:136,545` | Accept `NETLIFY_ACCESS_TOKEN` or `NETLIFY_AUTH_TOKEN` |
-| CustomerProfile/ValueMap type mismatch | ✅ Fixed | `founder_validation_flow.py:173-248` | Type converters for crew→state models |
+| Output Type | Without Tools | With Tools |
+|-------------|---------------|------------|
+| Market Research | Plausible but invented | Real search results with citations |
+| Competitor Analysis | Generic observations | Actual competitor URLs and features |
+| Landing Pages | Code that might work | Deployed URLs with analytics |
+| Unit Economics | Made-up numbers | Calculations based on real CAC/LTV |
 
-### Listener Errors (✅ Fixed)
+### Phase A: Core MCP Server (Week 1) - 15 hours
 
-**Root Cause**: Type mismatch between crew output models and state models:
-- `AnalysisCustomerProfile` (crew) vs `CustomerProfile` (state)
-- `AnalysisValueMap` (crew) vs `ValueMap` (state)
+| Task | Target Agents | Effort | Status |
+|------|---------------|--------|--------|
+| Create FastMCP server on Modal | All | 4h | ⏳ Not started |
+| Implement `forum_search` | D2, J1, PAIN_RES, GAIN_RES | 3h | ⏳ Not started |
+| Implement `analyze_reviews` | D2, J1, PAIN_RES, GAIN_RES | 3h | ⏳ Not started |
+| Implement `social_listen` | D2 | 2h | ⏳ Not started |
+| Implement `analyze_trends` | D2 | 2h | ⏳ Not started |
+| Deploy to Modal | - | 1h | ⏳ Not started |
 
-**Fix Applied**: Added two conversion functions in `founder_validation_flow.py:173-248`:
-- `convert_analysis_profile_to_state()` - Converts crew jobs/pains/gains to state format
-- `convert_analysis_value_map_to_state()` - Converts crew pain_relievers/gain_creators lists to dicts
+**Deliverable**: MCP server at `https://chris00walker--startupai-mcp-tools.modal.run/mcp/`
 
-These follow the same pattern as `convert_crew_assumption_to_state()` which fixed the Assumption schema mismatch.
+### Phase B: Advanced Tools (Week 2) - 14 hours
 
-### Environment Status
+| Task | Target Agents | Effort | Status |
+|------|---------------|--------|--------|
+| Implement `transcribe_audio` | D1 | 3h | ⏳ Not started |
+| Implement `extract_insights` | D1, D4 | 4h | ⏳ Not started |
+| Implement `identify_patterns` | D2, D3 | 4h | ⏳ Not started |
+| Implement `run_ab_test` | P1, P2, W1 | 3h | ⏳ Not started |
 
-| Variable | Expected By | Status | Location |
-|----------|-------------|--------|----------|
-| OPENAI_API_KEY | All crews | ✅ Set | `~/.secrets/startupai` |
-| NETLIFY_AUTH_TOKEN | landing_page_deploy.py | ✅ Set | Code now accepts both `ACCESS_TOKEN` and `AUTH_TOKEN` |
-| TAVILY_API_KEY | web_search.py | ⚠️ Optional | Only needed for live web research (uses stub if missing) |
-| STARTUPAI_WEBHOOK_URL | flow persistence | ⚠️ Optional | Webhook delivery skipped if not set |
-| STARTUPAI_WEBHOOK_BEARER_TOKEN | flow persistence | ⚠️ Optional | Webhook auth skipped if not set |
+**Deliverable**: Audio transcription, NLP insights, A/B test analysis
 
-### Test Results
+### Phase C: External MCP + Analytics (Week 3) - 13 hours
 
-- **Unit tests**: 178/178 passed
-- **Live E2E flow**: Progresses through ServiceCrew → AnalysisCrew → GrowthCrew
-- **Desirability testing**: Completes successfully
-- **Listener callbacks**: Errors after desirability phase (non-blocking)
+| Task | Target Agents | Effort | Status |
+|------|---------------|--------|--------|
+| Implement `get_analytics` | P3, D3, L1, W1, W2 | 3h | ⏳ Not started |
+| Implement `anonymize_data` | Learning pipeline | 2h | ⏳ Not started |
+| Connect Meta Ads MCP | P1, P2, P3, D3 | 2h | ⏳ Not started |
+| Connect Google Ads MCP | P1, P2, P3 | 2h | ⏳ Not started |
+| Connect Calendar MCP | D1 | 2h | ⏳ Not started |
+| Integration testing | All | 4h | ⏳ Not started |
 
-### Next Steps
+**Deliverable**: Ad platforms and analytics connected via MCP
 
-1. Add missing env vars to `~/.secrets/startupai`:
-   - `NETLIFY_ACCESS_TOKEN` (alias for existing `NETLIFY_AUTH_TOKEN`)
-   - `TAVILY_API_KEY` (for web research tools)
-   - `STARTUPAI_WEBHOOK_URL` and `STARTUPAI_WEBHOOK_BEARER_TOKEN`
-2. Debug listener errors to ensure dictionaries are populated
-3. Re-run E2E test with all env vars configured
-4. Verify Netlify deployment and webhook delivery
+### Phase D: CrewAI Integration (Week 4) - 18 hours
 
----
+| Task | Target Agents | Effort | Status |
+|------|---------------|--------|--------|
+| Wire EXISTS tools | All phases | 4h | ⏳ Not started |
+| Add MCP client to agents | All phases | 4h | ⏳ Not started |
+| Build LLM-Based tools | O1, E1, V1-V3, C2 | 4h | ⏳ Not started |
+| End-to-end testing | All | 4h | ⏳ Not started |
+| Documentation | - | 2h | ⏳ Not started |
 
-## Phase 2D: Privacy & Persistence Infrastructure (✅ Complete)
-
-Privacy protection for Flywheel data and flow state persistence.
-
-| Item | Status | Owner | Notes |
-|------|--------|-------|-------|
-| Implement PrivacyGuardTool | ✅ Complete | @ai-platform | PII detection, compliance (GDPR/CCPA/HIPAA), cross-validation privacy |
-| Create Supabase predictions table | ✅ Complete | @ai-platform | pgvector table for OutcomeTrackerTool |
-| Add @persist() decorators to flow | ✅ Complete | @ai-platform | 9 checkpoint methods for state recovery |
-| Add PrivacyGuard tests | ✅ Complete | @ai-platform | 40 tests in test_privacy_guard.py |
-
-### Phase 2D Complete Criteria
-
-- [x] PrivacyGuardTool detects PII before Flywheel storage
-- [x] Cross-validation privacy boundaries enforced
-- [x] Predictions table stores outcomes for model improvement
-- [x] Flow can recover from checkpoints via @persist() decorators
+**Deliverable**: All 36 tool-equipped agents wired with evidence collection tools
 
 ---
 
-## Phase 2C: Enhanced Governance + Flywheel Learning (✅ Complete)
+## Immediate Actions (Unblocks Everything)
 
-Flywheel learning system with industry/stage patterns and outcome tracking.
+✅ **COMPLETED 2026-01-09** - All immediate actions done.
 
-| Item | Status | Owner | Notes |
-|------|--------|-------|-------|
-| Enhance LearningCaptureTool patterns | ✅ Complete | @ai-platform | FlywheelInsightsTool with industry/stage patterns |
-| Add cross-validation learning retrieval | ✅ Complete | @ai-platform | ValidationContext, similar validation matching |
-| Implement outcome tracking | ✅ Complete | @ai-platform | OutcomeTrackerTool with prediction/outcome linking |
-| Add Flywheel workflow tests | ✅ Complete | @ai-platform | 38 tests in test_flywheel_workflow.py |
+| Action | Effort | Status |
+|--------|--------|--------|
+| Migrate tools from `intake_crew/tools/` to `shared/tools/` | 1h | ✅ Done |
+| Add MCP deps to Modal image (`mcp`, `fastmcp`, `mcp_use`) | 15m | ✅ Done |
+| Wire TavilySearchTool to D2, J1, PAIN_RES, GAIN_RES | 2h | ✅ Done |
+| Apply IntakeCrew pattern to all 45 agents | 4h | ✅ Done |
 
-### Phase 2C Complete Criteria
+**Tools wired**:
+- TavilySearchTool: D2, J1, PAIN_RES, GAIN_RES (4 research agents)
+- MethodologyCheckTool: FIT_SCORE, G1 across 4 governance crews (5 QA agents)
 
-- [x] Pattern learnings captured after each validation phase
-- [x] Similar past validations retrieved for context
-- [x] Outcome tracking for model improvement
-- [x] Governance Crew uses learnings for better predictions
-
----
-
-## Phase 2B: HITL Workflows - Viability Approval (✅ Complete)
-
-Flow can pause for human viability decisions at the unit economics gate.
-
-| Item | Status | Owner | Notes |
-|------|--------|-------|-------|
-| Add await_viability_decision flow node | ✅ Complete | @ai-platform | HITL pause at viability gate |
-| Wire ViabilityApprovalTool to Finance | ✅ Complete | @ai-platform | Surface LTV/CAC for human review |
-| Implement cost pivot decision handler | ✅ Complete | @ai-platform | Price/cost pivot execution |
-| Add viability approval tests | ✅ Complete | @ai-platform | 21 tests in test_viability_workflow.py |
-
-### Phase 2B Complete Criteria
-
-- [x] Flow pauses when unit economics need human decision
-- [x] /resume payload processes viability decisions (proceed/pivot/kill)
-- [x] Finance Crew surfaces unit economics for review
-- [x] Cost optimization recommendations presented to user
+**Next**: Phase A - Core MCP Server (15 hours)
 
 ---
 
-## Phase 2A: HITL Workflows - Creative Approval (✅ Complete)
+## Live Testing Progress
 
-Flow can pause for human creative decisions.
+See [modal-live-testing.md](./modal-live-testing.md) for full details.
 
-| Item | Status | Owner | Notes |
-|------|--------|-------|-------|
-| Implement /resume webhook handler | ✅ Complete | @ai-platform | Parse creative approval payloads |
-| Wire GuardianReviewTool to Governance | ✅ Complete | @ai-platform | Auto-QA creatives |
-| Implement MethodologyCheckTool | ✅ Complete | @ai-platform | VPC/BMC structure validation |
-| Add await_creative_approval flow node | ✅ Complete | @ai-platform | HITL pause point in flow |
-| Add HITL workflow tests | ✅ Complete | @ai-platform | 32 tests passing |
-
-### Phase 2A Complete Criteria
-
-- [x] Flow pauses when Guardian flags issues requiring human review
-- [x] /resume payload updates ad/LP approval statuses
-- [x] GuardianReviewTool auto-approves safe creatives
-- [x] MethodologyCheckTool validates VPC/BMC structure
+| Phase | Status | Issues Found | Issues Fixed |
+|-------|--------|--------------|--------------|
+| Phase 0 (Onboarding) | ✅ PASSED | 1 | 1 |
+| Phase 1 (VPC Discovery) | ✅ PASSED | 2 | 2 |
+| Phase 2 (Desirability) | ✅ PASSED | 2 | 2 |
+| Phase 3 (Feasibility) | ⏳ Pending | - | - |
+| Phase 4 (Viability) | ⏳ Pending | - | - |
 
 ---
 
-## Phase 1B: Landing Page Deployment + Build Crew (✅ Complete)
+## Blockers
 
-Generated landing pages can be deployed for experiments.
+### Blocker 1: Tool Migration (CRITICAL)
 
-| Item | Status | Owner | Notes |
-|------|--------|-------|-------|
-| Implement LandingPageDeploymentTool (Netlify) | ✅ Complete | @ai-platform | Netlify API integration |
-| Wire Build Crew with full tool suite | ✅ Complete | @ai-platform | 3 tools wired to prototype_designer |
-| Add deploy_landing_pages task | ✅ Complete | @ai-platform | Build Crew task |
-| Add integration tests | ✅ Complete | @ai-platform | 17 tests passing |
+**Status**: Tools exist in `src/intake_crew/tools/` but not migrated to `src/shared/tools/`
+**Impact**: Cannot wire tools to Modal crews
+**Resolution**: 1 hour to copy files + update imports
+**Priority**: CRITICAL (unblocks all tool integration)
 
-### Phase 1B Complete Criteria
+### Blocker 2: MCP Dependencies
 
-- [x] LandingPageDeploymentTool deploys HTML to Netlify subdomain
-- [x] Build Crew generates + deploys landing pages end-to-end
-- [x] CodeValidatorTool runs before deployment
-- [x] Integration tests pass
+**Status**: Modal image lacks `mcp`, `mcp_use`, `fastmcp` packages
+**Impact**: Cannot connect to MCP servers
+**Resolution**: 15 minutes to update image definition
+**Priority**: HIGH (required for MCP Custom/External tools)
 
----
+### Blocker 3: Agent Configuration Pattern
 
-## Phase 1A: Results Persistence + Tool Wiring (✅ Complete)
-
-Closing the critical blocker - users can see validation results.
-
-| Item | Status | Owner | Notes |
-|------|--------|-------|-------|
-| Wire TavilySearchTool to Analysis Crew | ✅ Complete | @ai-platform | Already implemented |
-| Wire IndustryBenchmarkTool to Finance Crew | ✅ Complete | @ai-platform | Already implemented |
-| Wire LearningCaptureTool to Governance Crew | ✅ Complete | @ai-platform | Added 2025-11-26 |
-| Create crewai_config.yaml | ✅ Complete | @ai-platform | Webhooks + memory config |
-| Results persistence to Supabase | ✅ Complete | @ai-platform | Already in flow |
-| Update work tracking docs | ✅ Complete | @ai-platform | Updated 2025-11-26 |
-
-### Phase 1A Complete Criteria
-
-- [x] Flow completion calls webhook with structured results
-- [x] Analysis Crew uses TavilySearchTool for real web research
-- [x] Finance Crew uses IndustryBenchmarkTool for real benchmarks
-- [x] Governance Crew captures learnings via LearningCaptureTool
-- [x] crewai_config.yaml created with webhook URLs and memory config
+**Status**: Agents lack `tools=[]` parameter in 36 of 45 cases
+**Impact**: Tools cannot be assigned
+**Resolution**: 4 hours to apply "IntakeCrew Pattern" to all agents
+**Priority**: HIGH (prerequisite for tool wiring)
 
 ---
 
-## Phase 1 Core (Previously Completed)
+## Previous Work (ARCHIVED)
 
-| Item | Status | Notes |
-|------|--------|-------|
-| State schemas (`state_schemas.py`) | ✅ Complete | Innovation Physics signals + ValidationState + all models |
-| Service Crew | ✅ Complete | Web search tools wired |
-| Analysis Crew | ✅ Complete | TavilySearchTool + CustomerResearchTool wired |
-| Build Crew | ✅ Complete | LandingPageGeneratorTool + CodeValidatorTool wired |
-| Growth Crew | ✅ Complete | Stub (needs experiment tools in Phase 2B) |
-| Synthesis Crew | ✅ Complete | Full task definitions with pivot logic |
-| Finance Crew | ✅ Complete | IndustryBenchmarkTool + UnitEconomicsCalculatorTool wired |
-| Governance Crew | ✅ Complete | LearningCaptureTool + AnonymizerTool + HITL tools wired |
-| Phase 1 Flow orchestration | ✅ Complete | Non-linear routers with Innovation Physics |
-| Results persistence | ✅ Complete | Webhook to product app on flow completion |
+### AMP 3-Crew Architecture (DEPRECATED - 2025-12-05)
 
----
+The 3-Crew AMP architecture was replaced by Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md).
 
-## Immediate Next Step
+- Crew 1 (Intake): Archived to `archive/amp-deployment/`
+- Crew 2 (Validation): Separate repo archived
+- Crew 3 (Decision): Separate repo archived
 
-**All Core Phases Complete** - Phase 1A, 1B, 2A, 2B, 2C, and 2D are all implemented.
+### Flow Architecture (DEPRECATED - 2025-12-03)
 
-Next priorities (future phases):
-- Real ad platform integration (Meta/Google APIs)
-- Real experiment tracking and analytics
-- Production webhook integration with product app
-
----
-
-## What This Unblocks (Downstream)
-
-**Phase 1A + 1B + 2A + 2B Complete unblocks:**
-- **Product App**: Can display validation results from webhook
-- **All Crews**: Real tools instead of LLM-only outputs
-- **Growth Crew**: Can deploy landing pages for experiments
-- **Marketing**: Real URLs for demos
-- **Quality Assurance**: Human review before ad deployment
-- **Compliance**: Review workflow for creative content
-- **Strategic Decisions**: Human approval at viability gate
-- **Unit Economics**: Real LTV/CAC decisions with human oversight
-- **Pivot Execution**: Cost/price optimization with human approval
-
-**Phase 2C Complete unblocks:**
-- **Flywheel Learning**: Pattern capture for improved predictions
-- **Cross-validation Context**: Learn from similar past validations
-- **Model Improvement**: Outcome tracking for continuous improvement
-
-**Phase 2D Complete unblocks:**
-- **Privacy Protection**: PII-safe Flywheel data storage
-- **Compliance Ready**: GDPR/CCPA/HIPAA checks before storage
-- **Flow Recovery**: State persistence at 9 checkpoints for failure recovery
-- **Predictions Table**: Outcome tracking storage in Supabase (pgvector)
-
----
-
-## Documentation / Infrastructure
-
-| Item | Status | Notes |
-|------|--------|-------|
-| Docs reorganization | ✅ Complete | See done.md |
-| Work tracking sync | ✅ Complete | Updated 2025-11-26 |
-| crewai_config.yaml | ✅ Complete | Webhooks + memory config |
+The original Flow-based architecture had runtime bugs that were fixed before the AMP migration. All fixes are preserved in the current Modal implementation.
 
 ---
 
 ## How to Use This Document
 
-1. **Pick an item** from the Phase 2B table above
+1. **Pick a task** from Phase A above (start with immediate actions)
 2. **Update status** when you start work
 3. **Move to done.md** when complete
 4. **Update phases.md** checkboxes to match
 
 ---
-**Last Updated**: 2025-12-05
+**Last Updated**: 2026-01-09
 
-**Latest Changes (2025-12-05 - Flow to 3-Crew Migration)**:
-- **MAJOR**: Architecture migrated from Flow to 3-Crew
-- Created 3 crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)
-- Crew 1 (Intake) restructured to repo root with `type = "crew"`
-- Crews 2 & 3 code ready, need separate GitHub repos
-- All Flow-related work archived to `archive/flow-architecture/`
-- See ADR-001 for full decision record
-
-**Previous Changes (2025-12-03)**: E2E flow verification (now archived). Fixed 7 runtime bugs discovered during live testing. All 178 unit tests pass.
+**Latest Changes**:
+- Complete rewrite for Modal serverless architecture
+- Added MCP-first tool integration roadmap (60 hours)
+- Defined immediate actions (7 hours) to unblock tool wiring
+- Archived AMP 3-Crew references
+- Updated live testing progress (Phase 0-2 complete)

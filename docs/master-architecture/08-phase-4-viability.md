@@ -649,6 +649,32 @@ class FinalValidationReport(BaseModel):
 - Agents: 9
 - HITL Checkpoints: 2
 
+### Agent Configuration Summary
+
+| Agent | Crew | Tools | Temperature | Notes |
+|-------|------|-------|-------------|-------|
+| L1 | Finance | UnitEconomicsModelsTool (EXISTS), AnalyticsTool (STUB), CostTrackingTool (STUB) | 0.2 | Sets VIABILITY_SIGNAL |
+| L2 | Finance | RegulatorySearchTool (STUB) | 0.3 | Regulatory constraints |
+| L3 | Finance | BusinessModelClassifierTool (EXISTS), LearningCaptureTool (EXISTS), BudgetGuardrailsTool (EXISTS) | 0.3 | Validates assumptions |
+| C1 | Synthesis | StateInspectionTool (STUB), SynthesisTool (STUB) | 0.5 | Evidence synthesis |
+| C2 | Synthesis | ViabilityApprovalTool (STUB) | 0.3 | HITL decision handler |
+| C3 | Synthesis | LearningCaptureTool (EXISTS), FileWriteTool (EXISTS) | 0.4 | Documents decisions |
+| G1 | Governance | MethodologyCheckTool (EXISTS), GuardianReviewTool (EXISTS) | 0.1 | Final QA validation |
+| G2 | Governance | PrivacyGuardTool (EXISTS) | 0.1 | PII scrubbing |
+| G3 | Governance | LearningCaptureTool (EXISTS), AuditTrailTool (STUB) | 0.1 | Flywheel persistence |
+
+**Tool Status Summary:**
+- **EXISTS**: 9 tools (UnitEconomicsModelsTool, BusinessModelClassifierTool, LearningCaptureTool, BudgetGuardrailsTool, FileWriteTool, MethodologyCheckTool, GuardianReviewTool, PrivacyGuardTool)
+- **STUB**: 7 tools (AnalyticsTool, CostTrackingTool, RegulatorySearchTool, StateInspectionTool, SynthesisTool, ViabilityApprovalTool, AuditTrailTool)
+
+**Configuration Notes:**
+- Finance agents (L1-L3) use low temperatures (0.2-0.3) for accuracy in calculations
+- Synthesis agents (C1-C3) use moderate temperatures (0.3-0.5) for balanced reasoning
+- Governance agents (G1-G3) use very low temperature (0.1) for strict compliance
+- G1-G2 are **reused from Phase 2/3** with identical configuration
+- G3 (Audit Agent) is **new in Phase 4** - handles flywheel persistence
+- All agents have `reasoning=True`, `inject_date=True`, `max_iter=20`
+
 ---
 
 ## Business Model Classification

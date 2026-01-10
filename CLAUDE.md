@@ -94,6 +94,8 @@ AMP handled `type = "crew"` reliably but had issues with `type = "flow"`. The 3-
 | `08-phase-4-viability.md` | Phase 4: Viability + Final Decision |
 | `09-status.md` | Current state and blockers |
 | `reference/` | API contracts, approval workflows, database schemas |
+| `reference/agentic-tool-framework.md` | **Tool lifecycle, agent configuration pattern, implementation tiers** |
+| `reference/tool-mapping.md` | Agent-to-tool mapping by phase |
 
 **Phase Documents** follow a consistent template with: Purpose, Entry/Exit criteria, Flow diagrams, Agent specs, Output schemas, HITL checkpoints.
 
@@ -468,7 +470,25 @@ export async function POST(req: Request) {
 - **Role**: Clear, specific job description
 - **Goal**: Measurable outcome
 - **Backstory**: Context for LLM reasoning
-- **Tools**: List of available tools (currently pure LLM-based)
+- **Tools**: See `docs/master-architecture/reference/agentic-tool-framework.md` for tool lifecycle
+
+**IntakeCrew Pattern** (canonical agent configuration):
+```python
+@agent
+def agent_name(self) -> Agent:
+    return Agent(
+        config=self.agents_config["agent_name"],
+        tools=[Tool1(), Tool2()],     # Required for evidence-based outputs
+        reasoning=True,                # Enables step-by-step reasoning
+        inject_date=True,              # Temporal awareness
+        max_iter=25,                   # Prevents infinite loops
+        llm=LLM(model="openai/gpt-4o", temperature=0.7),
+        verbose=True,
+        allow_delegation=False,
+    )
+```
+
+> **⚠️ TOOL WIRING GAP**: Modal crews have structure but most agents lack tools. See `docs/work/phases.md` for fix plan.
 
 ### Task Configuration
 - **YAML Format**: `config/tasks.yaml` defines all tasks
@@ -574,6 +594,9 @@ See `~/.claude/agents/` for cross-repo agents:
 - **backend-developer**: Supabase, Drizzle ORM, API design, database architecture
 - **frontend-developer**: Next.js, React, shadcn/ui, component patterns
 - **ai-engineer**: CrewAI Flows, Vercel AI SDK, LLM integration
+- **modal-developer**: Modal serverless deployment, Python functions, web endpoints, HITL patterns
+- **supabase-developer**: PostgreSQL, Row Level Security, Realtime subscriptions, migrations
+- **netlify-developer**: Site deployment, Edge Functions, environment variables, frontend hosting
 
 ### Available Skills
 See `~/.claude/skills/` for cross-repo skills:
@@ -581,6 +604,18 @@ See `~/.claude/skills/` for cross-repo skills:
 - **cross-repo-sync**: Update blocker files across all 3 repos
 - **quality-gate**: Comprehensive pre-commit checks (lint, type-check, test, build)
 - **crewai-integration-check**: Validate CrewAI API contracts and deployment connectivity
+- **modal-docs**: Modal serverless documentation lookup (functions, web endpoints, secrets, deployment)
+- **supabase-docs**: Supabase documentation lookup (RLS, Realtime, migrations, MCP tools)
+- **netlify-docs**: Netlify documentation lookup (Edge Functions, environment variables, deployment)
+- **docs-cache-sync**: Synchronize local documentation caches with upstream sources
+
+### Documentation Caches
+Local documentation caches with self-learning capabilities:
+- `docs/modal-documentation/` - Modal serverless patterns (9 files)
+- `docs/supabase-documentation/` - Supabase PostgreSQL patterns (8 files)
+- `docs/netlify-documentation/` - Netlify deployment patterns (8 files)
+
+Each cache includes a `MANIFEST.json` for staleness tracking and automatic updates when fetching new content.
 
 ### Usage
 Agents are automatically invoked based on context and trigger words in their descriptions. For architecture and system design questions, the software-architect agent provides strategic technical guidance. Skills are discovered and used when relevant to the current task.

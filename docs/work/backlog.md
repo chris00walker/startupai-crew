@@ -12,38 +12,155 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 ---
 
+## Priority 0: Tool Integration (CRITICAL)
+
+### Hypothesis: Tools Enable Evidence-Based Validation
+
+> **If** we wire tools to all 45 agents using MCP-first architecture,
+> **Then** agents will produce evidence-based outputs instead of hallucinations.
+
+**Status**: READY FOR IMPLEMENTATION
+
+**Problem Statement**:
+- 36 of 45 agents (80%) lack tools
+- Without tools, agents hallucinate: invented market research, fake competitor data, made-up unit economics
+- The SAY vs DO evidence hierarchy requires real data collection
+
+**Evidence of Problem**:
+```
+Current: D2 hallucinates "HR managers struggle with X" (no evidence)
+Target:  D2 searches Reddit for real complaints (47 mentions found)
+```
+
+**Build Required** (60 hours):
+
+| Phase | Focus | Effort | Status |
+|-------|-------|--------|--------|
+| A | Core MCP Server | 15h | Not started |
+| B | Advanced Tools | 14h | Not started |
+| C | External MCP + Analytics | 13h | Not started |
+| D | CrewAI Wiring | 18h | Not started |
+
+**Immediate Actions** (7 hours):
+1. Migrate tools from `intake_crew/tools/` to `shared/tools/` (1h)
+2. Add MCP deps to Modal image (15m)
+3. Wire TavilySearchTool to research agents (2h)
+4. Apply IntakeCrew pattern to all agents (4h)
+
+**Measure**:
+- [ ] All 36 tool-equipped agents have tools wired (0% → 100%)
+- [ ] Phase 1 VPC Discovery uses real search data
+- [ ] Phase 2 Desirability deploys real landing pages
+- [ ] Fit scores based on evidence, not LLM synthesis
+
+**Learn**:
+- Does real data change validation outcomes?
+- What's the quality difference between hallucinated vs evidence-based outputs?
+
+---
+
+## Priority 1: E2E Validation
+
+### Hypothesis: Full Pipeline Produces Actionable Results
+
+> **If** we complete Phase 3-4 live testing and tool integration,
+> **Then** users will receive actionable pivot/proceed recommendations backed by evidence.
+
+**Status**: BLOCKED by Priority 0 (tool integration)
+
+**Build Required**:
+- [ ] Complete Phase 3 (Feasibility) live testing
+- [ ] Complete Phase 4 (Viability) live testing
+- [ ] Test pivot loopback (approve_segment_pivot → Phase 1)
+- [ ] E2E validation with tools producing real evidence
+
+**Measure**:
+- [ ] Full Phase 0→4 cycle completes successfully
+- [ ] Pivot/proceed decision based on real evidence
+- [ ] User can trace decision back to evidence sources
+
+---
+
+## Priority 2: Product App Integration
+
+### Hypothesis: Users Complete Analysis
+
+> **If** we provide an end-to-end flow from onboarding to analysis results display,
+> **Then** users will complete the full analysis and find value in the output.
+
+**Status**: BLOCKED by Priority 1 (E2E validation)
+
+**Current State**:
+- ✅ CrewAI Modal deployment live
+- ✅ `/kickoff`, `/status`, `/hitl/approve` endpoints working
+- ✅ Webhook to persist results to Supabase
+- ❌ Product app doesn't call Modal endpoints yet
+- ❌ Product app doesn't display validation results
+
+**Build Required** (Product App repo):
+- [ ] Wire onboarding complete → Modal `/kickoff`
+- [ ] Poll `/status` for progress updates
+- [ ] Display results from `validation_runs` table
+- [ ] Display HITL approval UI
+
+**Measure**:
+- [ ] Completion rate: onboarding → validation results
+- [ ] Time to first result
+- [ ] User satisfaction with output quality
+
+---
+
 ## ✅ COMPLETED HYPOTHESES
+
+### Hypothesis: Modal Serverless Enables Scale ✅ VALIDATED
+
+> **If** we deploy to Modal serverless with checkpoint-and-resume HITL pattern,
+> **Then** we achieve $0 idle costs, platform independence, and simplified deployment.
+
+**Built** (2026-01-08):
+- ✅ Modal infrastructure deployed
+- ✅ 14 crews, 45 agents implemented
+- ✅ 10 HITL checkpoints with checkpoint-and-resume
+- ✅ Supabase state persistence + Realtime
+- ✅ 185 unit tests passing
+
+**Measured**:
+- ✅ $0 idle costs (vs AMP always-on)
+- ✅ Single repository (vs 3-repo AMP workaround)
+- ✅ Pay-per-second billing
+- ✅ Live testing Phase 0-2 passed
+
+**Learned**:
+- Modal is ideal for long-running agentic workflows
+- Checkpoint-and-resume pattern works well for HITL
+- Three-layer architecture (Netlify + Supabase + Modal) provides clean separation
+
+**Status**: ✅ COMPLETE - Modal is production architecture
+
+---
 
 ### Hypothesis: Multi-Crew System Enables Scale ✅ VALIDATED
 
-> **If** we structure validation as 8 specialized crews with 18 agents using CrewAI Flows,
-> **Then** we can deliver higher quality analysis with clear accountability and extensibility.
+> **If** we structure validation as 5 Flows with 14 Crews and 45 Agents,
+> **Then** we can deliver higher quality analysis with clear accountability.
 
 **Built** (Phase 1-3 Complete):
-- ✅ state_schemas.py - StartupValidationState with 70 fields
-- ✅ Service Crew - 3 agents (intake, brief capture)
-- ✅ Analysis Crew - 2 agents with TavilySearchTool
-- ✅ Build Crew - 3 agents with LandingPageGeneratorTool + Netlify deploy
-- ✅ Growth Crew - 3 agents (ad creative, communications, social media)
-- ✅ Synthesis Crew - 1 agent (pivot decision logic)
-- ✅ Finance Crew - 2 agents with UnitEconomicsCalculatorTool
-- ✅ Governance Crew - 3 agents with 8 HITL/Flywheel/Privacy tools
-- ✅ Non-linear routing with @router decorators (Innovation Physics)
-- ✅ 9 @persist() checkpoints for state recovery
+- ✅ 5 Flows orchestrating 14 Crews
+- ✅ 45 agents with specialized roles
+- ✅ Non-linear routing with Innovation Physics
+- ✅ 10 HITL checkpoints
 
 **Measured**:
-- ✅ All 8 crews deployed to CrewAI AMP
-- ✅ REST API `/kickoff` and `/status` working
-- ✅ Average execution time: ~5-10 minutes per validation cycle
-- ⏳ Output quality vs 6-agent system - PENDING REAL VALIDATION
+- ✅ All phases deployed to Modal
+- ✅ REST API working
+- ✅ 185+ tests passing
 
 **Learned**:
-- Crew specialization works well for distinct phases (Desirability/Feasibility/Viability)
-- Service/Commercial separation provides clear accountability
-- Router-based flow enables true non-linear iteration (segment pivots, value pivots)
-- State management with 70 fields is comprehensive but requires careful documentation
+- Crew specialization works well for distinct phases
+- Pattern hierarchy (Phase → Flow → Crew → Agent → Task) is clear
+- Router-based flow enables true non-linear iteration
 
-**Status**: ✅ COMPLETE - All phases implemented, deployed, and operational
+**Status**: ✅ COMPLETE - All phases implemented
 
 ---
 
@@ -52,220 +169,42 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 > **If** we add web search, financial analysis, and deployment tools to agents,
 > **Then** analysis quality will significantly improve beyond pure LLM reasoning.
 
-**Built**:
-- ✅ `tools/web_search.py` - TavilySearchTool for market research
-- ✅ `tools/financial_data.py` - UnitEconomicsCalculatorTool, IndustryBenchmarkTool
-- ✅ `tools/landing_page.py` - LandingPageGeneratorTool
-- ✅ `tools/landing_page_deploy.py` - Netlify deployment
-- ✅ `tools/learning_capture.py` - Flywheel learning capture
-- ✅ `tools/learning_retrieval.py` - Semantic search for patterns
-- ✅ `tools/privacy_guard.py` - PII detection (40 integration tests)
-- ✅ Total: 18 tools implemented and wired to agents
+**Built** (IntakeCrew only):
+- ✅ TavilySearchTool wired to S2
+- ✅ CustomerResearchTool wired to S2
+- ✅ MethodologyCheckTool wired to G1
+- ❌ Other 40+ agents still lack tools
 
 **Measured**:
-- ✅ TavilySearchTool provides real web research data
-- ✅ LandingPageDeploymentTool successfully deploys to Netlify
-- ⏳ Factual accuracy vs pure LLM - PENDING REAL VALIDATION
-- ⏳ Token efficiency - PENDING MEASUREMENT
+- ✅ IntakeCrew produces evidence-based research
+- ❌ Modal crews produce hallucinated outputs (no tools)
 
 **Learned**:
-- Real-time web search (Tavily) significantly improves market research quality
-- Tool contracts with ToolResult<T> envelope provide robust error handling
-- Financial tools work but may need real cost/revenue data sources
-- Privacy tools (PrivacyGuard) successfully prevent PII leakage
+- Tools dramatically improve output quality
+- IntakeCrew pattern is the model for all agents
+- 60-hour roadmap to complete tool integration
 
-**Status**: ✅ MOSTLY COMPLETE - Tools implemented but need real-world validation
+**Status**: ⏳ 11% COMPLETE - Tool integration is Priority 0
 
 ---
 
 ### Hypothesis: HITL Approvals Prevent Bad Outcomes ✅ IMPLEMENTED
 
-> **If** we require human approval for high-risk actions (spend, campaigns, gates),
+> **If** we require human approval for high-risk actions,
 > **Then** users will trust the system with more autonomous operation.
 
 **Built**:
-- ✅ 6 approval checkpoint types (creative, viability, segment pivot, etc.)
-- ✅ Webhook notification system to product app
-- ✅ Resume API for continuing flows after approval
-- ✅ `webhooks/resume_handler.py` with ApprovalType enum
-- ✅ HITL tools: GuardianReviewTool, ViabilityApprovalTool
-- ✅ Database migration: `approval_requests` table in product app
+- ✅ 10 HITL checkpoints across 5 phases
+- ✅ Checkpoint-and-resume pattern on Modal
+- ✅ `/hitl/approve` endpoint
+- ✅ Supabase `hitl_requests` table
 
 **Measured**:
-- ⏳ Approval latency - PENDING REAL USERS
-- ⏳ Override rate - PENDING REAL USERS
-- ⏳ Trust scores - PENDING SURVEY
+- ✅ HITL pauses work correctly
+- ✅ Resume continues from checkpoint
+- ⏳ User trust - PENDING REAL USERS
 
-**Learned**:
-- Webhook + resume pattern works well for async approvals
-- Database schema supports approval tracking and rationale capture
-- Product app UI for approvals exists but needs frontend implementation
-- Resume handler validates bearer tokens and approval types correctly
-
-**Status**: ✅ BACKEND COMPLETE - Frontend UI pending in product app
-
----
-
-## Priority 1: Core Value Delivery
-
-### CRITICAL: Wire `output_pydantic` to Task Definitions
-
-> **Status**: ⚠️ BLOCKING - Typed outputs are broken
-
-**Problem**: The entire typed output system is non-functional. Flow code assumes `result.pydantic` returns typed data, but without `output_pydantic` on task definitions, it's always `None`.
-
-**Evidence** (`founder_validation_flow.py:136-147`):
-```python
-if result.pydantic:
-    output: ServiceCrewOutput = result.pydantic  # Always None!
-    self.state.business_idea = output.business_idea
-```
-
-This silently fails - the fallback `else` branch runs instead, losing all structured data benefits.
-
-**Scope**:
-- 14 Pydantic models defined in `crew_outputs.py` are NEVER USED
-- 34 tasks across 7 crews need `output_pydantic` added
-- Commit `d39d74c` documented the fix pattern but didn't implement it
-
-**Fix Required**:
-```python
-# Current (broken):
-@task
-def capture_entrepreneur_brief(self) -> Task:
-    return Task(config=self.tasks_config['capture_entrepreneur_brief'])
-
-# Required (working):
-@task
-def capture_entrepreneur_brief(self) -> Task:
-    return Task(
-        config=self.tasks_config['capture_entrepreneur_brief'],
-        output_pydantic=ServiceCrewOutput
-    )
-```
-
-**Files to modify**:
-- `src/startupai/crews/service/service_crew.py`
-- `src/startupai/crews/analysis/analysis_crew.py`
-- `src/startupai/crews/build/build_crew.py`
-- `src/startupai/crews/growth/growth_crew.py`
-- `src/startupai/crews/synthesis/synthesis_crew.py`
-- `src/startupai/crews/finance/finance_crew.py`
-- `src/startupai/crews/governance/governance_crew.py`
-
-**Testing**: Can validate locally with `crewai run` once ServiceCrew multi-task template issue is also fixed.
-
----
-
-### Hypothesis: Users Complete Analysis ⏳ IN PROGRESS
-
-> **If** we provide an end-to-end flow from onboarding to analysis results display,
-> **Then** users will complete the full analysis and find value in the output.
-
-**Built**:
-- ✅ CrewAI flow with `/kickoff` endpoint
-- ✅ `/status/{id}` endpoint for polling
-- ✅ Webhook to persist results to Supabase (`_persist_to_supabase()`)
-- ✅ Database schema for results storage (reports, evidence tables)
-- ❌ Product app UI to display results - MISSING
-
-**Blocking Issue**:
-- Backend persistence works (webhook saves to Supabase)
-- Frontend needs results display page to show analysis output
-
-**Minimum Build Remaining**:
-```
-[x] API route to poll CrewAI /status - DONE
-[x] Webhook handler for results - DONE
-[x] Store in reports/evidence tables - DONE
-[ ] Basic results display page in product app - TODO
-```
-
-**Status**: ⏳ 75% COMPLETE - Backend done, frontend UI pending
-
-**Next Steps**:
-1. Build results display page in product app
-2. Test E2E flow: Onboarding → Kickoff → Webhook → Display
-3. Measure completion rate and user satisfaction
-
----
-
-### Hypothesis: Quality Output Drives Referrals
-
-> **If** the analysis quality matches Fortune 500 consulting,
-> **Then** users will refer other founders.
-
-**Status**: BLOCKED - Requires results display page (above)
-
----
-
-## Priority 2: User Acquisition
-
-### Hypothesis: Transparency Increases Trust
-
-> **If** we show real-time agent activity on the marketing site,
-> **Then** visitors will trust the AI and convert to signup.
-
-**Status**: NOT STARTED
-
-**Required APIs**:
-- `GET /api/v1/public/activity` - Recent agent activity feed
-- `GET /api/v1/public/metrics` - Aggregate metrics
-
-**Note**: These APIs mentioned in `04-status.md` as not implemented
-
----
-
-### Hypothesis: Public Metrics Build Credibility
-
-> **If** we display aggregate metrics (analyses completed, satisfaction scores),
-> **Then** visitors will trust the platform.
-
-**Status**: NOT STARTED - Requires completed analyses to have data
-
----
-
-## Priority 3: Learning & Improvement
-
-### Hypothesis: Flywheel Learning Compounds Value ⏳ PARTIALLY COMPLETE
-
-> **If** we capture and retrieve validation patterns from past projects,
-> **Then** analysis quality will improve over time.
-
-**Built**:
-- ✅ `tools/learning_capture.py` - Pattern/outcome/domain learning
-- ✅ `tools/learning_retrieval.py` - Semantic search via pgvector
-- ✅ `tools/flywheel_insights.py` - Domain expertise retrieval
-- ✅ AnonymizerTool - PII abstraction before storage
-- ✅ PrivacyGuardTool - Data leakage prevention (40 tests)
-- ✅ Flow integration - `_capture_flywheel_learnings()` in flow
-- ❌ Supabase tables - `learnings`, `patterns`, `outcomes` NOT CREATED
-
-**Blocking Issue**:
-- Tools are implemented and wired
-- Database schema defined in architecture docs
-- **Migration needs to be run in product app Supabase**
-
-**Status**: ⏳ 80% COMPLETE - Tools ready, database migration pending
-
----
-
-## Priority 4: Enterprise-Grade Reliability
-
-### Hypothesis: Structured Observability Enables Operations
-
-> **If** we have structured logging, event tracking, and dashboards,
-> **Then** we can operate the system reliably at scale.
-
-**Built**:
-- ✅ `observability/structured_logger.py` - JSON logging with event types
-- ✅ `persistence/events.py` - ValidationEvent with 10+ event types
-- ✅ `persistence/state_repository.py` - Abstract persistence layer
-- ✅ Event factory functions (phase transitions, router decisions, errors)
-- ❌ Dashboard queries - NOT BUILT
-- ❌ Metrics aggregation - NOT BUILT
-
-**Status**: ⏳ 60% COMPLETE - Infrastructure ready, dashboards pending
+**Status**: ✅ BACKEND COMPLETE - Frontend UI in Product App pending
 
 ---
 
@@ -274,141 +213,17 @@ def capture_entrepreneur_brief(self) -> Task:
 ### Real-time Streaming
 > Users want to watch analysis happen step-by-step.
 
-**Why deprioritized**: Unclear if this is actually wanted. Validate core value first.
+**Why deprioritized**: Unclear if wanted. Validate core value first.
 
 ### Advanced Market Data APIs
-> Bloomberg, Crunchbase, etc. for competitive intelligence.
+> Bloomberg, Crunchbase for competitive intelligence.
 
-**Why deprioritized**: Start with Tavily web search, add expensive APIs only if needed.
+**Why deprioritized**: Start with Tavily, add expensive APIs only if needed.
 
-### Policy Versioning & A/B Testing
-> Version experiment configs and test retrieval-based policies vs baseline.
+### Public Activity/Metrics APIs
+> Show real-time agent activity on marketing site.
 
-**Why deprioritized**: Need production traffic before A/B testing makes sense.
-
-**Known Issue**: `ExperimentConfigResolver.resolve()` ignores `force_policy` parameter - always returns `YAML_BASELINE` instead of the forced policy. Test failure in `test_area_improvements.py::test_resolve_with_forced_policy`. Fix required before A/B testing can work.
-
-### CrewAI Configuration Audit Findings (2025-12-02)
-> Configuration audit against CrewAI documentation revealed several issues affecting typed outputs and safety.
-
-**Why deprioritized**: Remaining issues can wait until AMP caching is resolved and production traffic validates need.
-
-**Critical Issues**:
-
-1. **Missing `output_pydantic` on ALL 34 Tasks** → **MOVED TO PRIORITY 1**
-
-2. **SynthesisCrew Pattern Deviation**
-   - File: `src/startupai/crews/synthesis/synthesis_crew.py`
-   - Missing `@CrewBase` decorator (line 15)
-   - Uses manual YAML loading via `_load_config()` instead of class attributes
-   - Uses `config.get("role", "...")` instead of `config=self.agents_config['key']`
-   - **Fix**: Refactor to match ServiceCrew pattern (correct reference)
-
-**Important Issues**:
-
-3. **Missing Agent Safety Limits** (all 18 agents)
-   - No `max_iter` (agents could loop indefinitely)
-   - No `max_execution_time` (no timeout protection)
-   - **Fix**: Add `max_iter=15, max_execution_time=300` to all Agent() definitions
-
-4. **Missing Crew Rate Limits** (all 7 crews)
-   - No `max_rpm` configured
-   - Risk of hitting API rate limits during high-volume runs
-   - **Fix**: Add `max_rpm=10` to all Crew() definitions
-
-5. **No Task-Level Guardrails** (all 34 tasks)
-   - Governance Crew's 11 QA tasks are ideal candidates
-   - Could enforce enum values, score ranges, structure validation
-   - **Fix**: Add `guardrail` field to critical tasks in YAML configs
-
-**Async Opportunity**:
-- `analyze_customer_segments()` runs AnalysisCrew sequentially per segment
-- Could use `kickoff_for_each_async()` for parallel segment analysis
-- Location: `founder_validation_flow.py` lines 181-252
-
-**Full Audit Report**: `~/.claude/plans/agile-imagining-dragonfly.md`
-
----
-
-### ServiceCrew Multi-Task Template Variable Issue
-> ServiceCrew includes both `capture_entrepreneur_brief` and `segment_pivot_analysis` tasks, but they require different template variables.
-
-**Why deprioritized**: Blocking issue for local testing, but needs architectural decision.
-
-**Known Issue (2025-12-02)**:
-- `ServiceCrew` has two `@task` decorated methods that get auto-included via `self.tasks`
-- `capture_entrepreneur_brief` needs only `{entrepreneur_input}`
-- `segment_pivot_analysis` needs `{current_segment}`, `{evidence}`, `{business_idea}`
-- When running intake, CrewAI tries to interpolate ALL task templates, causing:
-  ```
-  ValueError: Missing required template variable 'current_segment' not found in inputs dictionary
-  ```
-- Error occurs even though `segment_pivot_analysis` isn't needed for intake
-
-**Recommended Fix**: Create separate crew methods for each use case:
-```python
-@crew
-def intake_crew(self) -> Crew:
-    """Crew for initial entrepreneur brief capture."""
-    return Crew(
-        agents=[self.founder_onboarding_agent()],
-        tasks=[self.capture_entrepreneur_brief()],
-        process=Process.sequential,
-        verbose=True
-    )
-
-@crew
-def pivot_crew(self) -> Crew:
-    """Crew for segment pivot analysis."""
-    return Crew(
-        agents=[self.founder_onboarding_agent()],
-        tasks=[self.segment_pivot_analysis()],
-        process=Process.sequential,
-        verbose=True
-    )
-```
-
-Then update `founder_validation_flow.py` to call `ServiceCrew().intake_crew().kickoff()` for intake.
-
-**Alternative approaches**:
-1. Split into separate crew classes (`ServiceIntakeCrew`, `ServicePivotCrew`)
-2. Pass all variables with empty defaults (less clean)
-
-### CrewAI AMP Memory Caching Issue
-> CrewAI AMP deployment returns cached `consultant_onboarding` results instead of executing `founder_validation` flow.
-
-**Why deprioritized**: Requires CrewAI team support to resolve.
-
-**Known Issue (2025-12-02)**:
-- When calling AMP with `flow_type: "founder_validation"`, the API returns cached `consultant_onboarding` results
-- Status response shows `"source":"memory"` indicating cached data, not fresh execution
-- The `/inputs` endpoint shows only `ConsultantOnboardingState` fields, not `ValidationState`
-- Possible causes:
-  1. AMP caches results by some key that matches across flow types
-  2. AMP is defaulting to the wrong flow when discovering schemas
-  3. Memory persistence from earlier successful `consultant_onboarding` runs
-- Workarounds attempted:
-  - Using unique user_id/project_id/session_id combinations (didn't help)
-  - Multiple redeployments (didn't clear cache)
-  - `crewai reset-memories --all` only works locally, not on AMP
-  - Renamed `InternalValidationFlow` → `FounderValidationFlow` (didn't help)
-
-**Test Results (2025-12-02 20:13 UTC)**:
-- Deployment successful: "Crew is Online" at 20:12:12
-- Kickoff ID: `20e6f916-605a-4342-b9c0-571904bf2666`
-- Result: ❌ Still returns cached `consultant_onboarding` data
-- `/inputs` endpoint: Still shows only `ConsultantOnboardingState` fields
-- Response includes `consultant_id`, `practice_analysis` instead of validation results
-
-**Next steps**:
-1. Contact CrewAI support about AMP schema detection/caching
-2. Consider creating a fresh deployment with a new UUID
-3. Fix ServiceCrew multi-task issue (above) before local testing can work
-
-### Business Model-Specific Viability
-> UnitEconomicsModel library for DTC, marketplace, SaaS, etc.
-
-**Why deprioritized**: Start with generic CAC/LTV, specialize when validated.
+**Why deprioritized**: Need production traffic first.
 
 ---
 
@@ -416,9 +231,11 @@ Then update `founder_validation_flow.py` to call `ServiceCrew().intake_crew().ki
 
 | Date | Hypothesis | Outcome | Learning | Decision |
 |------|------------|---------|----------|----------|
-| 2025-11-26 | Multi-crew system | ✅ Validated | 8 crews with 18 agents deployed successfully | Proceed with current architecture |
-| 2025-11-26 | Tool quality | ⏳ Partial | TavilySearch works; financial tools need real data | Validate with real projects |
-| 2025-11-26 | HITL workflow | ✅ Validated | Webhook + resume pattern works | Build frontend UI next |
+| 2026-01-09 | MCP-first tools | Ready | Architecture designed, 60h to implement | Proceed |
+| 2026-01-08 | Modal serverless | ✅ Validated | $0 idle, single repo, pay-per-second | Proceed |
+| 2026-01-07 | Architecture alignment | ✅ Validated | 5 Flows, 14 Crews, 45 Agents canonical | Proceed |
+| 2025-11-27 | Multi-crew system | ✅ Validated | Specialization works | Proceed |
+| 2025-11-26 | HITL workflow | ✅ Validated | Checkpoint-resume works | Build frontend |
 
 ---
 
@@ -431,15 +248,11 @@ When choosing what to validate next, ask:
 3. **What can we learn fastest?** Minimize build time.
 4. **What has the biggest impact if true?** Maximize learning value.
 
-**Current Priority**: **Results Display UI** is the critical blocker
-- Riskiest: Will users find value in the analysis output?
-- Blocking: All retention and referral hypotheses
-- Fastest: UI work only (backend complete)
-- Biggest impact: Enables real user validation
-
-**Next Priority**: **Flywheel Database Migration** (quick unblock)
-- Fastest: Just run the migration
-- Impact: Enables compounding learning
+**Current Priority**: **Tool Integration** is the critical blocker
+- Riskiest: Will tools change validation quality?
+- Blocking: All evidence-based validation
+- Fastest: 7h immediate actions unblock everything
+- Biggest impact: Enables real validation vs hallucination
 
 ---
 
@@ -447,42 +260,24 @@ When choosing what to validate next, ask:
 
 | Component | Status | Completion |
 |-----------|--------|------------|
-| 8-Crew/18-Agent Architecture | ✅ Complete | 100% |
-| Non-linear Innovation Physics Routers | ✅ Complete | 100% |
-| 18 Tools (Web Search, Financial, Deployment, HITL, Flywheel, Privacy) | ✅ Complete | 100% |
-| State Management (StateRepository, ValidationEvent) | ✅ Complete | 100% |
-| Observability (StructuredLogger) | ✅ Complete | 100% |
-| HITL Webhook + Resume Backend | ✅ Complete | 100% |
-| Results Persistence to Supabase | ✅ Complete | 100% |
-| Developer Experience (Makefile, scripts, tests) | ✅ Complete | 100% |
-| Tool Contracts (ToolResult envelope) | ✅ Complete | 100% |
-| **Task `output_pydantic` wiring** | 🔴 PRIORITY 1 - Blocking typed outputs | 0% |
-| **SynthesisCrew @CrewBase pattern** | ⚠️ Deviation from standard | 0% |
-| **Agent safety limits (max_iter, timeout)** | ❌ Not configured | 0% |
-| **Crew rate limits (max_rpm)** | ❌ Not configured | 0% |
-| Product App Results Display UI | ❌ Pending | 0% |
-| Product App Approval UI | ❌ Pending | 0% |
-| Flywheel Database Tables | ❌ Pending Migration | 0% |
-| Public Activity/Metrics APIs | ❌ Not Started | 0% |
-| Policy Versioning | ❌ Not Started | 0% |
-| Business Model-Specific Viability | ❌ Not Started | 0% |
+| Modal Infrastructure | ✅ Complete | 100% |
+| 14 Crews / 45 Agents | ✅ Complete | 100% |
+| 10 HITL Checkpoints | ✅ Complete | 100% |
+| State Management | ✅ Complete | 100% |
+| 185+ Unit Tests | ✅ Complete | 100% |
+| Live Testing Phase 0-2 | ✅ Complete | 100% |
+| MCP Architecture Design | ✅ Complete | 100% |
+| **Tool Integration** | ❌ CRITICAL | **0%** |
+| Live Testing Phase 3-4 | ⏳ Pending | 0% |
+| Product App Integration | ⏳ Blocked | 0% |
 
 ---
 
-## Last Updated
-2025-12-02
+**Last Updated**: 2026-01-09
 
 **Latest Changes**:
-- **Added CrewAI Configuration Audit findings** (5 issues: 2 critical, 3 important)
-- Updated implementation status table with audit gaps
-- Added known issue for `force_policy` bug in ExperimentConfigResolver
-- Updated with Phase 1-3 completion status
-- Marked completed hypotheses (Multi-crew, Tools, HITL backend)
-- Updated blocking issues and next priorities
-- Added implementation status summary table
-
-**Audit Summary** (2025-12-02):
-- Full report: `~/.claude/plans/agile-imagining-dragonfly.md`
-- 🔴 **PRIORITY 1**: `output_pydantic` not wired to tasks (14 models defined but unused)
-- Deprioritized: SynthesisCrew `@CrewBase` pattern deviation
-- Deprioritized: No agent safety limits, no crew rate limits, no task guardrails
+- Complete rewrite for Modal serverless architecture
+- Added Priority 0: Tool Integration (60h roadmap)
+- Updated completed hypotheses with Modal validation
+- Removed deprecated AMP references
+- Updated implementation status to reflect current state

@@ -59,6 +59,10 @@ image = (
         "openai>=1.0.0",
         "tavily-python>=0.3.0",
         "httpx>=0.27.0",
+        # MCP integration for tool framework
+        "mcp>=1.0.0",
+        "fastmcp>=0.1.0",
+        "mcp-use>=0.1.0",
     )
     .add_local_dir("src", remote_path="/root/src")
 )

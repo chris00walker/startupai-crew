@@ -11,8 +11,10 @@ Agents:
 - D4: Evidence Triangulation Agent (Guardian) - Synthesize SAY vs DO
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+
+from shared.tools import TavilySearchTool
 
 
 @CrewBase
@@ -41,7 +43,13 @@ class DiscoveryCrew:
         """E1: Experiment Designer - Designs validation experiments."""
         return Agent(
             config=self.agents_config["e1_experiment_designer"],
+            tools=[],
+            reasoning=False,  # Straightforward design work
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.7),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -49,15 +57,27 @@ class DiscoveryCrew:
         """D1: Customer Interview Agent - SAY evidence collection."""
         return Agent(
             config=self.agents_config["d1_customer_interview"],
+            tools=[],
+            reasoning=False,  # Interview processing
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.5),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
     def d2_observation_agent(self) -> Agent:
-        """D2: Observation Agent - DO-indirect evidence."""
+        """D2: Observation Agent - DO-indirect evidence (research-focused)."""
         return Agent(
             config=self.agents_config["d2_observation_agent"],
+            tools=[TavilySearchTool()],  # Research tool for evidence collection
+            reasoning=True,  # Synthesizes research from multiple sources
+            inject_date=True,
+            max_iter=30,  # More iterations for thorough research
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -65,7 +85,13 @@ class DiscoveryCrew:
         """D3: CTA Test Agent - DO-direct evidence."""
         return Agent(
             config=self.agents_config["d3_cta_test_agent"],
+            tools=[],
+            reasoning=False,  # Test execution
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.5),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -73,7 +99,13 @@ class DiscoveryCrew:
         """D4: Evidence Triangulation Agent - Synthesizes evidence."""
         return Agent(
             config=self.agents_config["d4_evidence_triangulation"],
+            tools=[],
+            reasoning=True,  # Synthesizes SAY vs DO evidence
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.5),
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================
@@ -82,7 +114,7 @@ class DiscoveryCrew:
 
     @task
     def map_assumptions(self) -> Task:
-        """Map assumptions on 2×2 matrix and prioritize."""
+        """Map assumptions on 2x2 matrix and prioritize."""
         return Task(config=self.tasks_config["map_assumptions"])
 
     @task

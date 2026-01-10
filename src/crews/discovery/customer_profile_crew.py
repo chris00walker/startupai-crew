@@ -13,12 +13,11 @@ Agents:
 - GAIN_RANK: Gain Ranking Agent (Sage) - Rank gains by importance
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from pydantic import BaseModel
-from typing import Optional
 
 from src.state.models import CustomerProfile
+from shared.tools import TavilySearchTool
 
 
 @CrewBase
@@ -41,10 +40,16 @@ class CustomerProfileCrew:
 
     @agent
     def j1_jtbd_researcher(self) -> Agent:
-        """J1: JTBD Researcher - Discovers customer jobs."""
+        """J1: JTBD Researcher - Discovers customer jobs (research-focused)."""
         return Agent(
             config=self.agents_config["j1_jtbd_researcher"],
+            tools=[TavilySearchTool()],  # Research tool for job discovery
+            reasoning=True,
+            inject_date=True,
+            max_iter=30,
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -52,15 +57,27 @@ class CustomerProfileCrew:
         """J2: Job Ranking Agent - Ranks jobs by importance."""
         return Agent(
             config=self.agents_config["j2_job_ranking"],
+            tools=[],
+            reasoning=False,  # Simple ranking
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
     def pain_researcher(self) -> Agent:
-        """PAIN_RES: Pain Researcher - Discovers customer pains."""
+        """PAIN_RES: Pain Researcher - Discovers customer pains (research-focused)."""
         return Agent(
             config=self.agents_config["pain_researcher"],
+            tools=[TavilySearchTool()],  # Research tool for pain discovery
+            reasoning=True,
+            inject_date=True,
+            max_iter=30,
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -68,15 +85,27 @@ class CustomerProfileCrew:
         """PAIN_RANK: Pain Ranking Agent - Ranks pains by severity."""
         return Agent(
             config=self.agents_config["pain_ranking"],
+            tools=[],
+            reasoning=False,  # Simple ranking
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
     def gain_researcher(self) -> Agent:
-        """GAIN_RES: Gain Researcher - Discovers customer gains."""
+        """GAIN_RES: Gain Researcher - Discovers customer gains (research-focused)."""
         return Agent(
             config=self.agents_config["gain_researcher"],
+            tools=[TavilySearchTool()],  # Research tool for gain discovery
+            reasoning=True,
+            inject_date=True,
+            max_iter=30,
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -84,7 +113,13 @@ class CustomerProfileCrew:
         """GAIN_RANK: Gain Ranking Agent - Ranks gains by importance."""
         return Agent(
             config=self.agents_config["gain_ranking"],
+            tools=[],
+            reasoning=False,  # Simple ranking
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================
@@ -139,9 +174,9 @@ class CustomerProfileCrew:
         Creates the CustomerProfileCrew with sequential process.
 
         Task Flow:
-        1. J1 discovers jobs → J2 ranks jobs
-        2. PAIN_RES discovers pains → PAIN_RANK ranks pains
-        3. GAIN_RES discovers gains → GAIN_RANK ranks gains
+        1. J1 discovers jobs -> J2 ranks jobs
+        2. PAIN_RES discovers pains -> PAIN_RANK ranks pains
+        3. GAIN_RES discovers gains -> GAIN_RANK ranks gains
         4. Compile into CustomerProfile
         """
         return Crew(

@@ -13,10 +13,8 @@ Agents:
 HITL Checkpoint: approve_founders_brief
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from pydantic import BaseModel
-from typing import Optional
 
 from src.state.models import FoundersBrief
 
@@ -42,7 +40,13 @@ class OnboardingCrew:
         """O1: Founder Interview Agent - Conducts comprehensive discovery interview."""
         return Agent(
             config=self.agents_config["o1_founder_interview"],
+            tools=[],
+            reasoning=False,  # Simple interview processing
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.5),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -50,7 +54,13 @@ class OnboardingCrew:
         """GV1: Concept Validator Agent - Screens for legitimacy."""
         return Agent(
             config=self.agents_config["gv1_concept_validator"],
+            tools=[],
+            reasoning=True,  # Rigorous QA decisions
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -58,7 +68,13 @@ class OnboardingCrew:
         """GV2: Intent Verification Agent - Ensures accurate capture."""
         return Agent(
             config=self.agents_config["gv2_intent_verification"],
+            tools=[],
+            reasoning=True,  # Rigorous verification
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -66,7 +82,13 @@ class OnboardingCrew:
         """S1: Brief Compiler Agent - Synthesizes the Founder's Brief."""
         return Agent(
             config=self.agents_config["s1_brief_compiler"],
+            tools=[],
+            reasoning=False,  # Straightforward synthesis
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.7),
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

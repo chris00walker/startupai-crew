@@ -209,6 +209,9 @@ Discover **Customer Reality** (what customers actually need) and design a **Valu
 **Crew**: `DiscoveryCrew`
 **Agents**: E1, D1, D2, D3, D4 (5 agents)
 
+> **Full Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for complete specifications.
+> **Configuration Standard**: See [02-organization.md](./02-organization.md#agent-configuration-standard) for required attributes.
+
 ### Agent Specifications
 
 #### E1: Experiment Designer
@@ -220,6 +223,16 @@ Discover **Customer Reality** (what customers actually need) and design a **Valu
 | **Founder** | Sage |
 | **Role** | Design experiment mix using Assumptions Mapping and Test Cards |
 | **Goal** | Create optimal sequence of experiments to validate/invalidate key assumptions |
+
+##### Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| `tools` | TestCardTool (STUB), LearningCardTool (STUB), LearningRetrievalTool (EXISTS) | Experiment design artifacts |
+| `reasoning` | True | Complex experiment planning |
+| `inject_date` | True | Time-bound experiments |
+| `max_iter` | 25 | Iterative design refinement |
+| `temperature` | 0.5 | Balanced creativity/structure |
 
 **Tasks:**
 1. `map_assumptions` - Create 2×2 matrix (importance × evidence)
@@ -242,6 +255,16 @@ Discover **Customer Reality** (what customers actually need) and design a **Valu
 | **Founder** | Sage |
 | **Role** | Conduct discovery interviews using The Mom Test methodology |
 | **Goal** | Collect SAY evidence about customer problems and needs |
+
+##### Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| `tools` | InterviewSchedulerTool (STUB), TranscriptionTool (STUB), InsightExtractorTool (STUB), BehaviorPatternTool (STUB) | SAY evidence collection |
+| `reasoning` | True | Mom Test methodology |
+| `inject_date` | True | Interview timestamps |
+| `max_iter` | 25 | Multiple interview cycles |
+| `temperature` | 0.7 | Natural conversation |
 
 **Tasks:**
 1. `identify_interview_candidates` - Find potential customers
@@ -281,6 +304,16 @@ DON'T:
 | **Founder** | Pulse |
 | **Role** | Collect DO-indirect evidence from existing behavior |
 | **Goal** | Observe what customers actually DO (not just what they say) |
+
+##### Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| `tools` | TavilySearchTool (EXISTS), ForumScraperTool (STUB), ReviewAnalysisTool (STUB), SocialListeningTool (STUB), TrendAnalysisTool (STUB) | DO-indirect evidence |
+| `reasoning` | True | Complex evidence synthesis |
+| `inject_date` | True | Time-sensitive trend data |
+| `max_iter` | 25 | Multiple search iterations |
+| `temperature` | 0.3 | Factual research accuracy |
 
 **Tasks:**
 1. `mine_social_discussions` - Forums, Reddit, X, LinkedIn
@@ -327,6 +360,16 @@ SEARCH TRENDS
 | **Role** | Collect DO-direct evidence through call-to-action experiments |
 | **Goal** | Test behavioral commitment (not just stated interest) |
 
+##### Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| `tools` | AnalyticsTool (STUB), ABTestTool (STUB) | DO-direct evidence collection |
+| `reasoning` | True | Experiment result analysis |
+| `inject_date` | True | Campaign timestamps |
+| `max_iter` | 20 | Test iteration cycles |
+| `temperature` | 0.3 | Precise measurement |
+
 **Tasks:**
 1. `design_smoke_tests` - Landing page experiments
 2. `design_fake_door_tests` - Feature interest tests
@@ -370,6 +413,16 @@ SEGMENT REACHABLE
 | **Role** | Synthesize SAY vs DO evidence and score confidence |
 | **Goal** | Identify discrepancies between stated and behavioral evidence |
 
+##### Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| `tools` | LearningCardTool (STUB), LearningCaptureTool (EXISTS) | Evidence synthesis and capture |
+| `reasoning` | True | Complex multi-source synthesis |
+| `inject_date` | True | Timestamp learnings |
+| `max_iter` | 20 | Thorough triangulation |
+| `temperature` | 0.4 | Balanced synthesis |
+
 **Tasks:**
 1. `collect_all_evidence` - Aggregate from D1, D2, D3
 2. `weight_by_hierarchy` - Apply SAY/DO weights
@@ -402,6 +455,20 @@ def triangulate_evidence(say_evidence, do_evidence):
 
 **Crew**: `CustomerProfileCrew`
 **Agents**: J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK (6 agents)
+
+> **Full Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for complete specifications.
+> **Configuration Standard**: See [02-organization.md](./02-organization.md#agent-configuration-standard) for required attributes.
+
+### Configuration Summary
+
+| Agent | Tools | Temperature | Notes |
+|-------|-------|-------------|-------|
+| J1 | TavilySearchTool (EXISTS), ForumScraperTool (STUB), ReviewAnalysisTool (STUB) | 0.3 | JTBD discovery |
+| J2 | `[]` (Pure LLM) | 0.4 | Job ranking through reasoning |
+| PAIN_RES | TavilySearchTool (EXISTS), ForumScraperTool (STUB), ReviewAnalysisTool (STUB) | 0.3 | Pain discovery |
+| PAIN_RANK | `[]` (Pure LLM) | 0.4 | Pain ranking through reasoning |
+| GAIN_RES | TavilySearchTool (EXISTS), ForumScraperTool (STUB), ReviewAnalysisTool (STUB) | 0.3 | Gain discovery |
+| GAIN_RANK | `[]` (Pure LLM) | 0.4 | Gain ranking through reasoning |
 
 ### Jobs Discovery
 
@@ -576,6 +643,17 @@ UNEXPECTED (Delighters)
 **Crew**: `ValueDesignCrew`
 **Agents**: V1, V2, V3 (3 agents)
 
+> **Full Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for complete specifications.
+> **Configuration Standard**: See [02-organization.md](./02-organization.md#agent-configuration-standard) for required attributes.
+
+### Configuration Summary
+
+| Agent | Tools | Temperature | Notes |
+|-------|-------|-------------|-------|
+| V1 | CanvasBuilderTool (STUB) | 0.7 | Creative solution design |
+| V2 | CanvasBuilderTool (STUB) | 0.7 | Creative pain relief design |
+| V3 | CanvasBuilderTool (STUB) | 0.7 | Creative gain creation design |
+
 ### Agent Specifications
 
 #### V1: Solution Designer
@@ -645,6 +723,16 @@ UNEXPECTED (Delighters)
 **Crew**: `WTPCrew`
 **Agents**: W1, W2 (2 agents)
 
+> **Full Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for complete specifications.
+> **Configuration Standard**: See [02-organization.md](./02-organization.md#agent-configuration-standard) for required attributes.
+
+### Configuration Summary
+
+| Agent | Tools | Temperature | Notes |
+|-------|-------|-------------|-------|
+| W1 | ABTestTool (STUB), AnalyticsTool (STUB) | 0.3 | WTP experiments |
+| W2 | AnalyticsTool (STUB) | 0.3 | Payment behavior tracking |
+
 ### Agent Specifications
 
 #### W1: Pricing Experiment Agent
@@ -702,6 +790,16 @@ VALIDATION (Behavioral)
 
 **Crew**: `FitAssessmentCrew`
 **Agents**: FIT_SCORE, FIT_ROUTE (2 agents)
+
+> **Full Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for complete specifications.
+> **Configuration Standard**: See [02-organization.md](./02-organization.md#agent-configuration-standard) for required attributes.
+
+### Configuration Summary
+
+| Agent | Tools | Temperature | Notes |
+|-------|-------|-------------|-------|
+| FIT_SCORE | MethodologyCheckTool (EXISTS) | 0.3 | Fit scoring methodology |
+| FIT_ROUTE | `[]` (Pure LLM) | 0.2 | Deterministic routing |
 
 ### Agent Specifications
 

@@ -61,6 +61,23 @@ Test whether customers **actually want** the value proposition designed in Phase
 | **GrowthCrew** | P1, P2, P3 | Run ad campaigns, collect desirability evidence |
 | **GovernanceCrew** | G1, G2, G3 | QA validation, security, audit |
 
+> **Full Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for complete specifications.
+> **Configuration Standard**: See [02-organization.md](./02-organization.md#agent-configuration-standard) for required attributes.
+
+### Agent Configuration Summary
+
+| Agent | Crew | Tools | Temperature | Notes |
+|-------|------|-------|-------------|-------|
+| F1 | Build | ComponentLibraryScraperTool (STUB) | 0.8 | Creative design |
+| F2 | Build | LandingPageGeneratorTool (EXISTS), CodeValidatorTool (EXISTS) | 0.5 | LP generation |
+| F3 | Build | LandingPageDeploymentTool (EXISTS) | 0.3 | Netlify deployment |
+| P1 | Growth | AdPlatformTool (STUB) | 0.8 | Creative ad generation |
+| P2 | Growth | AdPlatformTool (STUB) | 0.6 | Campaign execution |
+| P3 | Growth | AnalyticsTool (STUB) | 0.2 | Metrics analysis |
+| G1 | Governance | MethodologyCheckTool (EXISTS), GuardianReviewTool (EXISTS) | 0.1 | QA validation |
+| G2 | Governance | PrivacyGuardTool (EXISTS) | 0.1 | PII protection |
+| G3 | Governance | LearningCaptureTool (EXISTS) | 0.1 | Audit trail |
+
 ---
 
 ## DesirabilityFlow

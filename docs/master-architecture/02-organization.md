@@ -738,6 +738,78 @@ This organizational structure maps directly to CrewAI's documented patterns.
 
 See [09-status.md](./09-status.md) for current implementation status and deployment details.
 
+---
+
+## Agent Configuration Standard
+
+Every agent in the StartupAI system MUST be configured with the following attributes. This standard ensures consistent behavior, proper tool access, and maintainable code across all 45 agents.
+
+### Required Attributes
+
+| Attribute | Required | Description | Default |
+|-----------|----------|-------------|---------|
+| `config` | YES | YAML reference for role, goal, backstory | - |
+| `tools` | YES | List of tool instances (may be empty list `[]` for pure LLM agents) | - |
+| `reasoning` | YES | Enable extended reasoning for complex analysis | `True` |
+| `inject_date` | YES | Inject current date context for time-sensitive operations | `True` |
+| `max_iter` | YES | Maximum iterations before stopping | 15-25 |
+| `llm` | YES | LLM configuration (model, temperature) | See guidelines |
+| `verbose` | YES | Logging verbosity for debugging | `True` |
+| `allow_delegation` | YES | Inter-agent delegation (disabled for predictable flows) | `False` |
+
+### LLM Temperature Guidelines
+
+Temperature controls creativity vs consistency. Use the following guidelines based on agent type:
+
+| Agent Type | Temperature | Rationale | Example Agents |
+|------------|-------------|-----------|----------------|
+| Research/Analysis | 0.1-0.3 | Factual accuracy, consistency, reproducible results | D2, J1, PAIN_RES, GAIN_RES, L1 |
+| Synthesis/Ranking | 0.3-0.5 | Balanced reasoning, structured evaluation | D4, PAIN_RANK, GAIN_RANK, FIT_SCORE, C1 |
+| Design/Creative | 0.6-0.8 | Innovation, variety, creative exploration | F1, V1, V2, V3, P1 |
+| Interview/Conversation | 0.7 | Natural dialogue, adaptive responses | O1, D1 |
+| Validation/QA | 0.1 | Strict methodology compliance, deterministic checks | G1, G2, GV1, GV2 |
+
+### Standard Agent Constructor Pattern
+
+All agents MUST follow this constructor pattern:
+
+```python
+from crewai import Agent
+from crewai import LLM
+
+@agent
+def agent_name(self) -> Agent:
+    """Agent description with ID and purpose."""
+    return Agent(
+        config=self.agents_config["agent_name"],
+        tools=[tool1, tool2],           # List of tool instances (or [] if pure LLM)
+        reasoning=True,                  # Extended reasoning enabled
+        inject_date=True,                # Current date context
+        max_iter=25,                     # Iteration limit
+        llm=LLM(
+            model="openai/gpt-4o",
+            temperature=0.3              # Per agent type guidelines
+        ),
+        verbose=True,                    # Logging enabled
+        allow_delegation=False,          # No inter-agent delegation
+    )
+```
+
+### Tool Assignment Categories
+
+Agents fall into three categories based on tool requirements:
+
+| Category | Tool Configuration | Example Agents |
+|----------|-------------------|----------------|
+| **Tool-Equipped** | `tools=[tool1, tool2, ...]` - Specific tools for external data access | D2, J1, F2, P1 |
+| **Pure LLM** | `tools=[]` - No external tools, relies on reasoning | GV1, GV2, S1, FIT_SCORE |
+| **Hybrid** | Mixed tool + LLM reasoning | D1, D4, C1 |
+
+**Reference**: See [reference/tool-mapping.md](./reference/tool-mapping.md) for complete agent-to-tool mapping.
+**Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for full specifications of all 45 agents.
+
+---
+
 ## Naming Conventions
 
 ### When to Use Founder Names
@@ -782,6 +854,7 @@ See [09-status.md](./09-status.md) for current implementation status and deploym
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-09 | Added Agent Configuration Standard section with required attributes, temperature guidelines, constructor pattern | Bullet-proof specifications before code implementation |
 | 2026-01-07 | Added CrewAI Pattern Hierarchy section with complete crew summary | Align with CrewAI documentation patterns |
 | 2026-01-07 | Restructured Phase 0-4 agents into crew groupings | Fix one-agent "crews", rename "Flow 1-7" to proper crews |
 | 2026-01-07 | Added Phase 2-4 agent sections (Desirability, Feasibility, Viability) | Complete documentation of all phase agents |

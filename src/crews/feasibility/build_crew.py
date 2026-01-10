@@ -10,7 +10,7 @@ Agents:
 - F3: Backend Developer (Forge) - Assess backend feasibility, set signal
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from src.state.models import FeasibilityEvidence
@@ -40,7 +40,13 @@ class FeasibilityBuildCrew:
         """F1: Requirements Analyst - Maps VPC features to technical requirements."""
         return Agent(
             config=self.agents_config["f1_requirements_analyst"],
+            tools=[],
+            reasoning=False,  # Straightforward mapping
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),  # Analytical
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -48,7 +54,13 @@ class FeasibilityBuildCrew:
         """F2: Frontend Assessor - Assesses frontend complexity."""
         return Agent(
             config=self.agents_config["f2_frontend_assessor"],
+            tools=[],
+            reasoning=False,  # Technical assessment
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Technical
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -56,7 +68,13 @@ class FeasibilityBuildCrew:
         """F3: Backend Assessor - Assesses backend feasibility."""
         return Agent(
             config=self.agents_config["f3_backend_assessor"],
+            tools=[],
+            reasoning=False,  # Technical assessment
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Technical
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

@@ -13,7 +13,7 @@ HITL Checkpoints:
 - approve_spend_increase - Before budget increases
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from src.state.models import DesirabilityEvidence
@@ -43,7 +43,13 @@ class GrowthCrew:
         """P1: Ad Creative Agent - Creates ad variants."""
         return Agent(
             config=self.agents_config["p1_ad_creative"],
+            tools=[],
+            reasoning=False,  # Creative work
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.8),  # Creative
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -51,7 +57,13 @@ class GrowthCrew:
         """P2: Communications Agent - Writes copy."""
         return Agent(
             config=self.agents_config["p2_communications"],
+            tools=[],
+            reasoning=False,  # Copywriting
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.8),  # Creative
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -59,7 +71,13 @@ class GrowthCrew:
         """P3: Analytics Agent - Runs experiments."""
         return Agent(
             config=self.agents_config["p3_analytics"],
+            tools=[],
+            reasoning=False,  # Experiment execution
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Analytical
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

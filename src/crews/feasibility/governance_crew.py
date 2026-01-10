@@ -9,8 +9,10 @@ Agents:
 - G2: Security Agent (Guardian) - Architecture security review
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+
+from shared.tools import MethodologyCheckTool
 
 
 @CrewBase
@@ -36,7 +38,13 @@ class FeasibilityGovernanceCrew:
         """G1: QA Agent - Gate validation."""
         return Agent(
             config=self.agents_config["g1_qa_agent"],
+            tools=[MethodologyCheckTool()],  # VPC validation tool
+            reasoning=True,
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -44,7 +52,13 @@ class FeasibilityGovernanceCrew:
         """G2: Security Agent - Architecture security review."""
         return Agent(
             config=self.agents_config["g2_security_agent"],
+            tools=[],
+            reasoning=False,  # Security review
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

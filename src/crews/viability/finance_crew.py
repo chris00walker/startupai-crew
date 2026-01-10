@@ -9,7 +9,7 @@ Agents:
 - L3: Economics Reviewer (Ledger) - Validate assumptions, benchmarks
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from src.state.models import ViabilityEvidence
@@ -39,7 +39,13 @@ class FinanceCrew:
         """L1: Financial Controller - Unit economics."""
         return Agent(
             config=self.agents_config["l1_financial_controller"],
+            tools=[],
+            reasoning=False,  # Financial calculations
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Financial precision
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -47,7 +53,13 @@ class FinanceCrew:
         """L2: Legal & Compliance - Regulatory review."""
         return Agent(
             config=self.agents_config["l2_legal_compliance"],
+            tools=[],
+            reasoning=False,  # Compliance check
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict compliance
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -55,7 +67,13 @@ class FinanceCrew:
         """L3: Economics Reviewer - Validation."""
         return Agent(
             config=self.agents_config["l3_economics_reviewer"],
+            tools=[],
+            reasoning=False,  # Assumption validation
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Analytical
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

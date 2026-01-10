@@ -9,7 +9,7 @@ Agents:
 - C3: Roadmap Writer (Compass) - Document decision and next steps
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 
@@ -38,7 +38,13 @@ class SynthesisCrew:
         """C1: Product PM - Evidence synthesis."""
         return Agent(
             config=self.agents_config["c1_product_pm"],
+            tools=[],
+            reasoning=False,  # Synthesis without tools
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.7),  # Synthesis/strategy
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -46,7 +52,13 @@ class SynthesisCrew:
         """C2: Human Approval Agent - HITL management."""
         return Agent(
             config=self.agents_config["c2_human_approval"],
+            tools=[],
+            reasoning=False,  # HITL presentation
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.5),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -54,7 +66,13 @@ class SynthesisCrew:
         """C3: Roadmap Writer - Documentation."""
         return Agent(
             config=self.agents_config["c3_roadmap_writer"],
+            tools=[],
+            reasoning=False,  # Documentation
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.7),  # Synthesis
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

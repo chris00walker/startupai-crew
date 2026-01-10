@@ -10,7 +10,7 @@ Agents:
 - F3: Backend Developer (Forge) - Deploy artifacts (Netlify)
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 
@@ -37,7 +37,13 @@ class BuildCrew:
         """F1: UX/UI Designer - Designs interfaces."""
         return Agent(
             config=self.agents_config["f1_ux_designer"],
+            tools=[],
+            reasoning=False,  # Creative design work
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.8),  # Creative design
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -45,7 +51,13 @@ class BuildCrew:
         """F2: Frontend Developer - Builds UI."""
         return Agent(
             config=self.agents_config["f2_frontend_developer"],
+            tools=[],
+            reasoning=False,  # Code generation
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Code generation
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -53,7 +65,13 @@ class BuildCrew:
         """F3: Backend Developer - Deploys artifacts."""
         return Agent(
             config=self.agents_config["f3_backend_developer"],
+            tools=[],
+            reasoning=False,  # Code generation
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Code generation
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

@@ -493,6 +493,26 @@ class FeasibilityResult(BaseModel):
 - Agents: 5
 - HITL Checkpoints: 1
 
+### Agent Configuration Summary
+
+| Agent | Crew | Tools | Temperature | Notes |
+|-------|------|-------|-------------|-------|
+| F1 | Build | ComponentLibraryScraperTool (STUB) | 0.6 | Feature extraction from VPC |
+| F2 | Build | CodeValidatorTool (EXISTS) | 0.3 | Frontend complexity assessment |
+| F3 | Build | TechStackValidator (STUB), APIIntegrationTool (STUB), CostEstimatorTool (STUB) | 0.2 | Sets FEASIBILITY_SIGNAL |
+| G1 | Governance | MethodologyCheckTool (EXISTS), GuardianReviewTool (EXISTS) | 0.1 | Gate validation |
+| G2 | Governance | PrivacyGuardTool (EXISTS) | 0.1 | Architecture security review |
+
+**Tool Status Summary:**
+- **EXISTS**: 4 tools (CodeValidatorTool, MethodologyCheckTool, GuardianReviewTool, PrivacyGuardTool)
+- **STUB**: 4 tools (ComponentLibraryScraperTool, TechStackValidator, APIIntegrationTool, CostEstimatorTool)
+
+**Configuration Notes:**
+- F1-F3 are **reused from Phase 2** with different task context (feasibility assessment vs asset generation)
+- Lower temperatures for analysis work (0.2-0.3) vs creative work (0.6-0.8 in Phase 2)
+- G1-G2 are **reused from Phase 2** with identical configuration
+- All agents have `reasoning=True`, `inject_date=True`, `max_iter=20`
+
 ---
 
 ## Methodology Compliance

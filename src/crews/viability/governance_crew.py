@@ -9,8 +9,10 @@ Agents:
 - G3: Audit Agent (Guardian) - Persist learnings to flywheel
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+
+from shared.tools import MethodologyCheckTool
 
 
 @CrewBase
@@ -37,7 +39,13 @@ class ViabilityGovernanceCrew:
         """G1: QA Agent - Final validation."""
         return Agent(
             config=self.agents_config["g1_qa_agent"],
+            tools=[MethodologyCheckTool()],  # VPC validation tool
+            reasoning=True,
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -45,7 +53,13 @@ class ViabilityGovernanceCrew:
         """G2: Security Agent - PII scrubbing."""
         return Agent(
             config=self.agents_config["g2_security_agent"],
+            tools=[],
+            reasoning=False,  # PII scrubbing
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -53,7 +67,13 @@ class ViabilityGovernanceCrew:
         """G3: Audit Agent - Flywheel persistence."""
         return Agent(
             config=self.agents_config["g3_audit_agent"],
+            tools=[],
+            reasoning=False,  # Persistence/logging
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

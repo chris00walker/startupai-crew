@@ -179,6 +179,9 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 
 ## Agent Specifications
 
+> **Full Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for complete 45-agent specifications.
+> **Configuration Standard**: See [02-organization.md](./02-organization.md#agent-configuration-standard) for required attributes.
+
 ### O1: Founder Interview Agent
 
 | Attribute | Value |
@@ -189,6 +192,24 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 | **Persona** | Alex Osterwalder - curious, probing, supportive |
 | **Role** | Conduct conversational interviews to deeply understand Founder's vision |
 | **Goal** | Extract and structure the Founder's idea, motivations, hypotheses, and success criteria through empathetic dialogue |
+
+#### Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| `tools` | `[]` | Pure LLM - conversational interview (no external data needed) |
+| `reasoning` | True | Complex hypothesis extraction from conversation |
+| `inject_date` | True | Market timing context |
+| `max_iter` | 25 | Extended conversation depth |
+| `temperature` | 0.7 | Natural dialogue flow |
+| `verbose` | True | Debug logging |
+| `allow_delegation` | False | Predictable flow |
+
+#### Tool Status
+
+| Tool | Status | Notes |
+|------|--------|-------|
+| (none) | N/A | Pure LLM agent - relies on conversational reasoning |
 
 **Backstory:**
 ```
@@ -260,6 +281,24 @@ to understand the "why" behind every "what."
 | **Founder** | Guardian |
 | **Role** | Validate that the concept is legitimate and worth pursuing |
 | **Goal** | Screen out illegal, immoral, ridiculous, or impossible concepts before resources are invested |
+
+#### Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| `tools` | `[]` | Pure LLM - validation through reasoning |
+| `reasoning` | True | Legal/ethical analysis requires deep reasoning |
+| `inject_date` | True | Current regulatory context |
+| `max_iter` | 15 | Focused validation checks |
+| `temperature` | 0.1 | Strict compliance checking |
+| `verbose` | True | Debug logging |
+| `allow_delegation` | False | Predictable flow |
+
+#### Tool Status
+
+| Tool | Status | Notes |
+|------|--------|-------|
+| (none) | N/A | Pure LLM agent - validation through reasoning |
 
 **Backstory:**
 ```
@@ -345,6 +384,24 @@ BUSINESS SANITY CHECK
 | **Role** | Verify that the interview accurately captured the Founder's intent |
 | **Goal** | Ensure no miscommunication or gaps before creating the Brief |
 
+#### Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| `tools` | `[]` | Pure LLM - intent matching through reasoning |
+| `reasoning` | True | Nuanced intent analysis |
+| `inject_date` | True | Context freshness |
+| `max_iter` | 15 | Focused verification |
+| `temperature` | 0.1 | Precise intent matching |
+| `verbose` | True | Debug logging |
+| `allow_delegation` | False | Predictable flow |
+
+#### Tool Status
+
+| Tool | Status | Notes |
+|------|--------|-------|
+| (none) | N/A | Pure LLM agent - verification through reasoning |
+
 **Backstory:**
 ```
 You are a meticulous editor and fact-checker. You've seen how miscommunication
@@ -399,6 +456,24 @@ CONSISTENCY
 | **Founder** | Sage |
 | **Role** | Synthesize all inputs into the structured Founder's Brief |
 | **Goal** | Create a clear, comprehensive, well-organized Brief that will guide all downstream work |
+
+#### Configuration
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| `tools` | `[]` | Pure LLM - synthesis through reasoning |
+| `reasoning` | True | Complex document synthesis |
+| `inject_date` | True | Timestamp the brief |
+| `max_iter` | 20 | Thorough compilation |
+| `temperature` | 0.3 | Balanced synthesis |
+| `verbose` | True | Debug logging |
+| `allow_delegation` | False | Predictable flow |
+
+#### Tool Status
+
+| Tool | Status | Notes |
+|------|--------|-------|
+| (none) | N/A | Pure LLM agent - synthesis through reasoning |
 
 **Backstory:**
 ```

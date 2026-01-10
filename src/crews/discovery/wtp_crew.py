@@ -10,7 +10,7 @@ Agents:
 HITL Checkpoint: approve_pricing_test (before any real money is involved)
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 
@@ -37,7 +37,13 @@ class WTPCrew:
         """W1: Pricing Experiment Agent - Designs WTP experiments."""
         return Agent(
             config=self.agents_config["w1_pricing_experiment"],
+            tools=[],
+            reasoning=False,  # Straightforward experiment design
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.5),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -45,7 +51,13 @@ class WTPCrew:
         """W2: Payment Test Agent - Executes payment tests."""
         return Agent(
             config=self.agents_config["w2_payment_test"],
+            tools=[],
+            reasoning=False,  # Test execution
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

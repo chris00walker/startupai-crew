@@ -12,8 +12,10 @@ Agents:
 Guardian's role is oversight (board-level), not execution.
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
+
+from shared.tools import MethodologyCheckTool
 
 
 @CrewBase
@@ -39,7 +41,13 @@ class GovernanceCrew:
         """G1: QA Agent - Methodology and creative QA."""
         return Agent(
             config=self.agents_config["g1_qa_agent"],
+            tools=[MethodologyCheckTool()],  # VPC validation tool
+            reasoning=True,
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -47,7 +55,13 @@ class GovernanceCrew:
         """G2: Security Agent - PII protection."""
         return Agent(
             config=self.agents_config["g2_security_agent"],
+            tools=[],
+            reasoning=False,  # Straightforward PII check
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -55,7 +69,13 @@ class GovernanceCrew:
         """G3: Audit Agent - Decision logging."""
         return Agent(
             config=self.agents_config["g3_audit_agent"],
+            tools=[],
+            reasoning=False,  # Straightforward logging
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================

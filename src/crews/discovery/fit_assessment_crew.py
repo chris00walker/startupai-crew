@@ -4,16 +4,17 @@ FitAssessmentCrew - Phase 1: VPC Discovery - Fit Scoring + Iteration Routing
 This crew scores Problem-Solution Fit and routes based on result.
 
 Agents:
-- FIT_SCORE: Fit Analyst (Compass) - Score Customer Profile ↔ Value Map fit
+- FIT_SCORE: Fit Analyst (Compass) - Score Customer Profile <-> Value Map fit
 - FIT_ROUTE: Iteration Router (Compass) - Route by fit score
 
-HITL Checkpoint: approve_vpc_completion (when fit ≥ 70)
+HITL Checkpoint: approve_vpc_completion (when fit >= 70)
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from src.state.models import FitAssessment
+from shared.tools import MethodologyCheckTool
 
 
 @CrewBase
@@ -39,7 +40,13 @@ class FitAssessmentCrew:
         """FIT_SCORE: Fit Analyst - Scores Problem-Solution Fit."""
         return Agent(
             config=self.agents_config["fit_score_analyst"],
+            tools=[MethodologyCheckTool()],  # VPC validation tool
+            reasoning=True,
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Analytical
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -47,7 +54,13 @@ class FitAssessmentCrew:
         """FIT_ROUTE: Iteration Router - Routes by fit score."""
         return Agent(
             config=self.agents_config["fit_route_agent"],
+            tools=[],
+            reasoning=False,  # Simple routing decision
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================
@@ -88,8 +101,8 @@ class FitAssessmentCrew:
 
         Routing Logic:
         - fit < 40: SEGMENT_PIVOT (wrong customer)
-        - 40 ≤ fit < 70: ITERATE_* (refine)
-        - fit ≥ 70: VPC_COMPLETE (proceed to Phase 2)
+        - 40 <= fit < 70: ITERATE_* (refine)
+        - fit >= 70: VPC_COMPLETE (proceed to Phase 2)
         """
         return Crew(
             agents=self.agents,

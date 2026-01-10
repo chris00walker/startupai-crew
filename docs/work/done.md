@@ -1,319 +1,311 @@
 ---
 purpose: "Private technical source of truth for recently delivered work"
 status: "active"
-last_reviewed: "2025-11-27"
+last_reviewed: "2026-01-09"
 ---
 
 # Recently Delivered
 
-## Areas 3, 6, 7: Architectural Improvements Completion (2025-11-27)
+## Tool Integration Immediate Actions (2026-01-09)
+
+Completed all unblocking actions for tool integration.
+
+### Actions Completed
+
+| Action | Impact |
+|--------|--------|
+| Migrated tools to `shared/tools/` | All crews can now import TavilySearchTool, MethodologyCheckTool |
+| Added MCP deps to Modal image | mcp, fastmcp, mcp_use packages available |
+| Wired TavilySearchTool | 4 research agents (D2, J1, PAIN_RES, GAIN_RES) |
+| Applied IntakeCrew pattern | All 45 agents now have `tools=[]`, `reasoning`, `inject_date`, `max_iter`, `llm` config |
+
+### Files Modified
+
+- `src/shared/tools/web_search.py` - TavilySearchTool, CustomerResearchTool
+- `src/shared/tools/methodology_check.py` - MethodologyCheckTool
+- `src/shared/tools/__init__.py` - Exports for all tools
+- `src/modal_app/app.py` - Added MCP packages to Modal image
+- All 14 crew files updated with IntakeCrew pattern
+
+### Validation
+
+- 524 tests pass
+- All tool imports validated
+- All crew imports validated
+
+---
+
+## MCP-First Tool Architecture Design (2026-01-09)
+
+Comprehensive tool integration architecture designed and documented.
+
+### Architecture Documents Created
+
+| Date | Item | Notes |
+|------|------|-------|
+| 2026-01-09 | `reference/agentic-tool-framework.md` | Tool lifecycle, agent configuration patterns, implementation tiers |
+| 2026-01-09 | `reference/tool-mapping.md` | Agent-to-tool assignments across all 45 agents |
+| 2026-01-09 | `reference/tool-specifications.md` | All 33 tools detailed with APIs and examples |
+
+### Tool Categories Defined
+
+| Category | Count | Description |
+|----------|-------|-------------|
+| EXISTS | 13 | Implemented, ready to wire |
+| MCP Custom | 10 | Build as FastMCP tools on Modal |
+| MCP External | 4 | Use existing MCP servers (Meta Ads, Google Ads, Calendar, Fetch) |
+| LLM-Based | 6 | Structured output with Pydantic |
+| **TOTAL** | 33 | All tools mapped to agents |
+
+### Implementation Roadmap
+
+60-hour, 4-week roadmap defined:
+- Phase A: Core MCP Server (15h)
+- Phase B: Advanced Tools (14h)
+- Phase C: External MCP + Analytics (13h)
+- Phase D: CrewAI Integration (18h)
+
+---
+
+## Modal Live Testing Phase 0-2 (2026-01-09)
+
+Live testing with real LLM calls validated core functionality.
+
+### Testing Results
+
+| Phase | Status | Issues Found | Issues Fixed |
+|-------|--------|--------------|--------------|
+| Phase 0 (Onboarding) | ✅ PASSED | 1 | 1 |
+| Phase 1 (VPC Discovery) | ✅ PASSED | 2 | 2 |
+| Phase 2 (Desirability) | ✅ PASSED | 2 | 2 |
+
+### Bugs Fixed During Testing
+
+| Date | Bug | Fix | Commit |
+|------|-----|-----|--------|
+| 2026-01-09 | HITL phase advancement bug | Fixed state machine | `46c7da6` |
+| 2026-01-09 | Template variable interpolation timing | Fixed in crew configs | `b96e7a7`, `346e02e` |
+| 2026-01-09 | Signal-based HITL routing | VPD compliance fix | `e6ce56b` |
+
+---
+
+## Modal Serverless Migration (2026-01-08)
+
+Complete migration from CrewAI AMP to Modal serverless.
+
+### Architecture Decision
+
+| Date | Item | Notes |
+|------|------|-------|
+| 2026-01-08 | ADR-002 | Modal serverless migration decision documented |
+| 2026-01-08 | Three-layer architecture | Netlify + Supabase + Modal |
+| 2026-01-08 | $0 idle costs | Pay-per-second billing |
+| 2026-01-08 | Single repository | No more 3-repo workaround |
+
+### Infrastructure Deployed
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Modal functions | ✅ Deployed | 5 phase functions |
+| Supabase tables | ✅ Deployed | State persistence |
+| FastAPI endpoints | ✅ Deployed | /kickoff, /status, /hitl/approve |
+| Secrets configuration | ✅ Deployed | startupai-secrets |
+
+**Production URL**: `https://chris00walker--startupai-validation-fastapi-app.modal.run`
+
+### Crews Implemented
+
+| Phase | Crews | Agents | Tests |
+|-------|-------|--------|-------|
+| Phase 0 | OnboardingCrew | 4 | 24 |
+| Phase 1 | DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew | 18 | 25 |
+| Phase 2 | BuildCrew, GrowthCrew, GovernanceCrew | 9 | 42 |
+| Phase 3 | BuildCrew, GovernanceCrew | 5 | 36 |
+| Phase 4 | FinanceCrew, SynthesisCrew, GovernanceCrew | 9 | 58 |
+| **TOTAL** | 14 | 45 | 185 |
+
+---
+
+## Architecture Documentation Standardization (2026-01-07)
+
+Master architecture documents aligned with CrewAI patterns.
+
+### Documents Updated
+
+| Date | Document | Changes |
+|------|----------|---------|
+| 2026-01-07 | All 10 docs | Consistent YAML frontmatter with `vpd_compliance: true` |
+| 2026-01-07 | All docs | Related Documents navigation section |
+| 2026-01-07 | `02-organization.md` | Complete crew structure |
+| 2026-01-07 | `09-status.md` | Full rewrite with cross-repo verification |
+
+### Pattern Hierarchy Established
+
+```
+PHASE (Business Concept) → FLOW (Orchestration) → CREW (Agent Group) → AGENT → TASK
+```
+
+**Critical Rule**: A crew must have 2+ agents (per CrewAI docs)
+
+### Architecture Metrics
+
+| Metric | Canonical | AMP (Deprecated) |
+|--------|-----------|------------------|
+| Phases | 5 | 5 |
+| Flows | 5 | N/A |
+| Crews | 14 | 3 |
+| Agents | 45 | 19 |
+| HITL | 10 | 7 |
+
+---
+
+## Crew 1 Best Practices Alignment (2026-01-06)
+
+IntakeCrew (Crew 1) achieved 100% CrewAI best practices alignment.
+
+### Improvements Implemented
+
+| Date | Item | Notes |
+|------|------|-------|
+| 2026-01-06 | `src/intake_crew/schemas.py` | 397 lines, 6 task output models |
+| 2026-01-06 | `output_pydantic` wired | All 6 tasks |
+| 2026-01-06 | TavilySearchTool | Wired to S2 |
+| 2026-01-06 | CustomerResearchTool | Wired to S2 |
+| 2026-01-06 | MethodologyCheckTool | Wired to G1 |
+| 2026-01-06 | Agent backstories | All 4 enriched |
+| 2026-01-06 | `reasoning=True` | S2 and G1 agents |
+
+### Testing
+
+| Date | Item | Notes |
+|------|------|-------|
+| 2026-01-06 | `tests/test_intake_schemas.py` | 517 lines, 28 tests |
+
+---
+
+## AMP 3-Crew Deployment (2026-01-04) - DEPRECATED
+
+> **DEPRECATED**: Replaced by Modal serverless. See ADR-002.
+
+### Deployment Summary
+
+| Crew | UUID | Status |
+|------|------|--------|
+| Crew 1 (Intake) | `6b1e5c4d-e708-4921-be55-08fcb0d1e94b` | Archived |
+| Crew 2 (Validation) | `3135e285-c0e6-4451-b7b6-d4a061ac4437` | Archived |
+| Crew 3 (Decision) | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | Archived |
+
+### Why Deprecated
+
+- Platform reliability issues (caching, memory)
+- Multi-repo complexity (3 separate repos required)
+- Always-on costs vs Modal's pay-per-second
+
+---
+
+## Areas 3, 6, 7: Architectural Improvements (2025-11-27)
 
 Final implementation of architectural improvements bringing the system to 100% complete.
 
 ### Area 3: Policy Versioning & A/B Testing
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-27 | PolicyBandit | `tools/policy_bandit.py` - UCB algorithm for exploration/exploitation |
-| 2025-11-27 | PolicyVersion enum | yaml_baseline, retrieval_v1 in state_schemas.py |
-| 2025-11-27 | ExperimentConfigResolver | `tools/experiment_config_resolver.py` - Policy-based config resolution |
-| 2025-11-27 | BASELINE_CONFIGS | Static configs for ad_creative, landing_page, interview_question, pricing_test |
-| 2025-11-27 | evaluate_policies.py | `scripts/evaluate_policies.py` - Offline evaluation with Z-test, Cohen's d |
-| 2025-11-27 | experiment_outcomes table | Migration 004 - pgvector table for experiment results |
-| 2025-11-27 | policy_version column | Migration 005 - Added to learnings table |
-| 2025-11-27 | get_policy_weights() | SQL function for bandit weight retrieval |
+
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-27 | PolicyBandit | `tools/policy_bandit.py` - UCB algorithm |
+| 2025-11-27 | ExperimentConfigResolver | Policy-based config resolution |
+| 2025-11-27 | evaluate_policies.py | Offline evaluation with Z-test, Cohen's d |
 
 ### Area 6: Budget Guardrails & Decision Logging
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-27 | BudgetGuardrails | `tools/budget_guardrails.py` - Hard/soft enforcement modes |
-| 2025-11-27 | BudgetCheckResult | Status: ok, warning, exceeded, kill |
-| 2025-11-27 | Thresholds | 80% warning, 120% kill, 150% critical |
-| 2025-11-27 | EscalationInfo | Escalation context for human review |
-| 2025-11-27 | DecisionLogger | `persistence/decision_log.py` - Audit trail persistence |
-| 2025-11-27 | DecisionRecord | Model with actor_type, rationale, context_snapshot |
-| 2025-11-27 | decision_log table | Migration 006 - Audit trail storage |
-| 2025-11-27 | budget_decisions_summary view | Aggregated budget decision metrics |
-| 2025-11-27 | override_audit view | Track human overrides for compliance |
-| 2025-11-27 | resume_handler update | Rationale persistence integrated into HITL flow |
+
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-27 | BudgetGuardrails | Hard/soft enforcement modes |
+| 2025-11-27 | DecisionLogger | Audit trail persistence |
+| 2025-11-27 | decision_log table | Migration 006 |
 
 ### Area 7: Business Model-Specific Viability
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-27 | BusinessModelClassifier | `tools/business_model_classifier.py` - Auto-classification from state |
-| 2025-11-27 | BusinessModelType enum | 11 types: saas_b2b_smb, saas_b2b_midmarket, saas_b2b_enterprise, saas_b2c_freemium, saas_b2c_subscription, ecommerce_dtc, ecommerce_marketplace, fintech_b2b, fintech_b2c, consulting, unknown |
-| 2025-11-27 | UnitEconomicsModel ABC | `tools/unit_economics_models.py` - Base class with standard interface |
-| 2025-11-27 | SaaSB2BSMBModel | 12-mo payback, 3:1 LTV:CAC target |
-| 2025-11-27 | SaaSB2BMidMarketModel | 24-mo payback, enterprise cycles |
-| 2025-11-27 | SaaSB2BEnterpriseModel | 36-mo payback, complex sales |
-| 2025-11-27 | SaaSB2CFreemiumModel | Viral mechanics, conversion optimization |
-| 2025-11-27 | SaaSB2CSubscriptionModel | Consumer subscription economics |
-| 2025-11-27 | EcommerceDTCModel | Direct-to-consumer with blended CAC |
-| 2025-11-27 | EcommerceMarketplaceModel | Take rate, GMV-based economics |
-| 2025-11-27 | FintechB2BModel | Enterprise financial services |
-| 2025-11-27 | FintechB2CModel | Product-led growth, compliance costs |
-| 2025-11-27 | ConsultingModel | Utilization rates, billable hours |
-| 2025-11-27 | MODEL_REGISTRY | Factory lookup by BusinessModelType |
-| 2025-11-27 | Industry benchmarks | Per-model benchmark data |
 
-### Tools Package Updates
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-27 | tools/__init__.py | Exports all Area 3, 6, 7 tools and models |
-| 2025-11-27 | Total tool count | 24+ tools (was 18) |
-
-### Config Files
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-27 | policy_weights.yaml | `config/policy_weights.yaml` - Initial bandit weights |
-| 2025-11-27 | budget_guardrails.yaml | `config/budget_guardrails.yaml` - Threshold configuration |
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-27 | BusinessModelClassifier | Auto-classification from state |
+| 2025-11-27 | 10 UnitEconomicsModels | SaaS, Ecommerce, Fintech, Consulting |
+| 2025-11-27 | MODEL_REGISTRY | Factory lookup by type |
 
 ---
 
-## Phase 2D: Privacy & Persistence Infrastructure (2025-11-26)
+## Phase 2D: Privacy & Persistence (2025-11-26)
 
-Privacy protection for Flywheel data and flow state persistence.
-
-### PrivacyGuard Tool Implemented
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | PrivacyGuardTool | `tools/privacy_guard.py` - PII detection, compliance checks, sanitization |
-| 2025-11-26 | SensitivityLevel enum | PUBLIC, INTERNAL, CONFIDENTIAL, RESTRICTED |
-| 2025-11-26 | ComplianceFramework enum | GDPR, CCPA, HIPAA, SOC2, GENERAL |
-| 2025-11-26 | PrivacyCheckResult model | Violations, recommendations, audit records |
-| 2025-11-26 | Cross-validation privacy | validate_cross_validation_sharing() method |
-
-### Supabase Tables
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | predictions table | pgvector table for OutcomeTrackerTool predictions |
-| 2025-11-26 | RLS policies | Service role access, proper indexes |
-
-### Flow Persistence
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | @persist() decorators | 9 checkpoint methods in founder_validation_flow.py |
-| 2025-11-26 | Checkpoint methods | intake, analysis, desirability, creative HITL, feasibility, viability HITL, final |
-
-### Governance Crew Updates
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | PrivacyGuardTool wired | compliance_monitor + accountability_tracker agents |
-| 2025-11-26 | check_privacy task | Privacy validation before storage |
-| 2025-11-26 | validate_cross_validation_sharing task | Privacy boundaries between validations |
-
-### Test Coverage
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | Privacy guard tests | `tests/integration/test_privacy_guard.py` - 40 tests |
-| 2025-11-26 | Total tests | 152 integration tests passing |
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-26 | PrivacyGuardTool | PII detection, GDPR/CCPA/HIPAA compliance |
+| 2025-11-26 | predictions table | pgvector for OutcomeTrackerTool |
+| 2025-11-26 | @persist() decorators | 9 checkpoint methods |
+| 2025-11-26 | 40 privacy tests | `test_privacy_guard.py` |
 
 ---
 
-## Phase 2C: Flywheel Learning System (2025-11-26)
+## Phase 2C: Flywheel Learning (2025-11-26)
 
-Enhanced learning system with industry/stage patterns and outcome tracking.
-
-### Flywheel Tools Implemented
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | FlywheelInsightsTool | `tools/flywheel_insights.py` - Industry/stage pattern retrieval, recommendations |
-| 2025-11-26 | OutcomeTrackerTool | `tools/flywheel_insights.py` - Prediction tracking with outcome feedback |
-
-### Models and Enums
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | StartupStage enum | ideation, problem_validated, solution_validated, pmf, scaling |
-| 2025-11-26 | IndustryVertical enum | saas_b2b, saas_b2c, marketplace, ecommerce, fintech, etc. |
-| 2025-11-26 | PredictionType enum | desirability_outcome, pivot_success, gate_decision, etc. |
-| 2025-11-26 | ValidationContext model | Rich context for cross-validation matching |
-| 2025-11-26 | PatternLearning model | Captured patterns with confidence scores |
-| 2025-11-26 | OutcomePrediction model | Predictions with outcome tracking |
-
-### Governance Crew Updates
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | FlywheelInsightsTool wired | qa_auditor + accountability_tracker agents |
-| 2025-11-26 | OutcomeTrackerTool wired | accountability_tracker agent |
-| 2025-11-26 | retrieve_similar_validations task | Cross-validation context retrieval |
-| 2025-11-26 | track_predictions task | Record predictions at decision points |
-| 2025-11-26 | record_outcomes task | Capture actual outcomes for feedback |
-
-### Test Coverage
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | Flywheel workflow tests | `tests/integration/test_flywheel_workflow.py` - 38 tests |
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-26 | FlywheelInsightsTool | Industry/stage pattern retrieval |
+| 2025-11-26 | OutcomeTrackerTool | Prediction tracking with feedback |
+| 2025-11-26 | ValidationContext model | Cross-validation matching |
+| 2025-11-26 | 38 flywheel tests | `test_flywheel_workflow.py` |
 
 ---
 
-## Phase 2B: HITL Viability Approval Workflow (2025-11-26)
+## Phase 2B: HITL Viability Approval (2025-11-26)
 
-Human-in-the-loop workflow for unit economics decisions at viability gate.
-
-### HITL Tool Implemented
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | ViabilityApprovalTool | `tools/viability_approval.py` - Analyzes LTV/CAC and generates pivot recommendations |
-
-### Flow Integration
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | await_viability_decision node | Flow pauses for human viability decision |
-| 2025-11-26 | viability_gate router update | Routes to HITL when economics underwater/marginal |
-| 2025-11-26 | Pivot execution methods | _execute_price_pivot, _execute_cost_pivot, _execute_kill |
-| 2025-11-26 | Viability state fields | viability_analysis, viability_decision |
-
-### Finance Crew Updates
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | prepare_viability_decision task | Finance Crew task for HITL preparation |
-| 2025-11-26 | unit_economics_analyst tools | ViabilityApprovalTool wired |
-
-### Test Coverage
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | Viability workflow tests | `tests/integration/test_viability_workflow.py` - 21 tests passing |
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-26 | ViabilityApprovalTool | LTV/CAC analysis, pivot recommendations |
+| 2025-11-26 | await_viability_decision | Flow pause for human decision |
+| 2025-11-26 | Pivot execution | _execute_price_pivot, _execute_cost_pivot |
+| 2025-11-26 | 21 viability tests | `test_viability_workflow.py` |
 
 ---
 
-## Phase 2A: HITL Creative Approval Workflow (2025-11-26)
+## Phase 2A: HITL Creative Approval (2025-11-26)
 
-Human-in-the-loop workflow for creative review before deployment.
-
-### HITL Tools Implemented
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | GuardianReviewTool | `tools/guardian_review.py` - Auto-QA for landing pages and ad creatives |
-| 2025-11-26 | MethodologyCheckTool | `tools/methodology_check.py` - VPC/BMC structure validation |
-| 2025-11-26 | ResumeHandler | `webhooks/resume_handler.py` - Parse /resume webhook payloads |
-
-### Flow Integration
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | await_creative_approval node | Flow pauses for human creative approval |
-| 2025-11-26 | creative_approval_gate router | Routes to auto-approve, human review, or reject |
-| 2025-11-26 | Creative state fields | landing_pages, creative_review_results, auto_approved_creatives |
-
-### Governance Crew Updates
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | review_creatives task | Guardian auto-QA before deployment |
-| 2025-11-26 | validate_methodology task | VPC/BMC structure validation |
-| 2025-11-26 | qa_auditor tools | GuardianReviewTool + MethodologyCheckTool wired |
-
-### Test Coverage
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | HITL workflow tests | `tests/integration/test_hitl_workflow.py` - 32 tests passing |
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-26 | GuardianReviewTool | Auto-QA for creatives |
+| 2025-11-26 | MethodologyCheckTool | VPC/BMC structure validation |
+| 2025-11-26 | ResumeHandler | /resume webhook parsing |
+| 2025-11-26 | 32 HITL tests | `test_hitl_workflow.py` |
 
 ---
 
 ## Phase 1B: Landing Page Deployment (2025-11-26)
 
-Build Crew now has full landing page pipeline for live A/B testing.
-
-### Tools Implemented
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | LandingPageDeploymentTool | `tools/landing_page_deploy.py` - Netlify API integration |
-| 2025-11-26 | deploy_landing_pages task | Build Crew task for deployment orchestration |
-
-### Build Crew Wiring
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | prototype_designer tools | All 3 tools wired: LandingPageGeneratorTool, CodeValidatorTool, LandingPageDeploymentTool |
-| 2025-11-26 | Integration tests | `tests/integration/test_build_crew.py` - 17 passing tests |
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-26 | LandingPageDeploymentTool | Netlify API integration |
+| 2025-11-26 | Build Crew wiring | 3 tools to prototype_designer |
+| 2025-11-26 | 17 build tests | `test_build_crew.py` |
 
 ---
 
-## Phase 1A: Results Persistence + Tool Wiring (2025-11-26)
+## Phase 1A: Results Persistence (2025-11-26)
 
-All crews have tools wired, results persist via webhook.
-
-### Tool Wiring
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | LearningCaptureTool to Governance | `governance_crew.py` - QA, compliance, accountability agents |
-| 2025-11-26 | TavilySearchTool to Analysis | Already implemented (verified) |
-| 2025-11-26 | IndustryBenchmarkTool to Finance | Already implemented (verified) |
-| 2025-11-26 | crewai_config.yaml created | Webhooks + pgvector memory configuration |
-
-### Verification
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-26 | Results persistence | persist_results() already in flow (verified) |
-| 2025-11-26 | Work tracking updated | in-progress.md, phases.md synced |
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-26 | LearningCaptureTool | Wired to Governance Crew |
+| 2025-11-26 | crewai_config.yaml | Webhooks + pgvector config |
+| 2025-11-26 | Results persistence | Already in flow (verified) |
 
 ---
 
-## Phase 1: Innovation Physics Implementation (2025-11-22)
+## Phase 1: Innovation Physics (2025-11-22)
 
-The non-linear validation flow with evidence-driven routing is now complete.
-
-### Core Implementation
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-22 | State schemas complete | `state_schemas.py` - All Innovation Physics signals (EvidenceStrength, CommitmentType, FeasibilityStatus, UnitEconomicsStatus, PivotRecommendation) |
-| 2025-11-22 | Internal validation flow complete | `founder_validation_flow.py` - Non-linear routers with pivot logic |
-| 2025-11-22 | All 7 crew stubs ready | Service, Analysis, Build, Growth, Finance, Governance, Synthesis |
-| 2025-11-22 | Synthesis Crew fully implemented | Complete task definitions with pivot decision logic |
-| 2025-11-22 | Main entry point | `main.py` - Flow execution demonstration |
-
-### Router Logic Delivered
-| Date | Router | Logic |
-|------|--------|-------|
-| 2025-11-22 | Desirability Gate | Problem-Solution Filter (low resonance → segment pivot), Product-Market Filter (zombie → value pivot) |
-| 2025-11-22 | Feasibility Gate | Downgrade Protocol (impossible → re-test desirability) |
-| 2025-11-22 | Viability Gate | Unit Economics Trigger (CAC > LTV → strategic pivot) |
-
-### Documentation Updates
-| Date | Document | Change |
-|------|----------|--------|
-| 2025-11-22 | `03-validation-spec.md` | Added Innovation Physics section with full router code |
-| 2025-11-22 | `00-introduction.md` | Updated flow examples with signals and routers |
-| 2025-11-22 | `04-status.md` | Updated Phase 1 completion status |
-| 2025-11-22 | `work/in-progress.md` | Marked all Phase 1 items complete |
-| 2025-11-22 | `work/phases.md` | Checked Innovation Physics completion criteria |
-| 2025-11-22 | `reference/approval-workflows.md` | Added pivot approval types |
-| 2025-11-22 | `reference/api-contracts.md` | Added signal fields to payloads |
-| 2025-11-22 | `README.md` (both) | Added Innovation Physics navigation |
-| 2025-11-22 | `INNOVATION_PHYSICS_README.md` | Created comprehensive implementation guide |
+| Date | Item | Notes |
+|------|------|-------|
+| 2025-11-22 | state_schemas.py | All Innovation Physics signals |
+| 2025-11-22 | Non-linear routers | Desirability, Feasibility, Viability gates |
+| 2025-11-22 | 7 crew stubs | All phases covered |
+| 2025-11-22 | Synthesis Crew | Complete pivot decision logic |
 
 ---
 
-## Current Working System (Baseline)
-
-These items represent what currently works before the Flows rebuild:
-
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-20 | 6-agent workflow executing | onboarding_agent, customer_researcher, competitor_analyst, value_designer, validation_agent, qa_agent |
-| 2025-11-20 | CrewAI AMP deployment live | UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`, Bearer token configured |
-| 2025-11-20 | REST API functional | `/inputs`, `/kickoff`, `/status` endpoints responding |
-| 2025-11-20 | GitHub auto-deploy | `chris00walker/startupai-crew` main branch |
-
-## Documentation
-
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-21 | Docs reorganization complete | Created README entry point, 00-introduction.md, split 03-validation-spec.md into focused reference docs |
-| 2025-11-21 | Standardized work tracking structure | Aligned docs/work/ with product app pattern |
-| 2025-11-21 | Master architecture complete | 01-ecosystem, 02-organization, 03-validation-spec, 04-status |
-| 2025-11-21 | Reference docs complete | api-contracts, approval-workflows, marketing-integration, product-artifacts, database-schemas |
-| 2025-11-21 | Work tracking sync | Updated in-progress, done, backlog to match master-architecture |
-
-## Architecture Decisions
-
-| Date | Item | Links / Notes |
-|------|------|---------------|
-| 2025-11-21 | 8 crews / 18 agents structure | Service, Analysis, Governance, Build, Growth, Synthesis, Finance, Enhanced Governance |
-| 2025-11-21 | Service/Commercial model | Customer-centric organization per 02-organization.md |
-| 2025-11-21 | Gated validation flow | Desirability → Feasibility → Viability gates |
-
----
-
-## Transition Note
-
-The current 6-agent workflow will be replaced by the 8-crew/18-agent Flows architecture. The baseline above represents what to maintain backward compatibility with during the transition.
-
----
-**Last Updated**: 2025-11-27
+**Last Updated**: 2026-01-09

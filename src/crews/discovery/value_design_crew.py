@@ -10,7 +10,7 @@ Agents:
 - V3: Gain Creator Designer (Forge) - Design Gain Creators
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from src.state.models import ValueMap
@@ -39,7 +39,13 @@ class ValueDesignCrew:
         """V1: Solution Designer - Designs products/services."""
         return Agent(
             config=self.agents_config["v1_solution_designer"],
+            tools=[],
+            reasoning=False,  # Creative design work
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.8),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -47,7 +53,13 @@ class ValueDesignCrew:
         """V2: Pain Reliever Designer - Designs pain relievers."""
         return Agent(
             config=self.agents_config["v2_pain_reliever_designer"],
+            tools=[],
+            reasoning=False,  # Creative design work
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.8),
             verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -55,7 +67,13 @@ class ValueDesignCrew:
         """V3: Gain Creator Designer - Designs gain creators."""
         return Agent(
             config=self.agents_config["v3_gain_creator_designer"],
+            tools=[],
+            reasoning=False,  # Creative design work
+            inject_date=True,
+            max_iter=25,
+            llm=LLM(model="openai/gpt-4o", temperature=0.8),
             verbose=True,
+            allow_delegation=False,
         )
 
     # =========================================================================
