@@ -16,7 +16,7 @@ HITL Checkpoints:
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from shared.tools import ABTestTool
+from shared.tools import ABTestTool, AnalyticsTool, AdPlatformTool
 from src.state.models import DesirabilityEvidence
 
 
@@ -46,6 +46,7 @@ class GrowthCrew:
             config=self.agents_config["p1_ad_creative"],
             tools=[
                 ABTestTool(),
+                AdPlatformTool(),
             ],
             reasoning=False,  # Creative work
             inject_date=True,
@@ -62,6 +63,7 @@ class GrowthCrew:
             config=self.agents_config["p2_communications"],
             tools=[
                 ABTestTool(),
+                AdPlatformTool(),
             ],
             reasoning=False,  # Copywriting
             inject_date=True,
@@ -76,8 +78,11 @@ class GrowthCrew:
         """P3: Analytics Agent - Runs experiments."""
         return Agent(
             config=self.agents_config["p3_analytics"],
-            tools=[],
-            reasoning=False,  # Experiment execution
+            tools=[
+                AnalyticsTool(),
+                AdPlatformTool(),
+            ],
+            reasoning=True,  # Analyzes experiment data
             inject_date=True,
             max_iter=25,
             llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Analytical

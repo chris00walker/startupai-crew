@@ -12,6 +12,7 @@ Agents:
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from shared.tools import AnalyticsTool
 from src.state.models import ViabilityEvidence
 
 
@@ -39,8 +40,10 @@ class FinanceCrew:
         """L1: Financial Controller - Unit economics."""
         return Agent(
             config=self.agents_config["l1_financial_controller"],
-            tools=[],
-            reasoning=False,  # Financial calculations
+            tools=[
+                AnalyticsTool(),
+            ],
+            reasoning=True,  # Analyzes financial data from experiments
             inject_date=True,
             max_iter=25,
             llm=LLM(model="openai/gpt-4o", temperature=0.2),  # Financial precision

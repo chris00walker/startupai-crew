@@ -7,6 +7,7 @@ Tool Categories:
 - Research: TavilySearchTool, CustomerResearchTool
 - Customer Research: ForumSearchTool, ReviewAnalysisTool, SocialListeningTool, TrendAnalysisTool
 - Advanced Analysis: TranscriptionTool, InsightExtractorTool, BehaviorPatternTool, ABTestTool
+- Analytics & Privacy: AnalyticsTool, AnonymizerTool, AdPlatformTool, CalendarTool
 - Governance: MethodologyCheckTool
 
 Usage:
@@ -65,6 +66,20 @@ from shared.tools.advanced_analysis import (
     BehaviorPatternOutput,
     ABTestResult,
 )
+from shared.tools.analytics_privacy import (
+    AnalyticsTool,
+    AnonymizerTool,
+    AdPlatformTool,
+    CalendarTool,
+    get_analytics,
+    anonymize_data,
+    get_ad_metrics,
+    find_interview_slots,
+    AnalyticsOutput,
+    AnonymizationResult,
+    AdPlatformOutput,
+    CalendarOutput,
+)
 
 __all__ = [
     # Web Search Tools
@@ -107,4 +122,17 @@ __all__ = [
     "InsightExtractionOutput",
     "BehaviorPatternOutput",
     "ABTestResult",
+    # Analytics & Privacy Tools (Phase C)
+    "AnalyticsTool",
+    "AnonymizerTool",
+    "AdPlatformTool",
+    "CalendarTool",
+    "get_analytics",
+    "anonymize_data",
+    "get_ad_metrics",
+    "find_interview_slots",
+    "AnalyticsOutput",
+    "AnonymizationResult",
+    "AdPlatformOutput",
+    "CalendarOutput",
 ]

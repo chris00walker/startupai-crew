@@ -24,6 +24,9 @@ from shared.tools import (
     InsightExtractorTool,
     BehaviorPatternTool,
     ABTestTool,
+    AnalyticsTool,
+    AdPlatformTool,
+    CalendarTool,
 )
 
 
@@ -70,6 +73,7 @@ class DiscoveryCrew:
             tools=[
                 TranscriptionTool(),
                 InsightExtractorTool(),
+                CalendarTool(),
             ],
             reasoning=True,  # Synthesizes interview insights
             inject_date=True,
@@ -108,6 +112,8 @@ class DiscoveryCrew:
             tools=[
                 BehaviorPatternTool(),
                 ABTestTool(),
+                AnalyticsTool(),
+                AdPlatformTool(),
             ],
             reasoning=True,  # Analyzes test patterns
             inject_date=True,
