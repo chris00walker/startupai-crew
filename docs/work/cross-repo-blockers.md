@@ -1,8 +1,8 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2026-01-09"
-last_synced: "2026-01-09 - MCP architecture designed"
+last_reviewed: "2026-01-10"
+last_synced: "2026-01-10 - Modal tables deployed, security fixes applied in Product App"
 ---
 
 # Cross-Repository Blockers
@@ -41,7 +41,7 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 |---------|--------|-------------|----------|
 | Modal Infrastructure | ✅ DEPLOYED | Production endpoints live | Product can trigger validation |
 | Modal API Endpoints | ✅ WORKING | `/kickoff`, `/status`, `/hitl/approve`, `/health` | Full API operational |
-| Supabase Tables | ✅ READY | `validation_runs`, `validation_progress`, `hitl_requests` | State persistence works |
+| Supabase Tables | ✅ DEPLOYED | `validation_runs`, `validation_progress`, `hitl_requests` + security fixes | State persistence live |
 | Supabase Realtime | ✅ ENABLED | Progress tables publishing | Real-time UI updates |
 | 14 Crews Implementation | ✅ COMPLETE | 45 agents, 185 tests passing | All phases ready |
 | E2E Integration Test | ✅ COMPLETE | 17 tests, Phase 0→4 flow validated | Production validation ready |
@@ -80,6 +80,35 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 | Learning tables migration | Product App | ✅ Done | Flywheel learning tools have pgvector tables |
 
 **All upstream blockers resolved.**
+
+---
+
+## Schema Alignment (COMPLETE)
+
+> **Status**: ✅ All migrations deployed (2026-01-10)
+> **Documentation**: See [data-flow.md](../master-architecture/reference/data-flow.md) for complete analysis
+
+### Deployed Migrations
+
+| Migration | Purpose | Status |
+|-----------|---------|--------|
+| `modal_validation_runs` | Checkpoint state | ✅ Deployed |
+| `modal_validation_progress` | Realtime progress | ✅ Deployed |
+| `modal_hitl_requests` | HITL checkpoint/resume | ✅ Deployed |
+| `fix_security_definer_views` | 4 views → SECURITY INVOKER | ✅ Deployed |
+| `fix_function_search_paths_v2` | 9 functions with search_path | ✅ Deployed |
+| `fix_permissive_rls_policies` | Admin-only UPDATE | ✅ Deployed |
+| `fix_rls_auth_initplan_part1-5` | 60+ RLS policies optimized | ✅ Deployed |
+| `add_missing_fk_indexes` | 6 FK indexes | ✅ Deployed |
+
+### Future Migrations (P1-P3)
+
+| Priority | Table | Purpose |
+|----------|-------|---------|
+| P1 | `founders_briefs` | VPD-aligned Phase 0 output |
+| P2 | `customer_profile_elements` | VPC Jobs/Pains/Gains |
+| P2 | `value_map_elements` | VPC Products/Relievers/Creators |
+| P3 | `test_cards`, `learning_cards` | TBI framework |
 
 ---
 
@@ -220,9 +249,15 @@ Marketing activity feed shows real activity
 
 ---
 
-**Last Updated**: 2026-01-09
+**Last Updated**: 2026-01-10
 
-**Changes (2026-01-09 - MCP Architecture Designed)**:
+**Changes (2026-01-10 - Schema Alignment Complete)**:
+- ✅ **DEPLOYED**: Modal tables in Product App (`validation_runs`, `validation_progress`, `hitl_requests`)
+- ✅ **SECURITY**: 4 views, 9 functions, RLS policies fixed
+- ✅ **PERFORMANCE**: 60+ RLS policies optimized, 6 FK indexes added
+- Schema alignment section updated to COMPLETE
+
+**Previous (2026-01-09 - MCP Architecture Designed)**:
 - 🚀 **MCP-FIRST**: Adopted Model Context Protocol as unified tool interface
 - Architecture: 13 EXISTS + 10 MCP Custom + 4 MCP External + 6 LLM-Based = 33 tools
 - Implementation roadmap: 60 hours over 4 weeks (~$5-10/month cost)
