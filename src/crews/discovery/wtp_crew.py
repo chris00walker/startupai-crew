@@ -13,6 +13,8 @@ HITL Checkpoint: approve_pricing_test (before any real money is involved)
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from shared.tools import ABTestTool
+
 
 @CrewBase
 class WTPCrew:
@@ -37,8 +39,10 @@ class WTPCrew:
         """W1: Pricing Experiment Agent - Designs WTP experiments."""
         return Agent(
             config=self.agents_config["w1_pricing_experiment"],
-            tools=[],
-            reasoning=False,  # Straightforward experiment design
+            tools=[
+                ABTestTool(),
+            ],
+            reasoning=True,  # Analyzes pricing experiment results
             inject_date=True,
             max_iter=25,
             llm=LLM(model="openai/gpt-4o", temperature=0.5),

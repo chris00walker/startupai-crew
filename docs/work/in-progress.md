@@ -15,7 +15,7 @@ last_reviewed: "2026-01-09"
 | Interaction (Netlify) | ✅ Production | Edge Functions |
 | Orchestration (Supabase) | ✅ Production | PostgreSQL + Realtime |
 | Compute (Modal) | ✅ Production | Pay-per-second, $0 idle |
-| **Tool Integration** | 🟡 IN PROGRESS | 13/45 agents wired with tools |
+| **Tool Integration** | 🟡 IN PROGRESS | 20/45 agents wired with tools |
 
 **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture.
 
@@ -58,16 +58,28 @@ Without tools, agents **hallucinate** outputs instead of collecting real evidenc
 
 **Tests**: 555 passing (31 new tool tests)
 
-### Phase B: Advanced Tools (Week 2) - 14 hours
+### Phase B: Advanced Tools (Week 2) - COMPLETE
+
+✅ **COMPLETED 2026-01-10** - Implemented as BaseTool pattern with LLM/scipy backends.
 
 | Task | Target Agents | Effort | Status |
 |------|---------------|--------|--------|
-| Implement `transcribe_audio` | D1 | 3h | ⏳ Not started |
-| Implement `extract_insights` | D1, D4 | 4h | ⏳ Not started |
-| Implement `identify_patterns` | D2, D3 | 4h | ⏳ Not started |
-| Implement `run_ab_test` | P1, P2, W1 | 3h | ⏳ Not started |
+| Implement `TranscriptionTool` | D1 | 3h | ✅ Done |
+| Implement `InsightExtractorTool` | D1, D4 | 4h | ✅ Done |
+| Implement `BehaviorPatternTool` | D2, D3 | 4h | ✅ Done |
+| Implement `ABTestTool` | P1, P2, W1 | 3h | ✅ Done |
+| Wire tools to agents | D1, D2, D3, D4, P1, P2, W1 | 1h | ✅ Done |
+| Add unit tests | - | 1h | ✅ Done |
 
-**Deliverable**: Audio transcription, NLP insights, A/B test analysis
+**Tools wired to agents**:
+- D1: TranscriptionTool + InsightExtractorTool
+- D2: BehaviorPatternTool (added to Phase A tools)
+- D3: BehaviorPatternTool + ABTestTool
+- D4: InsightExtractorTool + BehaviorPatternTool
+- P1, P2: ABTestTool
+- W1: ABTestTool
+
+**Tests**: 590 passing (35 new Phase B tool tests)
 
 ### Phase C: External MCP + Analytics (Week 3) - 13 hours
 
@@ -178,11 +190,14 @@ The original Flow-based architecture had runtime bugs that were fixed before the
 4. **Update phases.md** checkboxes to match
 
 ---
-**Last Updated**: 2026-01-09
+**Last Updated**: 2026-01-10
 
 **Latest Changes**:
+- Phase B Advanced Tools COMPLETE (2026-01-10)
+  - TranscriptionTool, InsightExtractorTool, BehaviorPatternTool, ABTestTool
+  - 7 agents wired with new tools (D1, D2, D3, D4, P1, P2, W1)
+  - 590 tests passing (35 new)
+- Phase A Customer Research Tools COMPLETE (2026-01-10)
 - Complete rewrite for Modal serverless architecture
 - Added MCP-first tool integration roadmap (60 hours)
-- Defined immediate actions (7 hours) to unblock tool wiring
-- Archived AMP 3-Crew references
 - Updated live testing progress (Phase 0-2 complete)

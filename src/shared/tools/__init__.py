@@ -6,6 +6,7 @@ Tools available to agents across all crews in the validation engine.
 Tool Categories:
 - Research: TavilySearchTool, CustomerResearchTool
 - Customer Research: ForumSearchTool, ReviewAnalysisTool, SocialListeningTool, TrendAnalysisTool
+- Advanced Analysis: TranscriptionTool, InsightExtractorTool, BehaviorPatternTool, ABTestTool
 - Governance: MethodologyCheckTool
 
 Usage:
@@ -50,6 +51,20 @@ from shared.tools.methodology_check import (
     CheckSeverity,
     MethodologyType,
 )
+from shared.tools.advanced_analysis import (
+    TranscriptionTool,
+    InsightExtractorTool,
+    BehaviorPatternTool,
+    ABTestTool,
+    transcribe_audio,
+    extract_insights,
+    identify_patterns,
+    run_ab_test,
+    TranscriptionOutput,
+    InsightExtractionOutput,
+    BehaviorPatternOutput,
+    ABTestResult,
+)
 
 __all__ = [
     # Web Search Tools
@@ -79,4 +94,17 @@ __all__ = [
     "MethodologyIssue",
     "CheckSeverity",
     "MethodologyType",
+    # Advanced Analysis Tools (Phase B)
+    "TranscriptionTool",
+    "InsightExtractorTool",
+    "BehaviorPatternTool",
+    "ABTestTool",
+    "transcribe_audio",
+    "extract_insights",
+    "identify_patterns",
+    "run_ab_test",
+    "TranscriptionOutput",
+    "InsightExtractionOutput",
+    "BehaviorPatternOutput",
+    "ABTestResult",
 ]

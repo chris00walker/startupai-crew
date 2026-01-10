@@ -20,6 +20,10 @@ from shared.tools import (
     ReviewAnalysisTool,
     SocialListeningTool,
     TrendAnalysisTool,
+    TranscriptionTool,
+    InsightExtractorTool,
+    BehaviorPatternTool,
+    ABTestTool,
 )
 
 
@@ -63,8 +67,11 @@ class DiscoveryCrew:
         """D1: Customer Interview Agent - SAY evidence collection."""
         return Agent(
             config=self.agents_config["d1_customer_interview"],
-            tools=[],
-            reasoning=False,  # Interview processing
+            tools=[
+                TranscriptionTool(),
+                InsightExtractorTool(),
+            ],
+            reasoning=True,  # Synthesizes interview insights
             inject_date=True,
             max_iter=25,
             llm=LLM(model="openai/gpt-4o", temperature=0.5),
@@ -83,6 +90,7 @@ class DiscoveryCrew:
                 ReviewAnalysisTool(),
                 SocialListeningTool(),
                 TrendAnalysisTool(),
+                BehaviorPatternTool(),
             ],
             reasoning=True,  # Synthesizes research from multiple sources
             inject_date=True,
@@ -97,8 +105,11 @@ class DiscoveryCrew:
         """D3: CTA Test Agent - DO-direct evidence."""
         return Agent(
             config=self.agents_config["d3_cta_test_agent"],
-            tools=[],
-            reasoning=False,  # Test execution
+            tools=[
+                BehaviorPatternTool(),
+                ABTestTool(),
+            ],
+            reasoning=True,  # Analyzes test patterns
             inject_date=True,
             max_iter=25,
             llm=LLM(model="openai/gpt-4o", temperature=0.5),
@@ -111,7 +122,10 @@ class DiscoveryCrew:
         """D4: Evidence Triangulation Agent - Synthesizes evidence."""
         return Agent(
             config=self.agents_config["d4_evidence_triangulation"],
-            tools=[],
+            tools=[
+                InsightExtractorTool(),
+                BehaviorPatternTool(),
+            ],
             reasoning=True,  # Synthesizes SAY vs DO evidence
             inject_date=True,
             max_iter=25,
