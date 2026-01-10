@@ -1,0 +1,76 @@
+{
+  "source": {
+    "name": "Supabase",
+    "base_url": "https://supabase.com/docs",
+    "mcp_search_tool": "mcp__supabase__search_docs",
+    "description": "Supabase PostgreSQL backend-as-a-service documentation"
+  },
+  "last_full_sync": "2026-01-09T00:00:00Z",
+  "staleness_days": 30,
+  "entries": {
+    "INDEX.md": {
+      "source_url": null,
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "local_only": true,
+      "topics": ["index", "topic lookup", "quick reference"]
+    },
+    "rls.md": {
+      "source_url": "https://supabase.com/docs/guides/auth/row-level-security",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["RLS", "Row Level Security", "policies", "auth.uid()", "USING", "WITH CHECK"]
+    },
+    "realtime.md": {
+      "source_url": "https://supabase.com/docs/guides/realtime",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["Realtime", "channels", "subscriptions", "Broadcast", "Presence", "Postgres Changes"]
+    },
+    "migrations.md": {
+      "source_url": "https://supabase.com/docs/guides/cli/getting-started",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["migrations", "supabase db push", "db pull", "schema", "version control"]
+    },
+    "mcp-tools.md": {
+      "source_url": null,
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "local_only": true,
+      "topics": ["MCP", "mcp__supabase__*", "execute_sql", "apply_migration", "list_tables"]
+    },
+    "cli-reference.md": {
+      "source_url": "https://supabase.com/docs/reference/cli",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["CLI", "supabase init", "supabase start", "functions deploy", "db commands"]
+    },
+    "startupai-patterns.md": {
+      "source_url": null,
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "local_only": true,
+      "topics": ["StartupAI", "validation_runs", "hitl_requests", "state persistence", "HITL"]
+    }
+  },
+  "missing_topics": [
+    {
+      "topic": "auth",
+      "url": "https://supabase.com/docs/guides/auth",
+      "priority": "medium",
+      "keywords": ["authentication", "signup", "signin", "OAuth"]
+    },
+    {
+      "topic": "storage",
+      "url": "https://supabase.com/docs/guides/storage",
+      "priority": "low",
+      "keywords": ["storage", "buckets", "file upload"]
+    },
+    {
+      "topic": "edge-functions",
+      "url": "https://supabase.com/docs/guides/functions",
+      "priority": "medium",
+      "keywords": ["Edge Functions", "Deno", "serverless"]
+    },
+    {
+      "topic": "pgvector",
+      "url": "https://supabase.com/docs/guides/ai",
+      "priority": "high",
+      "keywords": ["pgvector", "embeddings", "vector search", "AI"]
+    }
+  ]
+}

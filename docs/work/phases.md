@@ -1,8 +1,8 @@
 ---
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
-last_reviewed: "2026-01-09"
-last_audit: "2026-01-09 - MCP architecture designed, tool specs complete"
+last_reviewed: "2026-01-10"
+last_audit: "2026-01-10 - Schema alignment analysis, Modal migrations created"
 ---
 
 # Engineering Phases
@@ -653,3 +653,64 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 - **Issues**: Platform reliability problems, multi-repo complexity
 
 **Reference**: See `docs/master-architecture/` for canonical architecture specifications.
+
+---
+
+## Phase E: Schema Alignment
+
+> **Discovered**: 2026-01-10 - Cross-repo analysis revealed Modal tables not deployed
+> **Status**: BLOCKING - P0 migrations required before production validation
+> **Documentation**: See [data-flow.md](../master-architecture/reference/data-flow.md) for complete analysis
+
+### Problem Statement
+
+The `persistence.py` layer writes to Supabase tables that don't exist:
+- `validation_runs` - Checkpoint state (NOT DEPLOYED)
+- `validation_progress` - Realtime progress (NOT DEPLOYED)
+- `hitl_requests` - HITL queue (NOT DEPLOYED)
+
+This was incorrectly marked as "✅ READY" in `cross-repo-blockers.md`.
+
+### Migration Status
+
+#### P0: Modal Serverless (COMPLETE - 2026-01-10)
+
+| Table | Migration | Status |
+|-------|-----------|--------|
+| `validation_runs` | `20260110000001_modal_validation_runs.sql` | ✅ Created |
+| `validation_progress` | `20260110000002_modal_validation_progress.sql` | ✅ Created |
+| `hitl_requests` | `20260110000003_modal_hitl_requests.sql` | ✅ Created |
+
+Migrations are in `app.startupai.site/supabase/migrations/`. Run `supabase db push` to deploy.
+
+#### P1: VPD-Aligned Founder's Brief
+
+| Table | Purpose | Status |
+|-------|---------|--------|
+| `founders_briefs` | VPD-aligned Phase 0 output | ⏳ Planned |
+
+The existing `entrepreneur_briefs` table has flat structure that doesn't match the nested `FoundersBrief` Pydantic model.
+
+#### P2: VPC Tables
+
+| Table | Purpose | Status |
+|-------|---------|--------|
+| `customer_profile_elements` | VPC Jobs/Pains/Gains | ⏳ Planned |
+| `value_map_elements` | VPC Products/Relievers/Creators | ⏳ Planned |
+| `vpc_fit_scores` | Fit score tracking | ⏳ Planned |
+
+#### P3: TBI Framework
+
+| Table | Purpose | Status |
+|-------|---------|--------|
+| `test_cards` | Experiment design | ⏳ Planned |
+| `learning_cards` | Experiment results | ⏳ Planned |
+
+### Completion Criteria
+
+- [x] P0 migrations created (3 Modal tables)
+- [x] Data flow documentation created
+- [x] `database-schemas.md` updated with status matrix
+- [x] `cross-repo-blockers.md` corrected
+- [ ] P0 migrations deployed to Supabase
+- [ ] P1-P3 migrations created and deployed

@@ -1,7 +1,7 @@
 ---
 purpose: Database schema definitions for all services
-status: mostly-implemented
-last_reviewed: 2026-01-08
+status: active
+last_reviewed: 2026-01-10
 vpd_compliance: true
 ---
 
@@ -17,7 +17,50 @@ This document consolidates all SQL schema definitions used across the StartupAI 
 > - [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 viability metrics
 >
 > **Modal Migration**: See [ADR-002](../../adr/002-modal-serverless-migration.md) for Modal-specific tables.
-> **Implementation Status**: Many tables are now deployed. See status indicators below.
+> **Data Flow**: See [data-flow.md](./data-flow.md) for complete tool output → Supabase pipeline.
+
+---
+
+## Deployment Status Matrix
+
+> **Updated**: 2026-01-10 - Schema alignment analysis complete
+
+| Table | Status | Migration File | Notes |
+|-------|--------|----------------|-------|
+| **Modal Serverless (P0)** | | | |
+| `validation_runs` | ✅ Migration created | `20260110000001_modal_validation_runs.sql` | Checkpoint state |
+| `validation_progress` | ✅ Migration created | `20260110000002_modal_validation_progress.sql` | Realtime enabled |
+| `hitl_requests` | ✅ Migration created | `20260110000003_modal_hitl_requests.sql` | Realtime enabled |
+| **Core Tables** | | | |
+| `projects` | ✅ Deployed | `00001_initial_schema.sql` | Enhanced in 00004 |
+| `hypotheses` | ✅ Deployed | `00004_validation_tables.sql` | |
+| `experiments` | ✅ Deployed | `00004_validation_tables.sql` | |
+| `evidence` | ✅ Deployed | `00004_validation_tables.sql` | Enhanced |
+| `approval_requests` | ✅ Deployed | `20251126000002_approval_requests.sql` | |
+| **Flywheel Learning** | | | |
+| `learnings` | ✅ Deployed | `20251126000001_flywheel_learning.sql` | pgvector |
+| `patterns` | ✅ Deployed | `20251126000001_flywheel_learning.sql` | |
+| `outcomes` | ✅ Deployed | `20251126000001_flywheel_learning.sql` | |
+| `domain_expertise` | ✅ Deployed | `20251126000001_flywheel_learning.sql` | Benchmarks |
+| **Product App** | | | |
+| `crewai_validation_states` | ✅ Deployed | `0007_crewai_validation_states_and_bmc.sql` | |
+| `business_model_canvas` | ✅ Deployed | `0007_crewai_validation_states_and_bmc.sql` | |
+| `onboarding_sessions` | ✅ Deployed | `00009_onboarding_schema.sql` | |
+| `entrepreneur_briefs` | ✅ Deployed | `00009_onboarding_schema.sql` | Legacy - see `founders_briefs` |
+| **VPD Tables (P1-P2)** | | | |
+| `founders_briefs` | ⏳ Planned | Not yet created | VPD-aligned Phase 0 |
+| `customer_profile_elements` | ⏳ Planned | Not yet created | VPC Jobs/Pains/Gains |
+| `value_map_elements` | ⏳ Planned | Not yet created | VPC Products/Relievers |
+| `vpc_fit_scores` | ⏳ Planned | Not yet created | Fit tracking |
+| **TBI Framework (P3)** | | | |
+| `test_cards` | ⏳ Planned | Not yet created | Experiment design |
+| `learning_cards` | ⏳ Planned | Not yet created | Experiment results |
+| **Deprecated** | | | |
+| `crew_execution_state` | ❌ Deprecated | Never deployed | Replaced by Modal tables |
+
+**Legend**: ✅ Deployed | ✅ Migration created | ⏳ Planned | ❌ Deprecated
+
+---
 
 ## Approval System Tables
 
@@ -80,9 +123,11 @@ CREATE TABLE approval_preferences (
 
 ## Modal Serverless Tables
 
-> **Status**: ⏳ Planned (see [ADR-002](../../adr/002-modal-serverless-migration.md))
+> **Status**: ✅ Migrations Created (2026-01-10)
 >
 > These tables support the Modal serverless architecture, replacing the deprecated AMP `crew_execution_state` table.
+> Migrations are in `app.startupai.site/supabase/migrations/20260110000001-3_modal_*.sql`
+> See [ADR-002](../../adr/002-modal-serverless-migration.md) for architecture details.
 
 ### Validation Runs
 
@@ -1010,9 +1055,15 @@ CREATE INDEX idx_hypotheses_status ON hypotheses(status);
 - [modal-configuration.md](./modal-configuration.md) - Modal platform configuration
 
 ---
-**Last Updated**: 2026-01-08
+**Last Updated**: 2026-01-10
 
-**Latest Changes (2026-01-08 - Modal migration alignment)**:
+**Latest Changes (2026-01-10 - Schema alignment analysis)**:
+- Added Deployment Status Matrix at top with all table statuses
+- Created 3 Modal migration files (P0 complete)
+- Updated Modal Serverless Tables section status to "✅ Migrations Created"
+- Added link to new data-flow.md for complete pipeline documentation
+
+**Previous Changes (2026-01-08 - Modal migration alignment)**:
 - Fixed cross-references to point to phase documents (04-08) instead of archived specs
 - Added Modal Serverless Tables section with 3 tables:
   - `validation_runs` - Run state persistence

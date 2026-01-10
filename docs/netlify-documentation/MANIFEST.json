@@ -1,0 +1,70 @@
+{
+  "source": {
+    "name": "Netlify",
+    "base_url": "https://docs.netlify.com",
+    "mcp_tools_available": true,
+    "description": "Netlify deployment and edge computing documentation"
+  },
+  "last_full_sync": "2026-01-09T00:00:00Z",
+  "staleness_days": 30,
+  "entries": {
+    "INDEX.md": {
+      "source_url": null,
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "local_only": true,
+      "topics": ["index", "topic lookup", "quick reference"]
+    },
+    "edge-functions.md": {
+      "source_url": "https://docs.netlify.com/edge-functions/overview/",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["Edge Functions", "Deno", "middleware", "geolocation", "A/B testing"]
+    },
+    "environment-variables.md": {
+      "source_url": "https://docs.netlify.com/environment-variables/overview/",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["environment variables", "secrets", "contexts", "scopes", "NETLIFY_*"]
+    },
+    "deployment.md": {
+      "source_url": "https://docs.netlify.com/site-deploys/overview/",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["deploy", "production", "preview", "branch deploys", "rollback"]
+    },
+    "mcp-tools.md": {
+      "source_url": null,
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "local_only": true,
+      "topics": ["MCP", "mcp__netlify__*", "create_deploy", "list_sites", "env_vars"]
+    },
+    "cli-reference.md": {
+      "source_url": "https://docs.netlify.com/cli/get-started/",
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "topics": ["CLI", "netlify deploy", "netlify dev", "netlify env", "netlify functions"]
+    },
+    "startupai-patterns.md": {
+      "source_url": null,
+      "fetched_at": "2026-01-09T00:00:00Z",
+      "local_only": true,
+      "topics": ["StartupAI", "product app", "webhook", "CrewAI integration"]
+    }
+  },
+  "missing_topics": [
+    {
+      "topic": "forms",
+      "url": "https://docs.netlify.com/forms/setup/",
+      "priority": "low",
+      "keywords": ["forms", "submissions", "notifications"]
+    },
+    {
+      "topic": "identity",
+      "url": "https://docs.netlify.com/integrations/identity/",
+      "priority": "low",
+      "keywords": ["identity", "authentication", "users"]
+    },
+    {
+      "topic": "split-testing",
+      "url": "https://docs.netlify.com/site-deploys/split-testing/",
+      "priority": "medium",
+      "keywords": ["split testing", "A/B", "traffic splitting"]
+    }
+  ]
+}
