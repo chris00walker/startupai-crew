@@ -15,7 +15,7 @@ last_reviewed: "2026-01-09"
 | Interaction (Netlify) | ✅ Production | Edge Functions |
 | Orchestration (Supabase) | ✅ Production | PostgreSQL + Realtime |
 | Compute (Modal) | ✅ Production | Pay-per-second, $0 idle |
-| **Tool Integration** | 🟡 IN PROGRESS | 9/45 agents wired, pattern applied to all |
+| **Tool Integration** | 🟡 IN PROGRESS | 13/45 agents wired with tools |
 
 **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture.
 
@@ -38,18 +38,25 @@ Without tools, agents **hallucinate** outputs instead of collecting real evidenc
 | Landing Pages | Code that might work | Deployed URLs with analytics |
 | Unit Economics | Made-up numbers | Calculations based on real CAC/LTV |
 
-### Phase A: Core MCP Server (Week 1) - 15 hours
+### Phase A: Customer Research Tools (Week 1) - COMPLETE
+
+✅ **COMPLETED 2026-01-10** - Implemented as BaseTool pattern (simpler than FastMCP).
 
 | Task | Target Agents | Effort | Status |
 |------|---------------|--------|--------|
-| Create FastMCP server on Modal | All | 4h | ⏳ Not started |
-| Implement `forum_search` | D2, J1, PAIN_RES, GAIN_RES | 3h | ⏳ Not started |
-| Implement `analyze_reviews` | D2, J1, PAIN_RES, GAIN_RES | 3h | ⏳ Not started |
-| Implement `social_listen` | D2 | 2h | ⏳ Not started |
-| Implement `analyze_trends` | D2 | 2h | ⏳ Not started |
-| Deploy to Modal | - | 1h | ⏳ Not started |
+| Create `customer_research.py` with 4 tools | All research | 4h | ✅ Done |
+| Implement `ForumSearchTool` | D2, J1, PAIN_RES, GAIN_RES | - | ✅ Done |
+| Implement `ReviewAnalysisTool` | D2, J1, PAIN_RES, GAIN_RES | - | ✅ Done |
+| Implement `SocialListeningTool` | D2 | - | ✅ Done |
+| Implement `TrendAnalysisTool` | D2 | - | ✅ Done |
+| Wire tools to agents | D2, J1, PAIN_RES, GAIN_RES | 1h | ✅ Done |
+| Add unit tests | - | 1h | ✅ Done |
 
-**Deliverable**: MCP server at `https://chris00walker--startupai-mcp-tools.modal.run/mcp/`
+**Tools wired to agents**:
+- D2: TavilySearchTool + ForumSearchTool + ReviewAnalysisTool + SocialListeningTool + TrendAnalysisTool
+- J1, PAIN_RES, GAIN_RES: TavilySearchTool + ForumSearchTool + ReviewAnalysisTool
+
+**Tests**: 555 passing (31 new tool tests)
 
 ### Phase B: Advanced Tools (Week 2) - 14 hours
 

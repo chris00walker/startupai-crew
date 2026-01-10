@@ -14,7 +14,13 @@ Agents:
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from shared.tools import TavilySearchTool
+from shared.tools import (
+    TavilySearchTool,
+    ForumSearchTool,
+    ReviewAnalysisTool,
+    SocialListeningTool,
+    TrendAnalysisTool,
+)
 
 
 @CrewBase
@@ -71,7 +77,13 @@ class DiscoveryCrew:
         """D2: Observation Agent - DO-indirect evidence (research-focused)."""
         return Agent(
             config=self.agents_config["d2_observation_agent"],
-            tools=[TavilySearchTool()],  # Research tool for evidence collection
+            tools=[
+                TavilySearchTool(),
+                ForumSearchTool(),
+                ReviewAnalysisTool(),
+                SocialListeningTool(),
+                TrendAnalysisTool(),
+            ],
             reasoning=True,  # Synthesizes research from multiple sources
             inject_date=True,
             max_iter=30,  # More iterations for thorough research

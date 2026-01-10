@@ -17,7 +17,11 @@ from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from src.state.models import CustomerProfile
-from shared.tools import TavilySearchTool
+from shared.tools import (
+    TavilySearchTool,
+    ForumSearchTool,
+    ReviewAnalysisTool,
+)
 
 
 @CrewBase
@@ -43,7 +47,11 @@ class CustomerProfileCrew:
         """J1: JTBD Researcher - Discovers customer jobs (research-focused)."""
         return Agent(
             config=self.agents_config["j1_jtbd_researcher"],
-            tools=[TavilySearchTool()],  # Research tool for job discovery
+            tools=[
+                TavilySearchTool(),
+                ForumSearchTool(),
+                ReviewAnalysisTool(),
+            ],
             reasoning=True,
             inject_date=True,
             max_iter=30,
@@ -71,7 +79,11 @@ class CustomerProfileCrew:
         """PAIN_RES: Pain Researcher - Discovers customer pains (research-focused)."""
         return Agent(
             config=self.agents_config["pain_researcher"],
-            tools=[TavilySearchTool()],  # Research tool for pain discovery
+            tools=[
+                TavilySearchTool(),
+                ForumSearchTool(),
+                ReviewAnalysisTool(),
+            ],
             reasoning=True,
             inject_date=True,
             max_iter=30,
@@ -99,7 +111,11 @@ class CustomerProfileCrew:
         """GAIN_RES: Gain Researcher - Discovers customer gains (research-focused)."""
         return Agent(
             config=self.agents_config["gain_researcher"],
-            tools=[TavilySearchTool()],  # Research tool for gain discovery
+            tools=[
+                TavilySearchTool(),
+                ForumSearchTool(),
+                ReviewAnalysisTool(),
+            ],
             reasoning=True,
             inject_date=True,
             max_iter=30,
