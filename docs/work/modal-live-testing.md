@@ -1,7 +1,7 @@
 ---
 purpose: Track learnings from live Modal testing with real LLM calls
 status: active
-last_updated: 2026-01-10
+last_updated: 2026-01-10 15:08
 ---
 
 # Modal Live Testing Learnings
@@ -134,16 +134,21 @@ Modal redeployed with tool integration code:
 - HITL `approve_vpc_completion` → Approved
 - Advancing to Phase 2 (second attempt)
 
-**Phase 2+**: 🔄 IN PROGRESS
-- Second Phase 2 run started with pivoted segment
+**Phase 2 (Retry with Healthcare Segment)**: 🔄 IN PROGRESS
+- Second Phase 2 run started with pivoted segment (Healthcare Online Platforms)
+- Bug fixes deployed (#10, #11, #12) - tool input validation, error handling
+- BuildCrew executing (design_landing_page task running as of 15:08)
 
 #### Issues Discovered & Fixed
 
 | # | Issue | Root Cause | Fix | Commit |
 |---|-------|------------|-----|--------|
-| 7 | `JobType` enum missing `supporting` | VPD defines 4 job types, enum only had 3 | Add `SUPPORTING = "supporting"` to enum | Pending |
-| 8 | `GainRelevance` enum missing `expected` | VPD Kano model has 4 levels, enum only had 3 | Add `EXPECTED = "expected"` to enum | Pending |
+| 7 | `JobType` enum missing `supporting` | VPD defines 4 job types, enum only had 3 | Add `SUPPORTING = "supporting"` to enum | `359abd2` |
+| 8 | `GainRelevance` enum missing `expected` | VPD Kano model has 4 levels, enum only had 3 | Add `EXPECTED = "expected"` to enum | `359abd2` |
 | 9 | HITL duplicate key on pivot | Old pending HITL not cancelled before creating new | Workaround: approve old HITL | Bug logged |
+| 10 | AnalyticsTool expected string, got dict | LLM passes dict `{site_id: ..., days: 7}` but tool expected JSON string | Add Pydantic `args_schema` for typed input | `623322a` |
+| 11 | Segment alternatives returned `[]` on error | `generate_alternative_segments()` had no error handling | Add input validation + fallback alternatives | `623322a` |
+| 12 | DesirabilityEvidence JSON parsing crashed | Malformed LLM output caused JSON parse error | Add try/catch with default evidence | `623322a` |
 
 ---
 
@@ -294,6 +299,70 @@ await supabase.table("hitl_requests").update(
 ).eq("run_id", run_id).eq("status", "pending").execute()
 ```
 
+### Pattern 7: Tool Input Type Mismatch (BUG #10)
+
+**Symptom**: `Input should be a valid string [type=string_type, input_value={'site_id': '...', 'days': 7}, input_type=dict]`
+
+**Root Cause**: CrewAI tools with string-based `_run(input_data: str)` receive dict from LLM. The LLM naturally passes structured data, but the tool expects a JSON string to parse.
+
+**Solution**: Use Pydantic `args_schema` for typed input validation:
+```python
+from pydantic import BaseModel, Field
+
+class AnalyticsInput(BaseModel):
+    """Input schema for AnalyticsTool."""
+    site_id: str = Field(..., description="Netlify site ID")
+    days: int = Field(default=7, description="Number of days to fetch")
+
+class AnalyticsTool(BaseTool):
+    name: str = "get_analytics"
+    description: str = "Fetch landing page analytics..."
+    args_schema: type[BaseModel] = AnalyticsInput  # CrewAI validates input
+
+    def _run(self, site_id: str, days: int = 7) -> str:
+        # Now receives typed parameters, not JSON string
+        ...
+```
+
+**Files Changed**:
+- `src/shared/tools/analytics_privacy.py` - Added `AnalyticsInput`, `AdPlatformInput`, `CalendarInput` schemas
+
+### Pattern 8: Silent Fallback Hiding Errors (BUG #11)
+
+**Symptom**: Function returns empty results `[]` but no error in logs
+
+**Root Cause**: Error handling catches exceptions but returns empty fallback without logging
+
+**Solution**: Add logging and meaningful fallback data:
+```python
+def generate_alternative_segments(...) -> list[dict]:
+    # Input validation with logging
+    logger.info(json.dumps({
+        "event": "segment_alternatives_input",
+        "founders_brief_keys": list(founders_brief.keys()) if founders_brief else [],
+    }))
+
+    if not founders_brief:
+        logger.warning("called with empty founders_brief")
+        return [{
+            "segment_name": "Custom Segment (Missing Data)",
+            "confidence": 0.0,
+            "_error": "missing_founders_brief",  # Debugging marker
+        }]
+
+    try:
+        # ... generation logic
+    except Exception as e:
+        logger.error(json.dumps({"event": "segment_alternatives_error", "error": str(e)}))
+        return [{
+            "segment_name": "Custom Segment (Generation Failed)",
+            "_error": str(e),  # Debugging marker
+        }]
+```
+
+**Files Changed**:
+- `src/modal_app/helpers/segment_alternatives.py`
+
 ---
 
 ## Modal Operations Reference
@@ -335,11 +404,13 @@ GET /validation_progress?run_id=eq.{run_id}&phase=eq.{phase}&order=created_at.de
 ## Next Steps
 
 1. ~~**Test pivot loopback**: Approve segment pivot, verify Phase 1 re-runs with pivot context~~ ✅ DONE
-2. **Continue to Phase 2 (round 2)**: Approve `approve_vpc_completion` to test Phase 2 with pivoted segment
-3. **Test override_proceed**: Verify force-proceed works despite pivot signal
-4. **Test iterate**: Verify Phase 2 re-runs with same hypothesis
+2. ~~**Continue to Phase 2 (round 2)**: Approve `approve_vpc_completion` to test Phase 2 with pivoted segment~~ ✅ DONE (2026-01-10 15:08)
+3. **Monitor Phase 2 BuildCrew**: Wait for BuildCrew → GrowthCrew → GovernanceCrew to complete
+4. **Test desirability gate**: Verify signal-based HITL routing with new segment
 5. **Phase 3 live test**: After desirability gate passes
 6. **Phase 4 live test**: Full viability assessment
+7. **Test override_proceed**: Verify force-proceed works despite pivot signal
+8. **Test iterate**: Verify Phase 2 re-runs with same hypothesis
 
 ---
 

@@ -8,25 +8,39 @@ last_reviewed: "2026-01-10"
 
 ## Architecture Status (2026-01-10)
 
-**CURRENT**: Modal redeployed with tool-wired code. Phase 0 validated, Phase 1 in progress.
+**CURRENT**: Phase 2 running with bug fixes. Tool input validation and error handling deployed.
 
 | Layer | Status | Notes |
 |-------|--------|-------|
 | Interaction (Netlify) | ✅ Production | Edge Functions |
 | Orchestration (Supabase) | ✅ Production | PostgreSQL + Realtime + Modal tables |
-| Compute (Modal) | ✅ Redeployed | Tool-wired code deployed 2026-01-10 |
-| **Tool Integration** | ✅ Deployed | 15 tools wired to 35+ agents, live in production |
+| Compute (Modal) | ✅ Redeployed | Bug fixes deployed 2026-01-10 15:08 |
+| **Tool Integration** | ✅ Fixed | args_schema pattern for typed input, error handling improved |
 
 **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture.
 
 ---
 
-## Active Work: Phase 1-4 Revalidation with Tools
+## Active Work: Phase 2 Desirability Validation
 
 **Status**: 🔄 IN PROGRESS
 **Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b`
-**Current Phase**: Phase 1 (VPC Discovery)
-**Next**: Approve Phase 1 HITL, continue to Phase 2-4
+**Current Phase**: Phase 2 (Desirability) - BuildCrew executing
+**Next**: GrowthCrew → GovernanceCrew → HITL checkpoint
+
+### Bug Fixes Deployed (2026-01-10 15:08)
+
+| Issue | Problem | Fix | Commit |
+|-------|---------|-----|--------|
+| #10 | AnalyticsTool expected string, LLM passed dict | Added Pydantic `args_schema` | `623322a` |
+| #11 | Segment alternatives returned `[]` on error | Added fallback + logging | `623322a` |
+| #12 | DesirabilityEvidence JSON parsing crashed | Added try/catch with default | `623322a` |
+
+**Files Changed**:
+- `src/shared/tools/analytics_privacy.py` - AnalyticsInput, AdPlatformInput, CalendarInput schemas
+- `src/modal_app/helpers/segment_alternatives.py` - Input validation, error fallback
+- `src/crews/desirability/__init__.py` - Error handling in run_growth_crew()
+- `tests/tools/test_analytics_privacy.py` - Updated for new typed API
 
 ---
 
@@ -156,7 +170,7 @@ Without tools, agents **hallucinate** outputs instead of collecting real evidenc
 
 ## Live Testing Progress (With Tools)
 
-> **Session 2 (2026-01-10)**: Modal redeployed with tool-wired code. Enum bugs found and fixed.
+> **Session 2 (2026-01-10)**: Tool input and error handling bugs fixed. Phase 2 running with fixes.
 > **Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b`
 
 See [modal-live-testing.md](./modal-live-testing.md) for full details.
@@ -167,9 +181,20 @@ See [modal-live-testing.md](./modal-live-testing.md) for full details.
 | Phase 1 (VPC Discovery) | ✅ PASSED | Fixed enum bugs (#7, #8), fit score 78/100 |
 | Phase 2 (Desirability) | ✅ PASSED | NO_INTEREST signal → Segment pivot |
 | Phase 1 (Pivot) | ✅ PASSED | New segment: Healthcare Online Platforms |
-| Phase 2+ | 🔄 Running | Second desirability test with pivoted segment |
+| Phase 2 (Retry) | 🔄 Running | Fixed #10-12, BuildCrew executing |
 | Phase 3 (Feasibility) | ⏳ Pending | - |
 | Phase 4 (Viability) | ⏳ Pending | - |
+
+### Issues Found and Fixed
+
+| # | Issue | Status | Commit |
+|---|-------|--------|--------|
+| 7 | JobType enum missing 'supporting' | ✅ Fixed | `359abd2` |
+| 8 | GainRelevance enum missing 'expected' | ✅ Fixed | `359abd2` |
+| 9 | HITL duplicate key constraint | ⚠️ Workaround | Manual |
+| 10 | AnalyticsTool input type mismatch | ✅ Fixed | `623322a` |
+| 11 | Segment alternatives silent failure | ✅ Fixed | `623322a` |
+| 12 | DesirabilityEvidence JSON parsing | ✅ Fixed | `623322a` |
 
 ---
 
@@ -210,23 +235,19 @@ The original Flow-based architecture had runtime bugs that were fixed before the
 4. **Update phases.md** checkboxes to match
 
 ---
-**Last Updated**: 2026-01-10
+**Last Updated**: 2026-01-10 15:08
 
 **Latest Changes**:
+- **BUG FIXES DEPLOYED** (2026-01-10 15:08)
+  - #10: AnalyticsTool args_schema for typed input
+  - #11: Segment alternatives error handling
+  - #12: DesirabilityEvidence JSON parsing
+  - 154 tool tests passing
+  - Phase 2 running with fixes
 - **TOOL INTEGRATION COMPLETE** (2026-01-10)
   - All 4 phases (A-D) implemented
   - 15 tools created, 35+ agents wired
   - 678 tests passing (164 new tool tests)
-- Phase D LLM-Based Tools COMPLETE (2026-01-10)
-  - CanvasBuilderTool, TestCardTool, LearningCardTool
-  - AnonymizerTool wired to G2 governance agents
-  - 46 new tests
-- Phase C Analytics & Privacy Tools COMPLETE (2026-01-10)
-  - AnalyticsTool, AnonymizerTool, AdPlatformTool, CalendarTool
-  - 42 new tests
-- Phase B Advanced Tools COMPLETE (2026-01-10)
-  - TranscriptionTool, InsightExtractorTool, BehaviorPatternTool, ABTestTool
-  - 35 new tests
-- Phase A Customer Research Tools COMPLETE (2026-01-10)
-  - ForumSearchTool, ReviewAnalysisTool, SocialListeningTool, TrendAnalysisTool
-  - 41 new tests
+- **ENUM BUGS FIXED** (2026-01-10)
+  - #7: JobType.SUPPORTING added (VPD 4-type model)
+  - #8: GainRelevance.EXPECTED added (VPD Kano model)

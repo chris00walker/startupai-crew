@@ -1,7 +1,7 @@
 ---
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
-last_reviewed: "2026-01-10"
+last_reviewed: "2026-01-10 15:08"
 last_audit: "2026-01-10 - Schema alignment analysis, Modal migrations created"
 ---
 
@@ -637,7 +637,7 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 | Phase 1 (VPC Discovery) | ✅ PASSED | Fixed enum bugs (#7, #8), fit score 78/100 |
 | Phase 2 (Desirability) | ✅ PASSED | NO_INTEREST signal → Segment pivot |
 | Phase 1 (Pivot) | ✅ PASSED | New segment: Healthcare Online Platforms |
-| Phase 2+ | 🔄 Running | Second desirability test with pivoted segment |
+| Phase 2 (Retry) | 🔄 Running | Fixed #10-12, BuildCrew executing |
 | Phase 3 (Feasibility) | ⏳ Pending | - |
 | Phase 4 (Viability) | ⏳ Pending | - |
 
@@ -646,14 +646,18 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 2. ~~Phase 0 revalidation~~ - ✅ Passed (no issues)
 3. ~~Phase 1 revalidation~~ - ✅ Passed (enum bugs fixed)
 4. ~~Phase 2 revalidation~~ - ✅ Passed (pivot tested)
-5. **Phase 2+ revalidation** - 🔄 In progress (pivoted segment)
-6. Phase 3-4 revalidation - ⏳ Pending
-7. Production cutover verification - ⏳ Pending
+5. ~~Bug fixes deployed~~ - ✅ Completed (2026-01-10 15:08)
+6. **Phase 2 retry** - 🔄 In progress (BuildCrew executing)
+7. Phase 3-4 revalidation - ⏳ Pending
+8. Production cutover verification - ⏳ Pending
 
 **Bugs Found & Fixed**:
-- #7: `JobType` enum missing `supporting` (VPD has 4 job types)
-- #8: `GainRelevance` enum missing `expected` (VPD Kano model has 4 levels)
+- #7: `JobType` enum missing `supporting` (VPD has 4 job types) - `359abd2`
+- #8: `GainRelevance` enum missing `expected` (VPD Kano model has 4 levels) - `359abd2`
 - #9: HITL duplicate key on pivot (workaround applied, proper fix TODO)
+- #10: AnalyticsTool expected string, LLM passed dict - Added args_schema - `623322a`
+- #11: Segment alternatives returned `[]` on error - Added fallback + logging - `623322a`
+- #12: DesirabilityEvidence JSON parsing crashed - Added try/catch - `623322a`
 
 ### Legacy (AMP - ARCHIVED)
 - 3 Crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)

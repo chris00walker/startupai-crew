@@ -1,7 +1,7 @@
 ---
 purpose: "Private technical source of truth for recently delivered work"
 status: "active"
-last_reviewed: "2026-01-10"
+last_reviewed: "2026-01-10 15:08"
 ---
 
 # Recently Delivered
@@ -10,10 +10,57 @@ last_reviewed: "2026-01-10"
 
 | Date | Event | Notes |
 |------|-------|-------|
-| 2026-01-09 AM | Phase 0-2 live testing | 5 bugs found/fixed, BEFORE tools |
+| 2026-01-09 AM | Phase 0-2 live testing | 6 bugs found/fixed, BEFORE tools |
 | 2026-01-09-10 | Tool integration Phases A-D | 15 tools, 35+ agents, 681 tests |
 | 2026-01-10 | Schema alignment | Modal migrations deployed to Supabase |
-| **Next** | Modal redeploy + Phase 0-4 revalidation | With integrated tools |
+| 2026-01-10 15:08 | Bug fixes deployed | #10-12 fixed, Phase 2 retry running |
+| **Next** | Complete Phase 2-4 live test | BuildCrew executing |
+
+---
+
+## Bug Fixes Deployed (2026-01-10 15:08)
+
+Fixed 3 bugs discovered during Phase 2 live testing with tools.
+
+### Issues Fixed
+
+| # | Issue | Root Cause | Fix | Commit |
+|---|-------|------------|-----|--------|
+| 10 | AnalyticsTool expected string, LLM passed dict | Tool used JSON string parsing, not Pydantic | Added `args_schema` for typed input | `623322a` |
+| 11 | Segment alternatives returned `[]` on error | No error handling in `generate_alternative_segments()` | Added input validation + fallback alternatives | `623322a` |
+| 12 | DesirabilityEvidence JSON parsing crashed | Malformed LLM output caused parse error | Added try/catch with default evidence | `623322a` |
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `src/shared/tools/analytics_privacy.py` | Added `AnalyticsInput`, `AdPlatformInput`, `CalendarInput` schemas; updated `_run()` signatures |
+| `src/modal_app/helpers/segment_alternatives.py` | Added input validation, logging, and fallback alternatives |
+| `src/crews/desirability/__init__.py` | Added try/catch with default evidence in `run_growth_crew()` |
+| `tests/tools/test_analytics_privacy.py` | Updated tests to use new typed parameter API |
+
+### Pattern Learned
+
+CrewAI tools should use Pydantic `args_schema` for typed input validation rather than parsing JSON strings. The LLM naturally passes structured data, so let CrewAI validate it.
+
+```python
+class AnalyticsInput(BaseModel):
+    site_id: str = Field(..., description="Netlify site ID")
+    days: int = Field(default=7, description="Number of days to fetch")
+
+class AnalyticsTool(BaseTool):
+    args_schema: type[BaseModel] = AnalyticsInput
+
+    def _run(self, site_id: str, days: int = 7) -> str:
+        # Typed parameters - no JSON parsing needed
+        ...
+```
+
+### Validation
+
+- 154 tool tests passing (updated for new API)
+- Modal redeployed with fixes
+- Phase 2 BuildCrew executing
 
 ---
 
@@ -454,4 +501,4 @@ Final implementation of architectural improvements bringing the system to 100% c
 
 ---
 
-**Last Updated**: 2026-01-09
+**Last Updated**: 2026-01-10 15:08
