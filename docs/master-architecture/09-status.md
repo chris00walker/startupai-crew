@@ -16,15 +16,15 @@ This document provides an **authoritative, cross-repository view** of implementa
 
 ## Executive Summary
 
-| Service | Status | Completion | Primary Blocker |
-|---------|--------|------------|-----------------|
-| **AI Founders Core** (startupai-crew) | Live testing Phase 0-2 complete | ~95% | Phase 3-4 live validation |
-| **Marketing Site** (startupai.site) | Production, static export | ~95% | None (live API connected) |
-| **Product App** (app.startupai.site) | Modal integration complete | ~95% | Live E2E verification |
+| Service | Status | Completion | Primary Work |
+|---------|--------|------------|--------------|
+| **AI Founders Core** (startupai-crew) | **MCP architecture ready** | ~80% | 60h MCP tool implementation |
+| **Marketing Site** (startupai.site) | Production, static export | ~95% | None (fully unblocked) |
+| **Product App** (app.startupai.site) | Modal integration complete | ~95% | Awaiting MCP completion |
 
-> **Live Testing In Progress (2026-01-09)**: Phase 0-2 validated with real LLM calls. 5 issues discovered and fixed. Signal-based HITL routing implemented. See [modal-live-testing.md](../work/modal-live-testing.md).
+> **MCP Architecture Ready (2026-01-09)**: Adopted Model Context Protocol as unified tool interface. 33 tools (13 EXISTS, 10 MCP Custom, 4 MCP External, 6 LLM-Based) mapped to 45 agents. 60-hour, 4-week implementation roadmap. ~$5-10/month cost. See `reference/tool-specifications.md`.
 
-**Ecosystem State**: Modal serverless deployed and live testing in progress. Phase 0 (Onboarding), Phase 1 (VPC Discovery), and Phase 2 (Desirability) validated with real LLM calls. Key fixes: template variable timing, HITL phase advancement, signal-based routing.
+**Ecosystem State**: Modal serverless deployed. MCP-first tool architecture designed. Ready for phased implementation: Phase A (Core MCP Server), Phase B (Advanced Tools), Phase C (External MCP + Analytics), Phase D (CrewAI Integration).
 
 ---
 
@@ -140,6 +140,74 @@ Legacy deployment (reference only):
 | 2026-01-06 | Crew 1 aligned to CrewAI best practices (100%) | Pydantic schemas, reasoning mode, enriched backstories |
 | 2026-01-05 | Added VPD Phase 0-4 specifications | Framework compliance |
 | 2025-12-05 | Migrated from Flow to Crew architecture | AMP compatibility issues with `type = "flow"` |
+
+---
+
+## Architecture Specification Status
+
+> **Status**: MCP ARCHITECTURE READY (2026-01-09)
+>
+> Architecture adopts MCP (Model Context Protocol) as unified tool interface - the equivalent of OpenRouter for LLMs but for tools.
+
+### MCP Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Modal Serverless                             │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌────────────────────────────────────────────────────────────┐    │
+│  │  StartupAI Custom MCP Server (FastMCP + stateless HTTP)    │    │
+│  │  10 Custom Tools: forum_search, analyze_reviews, etc.      │    │
+│  └────────────────────────────────────────────────────────────┘    │
+│                              │                                       │
+│  ┌───────────────────────────┴───────────────────────────────┐     │
+│  │              CrewAI Agents (MCP Clients)                   │     │
+│  └───────────────────────────────────────────────────────────┘     │
+│                              │                                       │
+├──────────────────────────────┼───────────────────────────────────────┤
+│  External MCP Servers: Meta Ads | Google Ads | Calendar | Fetch    │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Tool Categories
+
+| Category | Count | Description | Implementation |
+|----------|-------|-------------|----------------|
+| **EXISTS** | 13 | Ready to wire | Direct Python import |
+| **MCP Custom** | 10 | Build on Modal | FastMCP + asyncpraw, HuggingFace, etc. |
+| **MCP External** | 4 | Community servers | Meta Ads, Google Ads, Calendar, Fetch |
+| **LLM-Based** | 6 | Structured output | Pydantic + Supabase |
+| **TOTAL** | 33 | All tools for 45 agents | |
+
+### Implementation Roadmap (60 hours)
+
+| Phase | Focus | Hours | Deliverable |
+|-------|-------|-------|-------------|
+| **A** (Week 1) | Core MCP Server | 15h | Research tools (Reddit, app stores, web) |
+| **B** (Week 2) | Advanced Tools | 14h | Interview transcription, pattern recognition |
+| **C** (Week 3) | External MCP + Analytics | 13h | Ad platforms, analytics via MCP |
+| **D** (Week 4) | CrewAI Integration | 18h | All 45 agents wired |
+| **TOTAL** | | **60h** | Evidence-based validation |
+
+**Cost**: ~$5-10/month (Modal compute only)
+
+### Specification Documents
+
+| Document | Status | Description |
+|----------|--------|-------------|
+| `reference/tool-specifications.md` | ✅ MCP Architecture | Full MCP design + 33 tool specs |
+| `reference/tool-mapping.md` | ✅ MCP Categories | Agent-to-tool matrix with MCP categories |
+| `reference/agent-specifications.md` | ✅ Complete | All 45 agent configurations |
+| `reference/agentic-tool-framework.md` | ✅ Enhanced | Tool lifecycle framework |
+| Phase documents (04-08) | ✅ Enhanced | Agent configuration summaries |
+
+### Verification Checklist
+
+- [x] For any agent: What tools does it need? → `agent-specifications.md`
+- [x] For any tool: What is its MCP category? → `tool-specifications.md`
+- [x] For any tool: What is its input/output schema? → `tool-specifications.md`
+- [x] Implementation order: What phase implements what? → `tool-mapping.md`
+- [x] MCP server setup: How to deploy? → `tool-specifications.md`
 
 ---
 
@@ -422,6 +490,22 @@ Marketing activity feed shows real activity
 
 | Date | Changes |
 |------|---------|
+| **2026-01-09** | MCP Architecture Design |
+| | Adopted Model Context Protocol (MCP) as unified tool interface |
+| | 33 tools: 13 EXISTS, 10 MCP Custom, 4 MCP External, 6 LLM-Based |
+| | 60-hour, 4-week implementation roadmap designed |
+| | Phase A: Core MCP Server, Phase B: Advanced Tools |
+| | Phase C: External MCP + Analytics, Phase D: CrewAI Integration |
+| | Cost estimate: ~$5-10/month (Modal compute only) |
+| | Updated all cross-repo documentation |
+| **2026-01-09** | Architecture Specification Completion |
+| | Created `reference/agent-specifications.md` - All 45 agents with full config |
+| | Created `reference/tool-specifications.md` - All 33 tools with schemas |
+| | Refactored `reference/tool-mapping.md` - Complete mapping matrix |
+| | Enhanced `reference/agentic-tool-framework.md` - Tool implementation checklist |
+| | Enhanced all phase documents (04-08) with configuration summaries |
+| | Added Agent Configuration Standard to `02-organization.md` |
+| | Architecture now "bullet proof" for implementation |
 | **2026-01-09** | Live Testing & Test Suite Expansion |
 | | Phase 0-2 validated with real LLM calls |
 | | 6 issues discovered and fixed during live testing |
@@ -481,6 +565,10 @@ Marketing activity feed shows real activity
 ### Reference
 - [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
 - [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
+- [reference/agent-specifications.md](./reference/agent-specifications.md) - All 45 agent configurations
+- [reference/tool-specifications.md](./reference/tool-specifications.md) - All 33 tool specifications
+- [reference/tool-mapping.md](./reference/tool-mapping.md) - Agent-to-tool mapping matrix
+- [reference/agentic-tool-framework.md](./reference/agentic-tool-framework.md) - Tool implementation framework
 
 ### Architecture Decision Records
 - [ADR-001](../adr/001-flow-to-crew-migration.md) - Flow to 3-Crew Migration (Superseded)

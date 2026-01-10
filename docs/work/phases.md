@@ -1,13 +1,13 @@
 ---
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
-last_reviewed: "2026-01-08"
-last_audit: "2026-01-08 - Crew implementation complete (185 tests passing)"
+last_reviewed: "2026-01-09"
+last_audit: "2026-01-09 - MCP architecture designed, tool specs complete"
 ---
 
 # Engineering Phases
 
-> **Crew Implementation Complete**: All 14 crews with 45 agents implemented. 185 tests passing. Ready for E2E integration. See [ADR-002](../adr/002-modal-serverless-migration.md).
+> **MCP Architecture Ready (2026-01-09)**: Tool specifications complete. 33 tools (13 EXISTS, 10 MCP Custom, 4 MCP External, 6 LLM-Based) mapped to 45 agents. 60-hour implementation roadmap. See `docs/master-architecture/reference/tool-specifications.md`.
 
 ## Architecture Summary
 
@@ -45,11 +45,162 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
 
 ---
 
+## 🚀 MCP-First Tool Architecture
+
+**Status**: READY FOR IMPLEMENTATION
+**Designed**: 2026-01-09
+**Architecture**: Model Context Protocol (MCP) on Modal serverless
+**Documentation**: `docs/master-architecture/reference/tool-specifications.md`
+
+### Architecture Overview
+
+StartupAI adopts MCP (Model Context Protocol) as the unified tool interface - the equivalent of OpenRouter for LLMs but for tools.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Modal Serverless                             │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌────────────────────────────────────────────────────────────┐    │
+│  │  StartupAI Custom MCP Server (FastMCP + stateless HTTP)    │    │
+│  │  Deployed: modal deploy src/mcp_server/app.py              │    │
+│  │                                                             │    │
+│  │  10 Custom Tools: forum_search, analyze_reviews,           │    │
+│  │  social_listen, analyze_trends, transcribe_audio,          │    │
+│  │  extract_insights, identify_patterns, run_ab_test,         │    │
+│  │  get_analytics, anonymize_data                             │    │
+│  └────────────────────────────────────────────────────────────┘    │
+│                              │                                       │
+│  ┌───────────────────────────┴───────────────────────────────┐     │
+│  │              CrewAI Agents (MCP Clients)                   │     │
+│  └───────────────────────────────────────────────────────────┘     │
+│                              │                                       │
+├──────────────────────────────┼───────────────────────────────────────┤
+│  External MCP Servers        │                                       │
+│  ┌──────────┐ ┌──────────┐ ┌┴─────────┐ ┌──────────┐               │
+│  │ Meta Ads │ │Google Ads│ │ Calendar │ │   Fetch  │               │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘               │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Tool Categories
+
+| Category | Count | Description |
+|----------|-------|-------------|
+| **EXISTS** | 13 | Implemented and ready to wire |
+| **MCP External** | 4 | Use existing MCP servers (Meta Ads, Google Ads, Calendar, Fetch) |
+| **MCP Custom** | 10 | Build as FastMCP tools on Modal |
+| **LLM-Based** | 6 | Structured LLM output with Pydantic |
+| **TOTAL** | 33 | All tools across 45 agents |
+
+### Agent Configuration Pattern
+
+All 45 agents will follow the IntakeCrew pattern with MCP tools:
+
+```python
+from mcp_use import MCPClient
+from crewai import Agent, LLM
+
+# Connect to StartupAI MCP server
+mcp_client = MCPClient(
+    url="https://chris00walker--startupai-mcp-tools.modal.run/mcp/",
+    transport="streamable-http"
+)
+mcp_tools = mcp_client.get_tools()
+
+@agent
+def observation_agent(self) -> Agent:
+    return Agent(
+        config=self.agents_config["d2_observation_agent"],
+        tools=[
+            TavilySearchTool(),   # EXISTS (direct import)
+            *mcp_tools,           # MCP Custom (from Modal server)
+        ],
+        reasoning=True,
+        inject_date=True,
+        max_iter=25,
+        llm=LLM(model="openai/gpt-4o", temperature=0.3),
+        verbose=True,
+        allow_delegation=False,
+    )
+```
+
+### Implementation Phases
+
+See `docs/master-architecture/reference/tool-mapping.md` for detailed roadmap.
+
+#### Phase A: Core MCP Server (Week 1) - 15 hours
+
+| Task | MCP Tool Name | Target Agents | Effort |
+|------|---------------|---------------|--------|
+| Create FastMCP server on Modal | - | All | 4h |
+| Implement `forum_search` | ForumScraperTool | D2, J1, PAIN_RES, GAIN_RES | 3h |
+| Implement `analyze_reviews` | ReviewAnalysisTool | D2, J1, PAIN_RES, GAIN_RES | 3h |
+| Implement `social_listen` | SocialListeningTool | D2 | 2h |
+| Implement `analyze_trends` | TrendAnalysisTool | D2 | 2h |
+| Deploy to Modal | - | - | 1h |
+
+**Deliverable**: Research agents can gather real customer insights from Reddit, app stores, and web.
+
+#### Phase B: Advanced Tools (Week 2) - 14 hours
+
+| Task | MCP Tool Name | Target Agents | Effort |
+|------|---------------|---------------|--------|
+| Implement `transcribe_audio` | TranscriptionTool | D1 | 3h |
+| Implement `extract_insights` | InsightExtractorTool | D1, D4 | 4h |
+| Implement `identify_patterns` | BehaviorPatternTool | D2, D3 | 4h |
+| Implement `run_ab_test` | ABTestTool | P1, P2, W1 | 3h |
+
+**Deliverable**: Interview transcription and pattern recognition operational.
+
+#### Phase C: External MCP + Analytics (Week 3) - 13 hours
+
+| Task | Implementation | Target Agents | Effort |
+|------|----------------|---------------|--------|
+| Implement `get_analytics` | MCP Custom | P3, D3, L1, W1, W2 | 3h |
+| Implement `anonymize_data` | MCP Custom (Presidio) | Learning pipeline | 2h |
+| Connect Meta Ads MCP | External server | P1, P2, P3, D3 | 2h |
+| Connect Google Ads MCP | External server | P1, P2, P3 | 2h |
+| Connect Calendar MCP | External server | D1 | 2h |
+| Integration testing | - | All | 4h |
+
+**Deliverable**: Ad platforms and analytics connected via MCP.
+
+#### Phase D: CrewAI Integration (Week 4) - 18 hours
+
+| Task | Implementation | Target Agents | Effort |
+|------|----------------|---------------|--------|
+| Wire EXISTS tools to agents | Direct import | All phases | 4h |
+| Add MCP client to agents | mcp_use library | All phases | 4h |
+| Build LLM-Based tools | Structured output | O1, E1, V1-V3, C2 | 4h |
+| End-to-end testing | Full pipeline | All | 4h |
+| Documentation | Agent configs | - | 2h |
+
+**Deliverable**: All 45 agents fully equipped with evidence-based tools.
+
+### Cost Summary
+
+| Category | Monthly Cost |
+|----------|--------------|
+| Modal MCP server compute | ~$5-10 |
+| External MCP servers | $0 |
+| HuggingFace (on Modal) | $0 |
+| Free-tier APIs | $0 |
+| **TOTAL ADDITIONAL** | **~$5-10** |
+
+**Reference Documents**:
+- Tool specifications: `docs/master-architecture/reference/tool-specifications.md`
+- Agent-to-tool mapping: `docs/master-architecture/reference/tool-mapping.md`
+- Tool lifecycle: `docs/master-architecture/reference/agentic-tool-framework.md`
+
+See `docs/work/cross-repo-blockers.md` for ecosystem impact.
+
+---
+
 ## Architecture Implementation Status
 
 ### Modal Serverless (DEPLOYED - 2026-01-08)
 
-**STATUS**: Infrastructure deployed, crews implemented, ready for E2E testing.
+**STATUS**: Infrastructure deployed, crews implemented. **TOOL WIRING PENDING.**
 
 - **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) (current)
 - **Infrastructure**: Modal + Supabase + Netlify deployed to production

@@ -1,23 +1,23 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2026-01-08"
-last_synced: "2026-01-08 - E2E integration tests complete (202 tests passing)"
+last_reviewed: "2026-01-09"
+last_synced: "2026-01-09 - MCP architecture designed"
 ---
 
 # Cross-Repository Blockers
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
 
-> **E2E Integration Tests Complete**: All 14 crews with 45 agents implemented. 202 tests passing (185 crew + 17 E2E). Ready for live production validation. See [ADR-002](../adr/002-modal-serverless-migration.md).
+> **MCP ARCHITECTURE READY (2026-01-09)**: Tool implementation adopts MCP (Model Context Protocol) as unified interface. 33 tools mapped to 45 agents. 60-hour, 4-week implementation roadmap. ~$5-10/month additional cost. See `docs/master-architecture/reference/tool-specifications.md`.
 
-## Ecosystem Status (2026-01-08)
+## Ecosystem Status (2026-01-09)
 
-**E2E integration tests complete.** All 14 crews implemented, 202 tests passing, ready for live production validation.
+**MCP architecture designed. Ready for phased tool implementation.**
 
 | Service | Status | Completion | Notes |
 |---------|--------|------------|-------|
-| CrewAI Backend | E2E tested | ~90% | 14 crews, 45 agents, 202 tests |
+| CrewAI Backend | **MCP READY** | ~80% | Architecture complete, 60h implementation ahead |
 | Product App | Modal integration complete | ~95% | Pointing to Modal endpoints |
 | Marketing Site | Live API integration | ~95% | Activity Feed + Metrics connected |
 
@@ -83,13 +83,61 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 
 ---
 
+## MCP Architecture Implementation
+
+**Status**: READY FOR IMPLEMENTATION
+**Designed**: 2026-01-09
+**Owner**: CrewAI Backend (this repo)
+
+### Architecture Decision
+
+Adopted **MCP (Model Context Protocol)** as the unified tool interface:
+- Equivalent of OpenRouter for LLMs, but for tools
+- Open standard by Linux Foundation (Anthropic + OpenAI backing)
+- Stateless HTTP transport works with Modal serverless
+- No per-call fees, just compute costs (~$5-10/month)
+
+### Tool Categories
+
+| Category | Count | Description | Implementation |
+|----------|-------|-------------|----------------|
+| **EXISTS** | 13 | Ready to wire | Direct Python import |
+| **MCP External** | 4 | Pre-built community servers | Meta Ads, Google Ads, Calendar, Fetch |
+| **MCP Custom** | 10 | Build as FastMCP on Modal | forum_search, analyze_reviews, etc. |
+| **LLM-Based** | 6 | Structured output | Pydantic + Supabase |
+| **TOTAL** | 33 | All tools for 45 agents | |
+
+### Implementation Roadmap (60 hours)
+
+| Phase | Focus | Hours | Deliverable |
+|-------|-------|-------|-------------|
+| A (Week 1) | Core MCP Server | 15h | Research tools (Reddit, app stores, web) |
+| B (Week 2) | Advanced Tools | 14h | Interview transcription, pattern recognition |
+| C (Week 3) | External MCP + Analytics | 13h | Ad platforms, analytics via MCP |
+| D (Week 4) | CrewAI Integration | 18h | All 45 agents wired |
+| **TOTAL** | | **60h** | Evidence-based validation |
+
+### Reference Documents
+
+| Document | Purpose |
+|----------|---------|
+| `reference/tool-specifications.md` | Full MCP architecture + tool specs |
+| `reference/tool-mapping.md` | Agent-to-tool matrix with MCP categories |
+| `reference/agent-specifications.md` | All 45 agent configurations |
+| `reference/agentic-tool-framework.md` | Tool lifecycle framework |
+
+---
+
 ## Remaining Work (Not Blockers - Internal)
 
 | Item | Status | Owner | Notes |
 |------|--------|-------|-------|
-| Live production validation | ⏳ Ready | All repos | E2E tests passing, needs real run |
-| Ad platform integration | ❌ Not connected | Crew | Meta/Google Ads APIs - deferred |
-| Real analytics tracking | ⚠️ Partial | Crew | PostHog exists; ad analytics pending |
+| **MCP Server Setup** | ⏳ Phase A | Crew | FastMCP on Modal (15h) |
+| **Research Tools** | ⏳ Phase A | Crew | forum_search, analyze_reviews, etc. |
+| **Advanced Tools** | ⏳ Phase B | Crew | transcribe_audio, extract_insights |
+| **External MCP** | ⏳ Phase C | Crew | Meta Ads, Google Ads, Calendar |
+| **Agent Wiring** | ⏳ Phase D | Crew | Wire all 45 agents |
+| Live production validation | ⏳ Ready | All repos | After Phase D complete |
 
 ---
 
@@ -172,20 +220,26 @@ Marketing activity feed shows real activity
 
 ---
 
-**Last Updated**: 2026-01-08
+**Last Updated**: 2026-01-09
 
-**Changes (2026-01-08 - E2E Integration Tests Complete)**:
+**Changes (2026-01-09 - MCP Architecture Designed)**:
+- 🚀 **MCP-FIRST**: Adopted Model Context Protocol as unified tool interface
+- Architecture: 13 EXISTS + 10 MCP Custom + 4 MCP External + 6 LLM-Based = 33 tools
+- Implementation roadmap: 60 hours over 4 weeks (~$5-10/month cost)
+- Updated `reference/tool-specifications.md` with MCP server pattern
+- Updated `reference/tool-mapping.md` with MCP categories
+- Updated `docs/work/phases.md` with implementation phases
+- Ready for Phase A: Core MCP Server setup
+
+**Previous (2026-01-09 - Architecture Specs Complete)**:
+- Architecture documentation refactored to be "bullet proof"
+- Created `reference/agent-specifications.md` - All 45 agents documented
+- Created `reference/tool-specifications.md` - All 33 tools with schemas
+- Refactored `reference/tool-mapping.md` - Complete mapping matrix
+
+**Previous (2026-01-08 - E2E Integration Tests Complete)**:
 - Added 17 E2E integration tests (Phase 0→4 flow)
 - 202 tests passing (185 crew + 17 E2E)
-- Updated completion status: ~90% (was ~85%)
-- Ready for live production validation run
-
-**Previous (2026-01-08 - Crew Implementation Complete)**:
-- All 14 crews implemented with 45 agents
-- 185 tests passing (Phases 0-4 covered)
-- Updated completion status: ~85% (was ~70%)
-- Ready for E2E integration testing
-- Primary work is now E2E test + production validation
 
 **Previous (2026-01-08 - Modal Production Deployment)**:
 - Modal serverless deployed to production
@@ -193,8 +247,3 @@ Marketing activity feed shows real activity
 - Product app updated to point to Modal (not AMP)
 - Marketing site live components created (Activity Feed, Metrics)
 - AMP marked as deprecated, repos to be archived
-
-**Previous (2026-01-08 - Modal Migration Proposed)**:
-- Added Modal serverless migration notice (ADR-002)
-- Updated Ecosystem Status to show migration in progress
-- Noted return to single repository (was 3 repos for AMP)
