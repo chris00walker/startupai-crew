@@ -242,6 +242,23 @@ def create_hitl_request(
     supabase = get_supabase()
 
     try:
+        # Bug #9 fix: Cancel any existing pending HITL for this checkpoint
+        # Uses 'expired' status (not 'cancelled' - not in CHECK constraint)
+        cancel_result = supabase.table("hitl_requests").update({
+            "status": "expired",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("run_id", run_id).eq(
+            "checkpoint_name", checkpoint.checkpoint_name
+        ).eq("status", "pending").execute()
+
+        if cancel_result.data:
+            logger.info(json.dumps({
+                "event": "hitl_expired_for_new",
+                "run_id": run_id,
+                "checkpoint": checkpoint.checkpoint_name,
+                "expired_count": len(cancel_result.data),
+            }))
+
         result = supabase.table("hitl_requests").insert({
             "run_id": run_id,
             "checkpoint_name": checkpoint.checkpoint_name,

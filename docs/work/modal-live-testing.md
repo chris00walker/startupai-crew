@@ -1,7 +1,7 @@
 ---
 purpose: Track learnings from live Modal testing with real LLM calls
 status: active
-last_updated: 2026-01-10 15:08
+last_updated: 2026-01-10
 ---
 
 # Modal Live Testing Learnings
@@ -145,7 +145,7 @@ Modal redeployed with tool integration code:
 |---|-------|------------|-----|--------|
 | 7 | `JobType` enum missing `supporting` | VPD defines 4 job types, enum only had 3 | Add `SUPPORTING = "supporting"` to enum | `359abd2` |
 | 8 | `GainRelevance` enum missing `expected` | VPD Kano model has 4 levels, enum only had 3 | Add `EXPECTED = "expected"` to enum | `359abd2` |
-| 9 | HITL duplicate key on pivot | Old pending HITL not cancelled before creating new | Workaround: approve old HITL | Bug logged |
+| 9 | HITL duplicate key on pivot | Old pending HITL not cancelled before creating new | Expire pending HITLs before insert | ✅ Fixed |
 | 10 | AnalyticsTool expected string, got dict | LLM passes dict `{site_id: ..., days: 7}` but tool expected JSON string | Add Pydantic `args_schema` for typed input | `623322a` |
 | 11 | Segment alternatives returned `[]` on error | `generate_alternative_segments()` had no error handling | Add input validation + fallback alternatives | `623322a` |
 | 12 | DesirabilityEvidence JSON parsing crashed | Malformed LLM output caused JSON parse error | Add try/catch with default evidence | `623322a` |
@@ -283,21 +283,41 @@ class GainRelevance(str, Enum):
     UNEXPECTED = "unexpected"  # Delighters
 ```
 
-### Pattern 6: HITL Duplicate Key on Pivot (BUG #9)
+### Pattern 6: HITL Duplicate Key on Pivot (BUG #9) - FIXED
 
 **Symptom**: `duplicate key value violates unique constraint "idx_hitl_requests_unique_pending"`
 
 **Root Cause**: When pivoting, the old pending HITL checkpoint isn't cancelled before the system tries to create a new one for the re-run.
 
-**Workaround**: Approve the old HITL manually to clear it, then continue.
-
-**Proper Fix** (TODO): Cancel/expire old HITLs before creating new ones on pivot:
+**Solution** (Implemented 2026-01-10): Cancel pending HITLs before creating new ones:
 ```python
-# Before creating new HITL on pivot
-await supabase.table("hitl_requests").update(
-    {"status": "cancelled"}
-).eq("run_id", run_id).eq("status", "pending").execute()
+def create_hitl_request(run_id: str, checkpoint: HITLCheckpoint) -> Optional[str]:
+    supabase = get_supabase()
+
+    try:
+        # Bug #9 fix: Cancel any existing pending HITL for this checkpoint
+        # Uses 'expired' status (not 'cancelled' - not in CHECK constraint)
+        cancel_result = supabase.table("hitl_requests").update({
+            "status": "expired",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("run_id", run_id).eq(
+            "checkpoint_name", checkpoint.checkpoint_name
+        ).eq("status", "pending").execute()
+
+        if cancel_result.data:
+            logger.info(json.dumps({
+                "event": "hitl_expired_for_new",
+                "run_id": run_id,
+                "checkpoint": checkpoint.checkpoint_name,
+                "expired_count": len(cancel_result.data),
+            }))
+
+        # Now create new HITL (no conflict possible)
+        result = supabase.table("hitl_requests").insert({...}).execute()
 ```
+
+**Files Changed**:
+- `src/state/persistence.py` - Added cancel logic in `create_hitl_request()`
 
 ### Pattern 7: Tool Input Type Mismatch (BUG #10)
 
@@ -362,6 +382,81 @@ def generate_alternative_segments(...) -> list[dict]:
 
 **Files Changed**:
 - `src/modal_app/helpers/segment_alternatives.py`
+
+### Pattern 9: Phase 2 Tool Integration Gap (System Assessment 2026-01-10)
+
+**Symptom**: 4 of 9 Phase 2 agents had `tools=[]` (44% gap)
+
+**Discovery**: System assessment revealed BuildCrew agents (F1, F2, F3) and GovernanceCrew G3 had no tools wired.
+
+**Solution** (Implemented 2026-01-10): Wire existing tools to agents:
+```python
+# build_crew.py
+from shared.tools import CanvasBuilderTool, TestCardTool, CalendarTool, MethodologyCheckTool
+
+@agent
+def f1_ux_designer(self) -> Agent:
+    return Agent(
+        config=self.agents_config["f1_ux_designer"],
+        tools=[CanvasBuilderTool(), TestCardTool()],  # Added
+        ...
+    )
+
+@agent
+def f2_frontend_developer(self) -> Agent:
+    return Agent(
+        config=self.agents_config["f2_frontend_developer"],
+        tools=[CanvasBuilderTool(), TestCardTool()],  # Added
+        ...
+    )
+
+@agent
+def f3_backend_developer(self) -> Agent:
+    return Agent(
+        config=self.agents_config["f3_backend_developer"],
+        tools=[CalendarTool(), MethodologyCheckTool()],  # Added
+        ...
+    )
+
+# governance_crew.py
+@agent
+def g3_audit_agent(self) -> Agent:
+    return Agent(
+        config=self.agents_config["g3_audit_agent"],
+        tools=[LearningCardTool()],  # Added
+        ...
+    )
+```
+
+**Files Changed**:
+- `src/crews/desirability/build_crew.py` - F1, F2, F3 tools wired
+- `src/crews/desirability/governance_crew.py` - G3 tool wired
+
+### Pattern 10: Container Timeout Insufficient (System Assessment 2026-01-10)
+
+**Symptom**: GovernanceCrew terminated mid-execution during Phase 2
+
+**Discovery**: Default 1-hour timeout may be insufficient for Phase 2-4 which run 3 crews sequentially.
+
+**Solution** (Implemented 2026-01-10): Increase timeout from 3600s to 7200s:
+```python
+@app.function(
+    timeout=7200,  # 2 hours - Phase 2-4 can take 40+ minutes
+    cpu=2.0,
+    memory=4096,
+    retries=modal.Retries(max_retries=2, initial_delay=1.0),
+)
+def run_validation(run_id: str):
+
+@app.function(
+    timeout=7200,  # 2 hours - resumed phases can run long
+    ...
+)
+def resume_from_checkpoint(run_id: str, checkpoint: str):
+```
+
+**Files Changed**:
+- `src/modal_app/app.py` - Both functions updated
 
 ---
 

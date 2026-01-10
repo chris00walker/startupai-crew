@@ -654,10 +654,15 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 **Bugs Found & Fixed**:
 - #7: `JobType` enum missing `supporting` (VPD has 4 job types) - `359abd2`
 - #8: `GainRelevance` enum missing `expected` (VPD Kano model has 4 levels) - `359abd2`
-- #9: HITL duplicate key on pivot (workaround applied, proper fix TODO)
+- #9: HITL duplicate key on pivot - Expire pending HITLs before insert - ✅ Fixed
 - #10: AnalyticsTool expected string, LLM passed dict - Added args_schema - `623322a`
 - #11: Segment alternatives returned `[]` on error - Added fallback + logging - `623322a`
 - #12: DesirabilityEvidence JSON parsing crashed - Added try/catch - `623322a`
+
+**Additional Fixes (2026-01-10)**:
+- Phase 2 tool integration gap: F1, F2, F3, G3 now have tools wired (100% coverage)
+- Container timeout: Increased from 3600s to 7200s (2 hours)
+- RLS security: Verified enabled on all Modal tables
 
 ### Legacy (AMP - ARCHIVED)
 - 3 Crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)

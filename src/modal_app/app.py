@@ -569,7 +569,7 @@ async def health_check():
 # -----------------------------------------------------------------------------
 
 @app.function(
-    timeout=3600,  # 1 hour max per orchestration cycle
+    timeout=7200,  # 2 hours - Phase 2-4 can take 40+ minutes
     cpu=2.0,
     memory=4096,
     retries=modal.Retries(max_retries=2, initial_delay=1.0),
@@ -708,7 +708,7 @@ def run_validation(run_id: str):
 
 
 @app.function(
-    timeout=3600,
+    timeout=7200,  # 2 hours - resumed phases can run long
     cpu=2.0,
     memory=4096,
     retries=modal.Retries(max_retries=2, initial_delay=1.0),

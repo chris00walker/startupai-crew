@@ -1,7 +1,7 @@
 ---
 purpose: "Private technical source of truth for recently delivered work"
 status: "active"
-last_reviewed: "2026-01-10 15:08"
+last_reviewed: "2026-01-10"
 ---
 
 # Recently Delivered
@@ -14,7 +14,40 @@ last_reviewed: "2026-01-10 15:08"
 | 2026-01-09-10 | Tool integration Phases A-D | 15 tools, 35+ agents, 681 tests |
 | 2026-01-10 | Schema alignment | Modal migrations deployed to Supabase |
 | 2026-01-10 15:08 | Bug fixes deployed | #10-12 fixed, Phase 2 retry running |
-| **Next** | Complete Phase 2-4 live test | BuildCrew executing |
+| 2026-01-10 | **4 Critical Issues Fixed** | Bug #9, tool gap, timeout, RLS |
+| **Next** | Complete Phase 2-4 live test | All blockers resolved |
+
+---
+
+## 4 Critical Issues Resolved (2026-01-10)
+
+Fixed all blocking issues from system assessment for production readiness.
+
+### Issues Fixed
+
+| Issue | Problem | Fix | Files |
+|-------|---------|-----|-------|
+| **Bug #9** | HITL duplicate key constraint on pivot | Expire pending HITLs before insert | `persistence.py` |
+| **Tool Gap** | 4 of 9 Phase 2 agents had no tools (44%) | Wire F1, F2, F3, G3 | `build_crew.py`, `governance_crew.py` |
+| **Timeout** | Container timeout 1h insufficient | Increase to 2h | `app.py` |
+| **RLS** | Security not enabled | Verified already deployed | N/A |
+
+### Files Changed
+
+| File | Changes |
+|------|---------|
+| `src/state/persistence.py` | Added cancel logic in `create_hitl_request()` - expire pending before insert |
+| `src/crews/desirability/build_crew.py` | F1: CanvasBuilderTool, TestCardTool; F2: same; F3: CalendarTool, MethodologyCheckTool |
+| `src/crews/desirability/governance_crew.py` | G3: LearningCardTool |
+| `src/modal_app/app.py` | timeout: 3600 → 7200 for both functions |
+| `db/migrations/008_enable_validation_runs_rls.sql` | RLS migration created (already applied) |
+| `tests/test_pivot_workflow.py` | Updated test expectation for Bug #11 fallback |
+
+### Validation
+
+- 678 tests passing (all pass)
+- Modal deployed successfully
+- RLS policies verified: 16 policies active on 3 tables
 
 ---
 

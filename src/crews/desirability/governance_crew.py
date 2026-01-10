@@ -15,7 +15,7 @@ Guardian's role is oversight (board-level), not execution.
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from shared.tools import MethodologyCheckTool, AnonymizerTool
+from shared.tools import MethodologyCheckTool, AnonymizerTool, LearningCardTool
 
 
 @CrewBase
@@ -69,7 +69,7 @@ class GovernanceCrew:
         """G3: Audit Agent - Decision logging."""
         return Agent(
             config=self.agents_config["g3_audit_agent"],
-            tools=[],
+            tools=[LearningCardTool()],  # Capture learnings from decisions
             reasoning=False,  # Straightforward logging
             inject_date=True,
             max_iter=25,

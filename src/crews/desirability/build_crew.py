@@ -13,6 +13,13 @@ Agents:
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from shared.tools import (
+    CanvasBuilderTool,
+    TestCardTool,
+    CalendarTool,
+    MethodologyCheckTool,
+)
+
 
 @CrewBase
 class BuildCrew:
@@ -37,7 +44,7 @@ class BuildCrew:
         """F1: UX/UI Designer - Designs interfaces."""
         return Agent(
             config=self.agents_config["f1_ux_designer"],
-            tools=[],
+            tools=[CanvasBuilderTool(), TestCardTool()],
             reasoning=False,  # Creative design work
             inject_date=True,
             max_iter=25,
@@ -51,7 +58,7 @@ class BuildCrew:
         """F2: Frontend Developer - Builds UI."""
         return Agent(
             config=self.agents_config["f2_frontend_developer"],
-            tools=[],
+            tools=[CanvasBuilderTool(), TestCardTool()],
             reasoning=False,  # Code generation
             inject_date=True,
             max_iter=25,
@@ -65,7 +72,7 @@ class BuildCrew:
         """F3: Backend Developer - Deploys artifacts."""
         return Agent(
             config=self.agents_config["f3_backend_developer"],
-            tools=[],
+            tools=[CalendarTool(), MethodologyCheckTool()],
             reasoning=False,  # Code generation
             inject_date=True,
             max_iter=25,

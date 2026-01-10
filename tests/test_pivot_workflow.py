@@ -71,7 +71,7 @@ class TestSegmentAlternativesGeneration:
             assert result[2]["segment_name"] == "Low"
 
     def test_alternatives_handles_api_error(self):
-        """Should return empty list on API error."""
+        """Should return fallback alternative on API error (Bug #11 fix)."""
         with patch("src.modal_app.helpers.segment_alternatives.OpenAI") as mock_openai:
             mock_openai.return_value.chat.completions.create.side_effect = Exception("API Error")
 
@@ -83,8 +83,11 @@ class TestSegmentAlternativesGeneration:
                 desirability_evidence={"problem_resonance": 0.1},
             )
 
-            # Should return empty list, not raise
-            assert result == []
+            # Bug #11 fix: Returns fallback alternative with error info, not empty list
+            assert len(result) == 1
+            assert result[0]["segment_name"] == "Custom Segment (Generation Failed)"
+            assert result[0]["_error"] == "API Error"
+            assert result[0]["confidence"] == 0.0
 
 
 # =============================================================================

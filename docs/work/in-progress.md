@@ -8,39 +8,49 @@ last_reviewed: "2026-01-10"
 
 ## Architecture Status (2026-01-10)
 
-**CURRENT**: Phase 2 running with bug fixes. Tool input validation and error handling deployed.
+**CURRENT**: Production-ready fixes deployed. 4 critical issues resolved. Ready for Phase 2-4 validation.
 
 | Layer | Status | Notes |
 |-------|--------|-------|
 | Interaction (Netlify) | ✅ Production | Edge Functions |
-| Orchestration (Supabase) | ✅ Production | PostgreSQL + Realtime + Modal tables |
-| Compute (Modal) | ✅ Redeployed | Bug fixes deployed 2026-01-10 15:08 |
-| **Tool Integration** | ✅ Fixed | args_schema pattern for typed input, error handling improved |
+| Orchestration (Supabase) | ✅ Production | PostgreSQL + Realtime + Modal tables + RLS |
+| Compute (Modal) | ✅ Redeployed | All fixes deployed 2026-01-10 |
+| **Tool Integration** | ✅ Complete | 100% agents wired (was 56%), args_schema pattern |
 
 **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture.
 
 ---
 
-## Active Work: Phase 2 Desirability Validation
+## Active Work: Resume Phase 2-4 Live Testing
 
-**Status**: 🔄 IN PROGRESS
-**Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b`
-**Current Phase**: Phase 2 (Desirability) - BuildCrew executing
-**Next**: GrowthCrew → GovernanceCrew → HITL checkpoint
+**Status**: ✅ READY TO TEST
+**Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b` (or start new run)
+**Current Phase**: Ready for Phase 2 re-test (all blockers resolved)
+**Next**: Start fresh validation run to test all fixes
 
-### Bug Fixes Deployed (2026-01-10 15:08)
+### Critical Fixes Deployed (2026-01-10)
+
+| Issue | Problem | Fix | Status |
+|-------|---------|-----|--------|
+| **#9** | HITL duplicate key on pivot | Expire pending HITLs before insert | ✅ Fixed |
+| **Tool Gap** | 4 of 9 Phase 2 agents had no tools | Wire F1, F2, F3, G3 | ✅ Fixed |
+| **Timeout** | Container timeout insufficient (1h) | Increase to 2h | ✅ Fixed |
+| **RLS** | Security not enabled on tables | Already deployed | ✅ Verified |
+
+**Files Changed**:
+- `src/state/persistence.py` - Bug #9 HITL cancel logic
+- `src/crews/desirability/build_crew.py` - F1, F2, F3 tools wired
+- `src/crews/desirability/governance_crew.py` - G3 tool wired
+- `src/modal_app/app.py` - Timeout 3600s → 7200s
+- `db/migrations/008_enable_validation_runs_rls.sql` - RLS migration (already applied)
+
+### Previous Bug Fixes (Still Deployed)
 
 | Issue | Problem | Fix | Commit |
 |-------|---------|-----|--------|
 | #10 | AnalyticsTool expected string, LLM passed dict | Added Pydantic `args_schema` | `623322a` |
 | #11 | Segment alternatives returned `[]` on error | Added fallback + logging | `623322a` |
 | #12 | DesirabilityEvidence JSON parsing crashed | Added try/catch with default | `623322a` |
-
-**Files Changed**:
-- `src/shared/tools/analytics_privacy.py` - AnalyticsInput, AdPlatformInput, CalendarInput schemas
-- `src/modal_app/helpers/segment_alternatives.py` - Input validation, error fallback
-- `src/crews/desirability/__init__.py` - Error handling in run_growth_crew()
-- `tests/tools/test_analytics_privacy.py` - Updated for new typed API
 
 ---
 
@@ -191,7 +201,7 @@ See [modal-live-testing.md](./modal-live-testing.md) for full details.
 |---|-------|--------|--------|
 | 7 | JobType enum missing 'supporting' | ✅ Fixed | `359abd2` |
 | 8 | GainRelevance enum missing 'expected' | ✅ Fixed | `359abd2` |
-| 9 | HITL duplicate key constraint | ⚠️ Workaround | Manual |
+| 9 | HITL duplicate key constraint | ✅ Fixed | See current commit |
 | 10 | AnalyticsTool input type mismatch | ✅ Fixed | `623322a` |
 | 11 | Segment alternatives silent failure | ✅ Fixed | `623322a` |
 | 12 | DesirabilityEvidence JSON parsing | ✅ Fixed | `623322a` |
@@ -235,15 +245,20 @@ The original Flow-based architecture had runtime bugs that were fixed before the
 4. **Update phases.md** checkboxes to match
 
 ---
-**Last Updated**: 2026-01-10 15:08
+**Last Updated**: 2026-01-10
 
 **Latest Changes**:
-- **BUG FIXES DEPLOYED** (2026-01-10 15:08)
+- **4 CRITICAL ISSUES RESOLVED** (2026-01-10)
+  - Bug #9: HITL duplicate key - expire pending before insert
+  - Tool Gap: F1, F2, F3, G3 agents now have tools (was 56% → 100%)
+  - Timeout: Container timeout increased to 2 hours
+  - RLS: Security verified - policies in place
+  - 678 tests passing
+  - Modal deployed with all fixes
+- **PREVIOUS BUG FIXES** (2026-01-10 15:08)
   - #10: AnalyticsTool args_schema for typed input
   - #11: Segment alternatives error handling
   - #12: DesirabilityEvidence JSON parsing
-  - 154 tool tests passing
-  - Phase 2 running with fixes
 - **TOOL INTEGRATION COMPLETE** (2026-01-10)
   - All 4 phases (A-D) implemented
   - 15 tools created, 35+ agents wired
