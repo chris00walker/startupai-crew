@@ -8,24 +8,25 @@ last_reviewed: "2026-01-10"
 
 ## Architecture Status (2026-01-10)
 
-**CURRENT**: Tool integration Phases A-D complete (15 tools, 35+ agents). Modal redeploy + Phase 0-4 revalidation pending.
+**CURRENT**: Modal redeployed with tool-wired code. Phase 0 validated, Phase 1 in progress.
 
 | Layer | Status | Notes |
 |-------|--------|-------|
 | Interaction (Netlify) | ✅ Production | Edge Functions |
 | Orchestration (Supabase) | ✅ Production | PostgreSQL + Realtime + Modal tables |
-| Compute (Modal) | ⚠️ Stale | Deployed code predates tool integration |
-| **Tool Integration** | ✅ Code Complete | 15 tools wired to 35+ agents. Modal redeploy pending. |
+| Compute (Modal) | ✅ Redeployed | Tool-wired code deployed 2026-01-10 |
+| **Tool Integration** | ✅ Deployed | 15 tools wired to 35+ agents, live in production |
 
 **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture.
 
 ---
 
-## Active Work: Modal Redeploy + Phase 0-4 Revalidation
+## Active Work: Phase 1-4 Revalidation with Tools
 
-**Status**: ⏳ IN PROGRESS
-**Blocker**: Modal deployment has stale code (predates tool integration)
-**Next**: Deploy tool-wired code to Modal, run Phase 0 live test
+**Status**: 🔄 IN PROGRESS
+**Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b`
+**Current Phase**: Phase 1 (VPC Discovery)
+**Next**: Approve Phase 1 HITL, continue to Phase 2-4
 
 ---
 
@@ -153,21 +154,22 @@ Without tools, agents **hallucinate** outputs instead of collecting real evidenc
 
 ---
 
-## Live Testing Progress
+## Live Testing Progress (With Tools)
 
-> **Important**: Live testing Phase 0-2 (2026-01-09) predates tool integration (2026-01-10).
-> Tools are wired in code but not yet deployed to Modal or validated in live testing.
-> **Next step**: Modal redeploy + Phase 0-4 revalidation with integrated tools.
+> **Session 2 (2026-01-10)**: Modal redeployed with tool-wired code. Enum bugs found and fixed.
+> **Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b`
 
 See [modal-live-testing.md](./modal-live-testing.md) for full details.
 
-| Phase | Status | Issues Found | Issues Fixed |
-|-------|--------|--------------|--------------|
-| Phase 0 (Onboarding) | ⚠️ Revalidate | 1 | 1 |
-| Phase 1 (VPC Discovery) | ⚠️ Revalidate | 2 | 2 |
-| Phase 2 (Desirability) | ⚠️ Revalidate | 2 | 2 |
-| Phase 3 (Feasibility) | ⏳ Pending | - | - |
-| Phase 4 (Viability) | ⏳ Pending | - | - |
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 0 (Onboarding) | ✅ PASSED | Founder's Brief generated, HITL approved |
+| Phase 1 (VPC Discovery) | ✅ PASSED | Fixed enum bugs (#7, #8), fit score 78/100 |
+| Phase 2 (Desirability) | ✅ PASSED | NO_INTEREST signal → Segment pivot |
+| Phase 1 (Pivot) | ✅ PASSED | New segment: Healthcare Online Platforms |
+| Phase 2+ | 🔄 Running | Second desirability test with pivoted segment |
+| Phase 3 (Feasibility) | ⏳ Pending | - |
+| Phase 4 (Viability) | ⏳ Pending | - |
 
 ---
 

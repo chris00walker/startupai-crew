@@ -624,32 +624,36 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 | 5 | **Live testing with real LLM calls** | 🔄 In Progress |
 | 6 | Production cutover | ⏳ Pending |
 
-### Live Testing Progress (2026-01-09) - STALE
+### Live Testing Progress (2026-01-10) - WITH TOOLS
 
-> **STALE**: Phase 0-2 testing was done 2026-01-09 BEFORE tool integration (2026-01-10).
-> Modal needs redeployment and Phase 0-4 revalidation with integrated tools.
+> **Session 2**: Modal redeployed with tool-wired code. Enum bugs found and fixed.
+> **Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b`
 
 > **Details**: See [modal-live-testing.md](./modal-live-testing.md) for full learnings.
 
-| Phase | Status | Issues Found | Issues Fixed |
-|-------|--------|--------------|--------------|
-| Phase 0 (Onboarding) | ⚠️ Revalidate | 1 | 1 |
-| Phase 1 (VPC Discovery) | ⚠️ Revalidate | 2 | 2 |
-| Phase 2 (Desirability) | ⚠️ Revalidate | 2 | 2 |
-| Phase 3 (Feasibility) | ⏳ Pending | - | - |
-| Phase 4 (Viability) | ⏳ Pending | - | - |
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 0 (Onboarding) | ✅ PASSED | Founder's Brief generated |
+| Phase 1 (VPC Discovery) | ✅ PASSED | Fixed enum bugs (#7, #8), fit score 78/100 |
+| Phase 2 (Desirability) | ✅ PASSED | NO_INTEREST signal → Segment pivot |
+| Phase 1 (Pivot) | ✅ PASSED | New segment: Healthcare Online Platforms |
+| Phase 2+ | 🔄 Running | Second desirability test with pivoted segment |
+| Phase 3 (Feasibility) | ⏳ Pending | - |
+| Phase 4 (Viability) | ⏳ Pending | - |
 
-**Key Fixes Applied (Pre-Tools)**:
-1. HITL phase advancement bug (commit `46c7da6`)
-2. Template variable interpolation timing (commits `46c7da6`, `b96e7a7`, `346e02e`)
-3. Signal-based HITL routing for VPD compliance (commit `e6ce56b`)
+**Session 2 Progress**:
+1. ~~Modal redeploy~~ - ✅ Completed (2026-01-10)
+2. ~~Phase 0 revalidation~~ - ✅ Passed (no issues)
+3. ~~Phase 1 revalidation~~ - ✅ Passed (enum bugs fixed)
+4. ~~Phase 2 revalidation~~ - ✅ Passed (pivot tested)
+5. **Phase 2+ revalidation** - 🔄 In progress (pivoted segment)
+6. Phase 3-4 revalidation - ⏳ Pending
+7. Production cutover verification - ⏳ Pending
 
-### Remaining Work
-1. ~~E2E integration test (full Phase 0→4 flow)~~ - Mocked tests complete
-2. ~~Tool wiring to agents (Phases A-D)~~ - Code complete (2026-01-10)
-3. **Modal redeploy** - Deploy tool-wired code to production
-4. **Phase 0-4 revalidation** - Live test with integrated tools
-5. Production cutover verification
+**Bugs Found & Fixed**:
+- #7: `JobType` enum missing `supporting` (VPD has 4 job types)
+- #8: `GainRelevance` enum missing `expected` (VPD Kano model has 4 levels)
+- #9: HITL duplicate key on pivot (workaround applied, proper fix TODO)
 
 ### Legacy (AMP - ARCHIVED)
 - 3 Crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)

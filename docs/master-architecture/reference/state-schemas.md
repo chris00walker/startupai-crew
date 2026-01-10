@@ -144,7 +144,7 @@ class CustomerJob(BaseModel):
     """A customer job from the VPD Customer Profile."""
     id: str
     job_statement: str  # "When [situation], I want to [motivation] so I can [outcome]"
-    job_type: JobType  # functional, social, emotional
+    job_type: JobType  # functional, social, emotional, supporting
     priority: int = Field(ge=1, le=10)
     validation_status: ValidationStatus = ValidationStatus.UNTESTED
     evidence_ids: list[str] = Field(default_factory=list)
@@ -161,7 +161,7 @@ class CustomerGain(BaseModel):
     """A customer gain from the VPD Customer Profile."""
     id: str
     gain_statement: str
-    relevance: GainRelevance  # essential, nice_to_have, unexpected
+    relevance: GainRelevance  # essential, expected, nice_to_have, unexpected
     priority: int = Field(ge=1, le=10)
     validation_status: ValidationStatus = ValidationStatus.UNTESTED
 ```
@@ -328,9 +328,11 @@ class PivotRecommendation(str, Enum):
     KILL = "kill"
 
 class JobType(str, Enum):
-    FUNCTIONAL = "functional"
-    SOCIAL = "social"
-    EMOTIONAL = "emotional"
+    """Four job types per Osterwalder/Pigneur VPD."""
+    FUNCTIONAL = "functional"   # Tasks to complete
+    SOCIAL = "social"           # How they want to be perceived
+    EMOTIONAL = "emotional"     # How they want to feel
+    SUPPORTING = "supporting"   # Buyer, co-creator, transferrer roles
 
 class PainSeverity(str, Enum):
     EXTREME = "extreme"
@@ -339,9 +341,11 @@ class PainSeverity(str, Enum):
     MILD = "mild"
 
 class GainRelevance(str, Enum):
-    ESSENTIAL = "essential"
-    NICE_TO_HAVE = "nice_to_have"
-    UNEXPECTED = "unexpected"
+    """Four levels per Osterwalder/Pigneur VPD Kano model."""
+    ESSENTIAL = "essential"         # Required, must-have gains
+    EXPECTED = "expected"           # Baseline expectations
+    NICE_TO_HAVE = "nice_to_have"   # Desired, differentiation
+    UNEXPECTED = "unexpected"       # Delighters, wow factor
 
 class ValidationStatus(str, Enum):
     VALIDATED = "validated"

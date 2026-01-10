@@ -324,15 +324,15 @@ CREATE TABLE customer_profile_elements (
   element_type TEXT NOT NULL CHECK (element_type IN ('job', 'pain', 'gain')),
   element_text TEXT NOT NULL,
 
-  -- Job-specific fields
-  job_type TEXT CHECK (job_type IN ('functional', 'social', 'emotional')),  -- For jobs only
+  -- Job-specific fields (4 types per VPD framework)
+  job_type TEXT CHECK (job_type IN ('functional', 'social', 'emotional', 'supporting')),  -- For jobs only
   job_statement TEXT,  -- "When [situation], I want to [motivation] so I can [outcome]"
 
   -- Pain-specific fields
   pain_severity TEXT CHECK (pain_severity IN ('extreme', 'severe', 'moderate', 'mild')),
 
-  -- Gain-specific fields
-  gain_relevance TEXT CHECK (gain_relevance IN ('essential', 'nice_to_have', 'unexpected')),
+  -- Gain-specific fields (4 levels per VPD Kano model)
+  gain_relevance TEXT CHECK (gain_relevance IN ('essential', 'expected', 'nice_to_have', 'unexpected')),
 
   -- Prioritization
   priority INTEGER DEFAULT 0,

@@ -74,9 +74,11 @@ class GainImportance(str, Enum):
 ### JobType
 ```python
 class JobType(str, Enum):
-    FUNCTIONAL = "functional"   # What task they want done
+    """Four job types per Osterwalder/Pigneur VPD."""
+    FUNCTIONAL = "functional"   # Tasks to complete
     EMOTIONAL = "emotional"     # How they want to feel
     SOCIAL = "social"           # How they want to be perceived
+    SUPPORTING = "supporting"   # Buyer, co-creator, transferrer roles
 ```
 
 ### QAStatus
@@ -131,7 +133,7 @@ class FounderBrief(BaseModel):
 
 ```python
 class CustomerJob(BaseModel):
-    job_type: JobType           # functional/emotional/social
+    job_type: JobType           # functional/emotional/social/supporting
     description: str            # min 10 chars
     frequency: Optional[str]    # How often
     importance: int             # 1-10 scale

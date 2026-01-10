@@ -300,7 +300,7 @@ curl -X POST https://startupai-...crewai.com/kickoff \
           {
             "id": "job_uuid",
             "job_statement": "When [situation], I want to [motivation] so I can [outcome]",
-            "job_type": "functional|social|emotional",
+            "job_type": "functional|social|emotional|supporting",
             "priority": 1,
             "validation_status": "validated|invalidated|untested",
             "confidence_score": 0.85,
@@ -615,7 +615,7 @@ curl -X GET https://startupai-...crewai.com/vpc/{project_id}/profile \
     {
       "id": "uuid",
       "job_statement": "When [situation], I want to [motivation] so I can [outcome]",
-      "job_type": "functional|social|emotional",
+      "job_type": "functional|social|emotional|supporting",
       "priority": 1,
       "importance_score": 4.5,
       "validation_status": "validated|invalidated|untested",
@@ -637,7 +637,7 @@ curl -X GET https://startupai-...crewai.com/vpc/{project_id}/profile \
     {
       "id": "uuid",
       "element_text": "Gain description",
-      "gain_relevance": "essential|nice_to_have|unexpected",
+      "gain_relevance": "essential|expected|nice_to_have|unexpected",
       "priority": 1,
       "validation_status": "untested",
       "confidence_score": null
