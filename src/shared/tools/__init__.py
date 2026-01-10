@@ -8,6 +8,7 @@ Tool Categories:
 - Customer Research: ForumSearchTool, ReviewAnalysisTool, SocialListeningTool, TrendAnalysisTool
 - Advanced Analysis: TranscriptionTool, InsightExtractorTool, BehaviorPatternTool, ABTestTool
 - Analytics & Privacy: AnalyticsTool, AnonymizerTool, AdPlatformTool, CalendarTool
+- Deployment: LandingPageDeploymentTool
 - Governance: MethodologyCheckTool
 
 Usage:
@@ -98,6 +99,12 @@ from shared.tools.llm_tools import (
     EvidenceType,
     SignalStrength,
 )
+from shared.tools.landing_page_deploy import (
+    LandingPageDeploymentTool,
+    deploy_landing_page,
+    DeploymentResult,
+    LandingPageDeployInput,
+)
 
 __all__ = [
     # Web Search Tools
@@ -170,4 +177,9 @@ __all__ = [
     "ExperimentType",
     "EvidenceType",
     "SignalStrength",
+    # Deployment Tools
+    "LandingPageDeploymentTool",
+    "deploy_landing_page",
+    "DeploymentResult",
+    "LandingPageDeployInput",
 ]

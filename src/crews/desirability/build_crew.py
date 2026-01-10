@@ -16,8 +16,7 @@ from crewai.project import CrewBase, agent, crew, task
 from shared.tools import (
     CanvasBuilderTool,
     TestCardTool,
-    CalendarTool,
-    MethodologyCheckTool,
+    LandingPageDeploymentTool,
 )
 
 
@@ -72,7 +71,7 @@ class BuildCrew:
         """F3: Backend Developer - Deploys artifacts."""
         return Agent(
             config=self.agents_config["f3_backend_developer"],
-            tools=[CalendarTool(), MethodologyCheckTool()],
+            tools=[LandingPageDeploymentTool()],  # Deploy to Netlify
             reasoning=False,  # Code generation
             inject_date=True,
             max_iter=25,

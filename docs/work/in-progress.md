@@ -36,13 +36,16 @@ last_reviewed: "2026-01-10"
 | **Tool Gap** | 4 of 9 Phase 2 agents had no tools | Wire F1, F2, F3, G3 | ✅ Fixed |
 | **Timeout** | Container timeout insufficient (1h) | Increase to 2h | ✅ Fixed |
 | **RLS** | Security not enabled on tables | Already deployed | ✅ Verified |
+| **#13** | F3 had wrong tools (Calendar/Methodology) | Wire `LandingPageDeploymentTool` | ✅ Fixed |
 
 **Files Changed**:
 - `src/state/persistence.py` - Bug #9 HITL cancel logic
-- `src/crews/desirability/build_crew.py` - F1, F2, F3 tools wired
+- `src/crews/desirability/build_crew.py` - F1, F2, F3 tools wired, F3 now has `LandingPageDeploymentTool`
 - `src/crews/desirability/governance_crew.py` - G3 tool wired
 - `src/modal_app/app.py` - Timeout 3600s → 7200s
 - `db/migrations/008_enable_validation_runs_rls.sql` - RLS migration (already applied)
+- `src/shared/tools/landing_page_deploy.py` - Netlify deployment tool (NEW)
+- `tests/tools/test_landing_page_deploy.py` - 25 unit tests (NEW)
 
 ### Previous Bug Fixes (Still Deployed)
 
@@ -250,6 +253,12 @@ The original Flow-based architecture had runtime bugs that were fixed before the
 **Last Updated**: 2026-01-10
 
 **Latest Changes**:
+- **LANDING PAGE DEPLOYMENT FIX** (2026-01-10)
+  - Bug #13: F3 agent had wrong tools (CalendarTool, MethodologyCheckTool)
+  - Wired `LandingPageDeploymentTool` for real Netlify deployments
+  - Added `src/shared/tools/landing_page_deploy.py` with args_schema pattern
+  - 25 new unit tests, 686 total tests passing
+  - Modal redeployed with fix
 - **BUG #9 VERIFIED** (2026-01-10 18:07)
   - StartupAI dogfood run completed Phase 0-2 with pivot
   - Two `approve_segment_pivot` checkpoints created without duplicate key error
