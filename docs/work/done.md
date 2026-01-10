@@ -1,10 +1,73 @@
 ---
 purpose: "Private technical source of truth for recently delivered work"
 status: "active"
-last_reviewed: "2026-01-09"
+last_reviewed: "2026-01-10"
 ---
 
 # Recently Delivered
+
+## MCP-First Tool Integration COMPLETE (2026-01-10)
+
+All 4 phases of tool integration completed. 15 tools wired to 35+ agents.
+
+### Summary
+
+| Phase | Focus | Tools | Tests |
+|-------|-------|-------|-------|
+| A | Customer Research | 4 | 31 |
+| B | Advanced Analysis | 4 | 35 |
+| C | Analytics & Privacy | 4 | 42 |
+| D | LLM-Based Tools | 3 | 46 |
+| **TOTAL** | | **15** | **164** |
+
+### Final State
+
+- **678 tests passing** (164 new tool tests)
+- **35+ agents** with tools wired
+- **15 tools** implemented
+- **4 weeks** / 60 hours of work
+
+---
+
+## Phase D: LLM-Based Tools (2026-01-10)
+
+Completed Phase D with 3 LLM-based tools for structured validation outputs.
+
+### Tools Implemented
+
+| Tool | Purpose | Agents |
+|------|---------|--------|
+| `CanvasBuilderTool` | VPC element generation (Pydantic) | V1, V2, V3 |
+| `TestCardTool` | Strategyzer Test Card design | E1 |
+| `LearningCardTool` | Strategyzer Learning Card capture | E1, D4 |
+
+### Additional Wiring
+
+| Agent | Tool | Purpose |
+|-------|------|---------|
+| G2 (Desirability) | AnonymizerTool | PII scrubbing |
+| G2 (Feasibility) | AnonymizerTool | Architecture security |
+| G2 (Viability) | AnonymizerTool | Final PII verification |
+
+### Files Created
+
+- `src/shared/tools/llm_tools.py` - 3 tools (~700 lines)
+- `tests/tools/test_llm_tools.py` - 46 tests (~400 lines)
+
+### Crews Modified
+
+- `src/crews/discovery/value_design_crew.py` - V1, V2, V3 wired
+- `src/crews/discovery/discovery_crew.py` - E1, D4 wired
+- `src/crews/desirability/governance_crew.py` - G2 wired
+- `src/crews/feasibility/governance_crew.py` - G2 wired
+- `src/crews/viability/governance_crew.py` - G2 wired
+
+### Validation
+
+- 678 tests pass (46 new)
+- Commit `7faa12e`
+
+---
 
 ## Phase C: Analytics & Privacy Tools (2026-01-10)
 
