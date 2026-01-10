@@ -1,20 +1,23 @@
 """
 Tests for Landing Page Deployment Tool.
 
-Tests LandingPageDeploymentTool with mocked Netlify API responses
+Tests LandingPageDeploymentTool with mocked Supabase Storage responses
 to avoid actual deployments during testing.
+
+Architecture: ADR-003 - Supabase Storage for Landing Pages
 """
 
+import os
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, Mock
 from datetime import datetime
-import json
 
 from shared.tools.landing_page_deploy import (
     LandingPageDeploymentTool,
     deploy_landing_page,
     DeploymentResult,
     LandingPageDeployInput,
+    TRACKING_JS_TEMPLATE,
 )
 
 
@@ -38,33 +41,39 @@ def sample_html():
 <body>
     <h1>Validate Your Startup Idea</h1>
     <p>Sign up for early access.</p>
-    <form><input type="email" placeholder="Email"><button>Sign Up</button></form>
+    <form><input type="email" name="email" placeholder="Email"><button>Sign Up</button></form>
 </body>
 </html>"""
 
 
 @pytest.fixture
-def mock_netlify_create_site_response():
-    """Mock successful site creation response."""
-    return {
-        "id": "site-123-abc",
-        "name": "startupai-test-variant-a-abc12345",
-        "ssl_url": "https://startupai-test-variant-a-abc12345.netlify.app",
-        "url": "http://startupai-test-variant-a-abc12345.netlify.app",
-        "admin_url": "https://app.netlify.com/sites/startupai-test-variant-a-abc12345",
-    }
+def sample_html_no_body():
+    """Sample HTML without closing body tag."""
+    return """<!DOCTYPE html>
+<html>
+<head><title>Test</title></head>
+<h1>Hello World</h1>
+</html>"""
 
 
 @pytest.fixture
-def mock_netlify_deploy_response():
-    """Mock successful deploy response."""
-    return {
-        "id": "deploy-456-xyz",
-        "state": "ready",
-        "required": [],  # No files required (already uploaded)
-        "deploy_url": "https://deploy-456-xyz--startupai-test-variant-a-abc12345.netlify.app",
-        "ssl_url": "https://startupai-test-variant-a-abc12345.netlify.app",
-    }
+def mock_supabase_storage():
+    """Mock Supabase storage bucket."""
+    mock_storage = MagicMock()
+    mock_storage.upload.return_value = Mock()
+    mock_storage.get_public_url.return_value = (
+        "https://eqxropalhxjeyvfcoyxg.supabase.co/storage/v1/object/public/landing-pages/test-project/variant-a.html"
+    )
+    return mock_storage
+
+
+@pytest.fixture
+def mock_supabase_client(mock_supabase_storage):
+    """Mock Supabase client."""
+    mock_client = MagicMock()
+    mock_client.storage.from_.return_value = mock_supabase_storage
+    mock_client.table.return_value.upsert.return_value.execute.return_value = Mock()
+    return mock_client
 
 
 # ===========================================================================
@@ -79,19 +88,19 @@ class TestDeploymentResult:
         """Test creating a successful deployment result."""
         result = DeploymentResult(
             success=True,
-            deployed_url="https://test-site.netlify.app",
-            deploy_id="deploy-123",
-            site_id="site-456",
-            site_name="test-site",
+            deployed_url="https://test.supabase.co/storage/v1/object/public/landing-pages/proj/variant.html",
+            deploy_id="proj/variant.html",
+            site_id="proj/variant.html",
+            site_name="landing-pages/proj/variant.html",
             variant_id="variant-a",
             deploy_time_ms=1234,
         )
 
         assert result.success is True
-        assert result.deployed_url == "https://test-site.netlify.app"
-        assert result.deploy_id == "deploy-123"
-        assert result.site_id == "site-456"
-        assert result.site_name == "test-site"
+        assert "supabase.co" in result.deployed_url
+        assert result.deploy_id == "proj/variant.html"
+        assert result.site_id == "proj/variant.html"
+        assert result.site_name == "landing-pages/proj/variant.html"
         assert result.variant_id == "variant-a"
         assert result.deploy_time_ms == 1234
         assert result.error_message is None
@@ -102,15 +111,15 @@ class TestDeploymentResult:
         result = DeploymentResult(
             success=False,
             variant_id="variant-b",
-            error_message="Site creation failed",
-            error_code="SITE_CREATE_FAILED",
+            error_message="Bucket not found",
+            error_code="BUCKET_NOT_FOUND",
         )
 
         assert result.success is False
         assert result.deployed_url is None
         assert result.variant_id == "variant-b"
-        assert result.error_message == "Site creation failed"
-        assert result.error_code == "SITE_CREATE_FAILED"
+        assert result.error_message == "Bucket not found"
+        assert result.error_code == "BUCKET_NOT_FOUND"
 
     def test_default_deployed_at(self):
         """Test that deployed_at is auto-populated."""
@@ -155,11 +164,11 @@ class TestLandingPageDeployInput:
         assert input_data.variant_id == "default"
 
     def test_optional_site_name(self):
-        """Test optional site_name."""
+        """Test optional site_name (backward compatibility)."""
         input_data = LandingPageDeployInput(
             html="<html></html>",
             project_id="proj-789",
-            site_name="custom-site-name",
+            site_name="custom-site-name",  # Ignored in new implementation
         )
         assert input_data.site_name == "custom-site-name"
 
@@ -175,52 +184,57 @@ class TestLandingPageDeploymentToolBasic:
     def test_tool_attributes(self, deploy_tool):
         """Test tool has correct attributes."""
         assert deploy_tool.name == "landing_page_deploy"
-        assert "Deploy landing page HTML to Netlify" in deploy_tool.description
+        assert "Supabase Storage" in deploy_tool.description
         assert deploy_tool.args_schema == LandingPageDeployInput
 
-    def test_sanitize_site_name_lowercase(self, deploy_tool):
-        """Test site name is lowercased."""
-        result = deploy_tool._sanitize_site_name("TestSite")
-        assert result == "testsite"
+    def test_sanitize_path_segment_lowercase(self, deploy_tool):
+        """Test path segment is lowercased."""
+        result = deploy_tool._sanitize_path_segment("TestProject")
+        assert result == "testproject"
 
-    def test_sanitize_site_name_special_chars(self, deploy_tool):
+    def test_sanitize_path_segment_special_chars(self, deploy_tool):
         """Test special characters are replaced with hyphens."""
-        result = deploy_tool._sanitize_site_name("test_site@123")
-        assert result == "test-site-123"
+        result = deploy_tool._sanitize_path_segment("test_project@123")
+        assert result == "test-project-123"
 
-    def test_sanitize_site_name_consecutive_hyphens(self, deploy_tool):
+    def test_sanitize_path_segment_consecutive_hyphens(self, deploy_tool):
         """Test consecutive hyphens are collapsed."""
-        result = deploy_tool._sanitize_site_name("test--site---name")
-        assert result == "test-site-name"
+        result = deploy_tool._sanitize_path_segment("test--project---name")
+        assert result == "test-project-name"
 
-    def test_sanitize_site_name_truncation(self, deploy_tool):
-        """Test site name is truncated to 63 chars."""
+    def test_sanitize_path_segment_truncation(self, deploy_tool):
+        """Test path segment is truncated to 50 chars."""
         long_name = "a" * 100
-        result = deploy_tool._sanitize_site_name(long_name)
-        assert len(result) == 63
+        result = deploy_tool._sanitize_path_segment(long_name)
+        assert len(result) == 50
 
-    def test_sanitize_site_name_strip_hyphens(self, deploy_tool):
+    def test_sanitize_path_segment_strip_hyphens(self, deploy_tool):
         """Test leading/trailing hyphens are stripped."""
-        result = deploy_tool._sanitize_site_name("-test-site-")
-        assert result == "test-site"
+        result = deploy_tool._sanitize_path_segment("-test-project-")
+        assert result == "test-project"
+
+    def test_sanitize_path_segment_empty_returns_default(self, deploy_tool):
+        """Test empty string returns 'default'."""
+        result = deploy_tool._sanitize_path_segment("---")
+        assert result == "default"
 
     def test_format_output_success(self, deploy_tool):
         """Test formatting successful deployment output."""
         result = DeploymentResult(
             success=True,
-            deployed_url="https://test.netlify.app",
+            deployed_url="https://test.supabase.co/storage/v1/object/public/landing-pages/proj/variant.html",
             variant_id="variant-a",
-            site_name="test",
-            deploy_id="deploy-123",
+            site_name="landing-pages/proj/variant.html",
+            deploy_id="proj/variant.html",
             deploy_time_ms=500,
         )
 
         output = deploy_tool._format_output(result)
 
         assert "Landing Page Deployed Successfully" in output
-        assert "https://test.netlify.app" in output
+        assert "supabase.co" in output
         assert "variant-a" in output
-        assert "deploy-123" in output
+        assert "proj/variant.html" in output
         assert "500ms" in output
 
     def test_format_output_failure(self, deploy_tool):
@@ -228,15 +242,15 @@ class TestLandingPageDeploymentToolBasic:
         result = DeploymentResult(
             success=False,
             variant_id="variant-b",
-            error_message="API timeout",
-            error_code="TIMEOUT",
+            error_message="Bucket not found",
+            error_code="BUCKET_NOT_FOUND",
         )
 
         output = deploy_tool._format_output(result)
 
         assert "Landing Page Deployment Failed" in output
-        assert "API timeout" in output
-        assert "TIMEOUT" in output
+        assert "Bucket not found" in output
+        assert "BUCKET_NOT_FOUND" in output
         assert "variant-b" in output
 
     def test_format_error(self, deploy_tool):
@@ -246,51 +260,177 @@ class TestLandingPageDeploymentToolBasic:
         assert "Landing Page Deployment Failed" in output
         assert "Test error" in output
         assert "TEST_CODE" in output
+        assert "SUPABASE_URL" in output  # Should mention env vars
 
 
 # ===========================================================================
-# TOOL TESTS - WITH MOCKED API CALLS
+# TRACKING JS INJECTION TESTS
+# ===========================================================================
+
+
+class TestTrackingJSInjection:
+    """Tests for tracking JavaScript injection."""
+
+    def test_inject_tracking_before_body_end(self, deploy_tool, sample_html):
+        """Test tracking JS is injected before </body>."""
+        result = deploy_tool._inject_tracking(
+            html=sample_html,
+            variant_id="test-variant",
+            supabase_url="https://test.supabase.co",
+            supabase_anon_key="test-anon-key",
+        )
+
+        # Tracking JS should be present
+        assert "lp_pageviews" in result
+        assert "lp_submissions" in result
+        assert "test-variant" in result
+        assert "test-anon-key" in result
+
+        # Should still have </body>
+        assert "</body>" in result.lower()
+
+        # Tracking JS should be before </body>
+        tracking_idx = result.lower().find("lp_pageviews")
+        body_end_idx = result.lower().rfind("</body>")
+        assert tracking_idx < body_end_idx
+
+    def test_inject_tracking_no_body_tag(self, deploy_tool, sample_html_no_body):
+        """Test tracking JS is appended when no </body> tag."""
+        result = deploy_tool._inject_tracking(
+            html=sample_html_no_body,
+            variant_id="test-variant",
+            supabase_url="https://test.supabase.co",
+            supabase_anon_key="test-anon-key",
+        )
+
+        # Tracking JS should be present at end
+        assert "lp_pageviews" in result
+        assert result.endswith("</script>\n")
+
+    def test_inject_tracking_no_anon_key(self, deploy_tool, sample_html):
+        """Test tracking JS is skipped when no anon key."""
+        result = deploy_tool._inject_tracking(
+            html=sample_html,
+            variant_id="test-variant",
+            supabase_url="https://test.supabase.co",
+            supabase_anon_key="",  # Empty
+        )
+
+        # Should return original HTML unchanged
+        assert result == sample_html
+        assert "lp_pageviews" not in result
+
+    def test_tracking_js_template_has_placeholders(self):
+        """Test that tracking JS template has required placeholders."""
+        assert "{supabase_url}" in TRACKING_JS_TEMPLATE
+        assert "{supabase_anon_key}" in TRACKING_JS_TEMPLATE
+        assert "{variant_id}" in TRACKING_JS_TEMPLATE
+
+    def test_tracking_js_case_insensitive_body_tag(self, deploy_tool):
+        """Test tracking JS injection handles case-insensitive body tag."""
+        html_upper = "<html><BODY><p>Test</p></BODY></html>"
+        result = deploy_tool._inject_tracking(
+            html=html_upper,
+            variant_id="test",
+            supabase_url="https://test.supabase.co",
+            supabase_anon_key="key",
+        )
+        assert "lp_pageviews" in result
+
+
+# ===========================================================================
+# TOOL TESTS - WITH MOCKED SUPABASE CALLS
 # ===========================================================================
 
 
 class TestLandingPageDeploymentToolWithMocks:
-    """Tests for LandingPageDeploymentTool with mocked API calls."""
+    """Tests for LandingPageDeploymentTool with mocked Supabase calls."""
 
-    @patch.dict('os.environ', {'NETLIFY_ACCESS_TOKEN': 'test-token'})
-    @patch('shared.tools.landing_page_deploy.HTTPX_AVAILABLE', True)
-    def test_run_successful_deployment_httpx(
-        self, deploy_tool, sample_html, mock_netlify_create_site_response, mock_netlify_deploy_response
+    @patch.dict(os.environ, {
+        'SUPABASE_URL': 'https://test.supabase.co',
+        'SUPABASE_KEY': 'test-service-key',
+        'SUPABASE_ANON_KEY': 'test-anon-key',
+    })
+    @patch('state.persistence.get_supabase')
+    def test_run_successful_deployment(
+        self, mock_get_supabase, deploy_tool, sample_html, mock_supabase_client
     ):
-        """Test successful deployment using httpx."""
-        with patch('shared.tools.landing_page_deploy.httpx') as mock_httpx:
-            # Mock the client context manager
-            mock_client = MagicMock()
-            mock_httpx.Client.return_value.__enter__.return_value = mock_client
+        """Test successful deployment to Supabase Storage."""
+        mock_get_supabase.return_value = mock_supabase_client
 
-            # Mock site creation response
-            mock_create_response = MagicMock()
-            mock_create_response.status_code = 201
-            mock_create_response.json.return_value = mock_netlify_create_site_response
+        result = deploy_tool._run(
+            html=sample_html,
+            project_id="test-project",
+            variant_id="variant-a",
+        )
 
-            # Mock deploy response
-            mock_deploy_response = MagicMock()
-            mock_deploy_response.status_code = 201
-            mock_deploy_response.json.return_value = mock_netlify_deploy_response
+        assert "Landing Page Deployed Successfully" in result
+        assert "supabase.co" in result
+        assert "variant-a" in result
 
-            mock_client.post.side_effect = [mock_create_response, mock_deploy_response]
+        # Verify storage was called
+        mock_supabase_client.storage.from_.assert_called_with("landing-pages")
 
-            result = deploy_tool._run(
-                html=sample_html,
-                project_id="test-project",
-                variant_id="variant-a",
-            )
+    @patch.dict(os.environ, {
+        'SUPABASE_URL': 'https://test.supabase.co',
+        'SUPABASE_KEY': 'test-service-key',
+        'SUPABASE_ANON_KEY': 'test-anon-key',
+    })
+    @patch('state.persistence.get_supabase')
+    def test_run_storage_path_sanitized(
+        self, mock_get_supabase, deploy_tool, sample_html, mock_supabase_client
+    ):
+        """Test that project_id and variant_id are sanitized for storage path."""
+        mock_get_supabase.return_value = mock_supabase_client
 
-            assert "Landing Page Deployed Successfully" in result
-            assert "netlify.app" in result
+        result = deploy_tool._run(
+            html=sample_html,
+            project_id="Test_Project@123",
+            variant_id="Variant A!",
+        )
 
-    @patch.dict('os.environ', {}, clear=True)
-    def test_run_missing_token(self, deploy_tool, sample_html):
-        """Test error when Netlify token is missing."""
+        # Verify upload was called with sanitized path
+        mock_storage = mock_supabase_client.storage.from_.return_value
+        upload_call = mock_storage.upload.call_args
+
+        # Path should be sanitized
+        storage_path = upload_call[1].get('path') or upload_call[0][0]
+        assert storage_path == "test-project-123/variant-a.html"
+
+    @patch.dict(os.environ, {
+        'SUPABASE_URL': 'https://test.supabase.co',
+        'SUPABASE_KEY': 'test-service-key',
+    }, clear=True)  # No SUPABASE_ANON_KEY
+    @patch('state.persistence.get_supabase')
+    def test_run_no_anon_key_warning(
+        self, mock_get_supabase, deploy_tool, sample_html, mock_supabase_client
+    ):
+        """Test deployment succeeds but warns when SUPABASE_ANON_KEY is missing."""
+        mock_get_supabase.return_value = mock_supabase_client
+
+        result = deploy_tool._run(
+            html=sample_html,
+            project_id="test-project",
+            variant_id="variant-a",
+        )
+
+        # Should still succeed (tracking just won't work)
+        assert "Landing Page Deployed Successfully" in result
+
+    @patch.dict(os.environ, {
+        'SUPABASE_URL': 'https://test.supabase.co',
+        'SUPABASE_KEY': 'test-service-key',
+        'SUPABASE_ANON_KEY': 'test-anon-key',
+    })
+    @patch('state.persistence.get_supabase')
+    def test_run_bucket_not_found(self, mock_get_supabase, deploy_tool, sample_html):
+        """Test error when storage bucket doesn't exist."""
+        mock_client = MagicMock()
+        mock_storage = MagicMock()
+        mock_storage.upload.side_effect = Exception("Bucket not found")
+        mock_client.storage.from_.return_value = mock_storage
+        mock_get_supabase.return_value = mock_client
+
         result = deploy_tool._run(
             html=sample_html,
             project_id="test-project",
@@ -298,14 +438,22 @@ class TestLandingPageDeploymentToolWithMocks:
         )
 
         assert "Landing Page Deployment Failed" in result
-        assert "NETLIFY_ACCESS_TOKEN" in result
-        assert "MISSING_TOKEN" in result
+        assert "BUCKET_NOT_FOUND" in result
 
-    @patch.dict('os.environ', {'NETLIFY_ACCESS_TOKEN': 'test-token'})
-    @patch('shared.tools.landing_page_deploy.HTTPX_AVAILABLE', False)
-    @patch('shared.tools.landing_page_deploy.REQUESTS_AVAILABLE', False)
-    def test_run_no_http_library(self, deploy_tool, sample_html):
-        """Test error when no HTTP library is available."""
+    @patch.dict(os.environ, {
+        'SUPABASE_URL': 'https://test.supabase.co',
+        'SUPABASE_KEY': 'test-service-key',
+        'SUPABASE_ANON_KEY': 'test-anon-key',
+    })
+    @patch('state.persistence.get_supabase')
+    def test_run_upload_error(self, mock_get_supabase, deploy_tool, sample_html):
+        """Test handling of upload failure."""
+        mock_client = MagicMock()
+        mock_storage = MagicMock()
+        mock_storage.upload.side_effect = Exception("Network error")
+        mock_client.storage.from_.return_value = mock_storage
+        mock_get_supabase.return_value = mock_client
+
         result = deploy_tool._run(
             html=sample_html,
             project_id="test-project",
@@ -313,30 +461,37 @@ class TestLandingPageDeploymentToolWithMocks:
         )
 
         assert "Landing Page Deployment Failed" in result
-        assert "MISSING_HTTP_LIBRARY" in result
+        assert "DEPLOY_ERROR" in result
+        assert "Network error" in result
 
-    @patch.dict('os.environ', {'NETLIFY_ACCESS_TOKEN': 'test-token'})
-    @patch('shared.tools.landing_page_deploy.HTTPX_AVAILABLE', True)
-    def test_run_site_creation_failure(self, deploy_tool, sample_html):
-        """Test handling of site creation failure."""
-        with patch('shared.tools.landing_page_deploy.httpx') as mock_httpx:
-            mock_client = MagicMock()
-            mock_httpx.Client.return_value.__enter__.return_value = mock_client
+    @patch.dict(os.environ, {
+        'SUPABASE_URL': 'https://test.supabase.co',
+        'SUPABASE_KEY': 'test-service-key',
+        'SUPABASE_ANON_KEY': 'test-anon-key',
+    })
+    @patch('state.persistence.get_supabase')
+    def test_run_metadata_failure_continues(
+        self, mock_get_supabase, deploy_tool, sample_html
+    ):
+        """Test that metadata recording failure doesn't fail the deployment."""
+        mock_client = MagicMock()
+        mock_storage = MagicMock()
+        mock_storage.upload.return_value = Mock()
+        mock_storage.get_public_url.return_value = "https://test.supabase.co/storage/v1/object/public/landing-pages/test/variant.html"
+        mock_client.storage.from_.return_value = mock_storage
 
-            # Mock failed site creation
-            mock_response = MagicMock()
-            mock_response.status_code = 500
-            mock_response.text = "Internal Server Error"
-            mock_client.post.return_value = mock_response
+        # Table upsert fails
+        mock_client.table.return_value.upsert.return_value.execute.side_effect = Exception("DB error")
+        mock_get_supabase.return_value = mock_client
 
-            result = deploy_tool._run(
-                html=sample_html,
-                project_id="test-project",
-                variant_id="variant-a",
-            )
+        result = deploy_tool._run(
+            html=sample_html,
+            project_id="test",
+            variant_id="variant",
+        )
 
-            assert "Landing Page Deployment Failed" in result
-            assert "SITE_CREATE_FAILED" in result
+        # Should still succeed (metadata is non-critical)
+        assert "Landing Page Deployed Successfully" in result
 
 
 # ===========================================================================
@@ -347,47 +502,51 @@ class TestLandingPageDeploymentToolWithMocks:
 class TestDeployLandingPageFunction:
     """Tests for deploy_landing_page convenience function."""
 
-    @patch.dict('os.environ', {}, clear=True)
-    def test_deploy_landing_page_no_token(self, sample_html):
-        """Test convenience function handles missing token."""
+    @patch.dict(os.environ, {
+        'SUPABASE_URL': 'https://test.supabase.co',
+        'SUPABASE_KEY': 'test-service-key',
+        'SUPABASE_ANON_KEY': 'test-anon-key',
+    })
+    @patch('state.persistence.get_supabase')
+    def test_deploy_landing_page_success(
+        self, mock_get_supabase, sample_html, mock_supabase_client
+    ):
+        """Test convenience function successful deployment."""
+        mock_get_supabase.return_value = mock_supabase_client
+
         result = deploy_landing_page(
             html=sample_html,
             project_id="test-project",
             variant_id="test-variant",
         )
 
-        assert "Landing Page Deployment Failed" in result
-        assert "NETLIFY_ACCESS_TOKEN" in result
+        assert "Landing Page Deployed Successfully" in result
 
-    @patch.dict('os.environ', {'NETLIFY_ACCESS_TOKEN': 'test-token'})
-    @patch('shared.tools.landing_page_deploy.HTTPX_AVAILABLE', True)
-    def test_deploy_landing_page_with_custom_site_name(
-        self, sample_html, mock_netlify_create_site_response, mock_netlify_deploy_response
+    @patch.dict(os.environ, {
+        'SUPABASE_URL': 'https://test.supabase.co',
+        'SUPABASE_KEY': 'test-service-key',
+        'SUPABASE_ANON_KEY': 'test-anon-key',
+    })
+    @patch('state.persistence.get_supabase')
+    def test_deploy_landing_page_with_site_name_ignored(
+        self, mock_get_supabase, sample_html, mock_supabase_client
     ):
-        """Test convenience function with custom site name."""
-        with patch('shared.tools.landing_page_deploy.httpx') as mock_httpx:
-            mock_client = MagicMock()
-            mock_httpx.Client.return_value.__enter__.return_value = mock_client
+        """Test convenience function ignores site_name (backward compat)."""
+        mock_get_supabase.return_value = mock_supabase_client
 
-            mock_create_response = MagicMock()
-            mock_create_response.status_code = 201
-            mock_netlify_create_site_response["name"] = "custom-site"
-            mock_create_response.json.return_value = mock_netlify_create_site_response
+        result = deploy_landing_page(
+            html=sample_html,
+            project_id="test-project",
+            variant_id="test-variant",
+            site_name="custom-site",  # Should be ignored
+        )
 
-            mock_deploy_response = MagicMock()
-            mock_deploy_response.status_code = 201
-            mock_deploy_response.json.return_value = mock_netlify_deploy_response
-
-            mock_client.post.side_effect = [mock_create_response, mock_deploy_response]
-
-            result = deploy_landing_page(
-                html=sample_html,
-                project_id="test-project",
-                variant_id="test-variant",
-                site_name="custom-site",
-            )
-
-            assert "Landing Page Deployed Successfully" in result
+        assert "Landing Page Deployed Successfully" in result
+        # site_name doesn't affect the storage path
+        mock_storage = mock_supabase_client.storage.from_.return_value
+        upload_call = mock_storage.upload.call_args
+        storage_path = upload_call[1].get('path') or upload_call[0][0]
+        assert "custom-site" not in storage_path
 
 
 # ===========================================================================
@@ -422,3 +581,33 @@ class TestBuildCrewIntegration:
 
         assert tool.name == "landing_page_deploy"
         assert tool.args_schema == LandingPageDeployInput
+
+
+# ===========================================================================
+# ASYNC TESTS
+# ===========================================================================
+
+
+class TestAsyncSupport:
+    """Tests for async method support."""
+
+    @patch.dict(os.environ, {
+        'SUPABASE_URL': 'https://test.supabase.co',
+        'SUPABASE_KEY': 'test-service-key',
+        'SUPABASE_ANON_KEY': 'test-anon-key',
+    })
+    @patch('state.persistence.get_supabase')
+    @pytest.mark.asyncio
+    async def test_arun_delegates_to_run(
+        self, mock_get_supabase, deploy_tool, sample_html, mock_supabase_client
+    ):
+        """Test that _arun delegates to _run."""
+        mock_get_supabase.return_value = mock_supabase_client
+
+        result = await deploy_tool._arun(
+            html=sample_html,
+            project_id="test-project",
+            variant_id="variant-a",
+        )
+
+        assert "Landing Page Deployed Successfully" in result

@@ -8,20 +8,136 @@ last_reviewed: "2026-01-10"
 
 ## Architecture Status (2026-01-10)
 
-**CURRENT**: Production-ready fixes deployed. 4 critical issues resolved. Ready for Phase 2-4 validation.
+**CURRENT**: Landing page deployment architecture decision - migrating from Netlify API to Supabase Storage.
 
 | Layer | Status | Notes |
 |-------|--------|-------|
-| Interaction (Netlify) | ✅ Production | Edge Functions |
+| Interaction (Netlify) | ✅ Production | Edge Functions (product app) |
 | Orchestration (Supabase) | ✅ Production | PostgreSQL + Realtime + Modal tables + RLS |
 | Compute (Modal) | ✅ Redeployed | All fixes deployed 2026-01-10 |
 | **Tool Integration** | ✅ Complete | 100% agents wired (was 56%), args_schema pattern |
+| **Landing Pages** | ✅ Complete | Supabase Storage (ADR-003) - E2E tested |
+| **Observability** | ⚠️ Gaps Found | F2/F3 tracing insufficient - see backlog |
 
-**ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture.
+**ADRs**:
+- [ADR-002](../adr/002-modal-serverless-migration.md) - Modal serverless architecture
+- [ADR-003](../adr/003-landing-page-storage-migration.md) - Landing page storage migration
 
 ---
 
-## Active Work: Phase 3-4 Live Testing
+## Active Work: Landing Page Storage Migration
+
+**Status**: ✅ COMPLETE - E2E tested 2026-01-10
+**ADR**: [ADR-003](../adr/003-landing-page-storage-migration.md)
+**Effort**: Completed 2026-01-10
+
+### Problem (RESOLVED)
+
+The `LandingPageDeploymentTool` using Netlify API had authentication issues:
+- Token could CREATE sites but could not DEPLOY to them (401 Unauthorized)
+- Token could not LIST sites or GET user info
+- Architecture mismatch: Netlify is permanent hosting, we need temporary artifacts
+
+### Solution (IMPLEMENTED)
+
+Migrated to Supabase Storage for landing page deployment:
+- Public bucket serves HTML files via CDN
+- Client-side JavaScript captures pageviews and form submissions
+- RLS policies allow anonymous INSERT for tracking
+- Natural cleanup when validation run expires
+- Already in our stack (no new infrastructure)
+
+### Implementation Phases
+
+| Phase | Task | Status |
+|-------|------|--------|
+| 1 | Create Supabase tables (migration 009) | ✅ Complete |
+| 2 | Rewrite `LandingPageDeploymentTool` for Supabase Storage | ✅ Complete |
+| 3 | Update tests (34 tests passing) | ✅ Complete |
+| 4 | Archive Netlify implementation | ✅ Complete |
+
+### Verification (2026-01-10)
+
+✅ **Storage bucket created and verified**:
+- Bucket: `landing-pages` (public)
+- Test upload: SUCCESS
+- Test URL: https://eqxropalhxjeyvfcoyxg.supabase.co/storage/v1/object/public/landing-pages/test/simple-test.html
+- HTTP Status: 200 OK
+
+✅ **E2E test completed** (run_id: `8bf58864-d220-4d5b-9dfe-e27e75b9a8f2`):
+- Phase 0 → Phase 1 → Phase 2 progression
+- Landing pages deployed to storage (variant-a, variant-b)
+- Database records created in `landing_page_variants`
+- Public URLs accessible (HTTP 200)
+
+⚠️ **Note**: Landing page content was placeholder HTML - this is an agent content generation issue, not infrastructure.
+
+⚠️ **Optional**: Add `SUPABASE_ANON_KEY` to Modal secrets for client-side tracking:
+```bash
+modal secret update startupai-secrets SUPABASE_ANON_KEY=<anon-key>
+```
+
+### Files Changed
+
+- `src/shared/tools/landing_page_deploy.py` - Rewrote for Supabase Storage (~150 lines vs 522)
+- `db/migrations/009_landing_page_tables.sql` - Tables: landing_page_variants, lp_submissions, lp_pageviews
+- `tests/tools/test_landing_page_deploy.py` - Updated tests to mock Supabase
+- `archive/netlify-landing-page-deploy.py` - Old Netlify implementation archived
+
+---
+
+## Backlog: F2/F3 Placeholder HTML & Tracing Gaps
+
+**Status**: 🔴 NEEDS ATTENTION - Identified during E2E test
+**Priority**: P0/P1
+**Estimated Effort**: ~10 hours
+
+### Problem
+
+During E2E testing, F2/F3 agents generated placeholder HTML (`<!DOCTYPE html><html>...Variant A HTML...</html>`) instead of real landing pages.
+
+### Root Cause Analysis (Modal Developer Investigation)
+
+1. **Missing structured output schemas** - Tasks lack `output_pydantic` to enforce HTML structure
+2. **Insufficient logging** - BuildCrew results not logged, intermediate task outputs not captured
+3. **Ambiguous task descriptions** - Tasks say "build landing page" but don't specify "output full HTML"
+4. **Tool gap** - F2 has no HTML generation tool; relies on free-form LLM output
+
+### Tracing Checklist
+
+| Feature | Status |
+|---------|--------|
+| Modal logging configured | ✅ JSON at app level |
+| Phase logging enabled | ✅ All transitions logged |
+| Agent verbose mode | ✅ `verbose=True` |
+| **Crew output logging** | ❌ BuildCrew results NOT logged |
+| **Task output logging** | ❌ Individual task results NOT captured |
+| **Structured outputs** | ❌ No `output_pydantic` schemas |
+| **Step callbacks** | ❌ Agent reasoning NOT traced |
+| **Debug mode** | ❌ `MODAL_LOGLEVEL` not set |
+
+### Recommended Fixes
+
+| Priority | Task | Impact | Effort |
+|----------|------|--------|--------|
+| **P0** | Add `output_pydantic` to build tasks | Prevents placeholders | 2h |
+| **P0** | Add BuildCrew logging | Enables debugging | 1h |
+| **P1** | Create `HTMLGeneratorTool` for F2 | Ensures real HTML | 3h |
+| **P1** | Add `task_callback` logging | Trace execution flow | 1h |
+| **P2** | Enable `MODAL_LOGLEVEL=DEBUG` | Deeper visibility | 30m |
+| **P2** | Add HTML validation tests | Prevent regressions | 2h |
+
+### Files to Change
+
+- `src/crews/desirability/build_crew.py` - Add task_callback, step_callback
+- `src/crews/desirability/__init__.py` - Log BuildCrew outputs
+- `src/crews/desirability/config/build_tasks.yaml` - Add output_pydantic schemas
+- `src/state/models.py` - Add LandingPageOutput schema
+- `src/shared/tools/html_generator.py` - New tool (optional)
+
+---
+
+## Paused: Phase 3-4 Live Testing
 
 **Status**: 🔄 BUG #9 VERIFIED - Pivot Scenario Passed
 **Run ID**: `e3368f64-89e9-49c0-8d42-d5cbc16f8eeb` (StartupAI dogfood)
@@ -253,12 +369,18 @@ The original Flow-based architecture had runtime bugs that were fixed before the
 **Last Updated**: 2026-01-10
 
 **Latest Changes**:
-- **LANDING PAGE DEPLOYMENT FIX** (2026-01-10)
-  - Bug #13: F3 agent had wrong tools (CalendarTool, MethodologyCheckTool)
-  - Wired `LandingPageDeploymentTool` for real Netlify deployments
-  - Added `src/shared/tools/landing_page_deploy.py` with args_schema pattern
-  - 25 new unit tests, 686 total tests passing
-  - Modal redeployed with fix
+- **F2/F3 TRACING INVESTIGATION** (2026-01-10)
+  - Modal Developer investigated placeholder HTML issue from E2E test
+  - Root cause: Missing `output_pydantic` schemas + insufficient crew logging
+  - Tracing gaps identified: BuildCrew outputs not logged, no task callbacks
+  - P0 fixes documented: Add structured outputs, add BuildCrew logging
+  - See "Backlog: F2/F3 Placeholder HTML & Tracing Gaps" section above
+- **LANDING PAGE STORAGE MIGRATION COMPLETE** (2026-01-10)
+  - ADR-003: Migrated from Netlify API to Supabase Storage
+  - `LandingPageDeploymentTool` rewritten for Supabase Storage (~150 lines vs 522)
+  - Migration 009 applied: landing_page_variants, lp_submissions, lp_pageviews tables
+  - E2E tested: Storage pipeline works, placeholder content is agent issue
+  - 34 tests passing, Netlify implementation archived
 - **BUG #9 VERIFIED** (2026-01-10 18:07)
   - StartupAI dogfood run completed Phase 0-2 with pivot
   - Two `approve_segment_pivot` checkpoints created without duplicate key error

@@ -1,9 +1,10 @@
 ---
 created: 2026-01-10
-status: RESOLVED
+status: SUPERSEDED
 priority: P0
 impact: Phase 2 Desirability evidence is fabricated
 resolved: 2026-01-10
+superseded_by: ADR-003 (Supabase Storage migration)
 ---
 
 # BuildCrew Deployment Gap Analysis
@@ -345,6 +346,41 @@ This is **one instance** of a systemic problem:
 
 ### Verification
 
-- [ ] Re-run Phase 2 and verify real Netlify URLs are created
-- [ ] Check URLs return HTTP 200
-- [ ] Verify sites appear in Netlify dashboard
+- [ ] ~~Re-run Phase 2 and verify real Netlify URLs are created~~ SUPERSEDED
+- [ ] ~~Check URLs return HTTP 200~~ SUPERSEDED
+- [ ] ~~Verify sites appear in Netlify dashboard~~ SUPERSEDED
+
+---
+
+## SUPERSEDED (2026-01-10)
+
+**This document is superseded by [ADR-003](../adr/003-landing-page-storage-migration.md).**
+
+### Why Netlify Approach Was Abandoned
+
+After implementing the "Quick Fix" above, testing revealed deeper issues:
+
+1. **Token Permission Anomaly**: The Netlify Personal Access Token exhibited unusual behavior:
+   - Could CREATE sites (201 Created)
+   - Could NOT DEPLOY to sites (401 Unauthorized)
+   - Could NOT LIST sites (401 Unauthorized)
+   - Could NOT GET user info (401 Unauthorized)
+
+2. **Architecture Mismatch**: Netlify is designed for permanent hosting with CI/CD pipelines. Our landing pages are:
+   - Temporary (hours to days)
+   - Ephemeral (created for validation, deleted after)
+   - Low traffic (only validation participants)
+   - Programmatically generated (no build pipeline)
+
+3. **Square Peg, Round Hole**: We were over-engineering the solution. The 522-line Netlify implementation is overkill for temporary artifacts.
+
+### New Approach: Supabase Storage
+
+See [ADR-003](../adr/003-landing-page-storage-migration.md) for the accepted solution:
+
+- **Supabase Storage** public bucket serves HTML files via CDN
+- **Edge Function** captures form submissions
+- **Natural cleanup** when validation run expires
+- **~100 lines** vs 522 lines (simpler implementation)
+
+The original analysis in this document correctly identified the tool wiring gap. The resolution pivoted from "fix Netlify" to "use right tool for the job."
