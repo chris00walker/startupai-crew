@@ -7,7 +7,7 @@ last_audit: "2026-01-10 - Schema alignment analysis, Modal migrations created"
 
 # Engineering Phases
 
-> **MCP Architecture Ready (2026-01-09)**: Tool specifications complete. 33 tools (13 EXISTS, 10 MCP Custom, 4 MCP External, 6 LLM-Based) mapped to 45 agents. 60-hour implementation roadmap. See `docs/master-architecture/reference/tool-specifications.md`.
+> **Tool Integration Complete (2026-01-10)**: 15 tools wired to 35+ agents using BaseTool pattern. 681 tests passing. Modal redeploy + Phase 0-4 revalidation pending.
 
 ## Architecture Summary
 
@@ -45,11 +45,11 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
 
 ---
 
-## 🚀 MCP-First Tool Architecture
+## 🚀 Tool Architecture (Phases A-D Complete)
 
-**Status**: READY FOR IMPLEMENTATION
-**Designed**: 2026-01-09
-**Architecture**: Model Context Protocol (MCP) on Modal serverless
+**Status**: ✅ CODE COMPLETE (2026-01-10) - Modal redeploy pending
+**Implementation**: BaseTool pattern (simpler than planned MCP server)
+**Tests**: 681 passing (164 new tool tests)
 **Documentation**: `docs/master-architecture/reference/tool-specifications.md`
 
 ### Architecture Overview
@@ -200,13 +200,15 @@ See `docs/work/cross-repo-blockers.md` for ecosystem impact.
 
 ### Modal Serverless (DEPLOYED - 2026-01-08)
 
-**STATUS**: Infrastructure deployed, crews implemented. **TOOL WIRING PENDING.**
+**STATUS**: Infrastructure deployed, crews implemented, tools wired. **MODAL REDEPLOY + LIVE TESTING PENDING.**
 
 - **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) (current)
 - **Infrastructure**: Modal + Supabase + Netlify deployed to production
 - **Crews**: All 14 crews implemented with 45 agents
-- **Tests**: 185 tests passing (all phases covered)
+- **Tools**: 15 tools wired to 35+ agents (Phases A-D complete 2026-01-10)
+- **Tests**: 681 tests passing (164 new tool tests)
 - **Benefits**: $0 idle costs, platform-agnostic, single repo
+- **Gap**: Deployed Modal code predates tool integration; needs redeploy
 
 ### Implementation Summary
 
@@ -622,30 +624,32 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 | 5 | **Live testing with real LLM calls** | 🔄 In Progress |
 | 6 | Production cutover | ⏳ Pending |
 
-### Live Testing Progress (2026-01-09)
+### Live Testing Progress (2026-01-09) - STALE
+
+> **STALE**: Phase 0-2 testing was done 2026-01-09 BEFORE tool integration (2026-01-10).
+> Modal needs redeployment and Phase 0-4 revalidation with integrated tools.
 
 > **Details**: See [modal-live-testing.md](./modal-live-testing.md) for full learnings.
 
 | Phase | Status | Issues Found | Issues Fixed |
 |-------|--------|--------------|--------------|
-| Phase 0 (Onboarding) | ✅ PASSED | 1 | 1 |
-| Phase 1 (VPC Discovery) | ✅ PASSED | 2 | 2 |
-| Phase 2 (Desirability) | ✅ PASSED | 2 | 2 |
+| Phase 0 (Onboarding) | ⚠️ Revalidate | 1 | 1 |
+| Phase 1 (VPC Discovery) | ⚠️ Revalidate | 2 | 2 |
+| Phase 2 (Desirability) | ⚠️ Revalidate | 2 | 2 |
 | Phase 3 (Feasibility) | ⏳ Pending | - | - |
 | Phase 4 (Viability) | ⏳ Pending | - | - |
 
-**Key Fixes Applied**:
+**Key Fixes Applied (Pre-Tools)**:
 1. HITL phase advancement bug (commit `46c7da6`)
 2. Template variable interpolation timing (commits `46c7da6`, `b96e7a7`, `346e02e`)
 3. Signal-based HITL routing for VPD compliance (commit `e6ce56b`)
 
 ### Remaining Work
 1. ~~E2E integration test (full Phase 0→4 flow)~~ - Mocked tests complete
-2. ~~First live validation run with real LLM calls~~ - In progress (Phase 0-2 done)
-3. Test pivot loopback (approve_segment_pivot → Phase 1)
-4. Complete Phase 3-4 live testing
-5. Tool wiring to specific agents (LandingPageDeploymentTool, etc.)
-6. Production cutover verification
+2. ~~Tool wiring to agents (Phases A-D)~~ - Code complete (2026-01-10)
+3. **Modal redeploy** - Deploy tool-wired code to production
+4. **Phase 0-4 revalidation** - Live test with integrated tools
+5. Production cutover verification
 
 ### Legacy (AMP - ARCHIVED)
 - 3 Crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)
@@ -659,29 +663,27 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 ## Phase E: Schema Alignment
 
 > **Discovered**: 2026-01-10 - Cross-repo analysis revealed Modal tables not deployed
-> **Status**: BLOCKING - P0 migrations required before production validation
+> **Status**: ✅ P0 COMPLETE - Modal migrations deployed to Supabase
 > **Documentation**: See [data-flow.md](../master-architecture/reference/data-flow.md) for complete analysis
 
-### Problem Statement
+### Problem Statement (RESOLVED)
 
-The `persistence.py` layer writes to Supabase tables that don't exist:
-- `validation_runs` - Checkpoint state (NOT DEPLOYED)
-- `validation_progress` - Realtime progress (NOT DEPLOYED)
-- `hitl_requests` - HITL queue (NOT DEPLOYED)
-
-This was incorrectly marked as "✅ READY" in `cross-repo-blockers.md`.
+The `persistence.py` layer writes to Supabase tables that now exist:
+- `validation_runs` - Checkpoint state (✅ DEPLOYED)
+- `validation_progress` - Realtime progress (✅ DEPLOYED)
+- `hitl_requests` - HITL queue (✅ DEPLOYED)
 
 ### Migration Status
 
-#### P0: Modal Serverless (COMPLETE - 2026-01-10)
+#### P0: Modal Serverless (✅ DEPLOYED - 2026-01-10)
 
 | Table | Migration | Status |
 |-------|-----------|--------|
-| `validation_runs` | `20260110000001_modal_validation_runs.sql` | ✅ Created |
-| `validation_progress` | `20260110000002_modal_validation_progress.sql` | ✅ Created |
-| `hitl_requests` | `20260110000003_modal_hitl_requests.sql` | ✅ Created |
+| `validation_runs` | `20260110130048_modal_validation_runs` | ✅ Deployed |
+| `validation_progress` | `20260110130106_modal_validation_progress` | ✅ Deployed |
+| `hitl_requests` | `20260110130129_modal_hitl_requests` | ✅ Deployed |
 
-Migrations are in `app.startupai.site/supabase/migrations/`. Run `supabase db push` to deploy.
+Deployed to Supabase via MCP on 2026-01-10.
 
 #### P1: VPD-Aligned Founder's Brief
 
@@ -712,5 +714,5 @@ The existing `entrepreneur_briefs` table has flat structure that doesn't match t
 - [x] Data flow documentation created
 - [x] `database-schemas.md` updated with status matrix
 - [x] `cross-repo-blockers.md` corrected
-- [ ] P0 migrations deployed to Supabase
+- [x] P0 migrations deployed to Supabase (2026-01-10)
 - [ ] P1-P3 migrations created and deployed

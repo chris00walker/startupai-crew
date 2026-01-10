@@ -6,7 +6,18 @@ last_reviewed: "2026-01-10"
 
 # Recently Delivered
 
-## MCP-First Tool Integration COMPLETE (2026-01-10)
+## Timeline Clarification (2026-01-10)
+
+| Date | Event | Notes |
+|------|-------|-------|
+| 2026-01-09 AM | Phase 0-2 live testing | 5 bugs found/fixed, BEFORE tools |
+| 2026-01-09-10 | Tool integration Phases A-D | 15 tools, 35+ agents, 681 tests |
+| 2026-01-10 | Schema alignment | Modal migrations deployed to Supabase |
+| **Next** | Modal redeploy + Phase 0-4 revalidation | With integrated tools |
+
+---
+
+## Tool Integration COMPLETE (2026-01-10)
 
 All 4 phases of tool integration completed. 15 tools wired to 35+ agents.
 

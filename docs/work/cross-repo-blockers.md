@@ -9,15 +9,15 @@ last_synced: "2026-01-10 - Modal tables deployed, security fixes applied in Prod
 
 This document tracks dependencies between StartupAI repositories to ensure coordinated delivery.
 
-> **MCP ARCHITECTURE READY (2026-01-09)**: Tool implementation adopts MCP (Model Context Protocol) as unified interface. 33 tools mapped to 45 agents. 60-hour, 4-week implementation roadmap. ~$5-10/month additional cost. See `docs/master-architecture/reference/tool-specifications.md`.
+> **TOOLS WIRED (2026-01-10)**: 15 tools wired to 35+ agents using BaseTool pattern. 681 tests passing. Modal redeploy + Phase 0-4 revalidation pending.
 
-## Ecosystem Status (2026-01-09)
+## Ecosystem Status (2026-01-10)
 
-**MCP architecture designed. Ready for phased tool implementation.**
+**Tool integration complete. Modal redeploy + Phase 0-4 revalidation pending.**
 
 | Service | Status | Completion | Notes |
 |---------|--------|------------|-------|
-| CrewAI Backend | **MCP READY** | ~80% | Architecture complete, 60h implementation ahead |
+| CrewAI Backend | **TOOLS WIRED** | ~85% | 15 tools, 35+ agents. Modal redeploy pending. |
 | Product App | Modal integration complete | ~95% | Pointing to Modal endpoints |
 | Marketing Site | Live API integration | ~95% | Activity Feed + Metrics connected |
 
@@ -112,39 +112,29 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 
 ---
 
-## MCP Architecture Implementation
+## Tool Architecture Implementation
 
-**Status**: READY FOR IMPLEMENTATION
-**Designed**: 2026-01-09
+**Status**: ✅ PHASES A-D COMPLETE (2026-01-10) - Modal redeploy pending
+**Implementation**: BaseTool pattern (simpler than planned MCP server)
 **Owner**: CrewAI Backend (this repo)
 
 ### Architecture Decision
 
-Adopted **MCP (Model Context Protocol)** as the unified tool interface:
-- Equivalent of OpenRouter for LLMs, but for tools
-- Open standard by Linux Foundation (Anthropic + OpenAI backing)
-- Stateless HTTP transport works with Modal serverless
-- No per-call fees, just compute costs (~$5-10/month)
+Implemented tools using **BaseTool pattern** (direct Python):
+- Simpler than MCP server architecture
+- 15 tools implemented, wired to 35+ agents
+- 681 tests passing (164 new tool tests)
+- MCP server pattern documented but not needed for current scope
 
-### Tool Categories
+### Implementation Summary (Complete)
 
-| Category | Count | Description | Implementation |
-|----------|-------|-------------|----------------|
-| **EXISTS** | 13 | Ready to wire | Direct Python import |
-| **MCP External** | 4 | Pre-built community servers | Meta Ads, Google Ads, Calendar, Fetch |
-| **MCP Custom** | 10 | Build as FastMCP on Modal | forum_search, analyze_reviews, etc. |
-| **LLM-Based** | 6 | Structured output | Pydantic + Supabase |
-| **TOTAL** | 33 | All tools for 45 agents | |
-
-### Implementation Roadmap (60 hours)
-
-| Phase | Focus | Hours | Deliverable |
-|-------|-------|-------|-------------|
-| A (Week 1) | Core MCP Server | 15h | Research tools (Reddit, app stores, web) |
-| B (Week 2) | Advanced Tools | 14h | Interview transcription, pattern recognition |
-| C (Week 3) | External MCP + Analytics | 13h | Ad platforms, analytics via MCP |
-| D (Week 4) | CrewAI Integration | 18h | All 45 agents wired |
-| **TOTAL** | | **60h** | Evidence-based validation |
+| Phase | Focus | Status | Tools |
+|-------|-------|--------|-------|
+| A | Customer Research | ✅ Complete | ForumSearchTool, ReviewAnalysisTool, SocialListeningTool, TrendAnalysisTool |
+| B | Advanced Analysis | ✅ Complete | TranscriptionTool, InsightExtractorTool, BehaviorPatternTool, ABTestTool |
+| C | Analytics & Privacy | ✅ Complete | AnalyticsTool, AnonymizerTool, AdPlatformTool, CalendarTool |
+| D | LLM-Based Tools | ✅ Complete | CanvasBuilderTool, TestCardTool, LearningCardTool |
+| **TOTAL** | | **✅ Complete** | **15 tools, 35+ agents** |
 
 ### Reference Documents
 
@@ -161,12 +151,12 @@ Adopted **MCP (Model Context Protocol)** as the unified tool interface:
 
 | Item | Status | Owner | Notes |
 |------|--------|-------|-------|
-| **MCP Server Setup** | ⏳ Phase A | Crew | FastMCP on Modal (15h) |
-| **Research Tools** | ⏳ Phase A | Crew | forum_search, analyze_reviews, etc. |
-| **Advanced Tools** | ⏳ Phase B | Crew | transcribe_audio, extract_insights |
-| **External MCP** | ⏳ Phase C | Crew | Meta Ads, Google Ads, Calendar |
-| **Agent Wiring** | ⏳ Phase D | Crew | Wire all 45 agents |
-| Live production validation | ⏳ Ready | All repos | After Phase D complete |
+| **Phase A: Research Tools** | ✅ Complete | Crew | ForumSearchTool, ReviewAnalysisTool, etc. |
+| **Phase B: Advanced Tools** | ✅ Complete | Crew | TranscriptionTool, InsightExtractorTool, etc. |
+| **Phase C: Analytics & Privacy** | ✅ Complete | Crew | AnalyticsTool, AnonymizerTool, etc. |
+| **Phase D: LLM-Based Tools** | ✅ Complete | Crew | CanvasBuilderTool, TestCardTool, etc. |
+| **Modal Redeploy** | ⏳ Pending | Crew | Deploy tool-wired code to production |
+| **Phase 0-4 Revalidation** | ⏳ Pending | All repos | Live test with integrated tools |
 
 ---
 

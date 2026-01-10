@@ -59,12 +59,14 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 ### Hypothesis: Full Pipeline Produces Actionable Results
 
-> **If** we complete Phase 3-4 live testing with evidence-based tools,
+> **If** we complete Phase 0-4 live testing with evidence-based tools,
 > **Then** users will receive actionable pivot/proceed recommendations backed by evidence.
 
-**Status**: ✅ UNBLOCKED (tool integration complete)
+**Status**: ✅ UNBLOCKED - Tool integration complete. Modal redeploy + Phase 0-4 revalidation pending.
 
 **Build Required**:
+- [ ] **Modal redeploy** - Deploy tool-wired code to production
+- [ ] **Revalidate Phase 0-2** - Previous testing predates tool integration
 - [ ] Complete Phase 3 (Feasibility) live testing
 - [ ] Complete Phase 4 (Viability) live testing
 - [ ] Test pivot loopback (approve_segment_pivot → Phase 1)
