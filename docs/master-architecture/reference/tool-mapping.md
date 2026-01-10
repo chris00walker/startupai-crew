@@ -25,8 +25,10 @@ This document defines the complete mapping from agents to their assigned tools, 
 | **EXISTS** | 13 | Implemented and ready to wire |
 | **MCP External** | 4 | Use existing MCP servers (Meta Ads, Google Ads, Calendar, Fetch) |
 | **MCP Custom** | 10 | Build as FastMCP tools on Modal |
-| **LLM-Based** | 6 | Structured LLM output with Pydantic |
-| **TOTAL** | 33 | All tools across 45 agents |
+| **LLM-Based** | 8 | Structured LLM output with Pydantic |
+| **TOTAL** | 35 | All tools across 45 agents |
+
+> **Observability**: All tools emit observability data. See [observability-architecture.md](./observability-architecture.md) for debugging workflows and database schema.
 
 ---
 
@@ -116,8 +118,8 @@ This document defines the complete mapping from agents to their assigned tools, 
 
 | Agent | Tools | MCP Category | Output Schema |
 |-------|-------|--------------|---------------|
-| P1 | AdPlatformTool | MCP External (Meta Ads) | AdCreatives |
-| P2 | AdPlatformTool, BudgetGuardrailsTool | MCP External (1), EXISTS (1) | CampaignExecution |
+| P1 | AdCreativeGeneratorTool, AdPlatformTool | LLM-Based (1), MCP External (1) | AdCreatives |
+| P2 | AdCreativeGeneratorTool, AdPlatformTool, BudgetGuardrailsTool | LLM-Based (1), MCP External (1), EXISTS (1) | CampaignExecution |
 | P3 | AnalyticsTool | MCP Custom | DesirabilityMetrics |
 
 #### GovernanceCrew
@@ -132,7 +134,7 @@ This document defines the complete mapping from agents to their assigned tools, 
 - 9 agents total
 - 0 pure LLM agents (no tools)
 - 9 tool-equipped agents
-- Tool breakdown: 8 EXISTS, 2 MCP External, 1 MCP Custom, 1 LLM-Based
+- Tool breakdown: 8 EXISTS, 2 MCP External, 1 MCP Custom, 3 LLM-Based
 
 ---
 
@@ -203,10 +205,10 @@ This document defines the complete mapping from agents to their assigned tools, 
 |-------|--------|----------|---------------|--------|------------|--------------|-----------|
 | Phase 0 | 4 | 2 | 2 | 2 | 0 | 0 | 2 |
 | Phase 1 | 18 | 7 | 11 | 5 | 11 | 2 | 5 |
-| Phase 2 | 9 | 0 | 9 | 8 | 1 | 2 | 1 |
+| Phase 2 | 9 | 0 | 9 | 8 | 1 | 2 | 3 |
 | Phase 3 | 5 | 0 | 5 | 4 | 0 | 0 | 4 |
 | Phase 4 | 9 | 0 | 9 | 9 | 1 | 1 | 5 |
-| **TOTAL** | **45** | **9** | **36** | **28** | **13** | **5** | **17** |
+| **TOTAL** | **45** | **9** | **36** | **28** | **13** | **5** | **19** |
 
 ### By Tool Category (MCP Architecture)
 
@@ -215,13 +217,14 @@ This document defines the complete mapping from agents to their assigned tools, 
 | Research Tools | 2 | 4 | 1 | 0 | FastMCP on Modal |
 | Interview Tools | 0 | 2 | 1 | 0 | FastMCP + Calendar MCP |
 | Design Tools | 3 | 0 | 0 | 2 | LLM structured output |
+| Asset Generation | 0 | 0 | 0 | 2 | Template + LLM (LP, Ads) |
 | Growth Tools | 1 | 2 | 2 | 0 | Meta/Google Ads MCP |
 | Governance Tools | 5 | 1 | 0 | 0 | EXISTS + Presidio MCP |
 | Finance Tools | 4 | 1 | 1 | 0 | EXISTS + Fetch MCP |
 | Learning Tools | 2 | 0 | 0 | 6 | LLM structured output |
-| **TOTAL** | **17** | **10** | **5** | **8** | |
+| **TOTAL** | **17** | **10** | **5** | **10** | |
 
-**Note:** Unique tool count: 33 (13 EXISTS, 10 MCP Custom, 4 MCP External, 6 LLM-Based)
+**Note:** Unique tool count: 35 (13 EXISTS, 10 MCP Custom, 4 MCP External, 8 LLM-Based)
 
 ### Agent Type Distribution
 
@@ -277,7 +280,7 @@ This document defines the complete mapping from agents to their assigned tools, 
 | AnalyticsTool | `get_analytics` | Netlify API / PostHog | P3, D3, L1, W1, W2 | 1, 2, 4 |
 | AnonymizerTool | `anonymize_data` | Microsoft Presidio | Learning pipeline | All |
 
-### LLM-Based Tools (6)
+### LLM-Based Tools (8)
 
 | Tool | Implementation | Target Agents | Phase(s) |
 |------|----------------|---------------|----------|
@@ -287,6 +290,8 @@ This document defines the complete mapping from agents to their assigned tools, 
 | ConversationTool | LLM structured output | O1 | 0 |
 | NoteStructurerTool | LLM structured output | O1 | 0 |
 | ViabilityApprovalTool | LLM + Supabase HITL | C2 | 4 |
+| LandingPageGeneratorTool | Template + LLM copy | F2, W2 | 1, 2 |
+| AdCreativeGeneratorTool | LLM + platform constraints | P1, P2 | 2 |
 
 ---
 
@@ -536,6 +541,7 @@ def observation_agent(self) -> Agent:
 - [tool-specifications.md](./tool-specifications.md) - Detailed tool specifications with MCP architecture
 - [agent-specifications.md](./agent-specifications.md) - Agent configurations
 - [agentic-tool-framework.md](./agentic-tool-framework.md) - Tool lifecycle framework
+- [observability-architecture.md](./observability-architecture.md) - Debugging workflows and database schema
 - [../02-organization.md](../02-organization.md) - Agent Configuration Standard
 - Phase documents: [04](../04-phase-0-onboarding.md), [05](../05-phase-1-vpc-discovery.md), [06](../06-phase-2-desirability.md), [07](../07-phase-3-feasibility.md), [08](../08-phase-4-viability.md)
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
@@ -548,6 +554,10 @@ def observation_agent(self) -> Agent:
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-10 | Added AdCreativeGeneratorTool to P1, P2 | Asset generation for ad campaigns |
+| 2026-01-10 | Updated tool counts (33→35) | LandingPageGeneratorTool, AdCreativeGeneratorTool now LLM-Based |
+| 2026-01-10 | Added Asset Generation category | Separate from Design tools |
+| 2026-01-10 | Added observability-architecture.md reference | All tools now emit observability data |
 | 2026-01-09 | Adopted MCP-first architecture | Unified tool interface like OpenRouter for LLMs |
 | 2026-01-09 | Categorized tools: EXISTS, MCP External, MCP Custom, LLM-Based | Clear implementation paths |
 | 2026-01-09 | Updated mapping tables with MCP Category column | Align with tool-specifications.md |

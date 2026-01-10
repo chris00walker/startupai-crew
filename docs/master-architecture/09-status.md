@@ -1,8 +1,8 @@
 ---
 purpose: Authoritative ecosystem status across all three services
 status: active
-last_reviewed: 2026-01-09
-last_updated: 2026-01-09
+last_reviewed: 2026-01-10
+last_updated: 2026-01-10
 vpd_compliance: true
 ---
 
@@ -22,7 +22,7 @@ This document provides an **authoritative, cross-repository view** of implementa
 | **Marketing Site** (startupai.site) | Production, static export | ~95% | None (fully unblocked) |
 | **Product App** (app.startupai.site) | Modal integration complete | ~95% | Awaiting MCP completion |
 
-> **MCP Architecture Ready (2026-01-09)**: Adopted Model Context Protocol as unified tool interface. 33 tools (13 EXISTS, 10 MCP Custom, 4 MCP External, 6 LLM-Based) mapped to 45 agents. 60-hour, 4-week implementation roadmap. ~$5-10/month cost. See `reference/tool-specifications.md`.
+> **MCP Architecture Ready (2026-01-10)**: Adopted Model Context Protocol as unified tool interface. 35 tools (13 EXISTS, 10 MCP Custom, 4 MCP External, 8 LLM-Based) mapped to 45 agents. Asset generation tools (LandingPageGeneratorTool, AdCreativeGeneratorTool) fully specified. Observability architecture defined. See `reference/tool-specifications.md` and `reference/observability-architecture.md`.
 
 **Ecosystem State**: Modal serverless deployed. MCP-first tool architecture designed. Ready for phased implementation: Phase A (Core MCP Server), Phase B (Advanced Tools), Phase C (External MCP + Analytics), Phase D (CrewAI Integration).
 
@@ -176,8 +176,12 @@ Legacy deployment (reference only):
 | **EXISTS** | 13 | Ready to wire | Direct Python import |
 | **MCP Custom** | 10 | Build on Modal | FastMCP + asyncpraw, HuggingFace, etc. |
 | **MCP External** | 4 | Community servers | Meta Ads, Google Ads, Calendar, Fetch |
-| **LLM-Based** | 6 | Structured output | Pydantic + Supabase |
-| **TOTAL** | 33 | All tools for 45 agents | |
+| **LLM-Based** | 8 | Structured output | Pydantic + Template + LLM |
+| **TOTAL** | 35 | All tools for 45 agents | |
+
+**Asset Generation Tools** (new 2026-01-10):
+- `LandingPageGeneratorTool` - Template-based HTML generation with LLM copy
+- `AdCreativeGeneratorTool` - Platform-specific ad copy with character limits
 
 ### Implementation Roadmap (60 hours)
 
@@ -195,11 +199,27 @@ Legacy deployment (reference only):
 
 | Document | Status | Description |
 |----------|--------|-------------|
-| `reference/tool-specifications.md` | ✅ MCP Architecture | Full MCP design + 33 tool specs |
+| `reference/tool-specifications.md` | ✅ MCP Architecture | Full MCP design + 35 tool specs |
 | `reference/tool-mapping.md` | ✅ MCP Categories | Agent-to-tool matrix with MCP categories |
 | `reference/agent-specifications.md` | ✅ Complete | All 45 agent configurations |
-| `reference/agentic-tool-framework.md` | ✅ Enhanced | Tool lifecycle framework |
+| `reference/agentic-tool-framework.md` | ✅ Enhanced | Tool lifecycle + testing requirements |
+| `reference/observability-architecture.md` | ✅ NEW | Debugging workflows + database schema |
 | Phase documents (04-08) | ✅ Enhanced | Agent configuration summaries |
+
+### Observability Architecture (NEW)
+
+> **Reference**: See [observability-architecture.md](./reference/observability-architecture.md) for complete specification.
+
+| Component | Purpose | Status |
+|-----------|---------|--------|
+| `agent_steps` table | Capture agent reasoning | Specified |
+| `tool_executions` table | Tool input/output/errors | Specified |
+| `error_logs` table | Error context with stack traces | Specified |
+| `ObservabilityCallbackHandler` | CrewAI callback for logging | Specified |
+| `@observable_tool` decorator | Tool wrapper for logging | Specified |
+| Placeholder detection | Detect non-real outputs | Specified |
+
+**Goal**: Modal developer can diagnose any failing agent in < 5 minutes.
 
 ### Verification Checklist
 
@@ -208,6 +228,8 @@ Legacy deployment (reference only):
 - [x] For any tool: What is its input/output schema? → `tool-specifications.md`
 - [x] Implementation order: What phase implements what? → `tool-mapping.md`
 - [x] MCP server setup: How to deploy? → `tool-specifications.md`
+- [x] Debugging workflow: How to diagnose tool failures? → `observability-architecture.md`
+- [x] Testing requirements: What tests are needed? → `agentic-tool-framework.md`
 
 ---
 
@@ -226,7 +248,9 @@ Legacy deployment (reference only):
 | Pydantic output schemas | ✅ Complete | ValidationRunState, ViabilityEvidence, etc. |
 | HITL integration | ✅ Complete | 10 checkpoints with checkpoint-and-resume |
 | Supabase state persistence | ✅ Complete | validation_runs, validation_progress tables |
-| Tools | ✅ 18+ tools | TavilySearch, CustomerResearch, MethodologyCheck, etc. |
+| Tools | ✅ 35 tools | 13 EXISTS, 10 MCP Custom, 4 MCP External, 8 LLM-Based |
+| Observability architecture | ✅ Specified | agent_steps, tool_executions, error_logs tables |
+| Asset generation tools | ✅ Specified | LandingPageGeneratorTool, AdCreativeGeneratorTool |
 
 ### What's Pending
 
@@ -566,9 +590,10 @@ Marketing activity feed shows real activity
 - [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
 - [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
 - [reference/agent-specifications.md](./reference/agent-specifications.md) - All 45 agent configurations
-- [reference/tool-specifications.md](./reference/tool-specifications.md) - All 33 tool specifications
+- [reference/tool-specifications.md](./reference/tool-specifications.md) - All 35 tool specifications
 - [reference/tool-mapping.md](./reference/tool-mapping.md) - Agent-to-tool mapping matrix
-- [reference/agentic-tool-framework.md](./reference/agentic-tool-framework.md) - Tool implementation framework
+- [reference/agentic-tool-framework.md](./reference/agentic-tool-framework.md) - Tool lifecycle + testing
+- [reference/observability-architecture.md](./reference/observability-architecture.md) - Debugging workflows + database schema
 
 ### Architecture Decision Records
 - [ADR-001](../adr/001-flow-to-crew-migration.md) - Flow to 3-Crew Migration (Superseded)

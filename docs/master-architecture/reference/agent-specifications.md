@@ -1136,20 +1136,25 @@ class DesignArtifacts(BaseModel):
 | `inject_date` | True | Current framework versions |
 | `max_iter` | 25 | Iterative development |
 | `temperature` | 0.5 | Balanced code generation |
+| `output_pydantic` | LandingPageBuild | Structured output validation |
 
 #### Tools Specification
 
 | Tool | Status | Purpose |
 |------|--------|---------|
-| LandingPageGeneratorTool | EXISTS | Generate Next.js landing pages |
-| CodeValidatorTool | EXISTS | Validate generated code |
+| LandingPageGeneratorTool | LLM-Based | Generate landing page HTML with Tailwind CSS |
+| CodeValidatorTool | EXISTS | Validate generated code structure |
+
+> **Note**: LandingPageGeneratorTool uses template-based generation with LLM copy. See [tool-specifications.md](./tool-specifications.md#landingpagegeneratortool) for full schema.
 
 #### Output Schema
 
 ```python
 class LandingPageBuild(BaseModel):
-    page_code: str                        # Generated Next.js code
-    components_used: List[str]            # shadcn/ui components
+    html: str                             # Complete HTML with Tailwind
+    sections: List[str]                   # Sections included (hero, features, etc.)
+    tracking_enabled: bool                # Whether analytics JS included
+    form_enabled: bool                    # Whether signup form included
     validation_result: ValidationResult
     build_status: str                     # "success" or "error"
     preview_url: Optional[str]
@@ -1223,26 +1228,32 @@ class DeploymentResult(BaseModel):
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| `tools` | AdPlatformTool | Ad platform integration |
+| `tools` | AdCreativeGeneratorTool, AdPlatformTool | Creative generation + platform integration |
 | `reasoning` | True | Creative ad generation |
 | `inject_date` | True | Current ad trends |
 | `max_iter` | 25 | Multiple creative variants |
 | `temperature` | 0.8 | High creativity |
+| `output_pydantic` | AdCreatives | Structured output validation |
 
 #### Tools Specification
 
 | Tool | Status | Purpose |
 |------|--------|---------|
-| AdPlatformTool | STUB | Create and manage ad campaigns |
+| AdCreativeGeneratorTool | LLM-Based | Generate platform-specific ad copy variants |
+| AdPlatformTool | STUB | Create and manage ad campaigns (Meta/Google) |
+
+> **Note**: AdCreativeGeneratorTool enforces platform character limits. See [tool-specifications.md](./tool-specifications.md#adcreativegeneratortool) for constraints per platform.
 
 #### Output Schema
 
 ```python
 class AdCreatives(BaseModel):
-    ad_variants: List[AdVariant]
-    headlines: List[str]
-    descriptions: List[str]
-    images: List[ImageAsset]
+    platform: str                         # meta | google | linkedin | tiktok
+    ad_variants: List[AdVariant]          # Generated variants with platform constraints
+    headlines: List[str]                  # Platform-appropriate headlines
+    descriptions: List[str]               # Platform-appropriate descriptions
+    ctas: List[str]                       # Call-to-action options
+    character_counts_validated: bool      # All variants within limits
     targeting: TargetingConfig
     budget_allocation: BudgetAllocation
 ```
@@ -1268,7 +1279,7 @@ class AdCreatives(BaseModel):
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| `tools` | AdPlatformTool | Campaign execution |
+| `tools` | AdCreativeGeneratorTool, AdPlatformTool, BudgetGuardrailsTool | Creative iteration + execution + budget control |
 | `reasoning` | True | Campaign optimization |
 | `inject_date` | True | Current market context |
 | `max_iter` | 25 | Campaign iterations |
@@ -1278,15 +1289,21 @@ class AdCreatives(BaseModel):
 
 | Tool | Status | Purpose |
 |------|--------|---------|
-| AdPlatformTool | STUB | Execute and monitor campaigns |
+| AdCreativeGeneratorTool | LLM-Based | Generate variant ad copy for A/B testing |
+| AdPlatformTool | STUB | Execute and monitor campaigns (Meta/Google) |
+| BudgetGuardrailsTool | EXISTS | Enforce spend limits with HITL approval |
+
+> **Note**: P2 can generate new ad variants to replace underperforming creatives during campaign execution.
 
 #### Output Schema
 
 ```python
 class CampaignExecution(BaseModel):
     campaigns: List[Campaign]
+    active_variants: List[AdVariant]      # Currently running ad variants
     daily_spend: Dict[str, float]
     total_spend: float
+    budget_remaining: float               # From BudgetGuardrailsTool
     impressions: int
     clicks: int
     ctr: float
@@ -1943,6 +1960,8 @@ Same as Phase 2 governance agents, providing final validation, security review, 
 - [02-organization.md](../02-organization.md) - Agent Configuration Standard
 - [tool-specifications.md](./tool-specifications.md) - Detailed tool specifications
 - [tool-mapping.md](./tool-mapping.md) - Complete agent-to-tool mapping
+- [observability-architecture.md](./observability-architecture.md) - Tool debugging and monitoring
+- [agentic-tool-framework.md](./agentic-tool-framework.md) - Tool testing requirements
 - Phase documents (04-08) - Phase-specific agent details
 
 ---
@@ -1951,4 +1970,8 @@ Same as Phase 2 governance agents, providing final validation, security review, 
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-10 | Updated F2 with LandingPageGeneratorTool, output_pydantic | Template-based LP with LLM copy generation |
+| 2026-01-10 | Updated P1, P2 with AdCreativeGeneratorTool | Platform-specific ad copy with character limits |
+| 2026-01-10 | Added output_pydantic to asset generation agents | Structured output validation |
+| 2026-01-10 | Added observability-architecture.md reference | All tools now emit observability data |
 | 2026-01-09 | Initial creation with all 45 agent specifications | Bullet-proof architecture before code implementation |

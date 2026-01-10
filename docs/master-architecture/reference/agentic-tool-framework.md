@@ -770,9 +770,339 @@ def store_learning_tool(learning: dict) -> str:
 
 ---
 
+## Tool Testing Requirements
+
+Every tool in the StartupAI validation engine must meet testing requirements before production deployment. Tools are a critical path—if a tool fails or returns placeholder content, the entire validation is compromised.
+
+### Unit Test Requirements
+
+All tools MUST have unit tests that verify:
+
+| Requirement | Description | Example |
+|-------------|-------------|---------|
+| **Input Validation** | Tool rejects invalid inputs with clear error messages | Empty strings, missing required fields, wrong types |
+| **Happy Path** | Tool produces expected output for valid input | Search returns results, generator produces HTML |
+| **Edge Cases** | Tool handles boundary conditions gracefully | Empty results, max length inputs, special characters |
+| **Error Handling** | Tool returns structured errors, not exceptions | Network failures, API rate limits, invalid credentials |
+
+**Unit Test Template**:
+```python
+import pytest
+from src.shared.tools.landing_page_generator import LandingPageGeneratorTool
+
+class TestLandingPageGeneratorTool:
+    """Unit tests for LandingPageGeneratorTool."""
+
+    def test_valid_input_produces_html(self):
+        """Happy path: valid input produces complete HTML."""
+        tool = LandingPageGeneratorTool()
+        result = tool._run(
+            value_proposition="AI-powered startup validation",
+            target_customer="First-time founders",
+            pain_points=["Fear of failure", "Lack of feedback"],
+            gain_creators=["Confidence", "Evidence-based decisions"],
+            product_name="StartupAI",
+            cta_text="Start Validating",
+            variant_id="test-001",
+            style="modern"
+        )
+        assert "<html" in result
+        assert "StartupAI" in result
+        assert "Start Validating" in result
+
+    def test_missing_required_field_returns_error(self):
+        """Input validation: missing required field."""
+        tool = LandingPageGeneratorTool()
+        result = tool._run(
+            value_proposition="",  # Empty required field
+            target_customer="Founders",
+            # ... other fields
+        )
+        assert "error" in result.lower() or "required" in result.lower()
+
+    def test_placeholder_content_not_returned(self):
+        """Output validation: no placeholder content."""
+        tool = LandingPageGeneratorTool()
+        result = tool._run(
+            # ... valid input
+        )
+        assert "placeholder" not in result.lower()
+        assert "lorem ipsum" not in result.lower()
+        assert "TODO" not in result
+```
+
+### Integration Test Requirements
+
+Tools that interact with external services MUST have integration tests:
+
+| Tool Category | Integration Test Focus |
+|---------------|------------------------|
+| **Search Tools** | Real API calls return valid data (use test accounts) |
+| **Deployment Tools** | Deploy to staging environment, verify URL accessible |
+| **Analytics Tools** | Connect to sandbox analytics, verify metric retrieval |
+| **Ad Platform Tools** | Use platform sandbox/test mode, verify campaign structure |
+
+**Integration Test Environment**:
+```bash
+# Environment variables for integration tests
+TAVILY_API_KEY=tvly-test-...        # Test API key
+NETLIFY_TEST_SITE=startupai-test    # Staging site
+GA4_TEST_PROPERTY=123456789         # Sandbox property
+META_ADS_TEST_MODE=true             # Test mode flag
+```
+
+**Integration Test Example**:
+```python
+import pytest
+from src.shared.tools.landing_page_deployment import LandingPageDeploymentTool
+
+@pytest.mark.integration
+class TestLandingPageDeploymentIntegration:
+    """Integration tests for LandingPageDeploymentTool."""
+
+    def test_deploy_to_staging(self):
+        """Deploy HTML to Netlify staging site."""
+        tool = LandingPageDeploymentTool()
+        html = "<html><body><h1>Test Page</h1></body></html>"
+
+        result = tool._run(
+            html_content=html,
+            project_id="test-project",
+            variant_id="integration-test-001"
+        )
+
+        assert "url" in result
+        assert "startupai" in result["url"]  # Staging URL pattern
+```
+
+### Output Validation Requirements
+
+Tools MUST NOT return placeholder or hallucinated content. All tools should validate their outputs:
+
+```python
+from src.shared.observability import validate_tool_output
+
+class LandingPageGeneratorTool(BaseTool):
+    def _run(self, **kwargs) -> str:
+        # Generate content
+        html = self._generate_html(**kwargs)
+
+        # Validate output is not placeholder
+        is_valid, message = validate_tool_output(self.name, html)
+        if not is_valid:
+            raise ToolOutputValidationError(message)
+
+        return html
+```
+
+**Placeholder Detection Patterns**:
+```python
+PLACEHOLDER_PATTERNS = [
+    "placeholder",
+    "lorem ipsum",
+    "sample text",
+    "example",
+    "TODO",
+    "FIXME",
+    "not implemented",
+    "mock data",
+    "[insert",
+    "{insert",
+]
+
+def detect_placeholder(output: str) -> bool:
+    """Detect if output contains placeholder content."""
+    output_lower = output.lower()
+    return any(pattern in output_lower for pattern in PLACEHOLDER_PATTERNS)
+```
+
+### CI/CD Integration
+
+| Stage | Tests Run | Environment |
+|-------|-----------|-------------|
+| **Pre-commit** | Unit tests only | Local |
+| **PR Check** | Unit + linting + type check | CI |
+| **Staging Deploy** | Unit + integration tests | Staging secrets |
+| **Production Deploy** | Full test suite + smoke tests | Production (read-only) |
+
+**GitHub Actions Configuration** (reference):
+```yaml
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unit Tests
+        run: pytest tests/ -m "not integration"
+
+      - name: Integration Tests (staging only)
+        if: github.ref == 'refs/heads/staging'
+        run: pytest tests/ -m "integration"
+        env:
+          TAVILY_API_KEY: ${{ secrets.TAVILY_TEST_KEY }}
+          NETLIFY_ACCESS_TOKEN: ${{ secrets.NETLIFY_TEST_TOKEN }}
+```
+
+### Test Coverage Requirements
+
+| Tool Category | Minimum Coverage | Rationale |
+|---------------|------------------|-----------|
+| **Research Tools** | 80% | Core evidence collection |
+| **Asset Generation Tools** | 90% | Critical deliverables |
+| **Deployment Tools** | 95% | Production impact |
+| **Governance Tools** | 85% | Quality assurance |
+| **Learning Tools** | 80% | Flywheel integrity |
+
+---
+
+## Tool Observability Pattern
+
+All tools must emit observability data for debugging and monitoring. Without observability, diagnosing tool failures in production is nearly impossible.
+
+> **Reference**: See [observability-architecture.md](./observability-architecture.md) for the complete observability specification.
+
+### Observable Tool Decorator
+
+Wrap all tool implementations with the observability decorator:
+
+```python
+from functools import wraps
+from typing import Any, Callable
+import time
+import traceback
+
+def observable_tool(func: Callable) -> Callable:
+    """
+    Decorator that adds observability to tool execution.
+
+    Captures:
+    - Tool name and input parameters
+    - Execution duration
+    - Output or error details
+    - Placeholder detection
+
+    Usage:
+        class MyTool(BaseTool):
+            @observable_tool
+            def _run(self, **kwargs) -> str:
+                # Tool implementation
+                ...
+    """
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        tool_name = getattr(self, "name", func.__name__)
+        start_time = time.time()
+
+        try:
+            result = func(self, *args, **kwargs)
+            duration_ms = int((time.time() - start_time) * 1000)
+
+            # Log success
+            if hasattr(self, "_observability_callback"):
+                self._observability_callback.on_tool_end(
+                    result,
+                    output_type="success" if not detect_placeholder(str(result)) else "placeholder"
+                )
+
+            return result
+
+        except Exception as e:
+            duration_ms = int((time.time() - start_time) * 1000)
+
+            # Log error
+            if hasattr(self, "_observability_callback"):
+                self._observability_callback.on_tool_error(e)
+
+            raise
+
+    return wrapper
+```
+
+### Wiring Observability to Tools
+
+When creating tool instances, inject the observability callback:
+
+```python
+from src.shared.observability import ObservabilityCallbackHandler
+
+def create_tools_with_observability(run_id: str, supabase: Client) -> list:
+    """Create tool instances with observability wired."""
+    callback = ObservabilityCallbackHandler(
+        run_id=run_id,
+        supabase=supabase,
+        phase=2,
+        crew="BuildCrew"
+    )
+
+    # Create tools with callback
+    lp_tool = LandingPageGeneratorTool()
+    lp_tool._observability_callback = callback
+
+    deploy_tool = LandingPageDeploymentTool()
+    deploy_tool._observability_callback = callback
+
+    return [lp_tool, deploy_tool]
+```
+
+### Observability Data Captured
+
+| Data Point | Storage Location | Query Example |
+|------------|------------------|---------------|
+| Tool invocation | `tool_executions.tool_input` | What did the agent ask for? |
+| Tool output | `tool_executions.tool_output` | What did the tool return? |
+| Output type | `tool_executions.output_type` | success / error / placeholder / timeout |
+| Duration | `tool_executions.duration_ms` | How long did it take? |
+| Error details | `tool_executions.error`, `stack_trace` | What went wrong? |
+
+### Debugging with Observability
+
+**Scenario**: Landing page tool returns placeholder content
+
+```sql
+-- Find placeholder outputs from LandingPageGeneratorTool
+SELECT
+    run_id,
+    tool_input->>'value_proposition' as vp,
+    tool_output,
+    duration_ms,
+    created_at
+FROM tool_executions
+WHERE tool_name = 'landing_page_generator'
+  AND output_type = 'placeholder'
+ORDER BY created_at DESC
+LIMIT 10;
+```
+
+**Scenario**: Tool timing out frequently
+
+```sql
+-- Find slow tools
+SELECT
+    tool_name,
+    AVG(duration_ms) as avg_ms,
+    MAX(duration_ms) as max_ms,
+    COUNT(*) as executions
+FROM tool_executions
+WHERE created_at > NOW() - INTERVAL '24 hours'
+GROUP BY tool_name
+ORDER BY avg_ms DESC;
+```
+
+### Alert Thresholds
+
+| Metric | Warning | Critical | Action |
+|--------|---------|----------|--------|
+| `tool_error_rate` | > 5% | > 15% | Check API keys, rate limits |
+| `placeholder_rate` | > 0% | > 5% | Fix tool implementation |
+| `avg_duration_ms` | > 30s | > 60s | Add caching, optimize |
+| `timeout_rate` | > 1% | > 5% | Increase timeout, check network |
+
+---
+
 ## Related Documents
 
 - [tool-mapping.md](./tool-mapping.md) - Specific tool-to-agent assignments
+- [tool-specifications.md](./tool-specifications.md) - Detailed tool input/output schemas
+- [observability-architecture.md](./observability-architecture.md) - Observability database and callbacks
 - [flywheel-learning.md](./flywheel-learning.md) - Learning capture architecture
 - [approval-workflows.md](./approval-workflows.md) - HITL checkpoint design
 - [02-organization.md](../02-organization.md) - Agent definitions
@@ -780,7 +1110,14 @@ def store_learning_tool(learning: dict) -> str:
 
 ---
 
-**Last Updated**: 2026-01-09
+**Last Updated**: 2026-01-10
+
+**Changes (2026-01-10)**:
+- Added Tool Testing Requirements section (unit, integration, output validation, CI/CD)
+- Added Tool Observability Pattern section (decorator, wiring, debugging queries)
+- Added test coverage requirements by tool category
+- Added alert thresholds for monitoring
+- Added cross-references to observability-architecture.md and tool-specifications.md
 
 **Changes (2026-01-09)**:
 - Created comprehensive agentic tool framework

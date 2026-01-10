@@ -75,8 +75,17 @@ StartupAI uses the [Model Context Protocol (MCP)](https://modelcontextprotocol.i
 | **EXISTS** | 13 | Implemented and ready to wire |
 | **MCP External** | 4 | Use existing MCP servers |
 | **MCP Custom** | 10 | Build as FastMCP tools on Modal |
-| **Local Library** | 6 | Direct Python imports |
-| **TOTAL** | 33 | All tools across 45 agents |
+| **LLM-Based** | 8 | Structured output with Pydantic (includes Asset Generation) |
+| **TOTAL** | 35 | All tools across 45 agents |
+
+### Asset Generation Tools (NEW)
+
+| Tool | Purpose | Agents |
+|------|---------|--------|
+| **LandingPageGeneratorTool** | Generate landing page HTML from VPC data | F2 |
+| **AdCreativeGeneratorTool** | Generate platform-specific ad copy variants | P1, P2 |
+
+See full specifications below.
 
 ---
 
@@ -677,10 +686,65 @@ These tools are already implemented and ready to wire.
 
 | Attribute | Value |
 |-----------|-------|
-| **Status** | EXISTS |
-| **Location** | `src/crews/desirability/build_crew/tools/` |
+| **Status** | LLM-Based (Template + LLM Copy) |
+| **Location** | `src/shared/tools/landing_page_generator.py` |
+| **Category** | Asset Generation |
 
-**Target Agents:** F2
+**Purpose**: Generate deployable landing page HTML from VPC data.
+
+**Approach**: Template-based with LLM copy generation. Templates provide consistent structure and responsive design; LLM generates compelling copy for each section.
+
+**Why Template-Based**:
+- Higher quality than pure LLM HTML generation
+- Consistent responsive structure
+- Faster generation (LLM only does copy)
+- Easier to validate output
+
+**Input Schema**:
+```python
+class LandingPageInput(BaseModel):
+    """Input for landing page generation."""
+    value_proposition: str      # Core VP from VPC
+    target_customer: str        # Customer segment description
+    pain_points: list[str]      # Top 3 pains being addressed
+    gain_creators: list[str]    # Top 3 gains being created
+    product_name: str           # Name of product/service
+    cta_text: str               # Call-to-action text (e.g., "Get Early Access")
+    variant_id: str             # A/B test variant identifier
+    style: str = "modern"       # Template style: modern | minimal | bold
+    include_testimonials: bool = False
+    include_faq: bool = False
+```
+
+**Output Schema**:
+```python
+class LandingPageOutput(BaseModel):
+    """Output from landing page generation."""
+    html: str                   # Complete HTML with Tailwind CSS
+    sections: list[str]         # Sections included (hero, features, cta, etc.)
+    tracking_enabled: bool      # Whether analytics JS is injected
+    form_enabled: bool          # Whether signup form is included
+    copy: dict                  # Generated copy by section
+    validation_errors: list[str] = []  # Any structural issues found
+```
+
+**Template Sections**:
+1. **Hero**: Headline, subheadline, CTA button, hero image placeholder
+2. **Pain Points**: 3 pain points with icons
+3. **Solution**: How product addresses pains
+4. **Features**: 3-4 key features with descriptions
+5. **Social Proof**: Testimonials placeholder or trust badges
+6. **CTA**: Final call-to-action with form
+7. **Footer**: Basic footer with links
+
+**Validation Rules**:
+- HTML must be valid (no unclosed tags)
+- All required sections present
+- CTA button exists
+- Form action configured for Supabase
+- Tracking script injected
+
+**Target Agents:** F2 (Frontend Developer)
 
 ---
 
@@ -856,6 +920,80 @@ These tools use structured LLM output with no external dependencies.
 | **Cost** | FREE |
 
 **Target Agents:** C2
+
+---
+
+### AdCreativeGeneratorTool
+
+| Attribute | Value |
+|-----------|-------|
+| **Status** | LLM-Based (NEW) |
+| **Location** | `src/shared/tools/ad_creative_generator.py` |
+| **Category** | Asset Generation |
+| **Cost** | FREE (uses existing LLM) |
+
+**Purpose**: Generate platform-specific ad copy variants from VPC data.
+
+**Approach**: LLM generates ad variants with explicit character constraints. Each platform has different limits that must be validated.
+
+**Platform Constraints**:
+
+| Platform | Headline | Primary Text | Description | CTA |
+|----------|----------|--------------|-------------|-----|
+| **Meta** | 40 chars | 125 chars | 30 chars | 20 chars |
+| **Google** | 30 chars | N/A | 90 chars (×2) | N/A |
+| **LinkedIn** | 150 chars | 600 chars | N/A | 20 chars |
+| **TikTok** | 100 chars | N/A | N/A | 20 chars |
+
+**Input Schema**:
+```python
+class AdCreativeInput(BaseModel):
+    """Input for ad creative generation."""
+    value_proposition: str      # Core VP from VPC
+    target_audience: str        # Audience description (demographics, interests)
+    pain_points: list[str]      # Top pains being addressed (for hooks)
+    platform: str               # meta | google | linkedin | tiktok
+    tone: str = "professional"  # professional | casual | urgent | playful
+    num_variants: int = 3       # Number of variants to generate (max 5)
+    include_emoji: bool = False # Whether to include emoji
+    focus: str = "pain"         # pain | gain | feature | social_proof
+```
+
+**Output Schema**:
+```python
+class AdVariant(BaseModel):
+    """Single ad variant."""
+    variant_id: str             # Unique variant identifier
+    headline: str               # Platform-appropriate headline
+    primary_text: str           # Main ad copy
+    description: str            # Additional description (if platform supports)
+    cta: str                    # Call-to-action text
+    hook_type: str              # pain | gain | curiosity | social_proof
+    character_counts: dict      # Actual counts for validation
+    within_limits: bool         # Whether all limits respected
+
+class AdCreativeOutput(BaseModel):
+    """Output from ad creative generation."""
+    platform: str
+    variants: list[AdVariant]
+    platform_constraints: dict  # Limits used for validation
+    all_valid: bool             # Whether all variants within limits
+    recommendations: list[str]  # Suggestions for improvement
+```
+
+**Generation Strategy**:
+1. Generate 3-5 distinct angles based on VPC data
+2. Each variant uses different hook type (pain, gain, curiosity, social proof)
+3. Validate all character limits before returning
+4. Provide recommendations for variants that exceed limits
+
+**Validation Rules**:
+- All character limits must be respected
+- No prohibited content (platform policies)
+- CTA must match platform options
+- Variants must be distinct (not same text repeated)
+
+**Target Agents:** P1 (Ad Creative Agent), P2 (Communications Agent)
 
 ---
 
@@ -1048,6 +1186,7 @@ NETLIFY_ACCESS_TOKEN=...
 - [tool-mapping.md](./tool-mapping.md) - Agent-to-tool mapping matrix
 - [agent-specifications.md](./agent-specifications.md) - Agent configurations
 - [agentic-tool-framework.md](./agentic-tool-framework.md) - Tool lifecycle framework
+- [observability-architecture.md](./observability-architecture.md) - Tool observability and debugging
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 - [FastMCP Documentation](https://github.com/jlowin/fastmcp)
 - [Modal MCP Example](https://modal.com/docs/examples/mcp_server_stateless)
@@ -1058,6 +1197,10 @@ NETLIFY_ACCESS_TOKEN=...
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-10 | Added LandingPageGeneratorTool full specification | Asset generation gap - F2 needs tool to create HTML |
+| 2026-01-10 | Added AdCreativeGeneratorTool full specification | Asset generation gap - P1/P2 need tool to create ad copy |
+| 2026-01-10 | Updated Tool Summary with Asset Generation category | Clear visibility into new tools |
+| 2026-01-10 | Added link to observability-architecture.md | Tool observability is architectural concern |
 | 2026-01-09 | Adopted MCP-first architecture | Unified tool interface like OpenRouter for LLMs |
 | 2026-01-09 | Added Modal MCP server pattern | Stateless HTTP works with serverless |
 | 2026-01-09 | Categorized tools: External MCP, Custom MCP, Existing, LLM-based | Clear implementation paths |
