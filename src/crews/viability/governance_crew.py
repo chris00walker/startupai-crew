@@ -12,7 +12,7 @@ Agents:
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from shared.tools import MethodologyCheckTool
+from shared.tools import MethodologyCheckTool, AnonymizerTool
 
 
 @CrewBase
@@ -53,8 +53,8 @@ class ViabilityGovernanceCrew:
         """G2: Security Agent - PII scrubbing."""
         return Agent(
             config=self.agents_config["g2_security_agent"],
-            tools=[],
-            reasoning=False,  # PII scrubbing
+            tools=[AnonymizerTool()],
+            reasoning=True,  # PII detection and anonymization
             inject_date=True,
             max_iter=25,
             llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA

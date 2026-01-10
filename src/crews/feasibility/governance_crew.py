@@ -12,7 +12,7 @@ Agents:
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from shared.tools import MethodologyCheckTool
+from shared.tools import MethodologyCheckTool, AnonymizerTool
 
 
 @CrewBase
@@ -52,8 +52,8 @@ class FeasibilityGovernanceCrew:
         """G2: Security Agent - Architecture security review."""
         return Agent(
             config=self.agents_config["g2_security_agent"],
-            tools=[],
-            reasoning=False,  # Security review
+            tools=[AnonymizerTool()],
+            reasoning=True,  # PII detection and security review
             inject_date=True,
             max_iter=25,
             llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA

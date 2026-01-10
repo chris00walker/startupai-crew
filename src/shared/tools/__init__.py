@@ -80,6 +80,24 @@ from shared.tools.analytics_privacy import (
     AdPlatformOutput,
     CalendarOutput,
 )
+from shared.tools.llm_tools import (
+    CanvasBuilderTool,
+    TestCardTool,
+    LearningCardTool,
+    build_canvas_element,
+    design_test_card,
+    capture_learning,
+    CanvasBuilderOutput,
+    TestCardOutput,
+    LearningCardOutput,
+    CanvasElement,
+    TestCard,
+    LearningCard,
+    CanvasElementType,
+    ExperimentType,
+    EvidenceType,
+    SignalStrength,
+)
 
 __all__ = [
     # Web Search Tools
@@ -135,4 +153,21 @@ __all__ = [
     "AnonymizationResult",
     "AdPlatformOutput",
     "CalendarOutput",
+    # LLM-Based Tools (Phase D)
+    "CanvasBuilderTool",
+    "TestCardTool",
+    "LearningCardTool",
+    "build_canvas_element",
+    "design_test_card",
+    "capture_learning",
+    "CanvasBuilderOutput",
+    "TestCardOutput",
+    "LearningCardOutput",
+    "CanvasElement",
+    "TestCard",
+    "LearningCard",
+    "CanvasElementType",
+    "ExperimentType",
+    "EvidenceType",
+    "SignalStrength",
 ]

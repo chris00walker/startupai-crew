@@ -13,6 +13,7 @@ Agents:
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
+from shared.tools import CanvasBuilderTool
 from src.state.models import ValueMap
 
 
@@ -39,7 +40,7 @@ class ValueDesignCrew:
         """V1: Solution Designer - Designs products/services."""
         return Agent(
             config=self.agents_config["v1_solution_designer"],
-            tools=[],
+            tools=[CanvasBuilderTool()],
             reasoning=False,  # Creative design work
             inject_date=True,
             max_iter=25,
@@ -53,7 +54,7 @@ class ValueDesignCrew:
         """V2: Pain Reliever Designer - Designs pain relievers."""
         return Agent(
             config=self.agents_config["v2_pain_reliever_designer"],
-            tools=[],
+            tools=[CanvasBuilderTool()],
             reasoning=False,  # Creative design work
             inject_date=True,
             max_iter=25,
@@ -67,7 +68,7 @@ class ValueDesignCrew:
         """V3: Gain Creator Designer - Designs gain creators."""
         return Agent(
             config=self.agents_config["v3_gain_creator_designer"],
-            tools=[],
+            tools=[CanvasBuilderTool()],
             reasoning=False,  # Creative design work
             inject_date=True,
             max_iter=25,

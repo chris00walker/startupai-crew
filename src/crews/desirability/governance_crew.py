@@ -15,7 +15,7 @@ Guardian's role is oversight (board-level), not execution.
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
-from shared.tools import MethodologyCheckTool
+from shared.tools import MethodologyCheckTool, AnonymizerTool
 
 
 @CrewBase
@@ -55,8 +55,8 @@ class GovernanceCrew:
         """G2: Security Agent - PII protection."""
         return Agent(
             config=self.agents_config["g2_security_agent"],
-            tools=[],
-            reasoning=False,  # Straightforward PII check
+            tools=[AnonymizerTool()],
+            reasoning=True,  # PII detection and anonymization
             inject_date=True,
             max_iter=25,
             llm=LLM(model="openai/gpt-4o", temperature=0.1),  # Strict QA

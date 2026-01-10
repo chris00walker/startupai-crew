@@ -27,6 +27,8 @@ from shared.tools import (
     AnalyticsTool,
     AdPlatformTool,
     CalendarTool,
+    TestCardTool,
+    LearningCardTool,
 )
 
 
@@ -56,8 +58,8 @@ class DiscoveryCrew:
         """E1: Experiment Designer - Designs validation experiments."""
         return Agent(
             config=self.agents_config["e1_experiment_designer"],
-            tools=[],
-            reasoning=False,  # Straightforward design work
+            tools=[TestCardTool(), LearningCardTool()],
+            reasoning=True,  # Designs experiments and captures learnings
             inject_date=True,
             max_iter=25,
             llm=LLM(model="openai/gpt-4o", temperature=0.7),
@@ -131,6 +133,7 @@ class DiscoveryCrew:
             tools=[
                 InsightExtractorTool(),
                 BehaviorPatternTool(),
+                LearningCardTool(),
             ],
             reasoning=True,  # Synthesizes SAY vs DO evidence
             inject_date=True,
