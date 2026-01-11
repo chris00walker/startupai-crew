@@ -1427,19 +1427,51 @@ These tools use structured LLM output with no external dependencies.
 | **Location** | `src/shared/tools/ad_creative_generator.py` |
 | **Category** | Asset Generation |
 | **Cost** | FREE (uses existing LLM) |
+| **Spec Library** | [`reference/ad-platform-specifications.md`](ad-platform-specifications.md) |
 
 **Purpose**: Generate platform-specific ad copy variants from VPC data.
 
-**Approach**: LLM generates ad variants with explicit character constraints. Each platform has different limits that must be validated.
+**Approach**: LLM generates ad variants with explicit character constraints. Agents MUST load specifications from the [Ad Platform Specifications Library](ad-platform-specifications.md) rather than using hardcoded values.
 
-**Platform Constraints**:
+**Specification Loading Pattern**:
+
+```python
+from ad_platform_specs import CHAR_LIMITS, IMAGE_SPECS, CTA_OPTIONS, validate_ad_creative
+
+class AdCreativeGeneratorTool(BaseTool):
+    """Generate ad creatives using platform specification library."""
+
+    def _run(self, platform: str, **kwargs) -> AdCreativeOutput:
+        # Load specs from library (NOT hardcoded)
+        limits = CHAR_LIMITS[platform]
+        cta_options = CTA_OPTIONS[platform]
+        image_specs = IMAGE_SPECS[platform]
+
+        # Generate within constraints
+        variants = self._generate_variants(limits, cta_options, **kwargs)
+
+        # Validate before returning
+        for variant in variants:
+            result = validate_ad_creative(
+                platform=platform,
+                headline=variant.headline,
+                primary_text=variant.primary_text,
+                cta=variant.cta,
+            )
+            variant.within_limits = result["valid"]
+            variant.validation_errors = result["errors"]
+
+        return AdCreativeOutput(variants=variants, ...)
+```
+
+**Platform Constraints** (summary - see [full specs](ad-platform-specifications.md)):
 
 | Platform | Headline | Primary Text | Description | CTA |
 |----------|----------|--------------|-------------|-----|
 | **Meta** | 40 chars | 125 chars | 30 chars | 20 chars |
-| **Google** | 30 chars | N/A | 90 chars (×2) | N/A |
-| **LinkedIn** | 150 chars | 600 chars | N/A | 20 chars |
-| **TikTok** | 100 chars | N/A | N/A | 20 chars |
+| **Google Search** | 30 chars ×3-15 | — | 90 chars ×2-4 | — |
+| **LinkedIn** | 200 chars | 600 chars | 300 chars | 20 chars |
+| **TikTok** | — | 100 chars | — | 16 chars |
 
 **Input Schema**:
 ```python
@@ -1911,6 +1943,8 @@ NETLIFY_ACCESS_TOKEN=...
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-10 | **Ad Platform Specifications Library** created | Canonical reference prevents agent hallucination of platform specs |
+| 2026-01-10 | AdCreativeGeneratorTool references spec library | Agents load specs from library, not hardcoded values |
 | 2026-01-10 | **Ad Creative Visuals** with Progressive Resolution | Ads need visuals, not just copy - same pattern as LP |
 | 2026-01-10 | Added Platform Image Requirements (Meta, Google, LinkedIn, TikTok) | Each platform has specific aspect ratio/size requirements |
 | 2026-01-10 | Added CampaignApprovalDecision schema | HITL approves both LP and ad creatives at same checkpoint |
