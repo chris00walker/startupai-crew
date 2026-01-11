@@ -16,7 +16,83 @@ last_reviewed: "2026-01-10"
 | 2026-01-10 15:08 | Bug fixes deployed | #10-12 fixed, Phase 2 retry running |
 | 2026-01-10 | **4 Critical Issues Fixed** | Bug #9, tool gap, timeout, RLS |
 | 2026-01-10 18:07 | **Bug #9 Verified** | StartupAI dogfood run, pivot workflow working |
+| 2026-01-10 20:00 | **Plan Audit Complete** | All 4 today's plans audited, docs aligned |
+| 2026-01-10 22:00 | **Asset Generation Specs** | Blueprint Pattern, Progressive Images, Ad Platform Library |
 | **Next** | Complete Phase 3-4 live test | Phase 2 verified, Phase 3-4 pending |
+
+---
+
+## Asset Generation Architecture (2026-01-10 22:00)
+
+Complete specifications for asset generation tools supporting Phase 2 validation.
+
+### Commits
+
+| Commit | Feature | Files Changed |
+|--------|---------|---------------|
+| `8fc1b0f` | Observability architecture | `observability-architecture.md` (NEW) |
+| `ef87146` | Blueprint Pattern for LP | `tool-specifications.md` |
+| `dcab571` | Progressive Image Resolution (LP) | `tool-specifications.md` |
+| `3d4d112` | Ad Creative Visuals | `tool-specifications.md` |
+| `68f5178` | Ad Platform Specifications Library | `ad-platform-specifications.md` (NEW) |
+
+### Architecture Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **Assembly > Generation** | Pre-built Tailwind components prevent "AI slop" |
+| **Blueprint Pattern** | JSON stored in DB enables re-generation without agent chain |
+| **Progressive Image Resolution** | Unsplash first ($0), AI only on user request |
+| **Ad Platform Library** | Agents load specs from canonical reference (no hallucination) |
+
+### New Reference Documents
+
+| Document | Content |
+|----------|---------|
+| `reference/ad-platform-specifications.md` | Meta, Google, LinkedIn, TikTok specs with Python constants |
+| `reference/observability-architecture.md` | Database schemas, CrewAI callbacks, debugging workflow |
+
+### LandingPageGeneratorTool Spec
+
+- **Component Registry**: 9 pre-built sections (Hero, PainPoints, Features, etc.)
+- **Icon Constraints**: 20 Lucide icons (prevents hallucination)
+- **Blueprint Schema**: ThemeConfig, SectionConfig, ImageAsset
+- **Dual Storage**: Blueprint in DB, HTML in Supabase Storage
+
+### AdCreativeGeneratorTool Spec
+
+- **Text Generation**: Platform-specific character limits enforced
+- **Visual Generation**: Progressive resolution (Unsplash → AI)
+- **Platform Support**: Meta, Google, LinkedIn, TikTok
+- **Validation**: `validate_ad_creative()` function with cost tracking
+
+### Cost Summary
+
+| Source | Cost per Image | Best For |
+|--------|----------------|----------|
+| Unsplash | $0.00 | Quick validation (90% of cases) |
+| DALL-E 3 | $0.08 | Custom concepts |
+| Midjourney | $0.05 | Aesthetic/lifestyle |
+| Leonardo | $0.02 | Volume generation |
+
+---
+
+## Plan Audit (2026-01-10 20:00)
+
+Audited all 4 Claude plans created today against the codebase.
+
+| Plan | Status | Details |
+|------|--------|---------|
+| `swirling-dancing-kay.md` | ✅ Implemented | Supabase Storage landing page migration (ADR-003) |
+| `effervescent-swimming-hollerith.md` | ✅ P0 Complete | Schema alignment - Modal tables deployed, P1-P3 deferred |
+| `steady-scribbling-kahan.md` | ✅ Implemented | Part of larger tool integration (Phases A-D) |
+| `merry-prancing-spark.md` | ⏸️ Deferred | Architecture docs refactoring (24-32h strategic backlog) |
+
+**Work System Updates**:
+- `roadmap.md` - Updated milestones, changed theme from "Tool Integration" to "Production Validation"
+- `phases.md` - Added "Path to Production" with 3 clear steps
+- `in-progress.md` - Clarified current priority (Phase 3-4), added plan audit entry
+- `cross-repo-blockers.md` - Updated ecosystem status, remaining work section
 
 ---
 

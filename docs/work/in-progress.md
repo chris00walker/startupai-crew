@@ -1,23 +1,37 @@
 ---
 purpose: "Private technical source of truth for active work"
 status: "active"
-last_reviewed: "2026-01-10"
+last_reviewed: "2026-01-10 22:00"
+last_audit: "2026-01-10 - Asset generation specs complete, architecture docs updated"
 ---
 
 # In Progress
 
-## Architecture Status (2026-01-10)
+## 🎯 Current Priority: Phase 3-4 Live Testing
 
-**CURRENT**: Landing page deployment architecture decision - migrating from Netlify API to Supabase Storage.
+**Goal**: Complete full validation cycle through Viability phase.
+
+| Phase | Status | Blocker |
+|-------|--------|---------|
+| Phase 0-2 | ✅ Complete | None (pivot workflow verified) |
+| **Phase 3 (Feasibility)** | ⏳ Next | None |
+| **Phase 4 (Viability)** | ⏳ Next | Depends on Phase 3 |
+
+**To start Phase 3-4**: Resume the existing run or trigger new `/kickoff`.
+
+---
+
+## Architecture Status (2026-01-10)
 
 | Layer | Status | Notes |
 |-------|--------|-------|
 | Interaction (Netlify) | ✅ Production | Edge Functions (product app) |
 | Orchestration (Supabase) | ✅ Production | PostgreSQL + Realtime + Modal tables + RLS |
 | Compute (Modal) | ✅ Redeployed | All fixes deployed 2026-01-10 |
-| **Tool Integration** | ✅ Complete | 100% agents wired (was 56%), args_schema pattern |
+| **Tool Integration** | ✅ Complete | 15 tools, 35+ agents, 681 tests |
 | **Landing Pages** | ✅ Complete | Supabase Storage (ADR-003) - E2E tested |
-| **Observability** | ⚠️ Gaps Found | F2/F3 tracing insufficient - see backlog |
+| **Observability** | ⚠️ Backlog | F2/F3 tracing insufficient - see backlog |
+| **Asset Generation Specs** | ✅ Complete | Blueprint Pattern + Ad Platform Library |
 
 **ADRs**:
 - [ADR-002](../adr/002-modal-serverless-migration.md) - Modal serverless architecture
@@ -25,7 +39,47 @@ last_reviewed: "2026-01-10"
 
 ---
 
-## Active Work: Landing Page Storage Migration
+## ✅ Completed: Asset Generation Architecture (2026-01-10)
+
+**Status**: ✅ COMPLETE - Spec documentation committed
+**Reference**: `docs/master-architecture/reference/tool-specifications.md`
+
+### What Was Done
+
+Comprehensive specifications for asset generation tools to support Phase 2 (Desirability) validation:
+
+| Commit | Feature | Purpose |
+|--------|---------|---------|
+| `ef87146` | Blueprint Pattern | Assembly-based LP generation (9 components, 20 icons) |
+| `dcab571` | Progressive Image Resolution (LP) | Unsplash first, AI on demand |
+| `3d4d112` | Ad Creative Visuals | Progressive resolution for ad images |
+| `68f5178` | Ad Platform Specifications Library | Canonical reference for Meta/Google/LinkedIn/TikTok |
+
+### Key Architecture Decisions
+
+1. **Assembly > Generation**: Use pre-built Tailwind components instead of generating raw HTML
+2. **Progressive Image Resolution**: Unsplash for speed ($0), AI generation only on user request
+3. **Blueprint Pattern**: JSON stored in DB enables re-generation without full agent chain
+4. **Ad Platform Library**: Agents load specs from library, not hardcoded values
+
+### New Reference Documents
+
+| Document | Purpose |
+|----------|---------|
+| `reference/ad-platform-specifications.md` | Meta, Google, LinkedIn, TikTok specs (NEW) |
+| `reference/observability-architecture.md` | Debugging workflow, DB schemas (NEW) |
+| `reference/tool-specifications.md` | Updated with asset generation tools |
+
+### Implementation Ready
+
+These specs are ready for implementation:
+- `LandingPageGeneratorTool` - Blueprint + Component Registry
+- `AdCreativeGeneratorTool` - Copy + Visuals with progressive resolution
+- Observability callbacks for debugging
+
+---
+
+## ✅ Completed: Landing Page Storage Migration
 
 **Status**: ✅ COMPLETE - E2E tested 2026-01-10
 **ADR**: [ADR-003](../adr/003-landing-page-storage-migration.md)
@@ -366,9 +420,22 @@ The original Flow-based architecture had runtime bugs that were fixed before the
 4. **Update phases.md** checkboxes to match
 
 ---
-**Last Updated**: 2026-01-10
+**Last Updated**: 2026-01-10 22:00
 
 **Latest Changes**:
+- **ASSET GENERATION SPECS COMPLETE** (2026-01-10 22:00)
+  - Blueprint Pattern for landing pages (9 components, 20 icons)
+  - Progressive Image Resolution (Unsplash → AI on demand)
+  - Ad Creative Visuals with platform-specific specs
+  - Ad Platform Specifications Library (Meta, Google, LinkedIn, TikTok)
+  - New reference docs: `ad-platform-specifications.md`, `observability-architecture.md`
+- **PLAN AUDIT COMPLETE** (2026-01-10 20:00)
+  - Audited all 4 plans from ~/.claude/plans/ created today
+  - `swirling-dancing-kay.md` (Landing Page Migration) - ✅ IMPLEMENTED
+  - `effervescent-swimming-hollerith.md` (Schema Alignment) - ✅ P0 COMPLETE, P1-P3 deferred
+  - `steady-scribbling-kahan.md` (Customer Research Tools) - ✅ IMPLEMENTED (part of larger tool work)
+  - `merry-prancing-spark.md` (Architecture Docs) - ⏸️ DEFERRED (24-32h strategic backlog)
+  - Updated roadmap.md, phases.md, in-progress.md to align with reality
 - **F2/F3 TRACING INVESTIGATION** (2026-01-10)
   - Modal Developer investigated placeholder HTML issue from E2E test
   - Root cause: Missing `output_pydantic` schemas + insufficient crew logging

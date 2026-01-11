@@ -1,8 +1,8 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2026-01-10"
-last_synced: "2026-01-10 - Modal tables deployed, security fixes applied in Product App"
+last_reviewed: "2026-01-10 22:00"
+last_synced: "2026-01-10 - Asset generation specs complete, docs updated"
 ---
 
 # Cross-Repository Blockers
@@ -11,13 +11,13 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 
 > **TOOLS WIRED (2026-01-10)**: 15 tools wired to 35+ agents using BaseTool pattern. 681 tests passing. Modal redeploy + Phase 0-4 revalidation pending.
 
-## Ecosystem Status (2026-01-10)
+## Ecosystem Status (2026-01-10 20:00)
 
-**Tool integration complete. Modal redeploy + Phase 0-4 revalidation pending.**
+**Phase 0-2 validated. Phase 3-4 live testing next.**
 
 | Service | Status | Completion | Notes |
 |---------|--------|------------|-------|
-| CrewAI Backend | **TOOLS WIRED** | ~85% | 15 tools, 35+ agents. Modal redeploy pending. |
+| CrewAI Backend | **Phase 0-2 VALIDATED** | ~90% | Phase 3-4 live testing pending |
 | Product App | Modal integration complete | ~95% | Pointing to Modal endpoints |
 | Marketing Site | Live API integration | ~95% | Activity Feed + Metrics connected |
 
@@ -144,6 +144,8 @@ Implemented tools using **BaseTool pattern** (direct Python):
 | `reference/tool-mapping.md` | Agent-to-tool matrix with MCP categories |
 | `reference/agent-specifications.md` | All 45 agent configurations |
 | `reference/agentic-tool-framework.md` | Tool lifecycle framework |
+| `reference/ad-platform-specifications.md` | Meta, Google, LinkedIn, TikTok ad specs (NEW) |
+| `reference/observability-architecture.md` | Database schemas, callbacks, debugging (NEW) |
 
 ---
 
@@ -151,12 +153,13 @@ Implemented tools using **BaseTool pattern** (direct Python):
 
 | Item | Status | Owner | Notes |
 |------|--------|-------|-------|
-| **Phase A: Research Tools** | ✅ Complete | Crew | ForumSearchTool, ReviewAnalysisTool, etc. |
-| **Phase B: Advanced Tools** | ✅ Complete | Crew | TranscriptionTool, InsightExtractorTool, etc. |
-| **Phase C: Analytics & Privacy** | ✅ Complete | Crew | AnalyticsTool, AnonymizerTool, etc. |
-| **Phase D: LLM-Based Tools** | ✅ Complete | Crew | CanvasBuilderTool, TestCardTool, etc. |
-| **Modal Redeploy** | ⏳ Pending | Crew | Deploy tool-wired code to production |
-| **Phase 0-4 Revalidation** | ⏳ Pending | All repos | Live test with integrated tools |
+| **Tool Integration (Phases A-D)** | ✅ Complete | Crew | 15 tools, 35+ agents, 681 tests |
+| **Landing Page Migration (ADR-003)** | ✅ Complete | Crew | Supabase Storage E2E verified |
+| **Asset Generation Specs** | ✅ Complete | Crew | Blueprint Pattern + Ad Platform Library |
+| **Phase 0-2 Live Testing** | ✅ Complete | Crew | Pivot workflow verified |
+| **Phase 3-4 Live Testing** | ⏳ Next | Crew | Feasibility + Viability |
+| **F2/F3 Content Quality** | 🔴 Backlog | Crew | `output_pydantic` schemas needed |
+| **Asset Generation Implementation** | ⏳ Planned | Crew | Implement from specs when F2/F3 fixed |
 
 ---
 
@@ -164,15 +167,17 @@ Implemented tools using **BaseTool pattern** (direct Python):
 
 | Promise | Technical Status |
 |---------|------------------|
-| "Build your MVP" | ⚠️ LandingPageGeneratorTool exists; full scaffold pending |
-| "Real ad spend ($450-525)" | ❌ No Meta/Google Ads API integrated |
-| "Real user testing" | ❌ No analytics/experiment framework |
+| "Build your MVP" | ⚠️ LandingPageGeneratorTool SPEC COMPLETE; implementation pending |
+| "Real ad spend ($450-525)" | ⚠️ AdCreativeGeneratorTool SPEC COMPLETE; API integration pending |
+| "Real user testing" | ⚠️ Progressive Image Resolution spec ready; implementation pending |
 | "Unit economics (CAC/LTV)" | ✅ 10 UnitEconomicsModels with industry benchmarks |
 | "2-week validation cycles" | ⚠️ Tools exist; quality depends on data |
 | "Evidence-based validation" | ✅ TavilySearchTool provides real web research |
-| "6 AI Founders team" | ✅ 19 agents across 3 crews |
+| "6 AI Founders team" | ✅ 45 agents across 14 crews |
 
-**Primary gap**: Ad platform integration (Meta/Google APIs) - explicitly deferred.
+**Primary gaps**:
+- Ad platform integration (Meta/Google APIs) - explicitly deferred
+- Asset generation implementation - specs complete, waiting on F2/F3 content quality fix
 
 ---
 
@@ -239,7 +244,19 @@ Marketing activity feed shows real activity
 
 ---
 
-**Last Updated**: 2026-01-10
+**Last Updated**: 2026-01-10 22:00
+
+**Changes (2026-01-10 - Asset Generation Specs)**:
+- ✅ **ASSET GENERATION**: Blueprint Pattern, Progressive Image Resolution, Ad Platform Library
+- ✅ **NEW DOCS**: `ad-platform-specifications.md`, `observability-architecture.md`
+- ✅ **MARKETING GAP UPDATED**: LandingPageGeneratorTool and AdCreativeGeneratorTool specs complete
+- ⏳ **NEXT**: Phase 3-4 live testing, then asset generation implementation
+
+**Changes (2026-01-10 - Plan Audit)**:
+- ✅ **PLAN AUDIT**: All 4 today's plans audited against codebase
+- ✅ **ROADMAP ALIGNED**: phases.md, roadmap.md, in-progress.md updated
+- ✅ **PHASE 0-2 VALIDATED**: Live testing with pivot workflow verified
+- ⏳ **NEXT**: Phase 3-4 live testing
 
 **Changes (2026-01-10 - Schema Alignment Complete)**:
 - ✅ **DEPLOYED**: Modal tables in Product App (`validation_runs`, `validation_progress`, `hitl_requests`)
