@@ -847,43 +847,283 @@ class LandingPageOutput(BaseModel):
 
 ---
 
-#### Asset Resolution
+#### Asset Resolution: Progressive Image Resolution
 
-Images are resolved OUTSIDE the LLM to prevent hallucinated URLs.
+Images use a **progressive resolution** pattern: fast stock photos first, AI-generated images on user request.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PROGRESSIVE IMAGE RESOLUTION                      │
+├─────────────────────────────────────────────────────────────────────┤
+│  1. Generate LP with Unsplash images (instant, free)                │
+│                          ↓                                          │
+│  2. Present at HITL checkpoint (approve_campaign_launch)            │
+│                          ↓                                          │
+│  3. User reviews:                                                   │
+│     ├── ✅ Approve → Deploy as-is                                   │
+│     └── 🔄 "Regenerate images" → AI generation (DALL-E/Midjourney) │
+│                          ↓                                          │
+│  4. Re-render with AI images → User approves → Deploy               │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Why Progressive?**
+- 90% of pages deploy with Unsplash (instant, free)
+- AI generation only when user requests (cost savings)
+- User controls which images to regenerate
+- Style guidance improves AI output quality
+
+---
+
+##### Extended ImageAsset Schema
+
+```python
+class ImageAsset(BaseModel):
+    """Image asset with source tracking for progressive resolution."""
+    # Identification
+    section_id: str                 # Which section this image belongs to
+    keyword: str                    # Original keyword for image search
+
+    # Resolution
+    source: str                     # "unsplash" | "dalle" | "midjourney" | "placeholder"
+    url: str                        # Resolved image URL
+    alt_text: str                   # Accessibility text
+
+    # Metadata
+    generation_prompt: str = None   # For AI: the full prompt used
+    style_guidance: str = None      # User guidance: "more professional", etc.
+    approved: bool = False          # User approved at HITL
+
+    # Cost tracking
+    generation_cost: float = 0.0    # Cost in USD (for AI images)
+```
+
+##### HITL Image Approval Schema
+
+```python
+class ImageApprovalDecision(BaseModel):
+    """
+    User decision at approve_campaign_launch HITL checkpoint.
+    Allows selective image regeneration.
+    """
+    # Overall decision
+    approved: bool                  # Approve page as-is?
+
+    # Image-specific feedback
+    regenerate_images: list[str] = []   # Section IDs to regenerate
+    image_source: str = "dalle"         # "dalle" | "midjourney" | "leonardo"
+
+    # Style guidance for AI generation
+    style_guidance: str = None          # "warmer colors", "more corporate", etc.
+    style_reference_url: str = None     # Optional reference image URL
+
+    # Budget control
+    max_generation_cost: float = 1.0    # Max USD to spend on image generation
+```
+
+##### Asset Resolver Implementation
 
 ```python
 class AssetResolver:
-    """Resolve image keywords to verified Unsplash URLs."""
+    """
+    Progressive image resolution: Unsplash first, AI on demand.
+    """
 
     UNSPLASH_ACCESS_KEY = os.environ["UNSPLASH_ACCESS_KEY"]
+    OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
-    def resolve(self, keyword: str) -> ImageAsset:
-        """
-        Fetch a real image URL from Unsplash API.
+    # Cost per image (USD)
+    COSTS = {
+        "unsplash": 0.0,
+        "dalle": 0.08,      # DALL-E 3 standard
+        "midjourney": 0.05,  # Approximate
+        "leonardo": 0.02,    # Approximate
+    }
 
-        Example: "startup team working" → verified Unsplash URL
+    def resolve_initial(self, keyword: str, section_id: str) -> ImageAsset:
         """
+        First pass: Unsplash for speed.
+        Called during initial page generation.
+        """
+        return self._fetch_unsplash(keyword, section_id)
+
+    def resolve_ai(
+        self,
+        keyword: str,
+        section_id: str,
+        source: str = "dalle",
+        style_guidance: str = None
+    ) -> ImageAsset:
+        """
+        Second pass: AI generation on user request.
+        Called after HITL if user wants different images.
+        """
+        if source == "dalle":
+            return self._generate_dalle(keyword, section_id, style_guidance)
+        elif source == "midjourney":
+            return self._generate_midjourney(keyword, section_id, style_guidance)
+        else:
+            raise ValueError(f"Unknown AI source: {source}")
+
+    def _fetch_unsplash(self, keyword: str, section_id: str) -> ImageAsset:
+        """Fetch from Unsplash API (instant, free)."""
         response = httpx.get(
             "https://api.unsplash.com/search/photos",
-            params={"query": keyword, "per_page": 1},
+            params={"query": keyword, "per_page": 1, "orientation": "landscape"},
             headers={"Authorization": f"Client-ID {self.UNSPLASH_ACCESS_KEY}"}
         )
 
         if response.status_code == 200 and response.json()["results"]:
             photo = response.json()["results"][0]
             return ImageAsset(
+                section_id=section_id,
                 keyword=keyword,
+                source="unsplash",
                 url=photo["urls"]["regular"],
-                alt_text=photo["alt_description"] or keyword
+                alt_text=photo["alt_description"] or keyword,
+                approved=False,
+                generation_cost=0.0
             )
 
         # Fallback to placeholder
         return ImageAsset(
+            section_id=section_id,
             keyword=keyword,
-            url=f"https://placehold.co/800x600?text={keyword.replace(' ', '+')}",
-            alt_text=keyword
+            source="placeholder",
+            url=f"https://placehold.co/1200x600?text={keyword.replace(' ', '+')}",
+            alt_text=keyword,
+            approved=False,
+            generation_cost=0.0
         )
+
+    def _generate_dalle(
+        self,
+        keyword: str,
+        section_id: str,
+        style_guidance: str = None
+    ) -> ImageAsset:
+        """Generate with DALL-E 3 (~$0.08/image)."""
+
+        # Build prompt with style guidance
+        base_prompt = f"Professional landing page hero image: {keyword}"
+        if style_guidance:
+            prompt = f"{base_prompt}. Style: {style_guidance}"
+        else:
+            prompt = f"{base_prompt}. Style: modern, clean, professional, high-quality stock photo aesthetic"
+
+        response = httpx.post(
+            "https://api.openai.com/v1/images/generations",
+            headers={"Authorization": f"Bearer {self.OPENAI_API_KEY}"},
+            json={
+                "model": "dall-e-3",
+                "prompt": prompt,
+                "size": "1792x1024",  # Landscape for hero images
+                "quality": "standard",
+                "n": 1
+            },
+            timeout=30.0
+        )
+
+        if response.status_code == 200:
+            image_url = response.json()["data"][0]["url"]
+
+            # Download and upload to Supabase Storage (DALL-E URLs expire)
+            permanent_url = self._persist_to_storage(image_url, section_id)
+
+            return ImageAsset(
+                section_id=section_id,
+                keyword=keyword,
+                source="dalle",
+                url=permanent_url,
+                alt_text=keyword,
+                generation_prompt=prompt,
+                style_guidance=style_guidance,
+                approved=False,
+                generation_cost=self.COSTS["dalle"]
+            )
+
+        raise ImageGenerationError(f"DALL-E generation failed: {response.text}")
+
+    def _persist_to_storage(self, temp_url: str, section_id: str) -> str:
+        """
+        Download from temporary URL and upload to Supabase Storage.
+        AI image URLs expire, so we persist them.
+        """
+        # Download image
+        image_data = httpx.get(temp_url).content
+
+        # Upload to Supabase Storage
+        path = f"generated-images/{section_id}/{uuid4()}.png"
+        supabase.storage.from_("landing-pages").upload(path, image_data)
+
+        # Return permanent public URL
+        return supabase.storage.from_("landing-pages").get_public_url(path)
 ```
+
+##### HITL Integration
+
+At the `approve_campaign_launch` checkpoint, the UI presents the landing page preview with image regeneration options:
+
+```python
+def handle_image_approval(
+    blueprint: LandingPageBlueprint,
+    decision: ImageApprovalDecision
+) -> LandingPageBlueprint:
+    """
+    Process HITL decision for image approval.
+    Regenerates requested images with AI.
+    """
+    if decision.approved and not decision.regenerate_images:
+        # User approved everything as-is
+        for image in blueprint.images:
+            image.approved = True
+        return blueprint
+
+    # Regenerate requested images
+    resolver = AssetResolver()
+    total_cost = 0.0
+
+    for section_id in decision.regenerate_images:
+        # Find the image to regenerate
+        image = next(img for img in blueprint.images if img.section_id == section_id)
+
+        # Check budget
+        cost = resolver.COSTS[decision.image_source]
+        if total_cost + cost > decision.max_generation_cost:
+            raise BudgetExceededError(f"Image generation would exceed ${decision.max_generation_cost} budget")
+
+        # Generate AI image
+        new_image = resolver.resolve_ai(
+            keyword=image.keyword,
+            section_id=section_id,
+            source=decision.image_source,
+            style_guidance=decision.style_guidance
+        )
+
+        # Replace in blueprint
+        blueprint.images = [
+            new_image if img.section_id == section_id else img
+            for img in blueprint.images
+        ]
+
+        total_cost += cost
+
+    # Re-render HTML with new images
+    html = reassemble_html(blueprint)
+    upload_html(html, blueprint.variant_id)
+
+    return blueprint
+```
+
+##### Cost Summary
+
+| Source | Cost/Image | Speed | Quality | Use Case |
+|--------|------------|-------|---------|----------|
+| Unsplash | $0.00 | Instant | Professional stock | Default, 90% of cases |
+| DALL-E 3 | $0.08 | 5-10s | Unique, customizable | User requests unique imagery |
+| Midjourney | ~$0.05 | 10-30s | Artistic, stylized | Creative/artistic brands |
+| Leonardo | ~$0.02 | 5-15s | Variable | Budget-conscious |
+| Placeholder | $0.00 | Instant | Generic | Development/testing |
 
 ---
 
