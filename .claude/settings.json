@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "version": "1.0",
   "project_name": "StartupAI CrewAI Backend",
-  "description": "6-agent strategic business analysis workflow on CrewAI AMP",
+  "description": "CrewAI Flows backend on Modal serverless (5 flows / 14 crews / 45 agents)",
   
   "security": {
     "mode": "strict",
@@ -56,30 +56,31 @@
   },
 
   "project_context": {
-    "framework": "CrewAI (Python)",
-    "architecture": "6-agent sequential workflow",
-    "deployment": "CrewAI AMP Platform",
+    "framework": "CrewAI Flows + Crews (Python)",
+    "architecture": "5-flow / 14-crew / 45-agent pipeline with HITL checkpoints",
+    "deployment": "Modal Serverless (production)",
     "package_manager": "uv",
     "python_version": "3.11+",
     "purpose": "Fortune 500-quality strategic business analysis",
-    "deployment_uuid": "6b1e5c4d-e708-4921-be55-08fcb0d1e94b",
+    "modal_app_url": "https://chris00walker--startupai-validation-fastapi-app.modal.run",
+    "legacy_amp_uuid": "6b1e5c4d-e708-4921-be55-08fcb0d1e94b",
     "organization": "StartupAI (8f17470f-7841-4079-860d-de91ed5d1091)",
-    "critical_note": "CrewAI AMP is a FUNDAMENTAL building block, not deprecated"
+    "critical_note": "Modal is canonical; CrewAI AMP is deprecated"
   },
 
   "agent_workflow": {
-    "agents": [
-      "Onboarding Agent (Consultant & Interviewer)",
-      "Customer Researcher (Insight Analyst)",
-      "Competitor Analyst (Market Strategist)",
-      "Value Designer (Value Proposition Architect)",
-      "Validation Agent (Experiment Designer)",
-      "QA Agent (Quality Assurance Specialist)"
+    "flows": [
+      "Phase 0: OnboardingFlow (1 crew / 4 agents)",
+      "Phase 1: VPCDiscoveryFlow (5 crews / 18 agents)",
+      "Phase 2: DesirabilityFlow (3 crews / 9 agents)",
+      "Phase 3: FeasibilityFlow (2 crews / 4 agents)",
+      "Phase 4: ViabilityFlow (3 crews / 9 agents)"
     ],
     "input_format": {
+      "project_id": "Project UUID from product app",
       "entrepreneur_input": "Detailed business idea description"
     },
-    "output_format": "Structured task outputs (Entrepreneur Brief, Customer Profile, Competitor Analysis, Value Proposition Canvas, 3-Tier Validation Roadmap, QA Report)"
+    "output_format": "Structured phase outputs persisted to Supabase (validation_runs, validation_progress, hitl_requests)"
   },
 
   "coding_standards": {
@@ -102,8 +103,8 @@
   },
 
   "deployment": {
-    "endpoint": "https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com",
-    "bearer_token": "[REDACTED - stored in CrewAI dashboard]",
+    "endpoint": "https://chris00walker--startupai-validation-fastapi-app.modal.run",
+    "auth": "none (internal; Netlify routes enforce)",
     "github_repo": "chris00walker/startupai-crew",
     "branch": "main"
   }

@@ -1,6 +1,6 @@
 # Governance Crew Implementation
 
-> **ARCHIVED (2026-01-07)**: This documents the original 8-crew architecture. The project has migrated to a 3-Crew architecture. Governance Crew functionality is now distributed across all crews with Guardian agents (G1 in Crew 1, G1-G3 in Crew 2). See [02-organization.md](../../../master-architecture/02-organization.md) for current architecture.
+> **ARCHIVED (2026-01-07)**: This documents the original 8-crew architecture. The project has migrated to the Modal canonical architecture (5 flows / 14 crews / 45 agents). Governance Crew functionality is implemented in `src/crews/desirability/governance_crew.py`, `src/crews/feasibility/`, and `src/crews/viability/`. See [02-organization.md](../../../master-architecture/02-organization.md) for current architecture.
 
 ## Overview (Historical)
 

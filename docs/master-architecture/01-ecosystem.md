@@ -13,7 +13,7 @@ StartupAI is a **three-layer ecosystem** that delivers **Value Proposition Desig
 
 > **VPD Framework**: This ecosystem implements the Strategyzer methodology. See [03-methodology.md](./03-methodology.md) for framework details.
 >
-> **Modal Migration**: Per [ADR-002](../adr/002-modal-serverless-migration.md), the compute layer is migrating from CrewAI AMP to Modal serverless.
+> **Modal Migration**: Per [ADR-002](../adr/002-modal-serverless-migration.md), the compute layer has migrated from CrewAI AMP to Modal serverless.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐

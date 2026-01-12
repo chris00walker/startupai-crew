@@ -6,14 +6,14 @@
 
 ## 🎯 Overview
 
-This repository is a **pure CrewAI automation** with two environments:
+This repository is a **CrewAI Flows backend** with two environments:
 
 | Environment | Purpose | Platform | Config File |
 |------------|---------|----------|-------------|
 | **Local** | Development and testing | Local machine | `.env` |
-| **Production** | Live AI workflows | CrewAI AMP Cloud | CrewAI Dashboard |
+| **Production** | Live AI workflows | Modal Serverless | Modal Dashboard |
 
-**Note:** There is no staging environment for CrewAI deployments - they run either locally or in production on CrewAI AMP platform.
+**Note:** There is no staging environment for CrewAI deployments - they run either locally or in production on Modal.
 
 ---
 
@@ -24,27 +24,21 @@ This repository is a **pure CrewAI automation** with two environments:
 # Install dependencies
 uv sync
 
-# Run crew locally
-crewai run
+# Modal local dev (hot reload)
+modal serve src/modal_app/app.py
 
-# Test with custom input
-crewai run --input "Analyze startup idea: SaaS for developers"
+# Optional: run a flow locally
+crewai run
 ```
 
-**Use for:** Testing agent workflows, debugging tools, validating prompts
+**Use for:** Testing flows, debugging tools, validating prompts
 
 ---
 
 ### Production Deployment
 ```bash
-# Deploy to CrewAI AMP
-crewai deploy push
-
-# Or deploy with specific UUID
-crewai deploy push --uuid 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
-
-# Check deployment status
-crewai deploy status
+# Deploy to Modal
+modal deploy src/modal_app/app.py
 ```
 
 **Use for:** Live AI workflows accessible via HTTPS API
@@ -58,19 +52,12 @@ startupai-crew/
 ├── .env.example          # Template (committed to git)
 ├── .env                  # Local development (gitignored) ⭐ YOU CREATE THIS
 ├── src/
-│   └── startupai/
-│       ├── flows/                      # Innovation Physics orchestration
-│       │   ├── state_schemas.py        # Validation signals & state
-│       │   └── founder_validation_flow.py  # Non-linear routers
-│       ├── crews/                      # 8 specialized crews
-│       │   ├── service/
-│       │   ├── analysis/
-│       │   ├── build/
-│       │   ├── growth/
-│       │   ├── synthesis/              # Pivot decision logic
-│       │   ├── finance/
-│       │   └── governance/
-│       └── main.py                     # Entry point
+│   ├── modal_app/                      # Modal FastAPI entry points
+│   │   ├── app.py                      # API endpoints
+│   │   └── phases/                     # Phase functions (0-4)
+│   ├── crews/                          # 14 crews
+│   ├── state/                          # Pydantic state + persistence
+│   └── shared/                         # Tools + schemas
 ├── docs/
 │   ├── innovation-physics.md           # Strategyzer methodology & router logic
 │   └── master-architecture/            # Ecosystem source of truth
@@ -119,21 +106,19 @@ OPENAI_API_KEY=sk-your-actual-key-here
 
 ---
 
-### Production (CrewAI AMP Dashboard)
+### Production (Modal Dashboard)
 
 **Purpose:** Live AI workflows accessible via HTTPS
 
-**Configuration Location:** CrewAI Dashboard  
-**URL:** https://app.crewai.com/deployments
+**Configuration Location:** Modal Dashboard  
+**URL:** https://modal.com/apps
 
 **Current Deployment:**
-- **UUID:** `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
-- **Token:** `<your-deployment-token>` (stored in CrewAI dashboard)
-- **Public API:** `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
+- **App URL:** `https://chris00walker--startupai-validation-fastapi-app.modal.run`
 - **Status:** 🟢 Online
 - **Organization:** StartupAI (`8f17470f-7841-4079-860d-de91ed5d1091`)
 
-**Environment Variables Set in Dashboard:**
+**Environment Variables Set in Modal Secrets:**
 - `OPENAI_API_KEY` - Primary LLM provider
 - `ANTHROPIC_API_KEY` - Fallback LLM provider (optional)
 - `TAVILY_API_KEY` - Web research for market intelligence (recommended)
@@ -143,7 +128,7 @@ OPENAI_API_KEY=sk-your-actual-key-here
 - `STARTUPAI_WEBHOOK_BEARER_TOKEN` - Bearer token for webhook authentication (shared with product app)
 - `NETLIFY_ACCESS_TOKEN` - Netlify personal access token for landing page deployment
 
-**Deployment:** Automatic on `crewai deploy push` or GitHub integration
+**Deployment:** `modal deploy src/modal_app/app.py`
 
 ---
 
@@ -172,14 +157,12 @@ eval "$(direnv hook bash)"  # add to ~/.bashrc
 # The .env file will load from centralized secrets
 ```
 
-### Production (CrewAI AMP)
+### Production (Modal)
 
-**Set via Dashboard:**
-1. Visit: https://app.crewai.com/deployments
-2. Click deployment: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`
-3. Go to: Settings → Environment Variables
-4. Add: `OPENAI_API_KEY` = `sk-your-key`
-5. Save and redeploy
+**Set via Modal secrets:**
+1. Create secret: `modal secret create startupai-secrets OPENAI_API_KEY=sk-...`
+2. Add other keys (SUPABASE_URL, SUPABASE_KEY, TAVILY_API_KEY, NETLIFY_ACCESS_TOKEN)
+3. Deploy: `modal deploy src/modal_app/app.py`
 
 **Security:**
 - Secrets encrypted at rest
@@ -259,7 +242,7 @@ cat .env | grep OPENAI_API_KEY
 crewai run
 
 # 3. Verify output
-# Should see agents executing tasks (8 crews, 18 agents when fully deployed)
+# Should see agents executing tasks (5 flows, 14 crews, 45 agents when fully deployed)
 
 # 4. Check for errors
 # All tasks should complete successfully
@@ -268,17 +251,15 @@ crewai run
 ### Test Production Deployment
 ```bash
 # 1. Deploy
-crewai deploy push
+modal deploy src/modal_app/app.py
 
-# 2. Get API endpoint from output
-# Public API URL: https://startupai-...crewai.com
+# 2. Test health
+curl https://chris00walker--startupai-validation-fastapi-app.modal.run/health
 
-# 3. Test via curl
-curl -X POST https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com \
+# 3. Test kickoff
+curl -X POST https://chris00walker--startupai-validation-fastapi-app.modal.run/kickoff \
   -H "Content-Type: application/json" \
-  -d '{"startup": "SaaS for developers"}'
-
-# 4. Verify response contains analysis
+  -d '{"project_id":"test","entrepreneur_input":"SaaS for developers"}'
 ```
 
 ---
@@ -298,24 +279,23 @@ uv sync
 cp .env.example .env
 nano .env  # Add OPENAI_API_KEY
 
-# 4. Authenticate with CrewAI
-crewai login
-# Opens browser, logs you into StartupAI organization
+# 4. Authenticate with Modal
+modal setup
 
 # 5. Test locally
-crewai run
+modal serve src/modal_app/app.py
 
 # 6. Deploy to production
-crewai deploy push
+modal deploy src/modal_app/app.py
 ```
 
 ### Regular Development Workflow
 ```bash
 # 1. Make changes to agents or tasks
-nano src/startupai_crew/config/agents.yaml
+nano src/crews/...
 
 # 2. Test locally
-crewai run
+modal serve src/modal_app/app.py
 
 # 3. If works, commit
 git add .
@@ -323,40 +303,26 @@ git commit -m "feat: improved agent prompts"
 git push
 
 # 4. Deploy to production
-crewai deploy push
+modal deploy src/modal_app/app.py
 
 # 5. Verify deployment
-crewai deploy status
+curl https://chris00walker--startupai-validation-fastapi-app.modal.run/health
 ```
 
 ---
 
-## 🌐 CrewAI AMP Authentication
-
-### Global Configuration
-CrewAI stores authentication **globally** (not per-project):
-
-**Location:** `~/.config/crewai/settings.json`
-
-**Content:**
-```json
-{
-  "organization_id": "8f17470f-7841-4079-860d-de91ed5d1091",
-  "organization_name": "StartupAI",
-  "user_email": "your@email.com"
-}
-```
+## 🌐 Modal Authentication
 
 ### Login Process
 ```bash
 # First time on new machine
-crewai login
+modal setup
 
 # This will:
 # 1. Open browser
-# 2. Authenticate with CrewAI
-# 3. Save credentials to ~/.config/crewai/settings.json
-# 4. Link to StartupAI organization
+# 2. Authenticate with Modal
+# 3. Save credentials to Modal config (~/.modal.toml)
+# 4. Link to StartupAI account
 ```
 
 **You only need to login once per machine!**
@@ -465,41 +431,30 @@ pip install -r requirements.txt
 ### Production: "Deployment failed"
 ```bash
 # Check authentication
-crewai whoami
-
-# Should show:
-# Organization: StartupAI
-# UUID: 8f17470f-7841-4079-860d-de91ed5d1091
-
-# If not authenticated
-crewai login
+modal setup
 
 # Try deploy again
-crewai deploy push
+modal deploy src/modal_app/app.py
 ```
 
 ### Production: "API returns 500 error"
 ```bash
 # Check deployment logs
-crewai deploy logs
+modal app logs startupai-validation-fastapi-app
 
-# Verify environment variables set in dashboard
-# Visit: https://app.crewai.com/deployments
-# Check: Settings → Environment Variables
-# Ensure OPENAI_API_KEY is set
+# Verify Modal secrets
+modal secret list
 ```
 
 ---
 
 ## 🏗️ Architecture
 
-### 8 Crews / 18 Agents
+### 14 Crews / 45 Agents
 
 > **Single Source**: See [master-architecture/02-organization.md](./master-architecture/02-organization.md) for complete agent details.
 
-**Phase 1**: Service Crew, Analysis Crew, Governance Crew
-**Phase 2**: Build Crew, Growth Crew, Synthesis Crew
-**Phase 3**: Finance Crew, Enhanced Governance Crew
+**Phases 0-4**: Onboarding, VPC Discovery, Desirability, Feasibility, Viability
 
 ### Tool-Equipped Agents
 - **Web Research**: Tavily-powered search for market intelligence
@@ -513,26 +468,21 @@ crewai deploy logs
 ## 🔗 Integration with Other Repos
 
 ### App Platform (app.startupai.site)
-**Calls CrewAI via HTTPS:**
+**Calls Modal via HTTPS:**
 ```typescript
-// frontend/src/lib/agentuity.ts
-const AGENTUITY_AGENT_URL = process.env.AGENTUITY_AGENT_URL;
-
-const response = await fetch(AGENTUITY_AGENT_URL, {
-  method: 'POST',
-  body: JSON.stringify({ startup: userInput })
-});
-```
-
-**Environment Variable:**
-```bash
-# app.startupai.site/frontend/.env.local
-AGENTUITY_AGENT_URL=https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com
+const response = await fetch(
+  'https://chris00walker--startupai-validation-fastapi-app.modal.run/kickoff',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ project_id, entrepreneur_input })
+  }
+);
 ```
 
 ### Marketing Site (startupai.site)
 - No direct integration
-- Marketing site → Auth → App platform → CrewAI
+- Marketing site → Auth → App platform → Modal
 
 ---
 
@@ -541,17 +491,16 @@ AGENTUITY_AGENT_URL=https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb
 - [ ] `.env` created from `.env.example`
 - [ ] `OPENAI_API_KEY` added to `.env`
 - [ ] `uv sync` completed successfully
-- [ ] `crewai run` executes without errors
-- [ ] `crewai login` completed (one-time)
-- [ ] `crewai whoami` shows StartupAI organization
-- [ ] `crewai deploy push` completes successfully
+- [ ] `modal serve src/modal_app/app.py` executes without errors
+- [ ] `modal setup` completed (one-time)
+- [ ] `modal deploy src/modal_app/app.py` completes successfully
 - [ ] Production API tested with curl
-- [ ] `AGENTUITY_AGENT_URL` configured in app.startupai.site
+- [ ] `CREW_ANALYZE_URL` configured in app.startupai.site (if overriding)
 
 ---
 
 **Last Updated:** 2025-12-02
 **Repository:** startupai-crew
 **Environment Version:** 1.2.0
-**Platform:** CrewAI AMP (Cloud-Hosted)
-**Deployment UUID:** 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
+**Platform:** Modal Serverless
+**Production URL:** https://chris00walker--startupai-validation-fastapi-app.modal.run

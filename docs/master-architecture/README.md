@@ -2,7 +2,7 @@
 
 This directory contains the **ecosystem source of truth** for StartupAI's multi-phase crew architecture.
 
-> **Architecture Migration**: Migrating from CrewAI AMP to Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md) and [09-status.md](./09-status.md) for current status.
+> **Architecture Migration**: Migrated from CrewAI AMP to Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md) and [09-status.md](./09-status.md) for current status.
 
 > **VPD Framework**: StartupAI implements the Value Proposition Design (VPD) framework by Osterwalder/Pigneur. The phase specifications provide authoritative VPD implementation patterns.
 

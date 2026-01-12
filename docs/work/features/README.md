@@ -6,15 +6,15 @@ last_reviewed: "2026-01-07"
 
 # Features
 
-> **Note**: This directory contains historical feature documentation from the original 8-crew architecture (Nov 2025). The project has migrated to a 3-Crew architecture deployed on CrewAI AMP.
+> **Note**: This directory contains historical feature documentation from the original 8-crew architecture (Nov 2025). The project has migrated to the Modal canonical architecture (5 flows / 14 crews / 45 agents). The AMP 3-crew setup is deprecated.
 
 ## Current Architecture
 
-The 3-Crew architecture is documented in:
-- **[02-organization.md](../../master-architecture/02-organization.md)** - 6 founders, 19 agents
+The Modal canonical architecture is documented in:
+- **[02-organization.md](../../master-architecture/02-organization.md)** - 6 founders, 45 agents
 - **[09-status.md](../../master-architecture/09-status.md)** - Current implementation status
 
-### 3 Crews (Current)
+### Legacy 3 Crews (AMP - Deprecated)
 
 | Crew | Repository | Agents | Status |
 |------|------------|--------|--------|
@@ -47,4 +47,4 @@ See the phase specifications in `master-architecture/`:
 
 ---
 *Last Updated: 2026-01-07*
-*Note: Marked as archived after migration to 3-Crew architecture*
+*Note: Marked as archived after migration to Modal canonical architecture*

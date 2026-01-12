@@ -354,7 +354,7 @@ python src/startupai/main.py
 - ✅ Flow router logic with problem_resonance/zombie_ratio filters
 - ✅ HITL approval workflows (creative + viability)
 - ✅ Multi-platform experiment configuration
-- ✅ 8 crews / 18 agents fully implemented
+- ✅ 14 crews / 45 agents structurally implemented (tool quality varies)
 
 **Tools (24+ implemented):**
 - ✅ Research tools: TavilySearchTool, CompetitorResearchTool, MarketResearchTool
@@ -366,9 +366,9 @@ python src/startupai/main.py
 - ✅ Area 7: BusinessModelClassifier, 10 UnitEconomicsModels
 
 **Deployment:**
-- ✅ Deployed to CrewAI AMP
-- ✅ `/resume` webhooks working
-- ✅ Database migrations deployed (flow_executions, validation_events, experiment_outcomes, decision_log)
+- ✅ Deployed to Modal serverless
+- ✅ HITL checkpoints working via `/hitl/approve`
+- ✅ Database migrations deployed (`validation_runs`, `validation_progress`, `hitl_requests`)
 
 ### ⚠️ Not Yet Integrated
 - ❌ Ad platform APIs (Meta Business, Google Ads) - no real ad spend

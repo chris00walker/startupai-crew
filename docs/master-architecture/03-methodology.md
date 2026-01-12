@@ -29,7 +29,7 @@ StartupAI follows the recommended pattern for building agentic systems:
    - Tool-use tasks → Single agents
    - Complex reasoning → Multi-agent Crews
 
-> **Implementation Note**: StartupAI uses CrewAI Crews (`type = "crew"`) deployed on AMP. The 3-Crew architecture (Intake → Validation → Decision) implements this pattern with task `context` dependencies for conditional routing.
+> **Implementation Note**: StartupAI uses CrewAI Flows + Crews on Modal serverless. The canonical architecture is 5 flows / 14 crews / 45 agents with Supabase state + HITL checkpoints.
 
 ### Anti-Patterns to Avoid
 

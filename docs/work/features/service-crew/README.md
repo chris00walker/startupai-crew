@@ -1,6 +1,6 @@
 # Service Crew Implementation
 
-> **ARCHIVED (2026-01-07)**: This documents the original 8-crew architecture. The project has migrated to a 3-Crew architecture. Service Crew functionality is now part of **Crew 1 (Intake)** in `src/intake_crew/`. See [02-organization.md](../../../master-architecture/02-organization.md) for current architecture.
+> **ARCHIVED (2026-01-07)**: This documents the original 8-crew architecture. The project has migrated to the Modal canonical architecture (5 flows / 14 crews / 45 agents). Service Crew functionality maps to **OnboardingCrew** in `src/crews/onboarding/`. See [02-organization.md](../../../master-architecture/02-organization.md) for current architecture.
 
 ## Overview (Historical)
 

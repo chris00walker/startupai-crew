@@ -1,5 +1,7 @@
 # Eight Areas of Improvement - Implementation Analysis
 
+> **Status Note (2026-01-12):** This analysis predates the Modal serverless restructuring. Paths and AMP-era assumptions may be outdated. Canonical status lives in `docs/work/phases.md`.
+
 **Date**: 2025-11-27
 **Analyst**: Claude Code (Sonnet 4.5)
 **Context**: Comprehensive codebase analysis to verify implementation status of architectural improvements proposed in `docs/drafts/eight-areas-of-improvement.md`
@@ -45,7 +47,7 @@
 
 2. **Typed Crew Outputs**: `src/startupai/crews/crew_outputs.py`
    - `ServiceCrewOutput`, `AnalysisCrewOutput`, `BuildCrewOutput`, etc.
-   - All 8 crews have strict Pydantic output models
+   - All crews have strict Pydantic output models
 
 3. **Tools Using Envelope**:
    - `src/startupai/tools/landing_page.py` - Returns `ToolResult.success(data=...)`
@@ -413,11 +415,11 @@ The eight areas of improvement document served as an effective roadmap. **All 8 
 1. Product app results display UI (enables E2E flow)
 2. Product app approval UI (enables HITL workflows)
 
-**System Readiness**: The CrewAI backend is **100% feature-complete** and production-ready.
+**System Readiness**: Modal backend is deployed, but evidence quality gaps remain (see `docs/work/phases.md`).
 
 ---
 
 **Analysis Date**: 2025-11-27
 **Last Updated**: 2025-11-27
 **Files Analyzed**: 50+ source files, 8 integration test suites, 3 documentation directories
-**Codebase State**: All 8 architectural improvements complete, 8 crews / 18 agents / 24+ tools deployed
+**Codebase State**: Architecture implemented at 5 flows / 14 crews / 45 agents; tool integration quality is uneven

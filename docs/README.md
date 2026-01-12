@@ -1,6 +1,6 @@
 # StartupAI Documentation
 
-Welcome to the StartupAI CrewAI Backend documentation. This repository contains the brain of the StartupAI ecosystem - the 3-Crew/19-Agent validation engine deployed on CrewAI AMP.
+Welcome to the StartupAI CrewAI Backend documentation. This repository contains the brain of the StartupAI ecosystem - the 5-Flow/14-Crew/45-Agent validation engine deployed on Modal serverless.
 
 ## Documentation Structure
 
@@ -10,7 +10,7 @@ docs/
 ├── master-architecture/          # Ecosystem source of truth
 │   ├── 00-introduction.md        # Quick start and orientation
 │   ├── 01-ecosystem.md           # 3-service overview
-│   ├── 02-organization.md        # 6 founders, 19 agents (SINGLE SOURCE)
+│   ├── 02-organization.md        # 6 founders, 45 agents (SINGLE SOURCE)
 │   ├── 03-methodology.md         # VPD framework reference
 │   ├── 04-phase-0-onboarding.md  # Phase 0 specification
 │   ├── 05-phase-1-vpc-discovery.md # Phase 1 specification
@@ -24,7 +24,7 @@ docs/
 │       ├── flywheel-learning.md  # Competitive moat learning system
 │       └── database-schemas.md   # SQL schema reference
 ├── deployment/                   # Deployment guides
-│   ├── 3-crew-deployment.md      # AMP deployment guide
+│   ├── 3-crew-deployment.md      # AMP deployment guide (deprecated)
 │   └── environments.md           # Local/production setup
 ├── testing/                      # Testing documentation
 ├── tools/                        # Tool documentation
@@ -44,7 +44,7 @@ Read the master-architecture documents in order:
 
 1. **[00-introduction.md](./master-architecture/00-introduction.md)** - Quick start and orientation
 2. **[01-ecosystem.md](./master-architecture/01-ecosystem.md)** - How the 3 services connect
-3. **[02-organization.md](./master-architecture/02-organization.md)** - The 6 AI Founders and 19 agents
+3. **[02-organization.md](./master-architecture/02-organization.md)** - The 6 AI Founders and 45 agents
 4. **[03-methodology.md](./master-architecture/03-methodology.md)** - VPD framework patterns
 
 ### Understanding the Validation Flow?
@@ -97,7 +97,7 @@ Other documents reference these sources - they don't duplicate the content.
 | Learn the VPD methodology | [03-methodology.md](./master-architecture/03-methodology.md) |
 | Understand a specific phase | [04-08-phase-*.md](./master-architecture/) |
 | Set up my development environment | [deployment/environments.md](./deployment/environments.md) |
-| Deploy to CrewAI AMP | [deployment/3-crew-deployment.md](./deployment/3-crew-deployment.md) |
+| Deploy to Modal | [deployment/environments.md](./deployment/environments.md) |
 | Integrate with CrewAI API | [reference/api-contracts.md](./master-architecture/reference/api-contracts.md) |
 | Implement approval UI | [reference/approval-workflows.md](./master-architecture/reference/approval-workflows.md) |
 | Check what's currently working | [09-status.md](./master-architecture/09-status.md) |
@@ -118,4 +118,4 @@ This repository (startupai-crew) is **upstream** of both - changes here unblock 
 ---
 **Last Updated**: 2026-01-07
 
-**Latest Changes**: Updated for 3-Crew architecture (migrated from Flows), new VPD Phase 0-4 structure, standardized documentation.
+**Latest Changes**: Updated for Modal serverless canonical architecture (5 flows / 14 crews / 45 agents).

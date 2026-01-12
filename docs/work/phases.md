@@ -607,7 +607,7 @@ Achieve 100% alignment with CrewAI best practices for Crew 1 (Intake).
 - **VPCDiscoveryFlow**: 5 Crews (DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew) - 18 agents
 - **DesirabilityFlow**: 3 Crews (BuildCrew, GrowthCrew, GovernanceCrew) - 9 agents
 
-**AMP Deployment Mapping**:
+**Legacy AMP Deployment Mapping (Deprecated)**:
 - VPCDiscoveryFlow → Crew 1 (Intake) + partial Crew 2
 - DesirabilityFlow → Crew 2 (Validation - desirability phase)
 - GovernanceCrew → Distributed across all 3 AMP crews
@@ -647,7 +647,7 @@ Phase 1 is **complete** when all of the following are true:
 - [x] decision_log table (006) - Area 6 budget guardrails
 
 **Integration Complete:**
-- [x] Deployed to CrewAI AMP and accessible via `/kickoff`
+- [x] Deployed to Modal and accessible via `/kickoff`
 - [x] Results persist to Supabase via webhook
 - [x] Learnings persist to Supabase (learnings, patterns, outcomes tables) - ✅ Tables deployed
 - [x] Product app can poll status via `/status/{id}`
@@ -703,7 +703,7 @@ Phase 1 is **complete** when all of the following are true:
 - ✅ Flow orchestration with non-linear routing (3 gated phases)
 - ✅ State management with 70 fields and typed outputs
 - ✅ All 8 crews callable via API with Pydantic output models
-- ✅ CrewAI AMP deployment live and responding
+- ✅ Modal deployment live and responding
 - ⚠️ All crew outputs are LLM-generated (synthetic data, not real analysis)
 
 **What Phase 1 Does NOT Deliver:**
