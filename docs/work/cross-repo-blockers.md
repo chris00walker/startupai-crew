@@ -27,7 +27,7 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 - Marketing: `https://startupai.site`
 
 **Canonical Architecture**: 5 Flows, 14 Crews, 45 Agents, 10 HITL checkpoints
-**AMP (ARCHIVED)**: Legacy 3-repo workaround deprecated
+**Legacy 3-repo workaround**: archived
 
 **Source of Truth**: `docs/master-architecture/09-status.md`
 
@@ -52,7 +52,7 @@ This document tracks dependencies between StartupAI repositories to ensure coord
 - `POST /hitl/approve` - Resume after human approval
 - `GET /health` - Health check
 
-### Legacy AMP Deployment (ARCHIVED)
+### Legacy 3-Repo Workaround (ARCHIVED)
 
 | Item | Status | Notes |
 |------|--------|-------|
@@ -225,9 +225,9 @@ Marketing activity feed shows real activity
 - **202 tests passing** - 185 crew tests + 17 E2E integration tests
 - **Crew implementation COMPLETE** - All 14 crews with 45 agents
 - **Modal infrastructure DEPLOYED** - Production endpoints verified
-- **Product App UPDATED** - Pointing to Modal endpoints (not AMP)
+- **Product App UPDATED** - Pointing to Modal endpoints
 - **Marketing site CONNECTED** - Live Activity Feed + Metrics components
-- **AMP DEPRECATED** - Legacy repos archived
+- **Legacy 3-repo workaround** - Archived
 - **Primary work**: First live production validation run
 
 **Single Repo Benefit**: Modal migration returns us to single repository (`startupai-crew`). No more cross-repo coordination for Crews 2 & 3.
@@ -286,6 +286,6 @@ Marketing activity feed shows real activity
 **Previous (2026-01-08 - Modal Production Deployment)**:
 - Modal serverless deployed to production
 - Infrastructure verification passed (health, auth, endpoints)
-- Product app updated to point to Modal (not AMP)
+- Product app updated to point to Modal
 - Marketing site live components created (Activity Feed, Metrics)
-- AMP marked as deprecated, repos to be archived
+- Legacy 3-repo workaround marked as archived, repos to be archived

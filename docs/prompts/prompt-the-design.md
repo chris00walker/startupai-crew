@@ -1,4 +1,4 @@
-I am a Lead Developer building an automated venture-building system called 'StartupAI' on the CrewAI Enterprise (AMP) platform. I have a rough logic document (attached as: /mnt/data/StartupAI Dynamic Execution Architecture.docx) that describes a 'Spiral Escalation' process based on Strategyzer methodology (Desirability, Feasibility, Viability loops).
+I am a Lead Developer building an automated venture-building system called 'StartupAI' on the Modal serverless stack (CrewAI OSS for orchestration). I have a rough logic document (attached as: /mnt/data/StartupAI Dynamic Execution Architecture.docx) that describes a 'Spiral Escalation' process based on Strategyzer methodology (Desirability, Feasibility, Viability loops).
 
 Task: Acting as a Senior Systems Architect, convert the attached textual concepts into a Level 4 Technical Implementation Specification. I do not want high-level philosophy or summaries. I need the exact "Assembly Manual" to code this immediately.
 
@@ -10,7 +10,7 @@ Required Deliverables (ALL are required and must be mutually consistent):
 
 \- A detailed table of all 18 Agents across the 6 Crews (Sage, Pulse, Forge, Ledger, Guardian, Compass).  
 
-\- For each Agent: role, responsibilities, concrete custom tools (e.g., LearningRetrievalTool, BriefParserTool, CopywritingTool, LandingPageGeneratorTool, LandingPageDeploymentTool, ExperimentDeployTool, AnalyticsTool, GuardianReviewTool), and AMP configuration notes (e.g., memory=true, human\_input=true, external\_memory usage).  
+\- For each Agent: role, responsibilities, concrete custom tools (e.g., LearningRetrievalTool, BriefParserTool, CopywritingTool, LandingPageGeneratorTool, LandingPageDeploymentTool, ExperimentDeployTool, AnalyticsTool, GuardianReviewTool), and CrewAI configuration notes (e.g., memory=true, human\_input=true, external\_memory usage).  
 
 \- Explicit mapping from Flow-level steps (e.g., run\_desirability\_experiments) to the Crew \+ Agent \+ Task that actually does the work, including which specific tools are invoked.
 
@@ -114,9 +114,9 @@ Required Deliverables (ALL are required and must be mutually consistent):
 
     \- How rejected assets cause regeneration or manual edits before re-review.  
 
-\- Example AMP /resume payloads for creative approval decisions (approve/reject) and how these are written back into StartupValidationState and used to either proceed to deployment or regenerate assets.
+\- Example Modal HITL approval payloads (`/hitl/approve`) for creative approval decisions (approve/reject) and how these are written back into StartupValidationState and used to either proceed to deployment or regenerate assets.
 
-7\) AMP Configuration Artifacts  
+7\) Modal + CrewAI Configuration Artifacts  
 
 \- Example agents.yaml and tasks.yaml snippets for at least the Pulse and Forge crews, showing:  
 
@@ -138,7 +138,7 @@ Required Deliverables (ALL are required and must be mutually consistent):
 
 8\) Human-in-the-Loop (HITL) Integration for Viability  
 
-\- Exact HTTP payload examples for AMP /resume calls when a human decides:  
+\- Exact HTTP payload examples for Modal HITL approvals (`/hitl/approve`) when a human decides:  
 
   \- price\_pivot vs cost\_pivot vs kill in the Viability loop.  
 

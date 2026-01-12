@@ -2,7 +2,7 @@
 
 This directory contains the **ecosystem source of truth** for StartupAI's multi-phase crew architecture.
 
-> **Architecture Migration**: Migrated from CrewAI AMP to Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md) and [09-status.md](./09-status.md) for current status.
+> **Architecture Migration**: Migrated from the legacy CrewAI managed platform to Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md) and [09-status.md](./09-status.md) for current status.
 
 > **VPD Framework**: StartupAI implements the Value Proposition Design (VPD) framework by Osterwalder/Pigneur. The phase specifications provide authoritative VPD implementation patterns.
 
@@ -114,7 +114,7 @@ Detailed specifications extracted for standalone reference:
 | [reference/marketing-integration.md](./reference/marketing-integration.md) | Marketing site AI chat and live data |
 | [reference/product-artifacts.md](./reference/product-artifacts.md) | Smart canvas architecture |
 | [reference/database-schemas.md](./reference/database-schemas.md) | SQL schema definitions |
-| [reference/amp-configuration.md](./reference/amp-configuration.md) | ~~CrewAI AMP config~~ (DEPRECATED - see ADR-002) |
+| [reference/amp-configuration.md](./reference/amp-configuration.md) | ~~Legacy platform config~~ (DEPRECATED - see ADR-002) |
 
 ### Architecture Decision Records
 
@@ -143,7 +143,7 @@ Detailed specifications extracted for standalone reference:
 - **Innovation Physics**: [concepts/innovation-physics.md](../concepts/innovation-physics.md) (non-linear routing)
 - **Flywheel Learning**: [reference/flywheel-learning.md](./reference/flywheel-learning.md) (competitive moat)
 - **Modal Deployment**: [ADR-002](../adr/002-modal-serverless-migration.md) (current target)
-- **AMP Platform**: [reference/amp-configuration.md](./reference/amp-configuration.md) (DEPRECATED)
+- **Legacy platform**: [reference/amp-configuration.md](./reference/amp-configuration.md) (DEPRECATED)
 - **API Integration**: [reference/api-contracts.md](./reference/api-contracts.md)
 - **HITL Approvals**: [reference/approval-workflows.md](./reference/approval-workflows.md)
 - **Current Status**: [09-status.md](./09-status.md)
@@ -198,7 +198,7 @@ These repositories consume this architecture:
 
 **Latest Changes**:
 - Modal serverless migration proposed (ADR-002)
-- CrewAI AMP deployment deprecated
+- Legacy CrewAI deployment deprecated
 - Added Architecture Decision Records section
 - Fixed Phase 1 agent IDs (PAIN_*, GAIN_*, FIT_*)
 - Previous: Restructured to separate phase documents (04-08)

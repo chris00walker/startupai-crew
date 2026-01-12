@@ -1,7 +1,7 @@
 # Production Cutover Checklist
 
 **Date**: 2026-01-08
-**Migration**: CrewAI AMP → Modal Serverless
+**Migration**: Legacy 3-crew workaround → Modal Serverless
 **Reference**: [ADR-002](../adr/002-modal-serverless-migration.md)
 
 ## Pre-Cutover Verification
@@ -92,16 +92,11 @@ netlify deploy --prod
 
 ## Rollback Plan
 
-If issues occur, rollback to AMP:
+If issues occur, rollback to the last known-good Modal deployment:
 
-1. **Product App**: Revert `src/app/api/analyze/route.ts` to use AMP endpoint
-2. **Environment**: Set `CREWAI_USE_MODAL=false` in Netlify env vars
-3. **Verify**: AMP still operational at existing URLs
-
-AMP endpoints (deprecated but still deployed):
-- Crew 1: `https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com`
-- Crew 2: `https://startupai-3135e285-c0e6-4451-b7b6-d4a061ac44-e2dea8c9.crewai.com`
-- Crew 3: `https://startupai-7da95dc8-7bb5-4c90-925b-2861fa9cba-46bd3a78.crewai.com`
+1. **Modal**: Redeploy the previous Modal app version (or re-run `modal deploy` from the last known-good commit).
+2. **Product App**: Redeploy the last known-good Netlify build.
+3. **Verify**: `/health` and a sample `/kickoff` run complete without errors.
 
 ---
 

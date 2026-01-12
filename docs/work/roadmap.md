@@ -99,7 +99,7 @@ Every validation run makes all 6 AI Founders smarter through shared, anonymized 
 
 | Milestone | Date | Notes |
 |-----------|------|-------|
-| AMP 3-Crew deployment | 2026-01-04 | Deprecated, replaced by Modal |
+| Legacy 3-Crew deployment | 2026-01-04 | Deprecated, replaced by Modal |
 | Crew 1 best practices | 2026-01-06 | IntakeCrew pattern established |
 | Architecture alignment | 2026-01-07 | 5 Flows, 14 Crews, 45 Agents canonical |
 | Modal migration decision | 2026-01-08 | ADR-002 approved |

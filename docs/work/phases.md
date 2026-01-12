@@ -262,7 +262,7 @@ Wire remaining phases to product app.
 
 See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
 
-### AMP Deployment (DEPRECATED)
+### Legacy 3-Crew Deployment (ARCHIVED)
 | Metric | Count |
 |--------|-------|
 | **Crews** | 3 (Intake, Validation, Decision) |
@@ -465,7 +465,7 @@ See `docs/work/cross-repo-blockers.md` for ecosystem impact.
 | Phase 4 (Viability) | ✅ Complete | ⏳ Not tested | Blocked by Phase 2 |
 | E2E Integration | 🔴 Blocked | - | Cannot complete until Phase 2 fixed |
 
-### Previous: AMP Deployment (ARCHIVED)
+### Previous: Legacy 3-Crew Deployment (ARCHIVED)
 
 - **ADR**: See [ADR-001](../adr/001-flow-to-crew-migration.md) (superseded by ADR-002)
 - **Status**: Deprecated and archived
@@ -475,9 +475,9 @@ The phases below reflect the canonical architecture (5 Flows, 14 Crews, 45 Agent
 
 ---
 
-## Phase 0 - AMP Deployment (COMPLETE)
+## Phase 0 - Legacy 3-Crew Deployment (COMPLETE)
 
-Deploy the 3-Crew AMP workaround architecture to CrewAI AMP.
+Deploy the 3-crew workaround architecture to the managed CrewAI platform.
 
 **Status**: DEPLOYED (2026-01-04)
 **Crew 1 Enhanced**: 100% CrewAI Best Practices Alignment (2026-01-06)
@@ -494,10 +494,10 @@ Deploy the 3-Crew AMP workaround architecture to CrewAI AMP.
 
 **Deployment:**
 - [x] `crewai login` authenticated
-- [x] Crew 1 deployed to AMP (UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`)
-- [x] Crew 2 deployed to AMP (UUID: `3135e285-c0e6-4451-b7b6-d4a061ac4437`)
-- [x] Crew 3 deployed to AMP (UUID: `7da95dc8-7bb5-4c90-925b-2861fa9cba20`)
-- [ ] Environment variables set in AMP dashboard for all crews (CREW_2_URL, CREW_3_URL, tokens)
+- [x] Crew 1 deployed to the legacy platform (UUID: `6b1e5c4d-e708-4921-be55-08fcb0d1e94b`)
+- [x] Crew 2 deployed to the legacy platform (UUID: `3135e285-c0e6-4451-b7b6-d4a061ac4437`)
+- [x] Crew 3 deployed to the legacy platform (UUID: `7da95dc8-7bb5-4c90-925b-2861fa9cba20`)
+- [ ] Environment variables set in legacy dashboard for all crews (CREW_2_URL, CREW_3_URL, tokens)
 
 **Crew Chaining:**
 - [x] `InvokeCrewAIAutomationTool` configured for Crew 1 → Crew 2
@@ -607,10 +607,10 @@ Achieve 100% alignment with CrewAI best practices for Crew 1 (Intake).
 - **VPCDiscoveryFlow**: 5 Crews (DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew) - 18 agents
 - **DesirabilityFlow**: 3 Crews (BuildCrew, GrowthCrew, GovernanceCrew) - 9 agents
 
-**Legacy AMP Deployment Mapping (Deprecated)**:
+**Legacy 3-Crew Deployment Mapping (Deprecated)**:
 - VPCDiscoveryFlow → Crew 1 (Intake) + partial Crew 2
 - DesirabilityFlow → Crew 2 (Validation - desirability phase)
-- GovernanceCrew → Distributed across all 3 AMP crews
+- GovernanceCrew → Distributed across all 3 legacy crews
 
 ### Phase 1 Complete Criteria
 Phase 1 is **complete** when all of the following are true:
@@ -761,7 +761,7 @@ See `docs/IMPLEMENTATION_ANALYSIS.md` for detailed evidence.
 - **FeasibilityFlow**: 2 Crews (BuildCrew, GovernanceCrew) - 4 agents
 - BuildCrew reused from Phase 1 (Desirability)
 
-**AMP Deployment Mapping**:
+**Legacy 3-Crew Deployment Mapping**:
 - FeasibilityFlow → Crew 2 (Validation - feasibility phase)
 
 ### Phase 2 Complete Criteria
@@ -804,7 +804,7 @@ Phase 2 is **complete** when all of the following are true:
 - **ViabilityFlow**: 3 Crews (FinanceCrew, SynthesisCrew, GovernanceCrew) - 9 agents
 - Final decision: Pivot/Proceed/Pause
 
-**AMP Deployment Mapping**:
+**Legacy 3-Crew Deployment Mapping**:
 - ViabilityFlow → Crew 2 (Validation - viability phase) + Crew 3 (Decision)
 
 ### Phase 3 Complete Criteria
@@ -902,7 +902,7 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 - RLS security: Enabled on all tables
 - Supabase Realtime: Working
 
-### Legacy (AMP - ARCHIVED)
+### Legacy (3-Crew - ARCHIVED)
 - 3 Crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)
 - **Status**: Deprecated and archived
 - **Issues**: Platform reliability problems, multi-repo complexity

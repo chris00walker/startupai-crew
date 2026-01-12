@@ -71,11 +71,11 @@ Phase 4 (Viability) → [HITL] → Decision
 - Auto-scaling (0 → 1000+ concurrent validations)
 - Platform-agnostic (runs anywhere Python runs)
 
-### Legacy: CrewAI AMP (Deprecated)
+### Legacy: 3-Crew Workaround (Deprecated)
 
 > **Status**: Being phased out due to platform reliability issues. See [ADR-001](docs/adr/001-flow-to-crew-migration.md) and [ADR-002](docs/adr/002-modal-serverless-migration.md).
 
-The 3-Crew AMP deployment is deprecated but remains deployed for reference:
+The legacy 3-crew deployment is deprecated but remains for reference:
 - Crew 1: `startupai-crew` (this repo)
 - Crew 2: `startupai-crew-validation`
 - Crew 3: `startupai-crew-decision`
@@ -155,7 +155,7 @@ startupai-crew/
 │   │   ├── models.py             # Pydantic state models (612 lines)
 │   │   └── persistence.py        # Checkpoint/resume logic (370 lines)
 │   │
-│   └── intake_crew/              # DEPRECATED: AMP Crew 1
+│   └── intake_crew/              # DEPRECATED: Legacy Crew 1
 │
 ├── db/migrations/                # SQL migration files
 ├── scripts/                      # Utility scripts
@@ -167,7 +167,7 @@ startupai-crew/
 │   │   └── 002-modal-serverless-migration.md (Current)
 │   ├── deployment/               # Deployment guides
 │   └── work/                     # Work tracking
-├── archive/                      # Deprecated AMP code
+├── archive/                      # Deprecated legacy deployment code
 │   ├── amp-deployment/
 │   └── flow-architecture/
 ├── CLAUDE.md                     # AI context
@@ -274,7 +274,7 @@ curl https://chris00walker--startupai-validation-fastapi-app.modal.run/health
 - [ ] Live testing Phase 3-4
 
 **What Changed:**
-- FROM: 3-Crew AMP deployment (3 repos, InvokeCrewAIAutomationTool chaining)
+- FROM: Legacy 3-crew deployment (3 repos, InvokeCrewAIAutomationTool chaining)
 - TO: Modal serverless (1 repo, native Python orchestration)
 
 ---

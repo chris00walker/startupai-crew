@@ -123,8 +123,8 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 - ✅ 185 unit tests passing
 
 **Measured**:
-- ✅ $0 idle costs (vs AMP always-on)
-- ✅ Single repository (vs 3-repo AMP workaround)
+- ✅ $0 idle costs (vs legacy always-on)
+- ✅ Single repository (vs 3-repo workaround)
 - ✅ Pay-per-second billing
 - ✅ Live testing Phase 0-2 passed
 
@@ -288,4 +288,4 @@ When choosing what to validate next, ask:
   - AnonymizerTool wired to G2 governance agents
 - Complete rewrite for Modal serverless architecture
 - Updated completed hypotheses with tool validation
-- Removed deprecated AMP references
+- Removed deprecated legacy references

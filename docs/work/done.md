@@ -428,7 +428,7 @@ Live testing with real LLM calls validated core functionality.
 
 ## Modal Serverless Migration (2026-01-08)
 
-Complete migration from CrewAI AMP to Modal serverless.
+Complete migration from the legacy 3-crew workaround to Modal serverless.
 
 ### Architecture Decision
 
@@ -486,8 +486,8 @@ PHASE (Business Concept) → FLOW (Orchestration) → CREW (Agent Group) → AGE
 
 ### Architecture Metrics
 
-| Metric | Canonical | AMP (Deprecated) |
-|--------|-----------|------------------|
+| Metric | Canonical | Legacy (Archived) |
+|--------|-----------|-------------------|
 | Phases | 5 | 5 |
 | Flows | 5 | N/A |
 | Crews | 14 | 3 |
@@ -520,9 +520,9 @@ IntakeCrew (Crew 1) achieved 100% CrewAI best practices alignment.
 
 ---
 
-## AMP 3-Crew Deployment (2026-01-04) - DEPRECATED
+## Legacy 3-Crew Deployment (2026-01-04) - ARCHIVED
 
-> **DEPRECATED**: Replaced by Modal serverless. See ADR-002.
+> **ARCHIVED**: Replaced by Modal serverless. See ADR-002.
 
 ### Deployment Summary
 

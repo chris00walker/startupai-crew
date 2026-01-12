@@ -114,7 +114,7 @@ StartupAI implements a 5-phase validation architecture based on Value Propositio
 | E2E testing | ✅ Complete | 17 tests, Phase 0→4 flow validated |
 | Production cutover | ⏳ Pending | Awaiting live validation run |
 
-### 3-Crew Deployment (AMP Platform) - DEPRECATED
+### Legacy 3-Crew Deployment (Deprecated)
 
 > **Status**: DEPRECATED due to platform reliability issues. Being replaced by Modal serverless. See [ADR-001](../adr/001-flow-to-crew-migration.md) (superseded) and [ADR-002](../adr/002-modal-serverless-migration.md).
 
@@ -126,20 +126,20 @@ Legacy deployment (reference only):
 | **Crew 2: Validation** | `chris00walker/startupai-crew-validation` | `3135e285-c0e6-4451-b7b6-d4a061ac4437` | ⚠️ Deprecated |
 | **Crew 3: Decision** | `chris00walker/startupai-crew-decision` | `7da95dc8-7bb5-4c90-925b-2861fa9cba20` | ⚠️ Deprecated |
 
-> **Note**: The 3-Crew AMP deployment was a platform-constrained workaround that exhibited reliability issues. See [Architecture Migration History](#architecture-migration-history) for context.
+> **Note**: The legacy 3-crew deployment was a platform-constrained workaround that exhibited reliability issues. See [Architecture Migration History](#architecture-migration-history) for context.
 
 ### Architecture Migration History
 
 | Date | Change | Reason |
 |------|--------|--------|
-| 2026-01-08 | **Modal serverless migration proposed** | AMP reliability issues, platform-agnostic deployment, $0 idle costs |
+| 2026-01-08 | **Modal serverless migration proposed** | Legacy platform reliability issues, platform-agnostic deployment, $0 idle costs |
 | 2026-01-08 | ADR-002 written, ADR-001 superseded | Document Modal architecture decision |
 | 2026-01-07 | CrewAI pattern standardization across all docs | Align with CrewAI documentation: Phase → Flow → Crew → Agent |
 | 2026-01-07 | Fixed one-agent "crews" → consolidated into proper crews | CrewAI definition: crew = collaborative group (2+ agents) |
 | 2026-01-07 | Renamed "Flow 1-7" to proper Crew names in Phase 1 | Terminology correction: those were Crews, not Flows |
 | 2026-01-06 | Crew 1 aligned to CrewAI best practices (100%) | Pydantic schemas, reasoning mode, enriched backstories |
 | 2026-01-05 | Added VPD Phase 0-4 specifications | Framework compliance |
-| 2025-12-05 | Migrated from Flow to Crew architecture | AMP compatibility issues with `type = "flow"` |
+| 2025-12-05 | Migrated from Flow to Crew architecture | Legacy platform compatibility issues with `type = "flow"` |
 
 ---
 
@@ -263,7 +263,7 @@ Legacy deployment (reference only):
 
 ### HITL Checkpoints (10 canonical)
 
-> **Canonical Count**: 10 HITL checkpoints across all 5 phases. The AMP 3-crew deployment had an additional crew-chaining checkpoint (`approve_intake_to_validation`) which is not part of the canonical architecture.
+> **Canonical Count**: 10 HITL checkpoints across all 5 phases. The legacy 3-crew deployment had an additional crew-chaining checkpoint (`approve_intake_to_validation`) which is not part of the canonical architecture.
 
 #### Phase 0: Onboarding
 
@@ -300,13 +300,13 @@ Legacy deployment (reference only):
 | `approve_viability_gate` | Guardian | Gate: Viability → Decision |
 | `request_human_decision` | Founder | Final pivot/proceed decision |
 
-#### AMP-Only Checkpoint (DEPRECATED)
+#### Legacy-Only Checkpoint (Deprecated)
 
-> **⚠️ NOT CANONICAL**: This checkpoint existed only in the AMP 3-crew workaround architecture.
+> **⚠️ NOT CANONICAL**: This checkpoint existed only in the legacy 3-crew workaround architecture.
 
 | Checkpoint | Purpose | Status |
 |------------|---------|--------|
-| `approve_intake_to_validation` | Gate: Crew 1 → Crew 2 | DEPRECATED (AMP workaround) |
+| `approve_intake_to_validation` | Gate: Crew 1 → Crew 2 | Deprecated (legacy workaround) |
 
 ### Crew 1 Architecture (Latest)
 
@@ -440,7 +440,7 @@ Legacy deployment (reference only):
 | Supabase URL | ✅ Set | ✅ Set | N/A |
 | Supabase Anon Key | ✅ Set | ✅ Set | N/A |
 | Supabase Service Key | N/A | ✅ Set | N/A |
-| OpenAI Key | N/A | ✅ Set | ✅ Set (AMP) |
+| OpenAI Key | N/A | ✅ Set | ✅ Set (legacy) |
 | CrewAI Bearer | N/A | ✅ Set | N/A |
 | PostHog Key | ✅ Set | ✅ Set | N/A |
 
@@ -547,8 +547,8 @@ Marketing activity feed shows real activity
 | | Updated completion status: ~85% (was ~60%) |
 | | Ready for E2E integration testing |
 | **2026-01-08** | Modal Serverless Migration |
-| | Proposed migration from CrewAI AMP to Modal serverless ([ADR-002](../adr/002-modal-serverless-migration.md)) |
-| | Marked 3-Crew AMP deployment as DEPRECATED |
+| | Proposed migration from CrewAI managed platform to Modal serverless ([ADR-002](../adr/002-modal-serverless-migration.md)) |
+| | Marked 3-crew legacy deployment as deprecated |
 | | Added Modal Serverless Deployment section with migration status |
 | | Updated Architecture Migration History |
 | | ADR-001 superseded by ADR-002 |
@@ -556,7 +556,7 @@ Marketing activity feed shows real activity
 | | Added CrewAI Pattern Hierarchy section (Phase → Flow → Crew → Agent) |
 | | Updated counts: 5 Flows, 14 Crews, 45 Agents, 10 HITL |
 | | Added complete Crew Summary table |
-| | Clarified 3-Crew AMP deployment as platform workaround |
+| | Clarified 3-crew legacy deployment as platform workaround |
 | | Added Architecture Migration History entries |
 | **2026-01-07** | Full rewrite with cross-repo verification |
 | | Updated phase structure to 0-4 (was 0-3) |

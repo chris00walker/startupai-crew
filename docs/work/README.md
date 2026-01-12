@@ -59,7 +59,7 @@ See [phases.md](./phases.md) for detailed implementation roadmap.
 | Phase 4 (Viability) | ⏳ PENDING | 3 crews, 9 agents |
 | **Tool Integration** | ❌ CRITICAL | 0/36 agents wired |
 
-### AMP Deployment (DEPRECATED)
+### Legacy 3-Repo Workaround (ARCHIVED)
 
 | Component | Status | Notes |
 |-----------|--------|-------|

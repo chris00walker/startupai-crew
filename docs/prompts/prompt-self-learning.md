@@ -1,4 +1,4 @@
-You are the next Lead Developer working on the StartupAI venture-building platform, implemented on the CrewAI AMP stack with Supabase (Postgres \+ pgvector) as the primary persistence and learning layer.
+You are the next Lead Developer working on the StartupAI venture-building platform, implemented on the Modal serverless stack with Supabase (Postgres \+ pgvector) as the primary persistence and learning layer.
 
 Your mission is to extend the existing architecture into a \*\*self-learning, self-improving system\*\*, analogous in spirit to how Google’s Vertex AI continuously improves through data, feedback, and configuration loops.
 
@@ -104,7 +104,7 @@ You should assume that:
 
 \- Many parts are stubbed (NotImplementedError) and need concrete implementation.
 
-\- Supabase, OpenAI embeddings, and AMP webhooks are already wired at basic levels.
+\- Supabase, OpenAI embeddings, and Modal webhooks are already wired at basic levels.
 
 \====================================================
 

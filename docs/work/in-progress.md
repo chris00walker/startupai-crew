@@ -398,9 +398,9 @@ See [modal-live-testing.md](./modal-live-testing.md) for full details.
 
 ## Previous Work (ARCHIVED)
 
-### AMP 3-Crew Architecture (DEPRECATED - 2025-12-05)
+### Legacy 3-Crew Workaround (ARCHIVED - 2025-12-05)
 
-The 3-Crew AMP architecture was replaced by Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md).
+The 3-crew workaround was replaced by Modal serverless. See [ADR-002](../adr/002-modal-serverless-migration.md).
 
 - Crew 1 (Intake): Archived to `archive/amp-deployment/`
 - Crew 2 (Validation): Separate repo archived
@@ -408,7 +408,7 @@ The 3-Crew AMP architecture was replaced by Modal serverless. See [ADR-002](../a
 
 ### Flow Architecture (DEPRECATED - 2025-12-03)
 
-The original Flow-based architecture had runtime bugs that were fixed before the AMP migration. All fixes are preserved in the current Modal implementation.
+The original Flow-based architecture had runtime bugs that were fixed before the Modal migration. All fixes are preserved in the current Modal implementation.
 
 ---
 

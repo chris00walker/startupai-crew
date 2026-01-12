@@ -3,12 +3,14 @@
 **Status**: Superseded by [ADR-002](./002-modal-serverless-migration.md)
 **Date**: 2025-12-05
 **Decision Makers**: Chris Walker, Claude AI Assistant
-**Context**: CrewAI AMP deployment compatibility
+**Context**: CrewAI managed-platform deployment compatibility (legacy)
 **Last Audited**: 2026-01-06 - Claims verified against CrewAI documentation
+
+> **Historical Note**: This ADR documents a legacy 3-crew workaround on the managed CrewAI platform. The canonical architecture is Modal serverless (see ADR-002).
 
 ## Summary
 
-Migrate StartupAI from a single `type = "flow"` project to a 3-Crew architecture using `type = "crew"` projects, due to AMP platform compatibility issues with Flow-based deployments.
+Migrate StartupAI from a single `type = "flow"` project to a 3-Crew architecture using `type = "crew"` projects, due to managed-platform compatibility issues with Flow-based deployments.
 
 ## Context
 
@@ -20,7 +22,7 @@ The original StartupAI architecture used CrewAI Flows with:
 - 8 crews with 18 agents in a single monolithic flow
 - State management via Pydantic models and `@persist()` decorators
 
-**AMP Deployment Issue** *(empirically observed, not officially documented)*: When deployed to CrewAI AMP, the platform:
+**Managed-Platform Deployment Issue** *(empirically observed, not officially documented)*: When deployed to the managed CrewAI platform, the platform:
 1. Incorrectly parsed `type = "flow"` projects expecting 14 YAML inputs instead of Flow's `kickoff(inputs)` pattern
 2. Returned `source: memory` without executing code (infrastructure-level caching issue)
 3. Dashboard traces showed "Waiting for events to load..." indicating the flow never executed
@@ -35,7 +37,7 @@ Code-level workarounds attempted:
 - Set `cache=False` on all 18 agents across 7 crew files
 - Disabled agent caching at instantiation
 
-**Conclusion**: The issue was at the AMP infrastructure level, not in our code. Per CrewAI support feedback, AMP handles `type = "crew"` projects reliably but has known issues with `type = "flow"`.
+**Conclusion**: The issue was at the managed-platform infrastructure level, not in our code. Per CrewAI support feedback, the managed platform handles `type = "crew"` projects reliably but has known issues with `type = "flow"`.
 
 > **Audit Note (2026-01-06)**: The claim that `type = "crew"` works reliably while `type = "flow"` doesn't is based on operational experience and support conversations, not official documentation. CrewAI docs state both can be deployed to AOP.
 
@@ -74,11 +76,11 @@ Migrate from Flow architecture to a 3-Crew Workflow-Stage Architecture:
 
 Replace Flow's `@listen`/`@router` decorators with:
 1. **Task `context` arrays** for sequencing within a crew
-2. **`InvokeCrewAIAutomationTool`** for crew-to-crew chaining via AMP API calls
+2. **`InvokeCrewAIAutomationTool`** for crew-to-crew chaining via managed-platform API calls
 
 ### Repository Structure
 
-AMP deploys from git repo root, so each crew requires its own repository:
+The managed platform deploys from git repo root, so each crew requires its own repository:
 
 | Crew | Repository | Status |
 |------|------------|--------|
@@ -90,9 +92,9 @@ AMP deploys from git repo root, so each crew requires its own repository:
 
 ### Positive
 
-1. **AMP Compatibility**: `type = "crew"` projects work reliably on AMP
+1. **Managed-Platform Compatibility**: `type = "crew"` projects work reliably on the managed platform
 2. **Simpler Debugging**: Each crew is independently testable and deployable
-3. **HITL Integration**: `human_input: true` on tasks works correctly in AMP
+3. **HITL Integration**: `human_input: true` on tasks works correctly on the managed platform
 4. **Clearer Boundaries**: Explicit API contracts between crews
 5. **Parallel Development**: Crews can be developed/deployed independently
 
@@ -118,22 +120,22 @@ AMP deploys from git repo root, so each crew requires its own repository:
 2. **Phase 2** (Complete): Move Crew 1 (Intake) to repo root with `type = "crew"`
 3. **Phase 3** (Complete): Archive Flow code to `archive/flow-architecture/`
 4. **Phase 4** (Pending): Create separate repos for Crews 2 & 3
-5. **Phase 5** (Pending): Deploy all crews to AMP
+5. **Phase 5** (Pending): Deploy all crews to the managed platform
 6. **Phase 6** (Pending): Configure `InvokeCrewAIAutomationTool` for chaining
 
 ## Alternatives Considered
 
 ### 1. Fix Flow Deployment Issues
-**Rejected**: Issue is at AMP infrastructure level, not in our code. Would require CrewAI platform changes.
+**Rejected**: Issue is at managed-platform infrastructure level, not in our code. Would require CrewAI platform changes.
 
 ### 2. Single Large Crew
 **Rejected**: 19 agents in one crew would be unwieldy. Task sequencing via `context` would become complex.
 
-### 3. Wait for AMP Flow Support
+### 3. Wait for Managed-Platform Flow Support
 **Rejected**: No timeline from CrewAI. Would block all progress.
 
 ### 4. Self-Host CrewAI
-**Rejected**: Loses AMP benefits (managed infrastructure, HITL, monitoring). Requires significant DevOps.
+**Rejected**: Loses managed-platform benefits (managed infrastructure, HITL, monitoring). Requires significant DevOps.
 
 ## Related Documents
 
@@ -172,10 +174,10 @@ This ADR was audited against official CrewAI documentation (local and online) on
 
 | Claim | Status |
 |-------|--------|
-| AMP returns `source: memory` without executing | ❌ Not documented - based on our operational observation |
+| Managed platform returns `source: memory` without executing | ❌ Not documented - based on our operational observation |
 | `type = "crew"` works reliably, `type = "flow"` doesn't | ❌ Not documented - docs say both can be deployed |
-| AMP infrastructure-level caching skips Flow execution | ❌ Not documented - [caching issues](https://community.crewai.com/t/crewai-agents-use-old-or-incorrect-input-despite-memory-reset-and-cache-clear/5484) exist but are about agent memory, not AMP execution |
-| AMP deploys from repo root (requires separate repos) | ❌ Not documented - no repo structure requirements in docs |
+| Managed-platform caching skips Flow execution | ❌ Not documented - [caching issues](https://community.crewai.com/t/crewai-agents-use-old-or-incorrect-input-despite-memory-reset-and-cache-clear/5484) exist but are about agent memory, not platform execution |
+| Managed platform deploys from repo root (requires separate repos) | ❌ Not documented - no repo structure requirements in docs |
 
 ### Audit Conclusion
 
@@ -184,7 +186,7 @@ The migration decision was **operationally justified** based on:
 2. Documented bugs in Flow project scaffolding ([PR #2291](https://github.com/crewAIInc/crewAI/pull/2291), [Issue #2005](https://github.com/crewAIInc/crewAI/issues/2005))
 3. Community reports of similar Flow deployment issues
 
-However, the ADR's **core technical claims** about AMP behavior (`source: memory`, infrastructure caching, `type = "flow"` incompatibility) are based on **operational experience**, not official documentation. Future readers should understand this distinction.
+However, the ADR's **core technical claims** about managed-platform behavior (`source: memory`, infrastructure caching, `type = "flow"` incompatibility) are based on **operational experience**, not official documentation. Future readers should understand this distinction.
 
 ### Sources
 

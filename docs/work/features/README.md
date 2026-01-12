@@ -6,7 +6,7 @@ last_reviewed: "2026-01-07"
 
 # Features
 
-> **Note**: This directory contains historical feature documentation from the original 8-crew architecture (Nov 2025). The project has migrated to the Modal canonical architecture (5 flows / 14 crews / 45 agents). The AMP 3-crew setup is deprecated.
+> **Note**: This directory contains historical feature documentation from the original 8-crew architecture (Nov 2025). The project has migrated to the Modal canonical architecture (5 flows / 14 crews / 45 agents). The legacy 3-crew setup is deprecated.
 
 ## Current Architecture
 
@@ -14,7 +14,7 @@ The Modal canonical architecture is documented in:
 - **[02-organization.md](../../master-architecture/02-organization.md)** - 6 founders, 45 agents
 - **[09-status.md](../../master-architecture/09-status.md)** - Current implementation status
 
-### Legacy 3 Crews (AMP - Deprecated)
+### Legacy 3 Crews (Deprecated)
 
 | Crew | Repository | Agents | Status |
 |------|------------|--------|--------|

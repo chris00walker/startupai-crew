@@ -11,7 +11,7 @@ Your task: review ALL existing StartupAI artifacts (architecture notes, flow def
   - Tool interfaces (CopywritingTool, LandingPageGeneratorTool, LandingPageDeploymentTool, ExperimentDeployTool, AnalyticsTool, etc.)  
   - ETL \+ Supabase/pgvector learning design  
   - Retrieval-aware ExperimentConfigResolver  
-  - AMP /resume payloads and HITL flows  
+  - Modal HITL approval payloads (`/hitl/approve`) and HITL flows  
   - agents.yaml, tasks.yaml, crewai\_config.yaml
 
 Your review must explicitly consider the following 8 improvement areas and push beyond them where possible:
