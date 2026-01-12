@@ -334,8 +334,19 @@ async def hitl_approve(
     }))
 
     # Update HITL request status
+    # Normalize status to valid enum: pending|approved|rejected|expired
+    # Store actual decision value in 'decision' column
+    if request.decision in ("rejected", "reject"):
+        normalized_status = "rejected"
+    elif request.decision == "iterate":
+        # Iterate keeps it pending for another round
+        normalized_status = "pending"
+    else:
+        # segment_1, segment_2, custom_segment, override_proceed, approved -> approved
+        normalized_status = "approved"
+
     supabase.table("hitl_requests").update({
-        "status": request.decision,
+        "status": normalized_status,
         "decision": request.decision,
         "feedback": request.feedback,
         "decision_at": datetime.now(timezone.utc).isoformat(),
@@ -652,16 +663,39 @@ def run_validation(run_id: str):
                     "phase_state": phase_result.get("state", phase_state),
                 }).eq("id", run_id).execute()
 
+                hitl_title = phase_result.get("hitl_title", f"Approval Required: {checkpoint}")
+                hitl_description = phase_result.get("hitl_description", "")
+                hitl_context = phase_result.get("hitl_context", {})
+                hitl_options = phase_result.get("hitl_options", [
+                    {"id": "approve", "label": "Approve", "description": "Proceed to next phase"},
+                    {"id": "revise", "label": "Request Revisions", "description": "Return for clarification"},
+                    {"id": "reject", "label": "Reject", "description": "Stop validation"},
+                ])
+                hitl_recommended = phase_result.get("hitl_recommended", "approve")
+
                 supabase.table("hitl_requests").insert({
                     "run_id": run_id,
                     "checkpoint_name": checkpoint,
                     "phase": phase_num,
-                    "title": phase_result.get("hitl_title", f"Approval Required: {checkpoint}"),
-                    "description": phase_result.get("hitl_description", ""),
-                    "context": phase_result.get("hitl_context", {}),
-                    "options": phase_result.get("hitl_options"),
-                    "recommended_option": phase_result.get("hitl_recommended"),
+                    "title": hitl_title,
+                    "description": hitl_description,
+                    "context": hitl_context,
+                    "options": hitl_options,
+                    "recommended_option": hitl_recommended,
                 }).execute()
+
+                # Send webhook to create approval_requests entry in product app
+                _send_hitl_webhook(
+                    run_id=run_id,
+                    project_id=str(run["project_id"]),
+                    user_id=str(run["user_id"]),
+                    checkpoint=checkpoint,
+                    title=hitl_title,
+                    description=hitl_description,
+                    options=hitl_options,
+                    recommended=hitl_recommended,
+                    context=hitl_context,
+                )
 
                 # Container terminates here - $0 cost while waiting
                 return {"status": "paused", "checkpoint": checkpoint}
@@ -727,6 +761,67 @@ def resume_from_checkpoint(run_id: str, checkpoint: str):
 
     # Delegate to main orchestrator
     return run_validation.local(run_id)
+
+
+def _send_hitl_webhook(
+    run_id: str,
+    project_id: str,
+    user_id: str,
+    checkpoint: str,
+    title: str,
+    description: str,
+    options: list,
+    recommended: str,
+    context: dict,
+):
+    """Send HITL checkpoint webhook to product app to create approval_requests entry."""
+    import httpx
+    from datetime import timedelta
+
+    product_app_url = os.environ.get("PRODUCT_APP_URL", "https://app.startupai.site")
+    webhook_url = f"{product_app_url}/api/crewai/webhook"
+    bearer_token = os.environ.get("WEBHOOK_BEARER_TOKEN", "startupai-modal-secret-2026")
+
+    # Calculate expiration (7 days from now)
+    expires_at = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+
+    try:
+        response = httpx.post(
+            webhook_url,
+            json={
+                "flow_type": "hitl_checkpoint",
+                "run_id": run_id,
+                "project_id": project_id,
+                "user_id": user_id,
+                "checkpoint": checkpoint,
+                "title": title,
+                "description": description,
+                "options": options,
+                "recommended": recommended,
+                "context": context,
+                "expires_at": expires_at,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
+            headers={
+                "Authorization": f"Bearer {bearer_token}",
+                "Content-Type": "application/json",
+            },
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        logger.info(json.dumps({
+            "event": "hitl_webhook_sent",
+            "run_id": run_id,
+            "checkpoint": checkpoint,
+            "status_code": response.status_code,
+        }))
+    except Exception as e:
+        logger.error(json.dumps({
+            "event": "hitl_webhook_failed",
+            "run_id": run_id,
+            "checkpoint": checkpoint,
+            "error": str(e),
+        }))
 
 
 def _send_completion_webhook(run_id: str, final_state: dict):
@@ -805,6 +900,230 @@ def expire_stale_hitl_requests():
 def fastapi_app():
     """Serve FastAPI app via Modal ASGI."""
     return web_app
+
+
+# -----------------------------------------------------------------------------
+# Test Functions
+# -----------------------------------------------------------------------------
+
+@app.function(timeout=300)
+def test_netlify_deploy():
+    """
+    Test LandingPageDeploymentTool with a real Netlify deployment.
+
+    Usage: modal run src/modal_app/app.py::test_netlify_deploy
+    """
+    import httpx
+    from datetime import datetime
+    from shared.tools.landing_page_deploy import LandingPageDeploymentTool
+
+    logger.info("Starting LandingPageDeploymentTool test...")
+
+    # Check environment
+    netlify_token = os.environ.get("NETLIFY_ACCESS_TOKEN")
+    if not netlify_token:
+        logger.error("NETLIFY_ACCESS_TOKEN not found!")
+        return {"success": False, "error": "NETLIFY_ACCESS_TOKEN not available"}
+
+    logger.info("NETLIFY_ACCESS_TOKEN found in environment")
+
+    # Test HTML
+    test_id = datetime.now().strftime("%Y%m%d-%H%M%S")
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StartupAI Test - {test_id}</title>
+    <style>
+        body {{
+            font-family: system-ui, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }}
+        .card {{
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 32px;
+        }}
+        h1 {{ margin: 0 0 16px 0; }}
+        .meta {{ opacity: 0.8; font-size: 14px; margin-top: 24px; }}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Validate Your Startup Idea</h1>
+        <p>This is a test deployment from LandingPageDeploymentTool.</p>
+        <p>If you can see this page, the deployment was successful!</p>
+        <div class="meta">
+            Test ID: {test_id}<br>
+            Deployed: {datetime.now().isoformat()}
+        </div>
+    </div>
+</body>
+</html>"""
+
+    # Deploy
+    tool = LandingPageDeploymentTool()
+    logger.info(f"Deploying test landing page (test_id={test_id})...")
+
+    result_str = tool._run(
+        html=html_content,
+        project_id="test-deploy",
+        variant_id=f"test-{test_id}",
+    )
+
+    logger.info(f"Deployment result:\n{result_str}")
+
+    # Parse result and verify
+    if "Landing Page Deployed Successfully" in result_str:
+        for line in result_str.split("\n"):
+            if "**Live URL:**" in line:
+                deployed_url = line.split("**Live URL:**")[1].strip()
+                logger.info(f"Deployed URL: {deployed_url}")
+
+                # Verify accessibility
+                try:
+                    with httpx.Client(timeout=30.0) as client:
+                        response = client.get(deployed_url)
+                        logger.info(f"HTTP Status: {response.status_code}")
+
+                        if response.status_code == 200:
+                            content_ok = "Validate Your Startup Idea" in response.text
+                            logger.info(f"Content verified: {content_ok}")
+                            return {
+                                "success": True,
+                                "deployed_url": deployed_url,
+                                "test_id": test_id,
+                                "http_status": response.status_code,
+                                "content_verified": content_ok,
+                            }
+                        else:
+                            return {
+                                "success": False,
+                                "deployed_url": deployed_url,
+                                "error": f"HTTP {response.status_code}",
+                            }
+                except Exception as e:
+                    return {
+                        "success": False,
+                        "deployed_url": deployed_url,
+                        "error": f"Verification failed: {str(e)}",
+                    }
+
+    return {"success": False, "error": "Deployment failed", "result": result_str}
+
+
+@app.function(timeout=60)
+def diagnose_netlify_token():
+    """
+    Diagnose Netlify token permissions and list existing sites.
+
+    Usage: modal run src/modal_app/app.py::diagnose_netlify_token
+    """
+    import httpx
+
+    netlify_token = os.environ.get("NETLIFY_ACCESS_TOKEN")
+    if not netlify_token:
+        return {"success": False, "error": "NETLIFY_ACCESS_TOKEN not available"}
+
+    headers = {
+        "Authorization": f"Bearer {netlify_token}",
+        "Content-Type": "application/json",
+    }
+
+    results = {}
+
+    with httpx.Client(timeout=30.0) as client:
+        # 1. Get current user info
+        user_response = client.get(
+            "https://api.netlify.com/api/v1/user",
+            headers=headers
+        )
+        if user_response.status_code == 200:
+            user_data = user_response.json()
+            results["user"] = {
+                "id": user_data.get("id"),
+                "email": user_data.get("email"),
+                "full_name": user_data.get("full_name"),
+            }
+        else:
+            results["user_error"] = f"HTTP {user_response.status_code}: {user_response.text}"
+
+        # 2. List sites
+        sites_response = client.get(
+            "https://api.netlify.com/api/v1/sites",
+            headers=headers
+        )
+        if sites_response.status_code == 200:
+            sites = sites_response.json()
+            results["sites"] = [
+                {
+                    "id": s.get("id"),
+                    "name": s.get("name"),
+                    "url": s.get("url"),
+                    "created_at": s.get("created_at"),
+                }
+                for s in sites[:10]  # First 10 sites
+            ]
+            results["total_sites"] = len(sites)
+        else:
+            results["sites_error"] = f"HTTP {sites_response.status_code}: {sites_response.text}"
+
+        # 3. Check token scopes by trying to get access tokens list (admin endpoint)
+        tokens_response = client.get(
+            "https://api.netlify.com/api/v1/oauth/applications",
+            headers=headers
+        )
+        results["oauth_applications_status"] = tokens_response.status_code
+
+    return results
+
+
+@app.local_entrypoint()
+def main():
+    """Diagnose Netlify token and test deployment."""
+    print("\n" + "=" * 60)
+    print("Netlify Token Diagnostic")
+    print("=" * 60 + "\n")
+
+    # First run diagnostics
+    diag_result = diagnose_netlify_token.remote()
+
+    if "user" in diag_result:
+        print(f"User: {diag_result['user'].get('email')}")
+        print(f"Name: {diag_result['user'].get('full_name')}")
+
+    if "total_sites" in diag_result:
+        print(f"\nTotal Sites: {diag_result['total_sites']}")
+        print("\nRecent StartupAI Sites:")
+        for site in diag_result.get("sites", []):
+            if "startupai" in site.get("name", "").lower():
+                print(f"  - {site['name']}: {site['url']}")
+
+    print("\n" + "=" * 60)
+    print("LandingPageDeploymentTool Test")
+    print("=" * 60 + "\n")
+
+    result = test_netlify_deploy.remote()
+
+    print(f"Success: {result['success']}")
+    if result['success']:
+        print(f"Deployed URL: {result['deployed_url']}")
+        print(f"Test ID: {result['test_id']}")
+        print(f"HTTP Status: {result['http_status']}")
+        print(f"Content Verified: {result['content_verified']}")
+        print(f"\nVisit: {result['deployed_url']}")
+    else:
+        print(f"Error: {result.get('error', 'Unknown')}")
+
+    print("\n" + "=" * 60 + "\n")
+    return result
 
 
 # -----------------------------------------------------------------------------
