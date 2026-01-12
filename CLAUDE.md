@@ -589,9 +589,6 @@ Modal migration returns us to a **single repository** (`startupai-crew`). No mor
 - Review `docs/work/phases.md` for Phase completion criteria
 - Review [ADR-002](docs/adr/002-modal-serverless-migration.md) for migration status
 
-### LLM Coordination Protocol
-See `docs/master-architecture/llm-coordination.md`.
-
 ### When Completing Phase Milestones
 1. Update completion checkboxes in `docs/work/phases.md`
 2. Update `docs/work/cross-repo-blockers.md` with new status
