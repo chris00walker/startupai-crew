@@ -10,10 +10,10 @@ Quick reference for Supabase database and backend patterns used in the StartupAI
 
 | Metric | Value |
 |--------|-------|
-| **Last Full Sync** | 2026-01-09 |
+| **Last Full Sync** | 2026-01-10 |
 | **Staleness Threshold** | 30 days |
-| **Total Cached Files** | 8 |
-| **Missing Topics** | 4 (see below) |
+| **Total Cached Files** | 10 |
+| **Missing Topics** | 2 (see below) |
 | **Cache Manifest** | `MANIFEST.json` |
 
 > **Self-Learning Cache**: This documentation cache automatically updates when new content is fetched from online sources. Check MANIFEST.json for detailed tracking.
@@ -29,6 +29,8 @@ Quick reference for Supabase database and backend patterns used in the StartupAI
 | **Migrations** | `migrations.md` | Schema migrations, `supabase db` commands |
 | **MCP Tools** | `mcp-tools.md` | Available MCP tools, usage patterns |
 | **CLI Reference** | `cli-reference.md` | `supabase init`, `db push`, `functions deploy` |
+| **Storage** | `storage.md` | File storage, CDN, buckets, asset management |
+| **Edge Functions** | `edge-functions.md` | Serverless TypeScript, webhooks, deployments |
 | **StartupAI Patterns** | `startupai-patterns.md` | State persistence, HITL tables, schema |
 
 ---
@@ -48,7 +50,9 @@ Quick reference for Supabase database and backend patterns used in the StartupAI
 | MCP, `mcp__supabase__*`, tool | `mcp-tools.md` |
 | `execute_sql`, `apply_migration`, `list_tables` | `mcp-tools.md` |
 | CLI, `supabase init`, `supabase start` | `cli-reference.md` |
-| Edge Functions, `functions deploy` | `cli-reference.md` |
+| Storage, buckets, file upload, CDN | `storage.md` |
+| Edge Functions, `functions deploy`, Deno | `edge-functions.md` |
+| Webhooks, serverless, TypeScript functions | `edge-functions.md` |
 | HITL, validation_runs, approval_queue | `startupai-patterns.md` |
 | State persistence, checkpoint, Supabase | `startupai-patterns.md` |
 
@@ -74,13 +78,11 @@ For StartupAI's Supabase usage, these are the most relevant:
 
 ## Topics NOT in This Cache
 
-This cache covers ~8 essential patterns. For these topics, **use WebFetch** or MCP tools:
+This cache covers ~10 essential patterns. For these topics, **use WebFetch** or MCP tools:
 
 | Topic | Online URL / MCP Tool |
 |-------|----------------------|
 | Auth | https://supabase.com/docs/guides/auth |
-| Storage | https://supabase.com/docs/guides/storage |
-| Edge Functions | https://supabase.com/docs/guides/functions |
 | pgvector | `mcp__supabase__search_docs` with "pgvector" |
 
 **For comprehensive searches**:

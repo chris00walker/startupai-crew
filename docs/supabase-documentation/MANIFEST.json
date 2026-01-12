@@ -45,6 +45,16 @@
       "fetched_at": "2026-01-09T00:00:00Z",
       "local_only": true,
       "topics": ["StartupAI", "validation_runs", "hitl_requests", "state persistence", "HITL"]
+    },
+    "storage.md": {
+      "source_url": "https://supabase.com/docs/guides/storage",
+      "fetched_at": "2026-01-10T00:00:00Z",
+      "topics": ["Storage", "buckets", "file upload", "CDN", "assets"]
+    },
+    "edge-functions.md": {
+      "source_url": "https://supabase.com/docs/guides/functions",
+      "fetched_at": "2026-01-10T00:00:00Z",
+      "topics": ["Edge Functions", "Deno", "serverless", "webhooks", "TypeScript"]
     }
   },
   "missing_topics": [
@@ -53,18 +63,6 @@
       "url": "https://supabase.com/docs/guides/auth",
       "priority": "medium",
       "keywords": ["authentication", "signup", "signin", "OAuth"]
-    },
-    {
-      "topic": "storage",
-      "url": "https://supabase.com/docs/guides/storage",
-      "priority": "low",
-      "keywords": ["storage", "buckets", "file upload"]
-    },
-    {
-      "topic": "edge-functions",
-      "url": "https://supabase.com/docs/guides/functions",
-      "priority": "medium",
-      "keywords": ["Edge Functions", "Deno", "serverless"]
     },
     {
       "topic": "pgvector",

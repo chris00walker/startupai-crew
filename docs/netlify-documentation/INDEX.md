@@ -29,6 +29,7 @@ Quick reference for Netlify deployment and edge computing patterns used in the S
 | **Deployment** | `deployment.md` | Deploy commands, contexts, previews |
 | **MCP Tools** | `mcp-tools.md` | Available MCP tools, usage patterns |
 | **CLI Reference** | `cli-reference.md` | `netlify deploy`, `dev`, `env`, `functions` |
+| **API Deployment Methods** | `api-deployment-methods.md` | File digest vs ZIP, authentication, 401 errors |
 | **StartupAI Patterns** | `startupai-patterns.md` | Product app architecture, edge triggers |
 
 ---
@@ -47,6 +48,8 @@ Quick reference for Netlify deployment and edge computing patterns used in the S
 | create_deploy, get_site, list_sites | `mcp-tools.md` |
 | CLI, `netlify dev`, `netlify link` | `cli-reference.md` |
 | `netlify functions`, `netlify env` | `cli-reference.md` |
+| API, file digest, ZIP upload, programmatic | `api-deployment-methods.md` |
+| 401 error, authentication, personal access token | `api-deployment-methods.md` |
 | StartupAI, product app, app.startupai.site | `startupai-patterns.md` |
 | Webhook, CrewAI integration | `startupai-patterns.md` |
 
