@@ -7,6 +7,29 @@
 **Deployment**: Modal Serverless (production) - see [ADR-002](docs/adr/002-modal-serverless-migration.md)
 **Status**: Deployed to Modal, live testing Phase 0-2 complete
 
+## Dogfooding Methodology
+
+> **"If StartupAI can't validate itself, it won't work for anyone else."**
+
+StartupAI is its own first customer. All development and testing uses real StartupAI accounts exercising the product as real users would.
+
+### Test Accounts
+
+| Role | Email | Password | Purpose |
+|------|-------|----------|---------|
+| **Founder** | chris00walker@proton.me | W7txYdr7bV0Tc30U0bv& | Tests Founder journey - validates StartupAI as a business |
+| **Consultant** | chris00walker@gmail.com | Test123! | Tests Consultant journey - advises StartupAI as a client |
+
+**Project**: StartupAI (the platform validating itself)
+
+### Testing Requirements
+- All Phase 0-4 flows tested with real Founder account
+- All HITL checkpoints exercised before release
+- Evidence quality validated against StartupAI's own data
+- If it doesn't work for StartupAI, it doesn't ship
+
+See [10-dogfooding.md](docs/master-architecture/10-dogfooding.md) for full methodology.
+
 ## Critical Context
 **⚠️ IMPORTANT**: This repository is the **brain of the StartupAI ecosystem**. It powers the 6 AI Founders team that delivers Fortune 500-quality strategic analysis.
 
