@@ -1,13 +1,244 @@
 ---
 purpose: "Private technical source of truth for current engineering phases"
 status: "active"
-last_reviewed: "2026-01-10 18:07"
-last_audit: "2026-01-10 - Bug #9 verified via StartupAI dogfood run"
+last_reviewed: "2026-01-12"
+last_audit: "2026-01-12 - Quality audit complete, evidence gaps identified"
 ---
 
 # Engineering Phases
 
-> **Bug #9 Verified (2026-01-10 18:07)**: StartupAI dogfood run completed Phase 0-2 with pivot. All critical fixes working. Phase 3-4 pending.
+> **Quality Audit (2026-01-12)**: Phase 0-2 tool audit revealed significant evidence gaps. Many tools are stubs, ad platform not implemented, interview agent produces hallucinations. Production blocked until quality issues resolved.
+
+## 🚨 Quality Blockers (Must Fix Before Production)
+
+**Current Reality**: Modal infrastructure works, but Phases 0-2 produce **hallucinated evidence**. Tools are wired but many are stubs or missing external connections.
+
+### Critical Blocker #1: AdPlatformTool Not Implemented 🔴
+**Impact**: BLOCKS ALL Phase 2 Desirability validation
+**Affects**: P1, P2, P3 agents (entire GrowthCrew)
+
+| What's Broken | Reality |
+|---------------|---------|
+| Meta Ads API | NOT IMPLEMENTED - returns placeholder text |
+| Google Ads API | NOT IMPLEMENTED - returns placeholder text |
+| Ad campaign creation | Cannot create ANY real ads |
+| Ad metrics collection | Returns fake data |
+
+**Options**:
+- A) Implement Meta/Google Ads SDK integration (significant work, requires ad accounts)
+- B) Accept manual ad data injection for MVP testing
+- C) Remove ad experiments, use landing page conversions only as desirability signal
+
+### Critical Blocker #2: D1 Interview Agent Produces Hallucinations 🔴
+**Impact**: Phase 1 SAY evidence is fabricated
+**Decision**: **REMOVE D1 Interview Agent**
+
+| Problem | Evidence |
+|---------|----------|
+| TranscriptionTool | STUB - no Whisper API implementation |
+| CalendarTool | Generates fake time slots, no real calendar integration |
+| Interview outputs | Pure LLM roleplay, not real customer interviews |
+
+**Resolution**: Remove D1 agent. Replace with SurveyTool for SAY evidence collection (see Blocker #3).
+
+### Critical Blocker #3: No SurveyTool Exists 🔴
+**Impact**: Cannot collect SAY evidence at scale
+**Methodology requires**: Surveys for quantitative SAY evidence
+
+**Recommendation**: Integrate **Tally** (free survey tool)
+- ✅ Free unlimited forms, questions, and submissions
+- ✅ Has API access and webhooks for integration
+- ✅ Good UX for respondents
+- ✅ No per-response pricing (unlike Typeform's 10/month limit)
+
+**Alternative**: Google Forms (completely free, but needs Zapier middleware for API)
+
+| Tool | Free Tier | API | Best For |
+|------|-----------|-----|----------|
+| **Tally** | Unlimited | Yes + Webhooks | Our use case |
+| Typeform | 10 responses/mo | Yes | Too limited |
+| Google Forms | Unlimited | Via middleware | Backup option |
+
+### Critical Blocker #4: DO-Indirect Evidence Tools Are Stubs 🟡
+**Impact**: Phase 1 D2 agent claims evidence it cannot collect
+
+| Tool | Claimed Function | Reality |
+|------|------------------|---------|
+| ForumSearchTool | Mine Reddit, forums | **STUB** - not implemented |
+| ReviewAnalysisTool | Analyze app store reviews | **STUB** - not implemented |
+| SocialListeningTool | Monitor social mentions | **STUB** - not implemented |
+| TrendAnalysisTool | Analyze Google Trends | **STUB** - not implemented |
+
+**Working**: Only TavilySearchTool provides real external data.
+
+### Critical Blocker #5: Product App Integration Not Wired 🔴
+**Impact**: Users cannot see ANY validation results
+**Location**: `~/projects/app.startupai.site`
+
+| What's Broken | Reality |
+|---------------|---------|
+| Kickoff trigger | Product app doesn't call Modal `/kickoff` with correct params |
+| Progress display | No UI shows real-time validation progress |
+| Results retrieval | No UI retrieves/displays completed validation results |
+| HITL approvals | No UI for human approval checkpoints |
+
+**Current State**:
+- Product app calls generic `$CREWAI_API_URL` without `flow_type: 'founder_validation'`
+- Falls back to `generateStrategicAnalysis()` mock data
+- Users see **mock recommendations**, not real AI validation
+- Supabase tables exist (`validation_runs`, `validation_progress`, `hitl_requests`) but no frontend reads them
+
+**Required for Each Phase**:
+
+| Phase | Backend (this repo) | Frontend (app.startupai.site) |
+|-------|---------------------|-------------------------------|
+| Phase 0 | ✅ OnboardingFlow works | ❌ No Founder's Brief display |
+| Phase 1 | ⚠️ VPCDiscoveryFlow partial | ❌ No VPC/Customer Profile UI |
+| Phase 2 | 🔴 DesirabilityFlow blocked | ❌ No experiment results UI |
+| Phase 3 | ⏳ Not tested | ❌ No feasibility report UI |
+| Phase 4 | ⏳ Not tested | ❌ No final decision UI |
+| HITL | ✅ Checkpoints work | ❌ No approval UI |
+
+**Integration Tasks (Product App)**:
+1. [ ] Update `/api/crewai/analyze` to call Modal `/kickoff` with correct params
+2. [ ] Create validation progress component (subscribe to Supabase Realtime)
+3. [ ] Create results display pages for each phase output
+4. [ ] Create HITL approval UI (read `hitl_requests`, POST to `/hitl/approve`)
+5. [ ] Add navigation from onboarding → validation → results
+
+**Cross-Repo Coordination Required**: This work spans both repos:
+- `startupai-crew`: Backend API contracts (this repo) ✅ Defined
+- `app.startupai.site`: Frontend UI + API routes ❌ Not implemented
+
+---
+
+## Tool Reality Matrix (2026-01-12 Audit)
+
+### Phase 0: Onboarding
+| Agent | Tools | Status | Notes |
+|-------|-------|--------|-------|
+| O1 (Founder Interview) | None | ⚠️ LLM-only | No external validation |
+| GV1 (Concept Validator) | None | ⚠️ LLM-only | No external validation |
+| GV2 (Intent Verification) | None | ⚠️ LLM-only | No external validation |
+| S1 (Brief Compiler) | None | ⚠️ LLM-only | Compiles from LLM outputs |
+
+**Phase 0 Verdict**: Works as screening tool, but all outputs are unvalidated LLM reasoning.
+
+### Phase 1: VPC Discovery
+| Agent | Tools | Status | Notes |
+|-------|-------|--------|-------|
+| E1 (Experiment Designer) | TestCardTool, LearningCardTool | ✅ Working | LLM-based card generation |
+| **D1 (Interview)** | TranscriptionTool, CalendarTool | 🔴 **REMOVE** | All stubs, produces hallucinations |
+| D2 (Observation) | Tavily ✅, Forum ❌, Reviews ❌, Social ❌, Trends ❌ | ⚠️ Partial | Only Tavily works |
+| D3 (CTA Tests) | ABTestTool ✅, AdPlatformTool ❌ | 🔴 Blocked | No ad platform APIs |
+| D4 (Evidence Triangulation) | InsightExtractorTool, BehaviorPatternTool | ✅ Working | LLM synthesis |
+| J1, J2 (Jobs) | Tavily ✅ | ⚠️ Partial | Forum/review tools are stubs |
+| PAIN_RES, PAIN_RANK | Tavily ✅ | ⚠️ Partial | Forum/review tools are stubs |
+| GAIN_RES, GAIN_RANK | Tavily ✅ | ⚠️ Partial | Forum/review tools are stubs |
+| V1, V2, V3 (Value Design) | CanvasBuilderTool | ✅ Working | LLM-based VPC design |
+| W1, W2 (WTP) | - | ⚠️ Manual | Needs real pricing experiment data |
+| FIT_SCORE, FIT_ASSESS | MethodologyCheckTool | ✅ Working | VPC fit scoring |
+
+### Phase 2: Desirability
+| Agent | Tools | Status | Notes |
+|-------|-------|--------|-------|
+| F1 (Designer) | CanvasBuilderTool, TestCardTool | ✅ Working | Design artifacts |
+| F2 (Developer) | LandingPageGeneratorTool | ⚠️ Quality issue | Generates placeholder HTML |
+| F3 (Backend) | LandingPageDeploymentTool | ✅ Working | Deploys to Supabase Storage |
+| P1 (Ad Creative) | AdPlatformTool | 🔴 **BLOCKED** | No Meta/Google API |
+| P2 (Copywriting) | AdPlatformTool | 🔴 **BLOCKED** | No Meta/Google API |
+| P3 (Analytics) | AnalyticsTool ✅, AdPlatformTool ❌ | 🔴 **BLOCKED** | Landing analytics work, ad metrics don't |
+| G1 (QA) | MethodologyCheckTool | ✅ Working | QA validation |
+| G2 (Security) | AnonymizerTool | ✅ Working | PII removal |
+| G3 (Audit) | LearningCardTool | ✅ Working | Audit trail |
+
+---
+
+## What Actually Works Today
+
+```
+✅ WORKING (Real External Data):
+├── TavilySearchTool (web search)
+├── LandingPageDeploymentTool (Supabase Storage)
+├── AnalyticsTool (landing page metrics only)
+└── AnonymizerTool (PII removal)
+
+✅ WORKING (LLM-Based, No External Validation):
+├── VPC design and fit scoring
+├── Test Card / Learning Card generation
+├── Governance tools (QA checks)
+└── Phase 0 onboarding flow
+
+🔴 BLOCKED (Missing Implementation):
+├── AdPlatformTool (Meta/Google APIs)
+├── ForumSearchTool
+├── ReviewAnalysisTool
+├── SocialListeningTool
+├── TrendAnalysisTool
+└── TranscriptionTool
+
+❌ HALLUCINATED (Remove):
+└── D1 Interview Agent (simulated interviews)
+
+❌ MISSING (Never Built):
+└── SurveyTool (required for SAY evidence)
+```
+
+---
+
+## Recommended Fix Order
+
+### Phase 0: Make It Visible First
+Before fixing evidence quality, users need to SEE results.
+
+| # | Issue | Repo | Effort | Impact |
+|---|-------|------|--------|--------|
+| 0a | Wire Product App → Modal kickoff | app.startupai.site | 2-4h | Users can trigger validation |
+| 0b | Add validation progress UI | app.startupai.site | 4-6h | Users see real-time status |
+| 0c | Add Phase 0 results display | app.startupai.site | 4-6h | Users see Founder's Brief |
+| 0d | Add HITL approval UI | app.startupai.site | 4-6h | Users can approve checkpoints |
+
+### Phase 1: Fix Evidence Quality
+After visibility, fix the quality of what users see.
+
+| # | Issue | Repo | Effort | Impact |
+|---|-------|------|--------|--------|
+| 1 | Remove D1 Interview agent | startupai-crew | 2h | Stops hallucinated interviews |
+| 2 | Add SurveyTool (Tally integration) | startupai-crew | 4-6h | Enables real SAY evidence |
+| 3 | Decide Ad Platform strategy (A/B/C) | Decision | - | Unblocks Phase 2 |
+| 4 | Fix F2 placeholder HTML | startupai-crew | 4h | Quality landing pages |
+| 5 | Implement DO-indirect tools (or remove) | startupai-crew | 8-16h | Honest evidence sources |
+
+### Phase 2: Complete the Loop
+Wire remaining phases to product app.
+
+| # | Issue | Repo | Effort | Impact |
+|---|-------|------|--------|--------|
+| 6 | Add Phase 1 VPC results display | app.startupai.site | 6-8h | Users see customer profile |
+| 7 | Add Phase 2 experiment results UI | app.startupai.site | 6-8h | Users see desirability evidence |
+| 8 | Add Phase 3-4 results display | app.startupai.site | 8-12h | Users see final decision |
+
+---
+
+## What's Done (Infrastructure Only)
+
+| Item | Date | Notes |
+|------|------|-------|
+| Modal Infrastructure | 2026-01-08 | Production deployment live |
+| Landing Page Deployment | 2026-01-10 | Supabase Storage E2E verified |
+| Schema Alignment P0 | 2026-01-10 | Modal tables deployed |
+| Bug Fixes #7-12 | 2026-01-10 | Enum bugs, HITL, tool input validation |
+| Tool Wiring (structure) | 2026-01-10 | Tools attached to agents, but many are stubs |
+
+## What's Deferred (Not Blocking Quality Fixes)
+
+| Item | Effort | Why Deferred | Plan File |
+|------|--------|--------------|-----------|
+| Phase 3-4 Live Testing | 4-6h | Phase 0-2 quality must be fixed first | - |
+| Architecture Documentation | 24-32h | Production quality takes priority | `merry-prancing-spark.md` |
+| Schema Alignment P1-P3 | 8-12h | P0 sufficient for MVP | `effervescent-swimming-hollerith.md` |
+
+---
 
 ## Architecture Summary
 
@@ -45,75 +276,67 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for full architecture.
 
 ---
 
-## 🚀 Tool Architecture (Phases A-D Complete)
+## 🔧 Tool Architecture (Audit: 2026-01-12)
 
-**Status**: ✅ CODE COMPLETE (2026-01-10) - Modal redeploy pending
-**Implementation**: BaseTool pattern (simpler than planned MCP server)
-**Tests**: 681 passing (164 new tool tests)
+**Status**: ⚠️ PARTIAL - Many tools are stubs or missing external connections
+**Implementation**: BaseTool pattern (MCP server was planned but not built)
+**Tests**: 681 passing (but tests don't verify external API connections)
 **Documentation**: `docs/master-architecture/reference/tool-specifications.md`
 
-### Architecture Overview
+### Architecture Reality (vs. Plan)
 
-StartupAI adopts MCP (Model Context Protocol) as the unified tool interface - the equivalent of OpenRouter for LLMs but for tools.
+The MCP server architecture was **planned but not implemented**. Current state:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         Modal Serverless                             │
 ├─────────────────────────────────────────────────────────────────────┤
-│  ┌────────────────────────────────────────────────────────────┐    │
-│  │  StartupAI Custom MCP Server (FastMCP + stateless HTTP)    │    │
-│  │  Deployed: modal deploy src/mcp_server/app.py              │    │
-│  │                                                             │    │
-│  │  10 Custom Tools: forum_search, analyze_reviews,           │    │
-│  │  social_listen, analyze_trends, transcribe_audio,          │    │
-│  │  extract_insights, identify_patterns, run_ab_test,         │    │
-│  │  get_analytics, anonymize_data                             │    │
-│  └────────────────────────────────────────────────────────────┘    │
-│                              │                                       │
-│  ┌───────────────────────────┴───────────────────────────────┐     │
-│  │              CrewAI Agents (MCP Clients)                   │     │
-│  └───────────────────────────────────────────────────────────┘     │
-│                              │                                       │
-├──────────────────────────────┼───────────────────────────────────────┤
-│  External MCP Servers        │                                       │
-│  ┌──────────┐ ┌──────────┐ ┌┴─────────┐ ┌──────────┐               │
-│  │ Meta Ads │ │Google Ads│ │ Calendar │ │   Fetch  │               │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘               │
+│  CrewAI Agents with BaseTool pattern                                │
+│                                                                      │
+│  WORKING:                          STUBS/BLOCKED:                   │
+│  ├── TavilySearchTool ✅            ├── ForumSearchTool ❌           │
+│  ├── LandingPageDeploymentTool ✅   ├── ReviewAnalysisTool ❌        │
+│  ├── AnalyticsTool ✅               ├── SocialListeningTool ❌       │
+│  ├── AnonymizerTool ✅              ├── TrendAnalysisTool ❌         │
+│  ├── MethodologyCheckTool ✅        ├── TranscriptionTool ❌         │
+│  ├── TestCardTool ✅                ├── AdPlatformTool ❌ (no APIs)  │
+│  ├── LearningCardTool ✅            └── CalendarTool ❌ (fake slots) │
+│  └── CanvasBuilderTool ✅                                            │
+│                                                                      │
+│  NOT BUILT:                                                          │
+│  └── SurveyTool (methodology requires, never implemented)           │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Tool Categories
+### Tool Status Summary
 
-| Category | Count | Description |
-|----------|-------|-------------|
-| **EXISTS** | 13 | Implemented and ready to wire |
-| **MCP External** | 4 | Use existing MCP servers (Meta Ads, Google Ads, Calendar, Fetch) |
-| **MCP Custom** | 10 | Build as FastMCP tools on Modal |
-| **LLM-Based** | 6 | Structured LLM output with Pydantic |
-| **TOTAL** | 33 | All tools across 45 agents |
+| Category | Planned | Working | Stubs | Blocked | Missing |
+|----------|---------|---------|-------|---------|---------|
+| Research | 6 | 1 (Tavily) | 4 | 0 | 0 |
+| Evidence Collection | 3 | 0 | 1 (Transcription) | 1 (Calendar) | 1 (Survey) |
+| Ad Platform | 1 | 0 | 0 | 1 (no APIs) | 0 |
+| Landing Pages | 2 | 2 | 0 | 0 | 0 |
+| Analytics | 1 | 1 | 0 | 0 | 0 |
+| Governance | 3 | 3 | 0 | 0 | 0 |
+| VPC/Cards | 3 | 3 | 0 | 0 | 0 |
+| **TOTAL** | **19** | **10** | **5** | **2** | **1** |
 
 ### Agent Configuration Pattern
 
-All 45 agents will follow the IntakeCrew pattern with MCP tools:
+Current agents use BaseTool pattern (MCP was planned but not implemented):
 
 ```python
-from mcp_use import MCPClient
 from crewai import Agent, LLM
-
-# Connect to StartupAI MCP server
-mcp_client = MCPClient(
-    url="https://chris00walker--startupai-mcp-tools.modal.run/mcp/",
-    transport="streamable-http"
-)
-mcp_tools = mcp_client.get_tools()
+from src.shared.tools import TavilySearchTool, CanvasBuilderTool
 
 @agent
 def observation_agent(self) -> Agent:
     return Agent(
         config=self.agents_config["d2_observation_agent"],
         tools=[
-            TavilySearchTool(),   # EXISTS (direct import)
-            *mcp_tools,           # MCP Custom (from Modal server)
+            TavilySearchTool(),      # ✅ WORKING
+            # ForumSearchTool(),     # ❌ STUB - not implemented
+            # ReviewAnalysisTool(),  # ❌ STUB - not implemented
         ],
         reasoning=True,
         inject_date=True,
@@ -124,73 +347,93 @@ def observation_agent(self) -> Agent:
     )
 ```
 
-### Implementation Phases
+---
 
-See `docs/master-architecture/reference/tool-mapping.md` for detailed roadmap.
+## 📋 Decision Log
 
-#### Phase A: Core MCP Server (Week 1) - 15 hours
+### Decision: Remove D1 Interview Agent (2026-01-12)
 
-| Task | MCP Tool Name | Target Agents | Effort |
-|------|---------------|---------------|--------|
-| Create FastMCP server on Modal | - | All | 4h |
-| Implement `forum_search` | ForumScraperTool | D2, J1, PAIN_RES, GAIN_RES | 3h |
-| Implement `analyze_reviews` | ReviewAnalysisTool | D2, J1, PAIN_RES, GAIN_RES | 3h |
-| Implement `social_listen` | SocialListeningTool | D2 | 2h |
-| Implement `analyze_trends` | TrendAnalysisTool | D2 | 2h |
-| Deploy to Modal | - | - | 1h |
+**Context**: D1 (Interview Agent) in DiscoveryCrew produces hallucinated interview transcripts.
 
-**Deliverable**: Research agents can gather real customer insights from Reddit, app stores, and web.
+**Problem**:
+- TranscriptionTool is a stub (no Whisper API implementation)
+- CalendarTool generates fake time slots (no real calendar integration)
+- Agent output is pure LLM roleplay, not real customer interviews
+- Creates false confidence in "customer evidence" that doesn't exist
 
-#### Phase B: Advanced Tools (Week 2) - 14 hours
+**Decision**: **REMOVE D1 Interview Agent from Phase 1**
 
-| Task | MCP Tool Name | Target Agents | Effort |
-|------|---------------|---------------|--------|
-| Implement `transcribe_audio` | TranscriptionTool | D1 | 3h |
-| Implement `extract_insights` | InsightExtractorTool | D1, D4 | 4h |
-| Implement `identify_patterns` | BehaviorPatternTool | D2, D3 | 4h |
-| Implement `run_ab_test` | ABTestTool | P1, P2, W1 | 3h |
+**Rationale**:
+1. Interviews require scheduling real humans - not feasible for automated validation
+2. Surveys are more appropriate for automated SAY evidence collection
+3. Simulated interviews provide negative value (false confidence)
+4. VPD methodology supports surveys as valid SAY evidence source
 
-**Deliverable**: Interview transcription and pattern recognition operational.
+**Migration**:
+1. Remove D1 agent from DiscoveryCrew
+2. Add SurveyTool (Tally integration) for SAY evidence
+3. Update Phase 1 flow to use survey distribution instead of interview scheduling
+4. Adjust agent count: Phase 1 goes from 18 to 17 agents
 
-#### Phase C: External MCP + Analytics (Week 3) - 13 hours
+**Impact**: DiscoveryCrew reduces from 5 agents to 4 agents.
 
-| Task | Implementation | Target Agents | Effort |
-|------|----------------|---------------|--------|
-| Implement `get_analytics` | MCP Custom | P3, D3, L1, W1, W2 | 3h |
-| Implement `anonymize_data` | MCP Custom (Presidio) | Learning pipeline | 2h |
-| Connect Meta Ads MCP | External server | P1, P2, P3, D3 | 2h |
-| Connect Google Ads MCP | External server | P1, P2, P3 | 2h |
-| Connect Calendar MCP | External server | D1 | 2h |
-| Integration testing | - | All | 4h |
+### Decision: SurveyTool Integration - Tally (2026-01-12)
 
-**Deliverable**: Ad platforms and analytics connected via MCP.
+**Context**: VPD methodology requires surveys for quantitative SAY evidence. No survey tool exists.
 
-#### Phase D: CrewAI Integration (Week 4) - 18 hours
+**Options Evaluated**:
 
-| Task | Implementation | Target Agents | Effort |
-|------|----------------|---------------|--------|
-| Wire EXISTS tools to agents | Direct import | All phases | 4h |
-| Add MCP client to agents | mcp_use library | All phases | 4h |
-| Build LLM-Based tools | Structured output | O1, E1, V1-V3, C2 | 4h |
-| End-to-end testing | Full pipeline | All | 4h |
-| Documentation | Agent configs | - | 2h |
+| Tool | Free Tier | API | Verdict |
+|------|-----------|-----|---------|
+| **Tally** | Unlimited forms, submissions | Yes + Webhooks | ✅ SELECTED |
+| Typeform | 10 responses/month | Yes | Too limited |
+| Google Forms | Unlimited | Via Zapier only | Backup option |
 
-**Deliverable**: All 45 agents fully equipped with evidence-based tools.
+**Decision**: Integrate **Tally** via their API/webhooks
 
-### Cost Summary
+**Rationale**:
+1. Free unlimited submissions (critical for validation experiments)
+2. Native API and webhook support (no middleware needed)
+3. Good respondent UX (modern, mobile-friendly)
+4. No per-response pricing model
 
-| Category | Monthly Cost |
-|----------|--------------|
-| Modal MCP server compute | ~$5-10 |
-| External MCP servers | $0 |
-| HuggingFace (on Modal) | $0 |
-| Free-tier APIs | $0 |
-| **TOTAL ADDITIONAL** | **~$5-10** |
+**Implementation**:
+1. Create TallySurveyTool in `src/shared/tools/`
+2. Wire to new survey agent (replaces D1)
+3. Store survey responses in Supabase `survey_responses` table
+4. Connect to CustomerProfileCrew for Jobs/Pains/Gains evidence
+
+---
+
+## Tool Implementation Backlog
+
+### Must Fix (Blocking Production Quality)
+
+| # | Tool | Effort | Priority | Notes |
+|---|------|--------|----------|-------|
+| 1 | SurveyTool (Tally) | 4-6h | P0 | New tool, replaces D1 interviews |
+| 2 | AdPlatformTool | 8-16h | P0 | Requires ad account setup |
+| 3 | F2 LandingPageGeneratorTool | 4h | P1 | Fix placeholder HTML output |
+
+### Should Fix (Evidence Quality)
+
+| # | Tool | Effort | Priority | Notes |
+|---|------|--------|----------|-------|
+| 4 | ForumSearchTool | 4h | P2 | Reddit API or scraping |
+| 5 | ReviewAnalysisTool | 4h | P2 | App Store/Play Store APIs |
+| 6 | SocialListeningTool | 4h | P2 | Twitter/X API or alternative |
+| 7 | TrendAnalysisTool | 3h | P2 | Google Trends scraping |
+
+### Can Remove (Not Essential)
+
+| # | Tool | Decision | Notes |
+|---|------|----------|-------|
+| 8 | TranscriptionTool | REMOVE | D1 agent being removed |
+| 9 | CalendarTool | REMOVE | D1 agent being removed |
 
 **Reference Documents**:
 - Tool specifications: `docs/master-architecture/reference/tool-specifications.md`
 - Agent-to-tool mapping: `docs/master-architecture/reference/tool-mapping.md`
-- Tool lifecycle: `docs/master-architecture/reference/agentic-tool-framework.md`
 
 See `docs/work/cross-repo-blockers.md` for ecosystem impact.
 
@@ -200,27 +443,27 @@ See `docs/work/cross-repo-blockers.md` for ecosystem impact.
 
 ### Modal Serverless (DEPLOYED - 2026-01-08)
 
-**STATUS**: Infrastructure deployed, crews implemented, tools wired. **MODAL REDEPLOY + LIVE TESTING PENDING.**
+**STATUS**: Infrastructure deployed, but **evidence quality is poor**. Many tools are stubs.
 
 - **ADR**: See [ADR-002](../adr/002-modal-serverless-migration.md) (current)
-- **Infrastructure**: Modal + Supabase + Netlify deployed to production
-- **Crews**: All 14 crews implemented with 45 agents
-- **Tools**: 15 tools wired to 35+ agents (Phases A-D complete 2026-01-10)
-- **Tests**: 681 tests passing (164 new tool tests)
+- **Infrastructure**: Modal + Supabase + Netlify deployed to production ✅
+- **Crews**: All 14 crews implemented with 45 agents ✅
+- **Tools**: 10 of 19 tools actually work; 5 are stubs, 2 blocked, 1 missing
+- **Tests**: 681 tests passing (but don't verify external API connections)
 - **Benefits**: $0 idle costs, platform-agnostic, single repo
-- **Gap**: Deployed Modal code predates tool integration; needs redeploy
+- **Gap**: Tool quality issues cause hallucinated evidence
 
-### Implementation Summary
+### Implementation Summary (Honest Assessment)
 
-| Component | Status | Details |
-|-----------|--------|---------|
-| Modal infrastructure | ✅ Complete | Production deployment live |
-| Phase 0 (Onboarding) | ✅ Complete | 1 crew, 4 agents, 24 tests |
-| Phase 1 (VPC Discovery) | ✅ Complete | 5 crews, 18 agents, 25 tests |
-| Phase 2 (Desirability) | ✅ Complete | 3 crews, 9 agents, 42 tests |
-| Phase 3 (Feasibility) | ✅ Complete | 2 crews, 5 agents, 36 tests |
-| Phase 4 (Viability) | ✅ Complete | 3 crews, 9 agents, 58 tests |
-| E2E Integration | ⏳ Pending | Ready to test |
+| Component | Code | Evidence Quality | Notes |
+|-----------|------|------------------|-------|
+| Modal infrastructure | ✅ Complete | N/A | Production deployment live |
+| Phase 0 (Onboarding) | ✅ Complete | ⚠️ LLM-only | No external validation |
+| Phase 1 (VPC Discovery) | ✅ Complete | ⚠️ Partial | Only Tavily works; D1 hallucinated |
+| Phase 2 (Desirability) | ✅ Complete | 🔴 Blocked | GrowthCrew blocked on AdPlatformTool |
+| Phase 3 (Feasibility) | ✅ Complete | ⏳ Not tested | Blocked by Phase 2 |
+| Phase 4 (Viability) | ✅ Complete | ⏳ Not tested | Blocked by Phase 2 |
+| E2E Integration | 🔴 Blocked | - | Cannot complete until Phase 2 fixed |
 
 ### Previous: AMP Deployment (ARCHIVED)
 
@@ -624,45 +867,40 @@ See [ADR-002](../adr/002-modal-serverless-migration.md) for architecture details
 | 5 | **Live testing with real LLM calls** | 🔄 In Progress |
 | 6 | Production cutover | ⏳ Pending |
 
-### Live Testing Progress (2026-01-10) - WITH TOOLS
+### Live Testing Progress (Updated 2026-01-12)
 
-> **Session 2**: Modal redeployed with tool-wired code. Enum bugs found and fixed.
+> **Quality Audit**: While flows execute, evidence quality is poor. Many outputs are hallucinated.
 > **Run ID**: `52fe3efa-59b6-4c28-9f82-abd1d0d55b4b`
 
-> **Details**: See [modal-live-testing.md](./modal-live-testing.md) for full learnings.
+> **Details**: See [modal-live-testing.md](./modal-live-testing.md) for execution logs.
 
-| Phase | Status | Notes |
-|-------|--------|-------|
-| Phase 0 (Onboarding) | ✅ PASSED | Founder's Brief generated |
-| Phase 1 (VPC Discovery) | ✅ PASSED | Fixed enum bugs (#7, #8), fit score 78/100 |
-| Phase 2 (Desirability) | ✅ PASSED | NO_INTEREST signal → Segment pivot |
-| Phase 1 (Pivot) | ✅ PASSED | New segment: Healthcare Online Platforms |
-| Phase 2 (Retry) | 🔄 Running | Fixed #10-12, BuildCrew executing |
-| Phase 3 (Feasibility) | ⏳ Pending | - |
-| Phase 4 (Viability) | ⏳ Pending | - |
+| Phase | Execution | Evidence Quality | Blockers |
+|-------|-----------|------------------|----------|
+| Phase 0 (Onboarding) | ✅ Runs | ⚠️ LLM-only | No external validation |
+| Phase 1 (VPC Discovery) | ✅ Runs | ⚠️ Partial | D1 hallucinated, 4 tools are stubs |
+| Phase 2 (Desirability) | ✅ Runs | 🔴 Blocked | GrowthCrew cannot run (no ad APIs) |
+| Phase 3 (Feasibility) | ⏳ Not tested | - | Blocked by Phase 2 quality |
+| Phase 4 (Viability) | ⏳ Not tested | - | Blocked by Phase 2 quality |
 
-**Session 2 Progress**:
-1. ~~Modal redeploy~~ - ✅ Completed (2026-01-10)
-2. ~~Phase 0 revalidation~~ - ✅ Passed (no issues)
-3. ~~Phase 1 revalidation~~ - ✅ Passed (enum bugs fixed)
-4. ~~Phase 2 revalidation~~ - ✅ Passed (pivot tested)
-5. ~~Bug fixes deployed~~ - ✅ Completed (2026-01-10 15:08)
-6. **Phase 2 retry** - 🔄 In progress (BuildCrew executing)
-7. Phase 3-4 revalidation - ⏳ Pending
-8. Production cutover verification - ⏳ Pending
+**Key Finding (2026-01-12)**: Flows execute successfully but produce hallucinated evidence:
+- D1 "interviews" are LLM roleplay (no real customers)
+- D2 "forum/review evidence" is fabricated (tools are stubs)
+- P1/P2/P3 "ad campaigns" never created (no ad platform APIs)
+- Phase 2 desirability signal is meaningless without real ad experiments
 
-**Bugs Found & Fixed**:
-- #7: `JobType` enum missing `supporting` (VPD has 4 job types) - `359abd2`
-- #8: `GainRelevance` enum missing `expected` (VPD Kano model has 4 levels) - `359abd2`
-- #9: HITL duplicate key on pivot - Expire pending HITLs before insert - ✅ Fixed
-- #10: AnalyticsTool expected string, LLM passed dict - Added args_schema - `623322a`
-- #11: Segment alternatives returned `[]` on error - Added fallback + logging - `623322a`
-- #12: DesirabilityEvidence JSON parsing crashed - Added try/catch - `623322a`
+**Previous Bug Fixes (2026-01-10)**:
+- #7: `JobType` enum missing `supporting` - `359abd2`
+- #8: `GainRelevance` enum missing `expected` - `359abd2`
+- #9: HITL duplicate key on pivot - Fixed
+- #10: AnalyticsTool expected string, LLM passed dict - `623322a`
+- #11: Segment alternatives returned `[]` on error - `623322a`
+- #12: DesirabilityEvidence JSON parsing crashed - `623322a`
 
-**Additional Fixes (2026-01-10)**:
-- Phase 2 tool integration gap: F1, F2, F3, G3 now have tools wired (100% coverage)
-- Container timeout: Increased from 3600s to 7200s (2 hours)
-- RLS security: Verified enabled on all Modal tables
+**Infrastructure (Working)**:
+- Modal deployment: ✅ Production live
+- Container timeout: 7200s (2 hours)
+- RLS security: Enabled on all tables
+- Supabase Realtime: Working
 
 ### Legacy (AMP - ARCHIVED)
 - 3 Crews: Intake (4 agents), Validation (12 agents), Decision (3 agents)
