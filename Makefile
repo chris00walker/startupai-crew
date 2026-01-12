@@ -30,9 +30,7 @@ help:
 	@echo "  make simulate   - Run flow simulation with mock data"
 	@echo ""
 	@echo "Deployment:"
-	@echo "  make deploy     - Push to CrewAI AMP"
-	@echo "  make status     - Check deployment status"
-	@echo "  make logs       - View deployment logs"
+	@echo "  make deploy     - Deploy Modal app (main env)"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean      - Remove build artifacts"
@@ -100,19 +98,11 @@ simulate:
 	uv run python scripts/simulate_flow.py
 
 # ============================================
-# Deployment (CrewAI AMP)
+# Deployment (Modal)
 # ============================================
 
-DEPLOY_UUID := 6b1e5c4d-e708-4921-be55-08fcb0d1e94b
-
 deploy:
-	crewai deploy push --uuid $(DEPLOY_UUID)
-
-status:
-	crewai deploy status --uuid $(DEPLOY_UUID)
-
-logs:
-	crewai deploy logs --uuid $(DEPLOY_UUID)
+	modal deploy src/modal_app/app.py --env main
 
 # ============================================
 # Cleanup

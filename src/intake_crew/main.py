@@ -2,7 +2,7 @@
 """
 StartupAI Intake Crew - Main Entry Point
 
-This is the entry point for running the Intake Crew locally and on CrewAI AMP.
+This is the entry point for running the Intake Crew locally.
 """
 
 import sys

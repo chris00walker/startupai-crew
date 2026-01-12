@@ -1,15 +1,16 @@
 #!/bin/bash
 #
 # Post-Deploy Validation Script
-# Runs a test scenario against deployed CrewAI AMP to verify deployment health
+# Runs a test scenario against deployed Modal to verify deployment health
 #
 # Usage:
 #   ./scripts/post_deploy_validation.sh
 #   ./scripts/post_deploy_validation.sh --scenario happy-path-b2b-saas
 #
 # Environment variables required:
-#   CREW_UUID - CrewAI deployment UUID
-#   CREW_TOKEN - CrewAI deployment bearer token
+#   MODAL_KICKOFF_URL - Modal kickoff endpoint
+#   MODAL_STATUS_URL - Modal status endpoint base (no trailing slash)
+#   MODAL_AUTH_TOKEN - Modal bearer token
 #
 # Exit codes:
 #   0 - Validation passed
@@ -20,8 +21,9 @@
 set -e
 
 # Configuration
-CREW_UUID="${CREW_UUID:-6b1e5c4d-e708-4921-be55-08fcb0d1e94b}"
-CREW_BASE_URL="https://startupai-${CREW_UUID//-/}-922bcddb.crewai.com"
+MODAL_BASE_URL="${MODAL_BASE_URL:-https://chris00walker--startupai-validation-fastapi-app.modal.run}"
+MODAL_KICKOFF_URL="${MODAL_KICKOFF_URL:-${MODAL_BASE_URL}/kickoff}"
+MODAL_STATUS_URL="${MODAL_STATUS_URL:-${MODAL_BASE_URL}/status}"
 MAX_WAIT_SECONDS=300
 POLL_INTERVAL=10
 
@@ -34,7 +36,8 @@ NC='\033[0m' # No Color
 # Default test scenario
 DEFAULT_SCENARIO='{
   "entrepreneur_input": "AI-powered project management tool for remote software teams. Target: 10-50 person startups. Problem: Existing tools too complex. Solution: AI auto-assigns tasks based on skills and availability. Price: $15/user/month.",
-  "project_id": "post-deploy-validation"
+  "project_id": "post-deploy-validation",
+  "user_id": "post-deploy-validation-user"
 }'
 
 # Parse arguments
@@ -53,9 +56,9 @@ log_error() {
 }
 
 # Check required environment variables
-if [ -z "$CREW_TOKEN" ]; then
-    log_error "CREW_TOKEN environment variable not set"
-    log_info "Set it with: export CREW_TOKEN=your-deployment-token"
+if [ -z "$MODAL_AUTH_TOKEN" ]; then
+    log_error "MODAL_AUTH_TOKEN environment variable not set"
+    log_info "Set it with: export MODAL_AUTH_TOKEN=your-modal-token"
     exit 3
 fi
 
@@ -67,12 +70,12 @@ if ! command -v jq &> /dev/null; then
 fi
 
 log_info "Starting post-deploy validation"
-log_info "Deployment URL: $CREW_BASE_URL"
+log_info "Deployment URL: $MODAL_BASE_URL"
 log_info "Scenario: $SCENARIO_NAME"
 
 # Step 1: Check deployment status
 log_info "Checking deployment status..."
-STATUS_RESPONSE=$(curl -s "${CREW_BASE_URL}/health" 2>/dev/null || echo '{"status": "unknown"}')
+STATUS_RESPONSE=$(curl -s "${MODAL_BASE_URL}/health" 2>/dev/null || echo '{"status": "unknown"}')
 
 if echo "$STATUS_RESPONSE" | jq -e '.status == "healthy"' > /dev/null 2>&1; then
     log_info "Deployment is healthy"
@@ -84,8 +87,8 @@ fi
 log_info "Triggering test execution..."
 
 KICKOFF_RESPONSE=$(curl -s -X POST \
-    "${CREW_BASE_URL}/kickoff" \
-    -H "Authorization: Bearer ${CREW_TOKEN}" \
+    "${MODAL_KICKOFF_URL}" \
+    -H "Authorization: Bearer ${MODAL_AUTH_TOKEN}" \
     -H "Content-Type: application/json" \
     -d "$DEFAULT_SCENARIO")
 
@@ -96,15 +99,15 @@ if echo "$KICKOFF_RESPONSE" | jq -e '.error' > /dev/null 2>&1; then
     exit 1
 fi
 
-KICKOFF_ID=$(echo "$KICKOFF_RESPONSE" | jq -r '.kickoff_id // .id // empty')
+RUN_ID=$(echo "$KICKOFF_RESPONSE" | jq -r '.run_id // empty')
 
-if [ -z "$KICKOFF_ID" ]; then
-    log_error "Failed to get kickoff_id from response"
+if [ -z "$RUN_ID" ]; then
+    log_error "Failed to get run_id from response"
     log_error "Response: $KICKOFF_RESPONSE"
     exit 1
 fi
 
-log_info "Kickoff ID: $KICKOFF_ID"
+log_info "Run ID: $RUN_ID"
 
 # Step 3: Poll for completion
 log_info "Waiting for completion (max ${MAX_WAIT_SECONDS}s)..."
@@ -112,8 +115,8 @@ log_info "Waiting for completion (max ${MAX_WAIT_SECONDS}s)..."
 ELAPSED=0
 while [ $ELAPSED -lt $MAX_WAIT_SECONDS ]; do
     STATUS_RESPONSE=$(curl -s \
-        "${CREW_BASE_URL}/status/${KICKOFF_ID}" \
-        -H "Authorization: Bearer ${CREW_TOKEN}")
+        "${MODAL_STATUS_URL}/${RUN_ID}" \
+        -H "Authorization: Bearer ${MODAL_AUTH_TOKEN}")
 
     STATUS=$(echo "$STATUS_RESPONSE" | jq -r '.status // "unknown"')
 
@@ -154,7 +157,7 @@ done
 echo ""
 log_error "Validation timed out after ${MAX_WAIT_SECONDS} seconds"
 log_error "Last status: $STATUS"
-log_error "Kickoff ID: $KICKOFF_ID (check AMP dashboard for details)"
+log_error "Run ID: $RUN_ID (check Modal dashboard for details)"
 echo ""
 log_error "⚠️ Post-deploy validation TIMED OUT"
 exit 2

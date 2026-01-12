@@ -2,12 +2,12 @@
 # =============================================================================
 # E2E Webhook Test Script
 # =============================================================================
-# Tests the full flow: CrewAI Kickoff → Validation → Webhook → Supabase
+# Tests the full flow: Modal kickoff → Validation → Webhook → Supabase
 #
 # Prerequisites:
 #   - jq installed (sudo apt install jq)
 #   - SUPABASE_URL and SUPABASE_KEY environment variables set
-#   - CrewAI AMP env vars configured
+#   - Modal env vars configured
 #
 # Usage:
 #   ./scripts/test_e2e_webhook.sh              # Interactive mode
@@ -19,10 +19,12 @@
 set -e
 
 # Configuration
-CREWAI_URL="https://startupai-6b1e5c4d-e708-4921-be55-08fcb0d1e-922bcddb.crewai.com"
-CREWAI_TOKEN="${CREW_CONTRACT_BEARER:-f4cc39d92520}"
+MODAL_BASE_URL="${MODAL_BASE_URL:-https://chris00walker--startupai-validation-fastapi-app.modal.run}"
+MODAL_KICKOFF_URL="${MODAL_KICKOFF_URL:-${MODAL_BASE_URL}/kickoff}"
+MODAL_STATUS_URL="${MODAL_STATUS_URL:-${MODAL_BASE_URL}/status}"
+MODAL_AUTH_TOKEN="${MODAL_AUTH_TOKEN:-}"
 WEBHOOK_URL="https://app-startupai-site.netlify.app/api/crewai/webhook"
-WEBHOOK_TOKEN="${STARTUPAI_WEBHOOK_BEARER_TOKEN:-startupai-webhook-secret-2024}"
+WEBHOOK_TOKEN="${MODAL_AUTH_TOKEN:-startupai-modal-secret-2026}"
 
 # Supabase configuration (from environment)
 SUPABASE_URL="${SUPABASE_URL:-}"
@@ -103,7 +105,7 @@ TEST_PAYLOAD=$(cat <<EOF
   "flow_type": "founder_validation",
   "project_id": "${TEST_PROJECT_ID}",
   "user_id": "${TEST_USER_ID}",
-  "kickoff_id": "kick-${TEST_RUN_ID}",
+  "run_id": "run-${TEST_RUN_ID}",
   "session_id": null,
   "validation_report": {
     "id": "rpt-${TEST_RUN_ID}",
@@ -254,23 +256,23 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "interactive" ]; then
 fi
 
 # -----------------------------------------------------------------------------
-# Step 3: Check CrewAI AMP Status
+# Step 3: Check Modal Status
 # -----------------------------------------------------------------------------
 if [ "$MODE" != "quick" ]; then
-    echo -e "${YELLOW}Step 3: Checking CrewAI AMP deployment status...${NC}"
+    echo -e "${YELLOW}Step 3: Checking Modal deployment status...${NC}"
 
-    STATUS_RESPONSE=$(curl -s -X GET "$CREWAI_URL/health" \
-      -H "Authorization: Bearer $CREWAI_TOKEN" 2>/dev/null || echo '{"status": "unavailable"}')
+    STATUS_RESPONSE=$(curl -s -X GET "${MODAL_BASE_URL}/health" \
+      2>/dev/null || echo '{"status": "unavailable"}')
 
-    echo "CrewAI Health: $STATUS_RESPONSE"
+    echo "Modal Health: $STATUS_RESPONSE"
     echo ""
 fi
 
 # -----------------------------------------------------------------------------
-# Step 4: Optional Full Kickoff Test
+# Step 4: Optional Full Kickoff Test (Modal)
 # -----------------------------------------------------------------------------
 if [ "$MODE" = "full" ]; then
-    echo -e "${YELLOW}Step 4: Triggering CrewAI validation flow...${NC}"
+    echo -e "${YELLOW}Step 4: Triggering Modal validation flow...${NC}"
     echo -e "${BLUE}NOTE: This will start a real validation flow (5-15 minutes, costs API credits).${NC}"
     echo ""
 
@@ -284,15 +286,15 @@ EOF
 )
 
     echo "Starting validation flow..."
-    KICKOFF_RESPONSE=$(curl -s -X POST "$CREWAI_URL/kickoff" \
-      -H "Authorization: Bearer $CREWAI_TOKEN" \
+    KICKOFF_RESPONSE=$(curl -s -X POST "$MODAL_KICKOFF_URL" \
+      -H "Authorization: Bearer $MODAL_AUTH_TOKEN" \
       -H "Content-Type: application/json" \
       -d "$KICKOFF_PAYLOAD")
 
-    KICKOFF_ID=$(echo "$KICKOFF_RESPONSE" | jq -r '.kickoff_id // .id // empty' 2>/dev/null)
+    RUN_ID=$(echo "$KICKOFF_RESPONSE" | jq -r '.run_id // empty' 2>/dev/null)
 
-    if [ -n "$KICKOFF_ID" ]; then
-        echo -e "${GREEN}✅ Validation started with kickoff_id: $KICKOFF_ID${NC}"
+    if [ -n "$RUN_ID" ]; then
+        echo -e "${GREEN}✅ Validation started with run_id: $RUN_ID${NC}"
         echo ""
         echo "Polling for completion (timeout: 20 minutes)..."
 
@@ -308,8 +310,8 @@ EOF
                 break
             fi
 
-            STATUS=$(curl -s "$CREWAI_URL/status/$KICKOFF_ID" \
-              -H "Authorization: Bearer $CREWAI_TOKEN" | jq -r '.status // "unknown"' 2>/dev/null)
+            STATUS=$(curl -s "$MODAL_STATUS_URL/$RUN_ID" \
+              -H "Authorization: Bearer $MODAL_AUTH_TOKEN" | jq -r '.status // "unknown"' 2>/dev/null)
 
             echo -ne "\r  Status: $STATUS (${ELAPSED}s elapsed)    "
 
@@ -322,7 +324,7 @@ EOF
                     echo "Verifying Supabase after kickoff..."
                     sleep 5  # Wait for webhook
 
-                    PROJECT="${TEST_PROJECT_ID}-kickoff"
+                PROJECT="${TEST_PROJECT_ID}-kickoff"
                     REPORT_COUNT=$(count_records "reports" "project_id=eq.${PROJECT}")
                     EVIDENCE_COUNT=$(count_records "evidence" "project_id=eq.${PROJECT}")
                     VALIDATION_STATE_COUNT=$(count_records "crewai_validation_states" "project_id=eq.${PROJECT}")

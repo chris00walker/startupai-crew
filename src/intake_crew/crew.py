@@ -37,7 +37,7 @@ customer_research = CustomerResearchTool()
 methodology_check = MethodologyCheckTool()
 
 # Create invoker for Crew 2 (Validation Engine)
-# Environment variables must be set in AMP dashboard
+# Environment variables must be set in the deployment environment
 validation_crew_invoker = InvokeCrewAIAutomationTool(
     crew_api_url=os.getenv("CREW_2_URL", ""),
     crew_bearer_token=os.getenv("CREW_2_BEARER_TOKEN", ""),
@@ -163,7 +163,7 @@ class IntakeCrew:
             config=self.tasks_config["approve_intake_to_validation"],
             output_pydantic=HumanApprovalInput,
             markdown=False,
-            human_input=True,  # This triggers HITL in AMP
+            human_input=True,  # Triggers HITL approval
         )
 
     @task

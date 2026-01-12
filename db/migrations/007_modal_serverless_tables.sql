@@ -13,14 +13,14 @@
 -- ============================================================
 CREATE TABLE IF NOT EXISTS validation_runs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    run_id TEXT UNIQUE NOT NULL,  -- External ID from Modal or AMP
+    run_id TEXT UNIQUE NOT NULL,  -- External ID from Modal
     project_id UUID NOT NULL,
     user_id UUID NOT NULL,
     session_id TEXT,  -- Optional onboarding session reference
 
-    -- Provider tracking (modal or amp)
+    -- Provider tracking (modal only)
     provider TEXT NOT NULL DEFAULT 'modal'
-        CHECK (provider IN ('modal', 'amp')),
+        CHECK (provider IN ('modal')),
 
     -- Run state
     status TEXT NOT NULL DEFAULT 'pending'
