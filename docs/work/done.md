@@ -1,7 +1,7 @@
 ---
 purpose: "Private technical source of truth for recently delivered work"
 status: "active"
-last_reviewed: "2026-01-10"
+last_reviewed: "2026-01-13"
 ---
 
 # Recently Delivered
@@ -16,6 +16,7 @@ last_reviewed: "2026-01-10"
 | 2026-01-10 15:08 | Bug fixes deployed | #10-12 fixed, Phase 2 retry running |
 | 2026-01-10 | **4 Critical Issues Fixed** | Bug #9, tool gap, timeout, RLS |
 | 2026-01-10 18:07 | **Bug #9 Verified** | StartupAI dogfood run, pivot workflow working |
+| 2026-01-10 | **Landing Page Migration** | ADR-003: Supabase Storage replaces Netlify |
 | 2026-01-10 20:00 | **Plan Audit Complete** | All 4 today's plans audited, docs aligned |
 | 2026-01-10 22:00 | **Asset Generation Specs** | Blueprint Pattern, Progressive Images, Ad Platform Library |
 | **Next** | Complete Phase 3-4 live test | Phase 2 verified, Phase 3-4 pending |
@@ -74,6 +75,43 @@ Complete specifications for asset generation tools supporting Phase 2 validation
 | DALL-E 3 | $0.08 | Custom concepts |
 | Midjourney | $0.05 | Aesthetic/lifestyle |
 | Leonardo | $0.02 | Volume generation |
+
+---
+
+## Landing Page Storage Migration (2026-01-10)
+
+**Status**: ✅ COMPLETE - E2E tested
+**ADR**: [ADR-003](../adr/003-landing-page-storage-migration.md)
+
+### Problem (RESOLVED)
+
+The `LandingPageDeploymentTool` using Netlify API had authentication issues:
+- Token could CREATE sites but could not DEPLOY to them (401 Unauthorized)
+- Architecture mismatch: Netlify is permanent hosting, we need temporary artifacts
+
+### Solution (IMPLEMENTED)
+
+Migrated to Supabase Storage for landing page deployment:
+- Public bucket serves HTML files via CDN
+- Client-side JavaScript captures pageviews and form submissions
+- RLS policies allow anonymous INSERT for tracking
+- Natural cleanup when validation run expires
+
+### Implementation
+
+| Phase | Task | Status |
+|-------|------|--------|
+| 1 | Create Supabase tables (migration 009) | ✅ Complete |
+| 2 | Rewrite `LandingPageDeploymentTool` for Supabase Storage | ✅ Complete |
+| 3 | Update tests (34 tests passing) | ✅ Complete |
+| 4 | Archive Netlify implementation | ✅ Complete |
+
+### Files Changed
+
+- `src/shared/tools/landing_page_deploy.py` - Rewrote for Supabase Storage (~150 lines vs 522)
+- `db/migrations/009_landing_page_tables.sql` - Tables: landing_page_variants, lp_submissions, lp_pageviews
+- `tests/tools/test_landing_page_deploy.py` - Updated tests to mock Supabase
+- `archive/netlify-landing-page-deploy.py` - Old Netlify implementation archived
 
 ---
 

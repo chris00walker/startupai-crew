@@ -55,6 +55,11 @@ Thumbs.db
 output/
 *.log
 
+# Test coverage artifacts
+.coverage
+htmlcov/
+coverage.xml
+
 # External documentation (pulled from docs.crewai.com)
 docs/crewai-documentation/
 
