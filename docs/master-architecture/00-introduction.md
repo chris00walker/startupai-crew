@@ -1,7 +1,7 @@
 ---
 purpose: Repository introduction, architecture overview, and quick start
 status: active
-last_reviewed: 2026-01-07
+last_reviewed: 2026-01-13
 vpd_compliance: true
 ---
 
@@ -117,16 +117,23 @@ PHASE (Business Concept)
 
 **Purpose**: Capture business hypothesis and create Founder's Brief
 
-**Flow**: `OnboardingFlow` - Single flow orchestrates the onboarding process
+**Architecture**: Two-layer design separating data collection from validation:
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Layer 1: "Alex" Chat** | Vercel AI SDK (product app) | Conversational interview with real-time streaming |
+| **Layer 2: OnboardingCrew** | CrewAI (Modal) | Validate, analyze gaps, structure into Brief |
+
+**Flow**: `OnboardingFlow` - Orchestrates validation after Alex completes interview
 
 | Crew | Agents | Focus | Output |
 |------|--------|-------|--------|
-| OnboardingCrew | O1, GV1, GV2, S1 | Interview, validation, synthesis | **Founder's Brief** |
+| OnboardingCrew | O1, GV1, GV2, S1 | Gap analysis, validation, synthesis | **Founder's Brief** |
 
-- **O1**: Founder Interview Agent (7-area discovery)
+- **O1**: Interview Gap Analyzer Agent (ensures Alex collected complete information)
 - **GV1**: Concept Validator Agent (legitimacy screening)
 - **GV2**: Intent Verification Agent (capture accuracy)
-- **S1**: Brief Compiler Agent (synthesize hypothesis)
+- **S1**: Brief Compiler Agent (synthesize into structured Brief)
 
 **HITL**: `approve_founders_brief` - Founder approves brief before Phase 1
 
@@ -266,4 +273,4 @@ For deployment, API usage, and development commands, see:
 ---
 
 **Status**: Multi-phase architecture with VPD framework compliance
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-13

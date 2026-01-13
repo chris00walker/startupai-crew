@@ -1,7 +1,7 @@
 ---
 purpose: Single source of truth for 6 AI Founders and agents (Phase 0-4)
 status: active
-last_reviewed: 2026-01-07
+last_reviewed: 2026-01-13
 vpd_compliance: true
 ---
 
@@ -68,7 +68,7 @@ PHASE (Business Concept)
 
 | Phase | Flow | Crew | Agents |
 |-------|------|------|--------|
-| 0: Onboarding | `OnboardingFlow` | `OnboardingCrew` | O1, GV1, GV2, S1 |
+| 0: Onboarding | `OnboardingFlow` | `OnboardingCrew` | O1 (Gap Analyzer), GV1, GV2, S1 |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `DiscoveryCrew` | E1, D1, D2, D3, D4 |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `CustomerProfileCrew` | J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `ValueDesignCrew` | V1, V2, V3 |
@@ -490,17 +490,23 @@ Specialist agents execute specific tasks within each founder's domain. Agents ar
 
 ### Phase 0: Onboarding Agents
 
-Phase 0 agents capture the founder's business hypothesis and create the **Founder's Brief** - the prime input to all downstream validation. See [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) for full specification.
+Phase 0 uses a **two-layer architecture**:
+1. **Layer 1 ("Alex" Chat)**: Conversational interview in the product app using Vercel AI SDK
+2. **Layer 2 (OnboardingCrew)**: CrewAI agents that validate and structure the collected data
+
+See [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) for full specification.
 
 **Flow**: `OnboardingFlow`
 **Crew**: `OnboardingCrew` (4 agents)
 
 | ID | Agent | Founder | Crew | Task Focus |
 |----|-------|---------|------|------------|
-| **O1** | Founder Interview Agent | Sage | OnboardingCrew | 7-area discovery interview (idea, motivation, customer, problem, solution, assumptions, success criteria) |
+| **O1** | Interview Gap Analyzer Agent | Sage | OnboardingCrew | Analyzes Alex's conversation transcript for completeness and identifies gaps |
 | **GV1** | Concept Validator Agent | Guardian | OnboardingCrew | Legitimacy screening (legal, ethical, feasible, sane) |
 | **GV2** | Intent Verification Agent | Guardian | OnboardingCrew | Ensures Founder's Brief accurately captures founder's intent |
-| **S1** | Brief Compiler Agent | Sage | OnboardingCrew | Synthesizes interview and QA outputs into structured Founder's Brief |
+| **S1** | Brief Compiler Agent | Sage | OnboardingCrew | Synthesizes all inputs into structured Founder's Brief |
+
+> **Note**: The 7-area discovery interview (idea, motivation, customer, problem, solution, assumptions, success criteria) is conducted by "Alex" in the product app, not by CrewAI agents. O1 receives the completed conversation and analyzes it for quality.
 
 **Phase 0 HITL Checkpoint**: `approve_founders_brief` - Founder reviews and approves their brief before Phase 1 begins.
 
@@ -854,6 +860,8 @@ Agents fall into three categories based on tool requirements:
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-13 | Documented two-layer Phase 0 architecture (Alex chat + CrewAI validation) | Align documentation with implementation reality |
+| 2026-01-13 | Renamed O1 from "Founder Interview Agent" to "Interview Gap Analyzer Agent" | Alex conducts interview, O1 analyzes completeness |
 | 2026-01-09 | Added Agent Configuration Standard section with required attributes, temperature guidelines, constructor pattern | Bullet-proof specifications before code implementation |
 | 2026-01-07 | Added CrewAI Pattern Hierarchy section with complete crew summary | Align with CrewAI documentation patterns |
 | 2026-01-07 | Restructured Phase 0-4 agents into crew groupings | Fix one-agent "crews", rename "Flow 1-7" to proper crews |

@@ -1,7 +1,7 @@
 ---
 purpose: Phase 0 specification - Founder's Brief capture
 status: active
-last_reviewed: 2026-01-07
+last_reviewed: 2026-01-13
 vpd_compliance: true
 ---
 
@@ -12,6 +12,58 @@ vpd_compliance: true
 ## Purpose
 
 Transform the Founder's raw idea into a structured **Founder's Brief** - the prime artifact that informs all subsequent phases.
+
+## Two-Layer Architecture
+
+Phase 0 uses a **two-layer architecture** that separates conversational data collection from validation processing:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  LAYER 1: "ALEX" CHAT (Product App - Vercel AI SDK)                         │
+│                                                                              │
+│  Technology: Vercel AI SDK + OpenAI (streaming chat)                        │
+│  Location: app.startupai.site/onboarding/founder (or /consultant)           │
+│  Purpose: Conversational data collection with real-time streaming           │
+│                                                                              │
+│  7 Conversational Stages:                                                    │
+│  1. Welcome & Introduction                                                   │
+│  2. Customer Discovery                                                       │
+│  3. Problem Definition                                                       │
+│  4. Solution Validation                                                      │
+│  5. Competitive Analysis                                                     │
+│  6. Resources & Constraints                                                  │
+│  7. Goals & Next Steps                                                       │
+│                                                                              │
+│  Output: Raw conversation transcript + extracted business context            │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼ (on completion)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  LAYER 2: ONBOARDING CREW (Modal - CrewAI)                                  │
+│                                                                              │
+│  Technology: CrewAI agents on Modal serverless                              │
+│  Purpose: Validate, analyze gaps, and structure the collected data          │
+│                                                                              │
+│  4 Agents:                                                                   │
+│  • O1: Interview Gap Analyzer - identifies missing/incomplete information   │
+│  • GV1: Concept Validator - legitimacy screening                           │
+│  • GV2: Intent Verification - ensures capture accuracy                     │
+│  • S1: Brief Compiler - creates structured Founder's Brief                 │
+│                                                                              │
+│  Output: Validated Founder's Brief (prime artifact)                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Why Two Layers?
+
+| Concern | Layer 1 (Alex) | Layer 2 (CrewAI) |
+|---------|----------------|------------------|
+| **UX** | Real-time streaming chat | Batch processing (latency acceptable) |
+| **Iteration** | Prompt changes deploy instantly | Agent changes require Modal redeploy |
+| **Cost** | Direct OpenAI calls (cheaper) | CrewAI orchestration (heavier) |
+| **Purpose** | Data collection | Validation & structuring |
+
+**Key Principle**: Alex collects, CrewAI validates. The separation ensures best-in-class UX for the conversational interview while leveraging CrewAI's multi-agent orchestration for validation logic.
 
 ### What This Phase IS About
 
@@ -59,7 +111,7 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           ONBOARDING FLOW                                    │
 │                                                                              │
-│  Entry: Founder submits initial idea (text, voice, or conversation)         │
+│  Entry: Conversation transcript from "Alex" chat (product app)              │
 │  Exit: Approved Founder's Brief ready for Phase 1                           │
 │                                                                              │
 │  Flow: OnboardingFlow                                                        │
@@ -67,30 +119,40 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 │                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│                         ┌─────────────────────┐                             │
-│                         │   Founder's Input   │                             │
-│                         │   (Raw idea)        │                             │
-│                         └──────────┬──────────┘                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  LAYER 1: "ALEX" CHAT (Product App - NOT part of CrewAI)            │   │
+│  │                                                                      │   │
+│  │  Technology: Vercel AI SDK + OpenAI (streaming)                     │   │
+│  │  Location: /onboarding/founder or /onboarding/consultant            │   │
+│  │                                                                      │   │
+│  │  Conversational interview covering 7 stages:                        │   │
+│  │  • Welcome & Introduction                                           │   │
+│  │  • Customer Discovery                                               │   │
+│  │  • Problem Definition                                               │   │
+│  │  • Solution Validation                                              │   │
+│  │  • Competitive Analysis                                             │   │
+│  │  • Resources & Constraints                                          │   │
+│  │  • Goals & Next Steps                                               │   │
+│  │                                                                      │   │
+│  │  Output: Conversation transcript + extracted business context       │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                         │
+│                          (on completion)                                     │
 │                                    │                                         │
 │                                    ▼                                         │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                      ONBOARDING CREW                                 │   │
+│  │  LAYER 2: ONBOARDING CREW (Modal - CrewAI)                          │   │
 │  │                      (4 Collaborative Agents)                        │   │
 │  │                                                                      │   │
 │  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  O1: FOUNDER INTERVIEW AGENT                                 │   │   │
-│  │  │  Persona: Alex Osterwalder                                   │   │   │
+│  │  │  O1: INTERVIEW GAP ANALYZER AGENT                            │   │   │
 │  │  │                                                              │   │   │
-│  │  │  Conducts conversational interview to understand:            │   │   │
-│  │  │  • What is the idea? (The Concept)                          │   │   │
-│  │  │  • Why does this matter? (The Motivation)                   │   │   │
-│  │  │  • Who is this for? (Customer Hypothesis)                   │   │   │
-│  │  │  • What problem does it solve? (Problem Hypothesis)         │   │   │
-│  │  │  • How will it work? (Solution Hypothesis)                  │   │   │
-│  │  │  • What assumptions are you making? (Key Assumptions)       │   │   │
-│  │  │  • What would success look like? (Success Criteria)         │   │   │
+│  │  │  Analyzes Alex's conversation transcript for completeness:   │   │   │
+│  │  │  • Are all 7 areas covered?                                  │   │   │
+│  │  │  • Any gaps or ambiguities?                                  │   │   │
+│  │  │  • Information quality sufficient?                           │   │   │
 │  │  │                                                              │   │   │
-│  │  │  Output: Interview Transcript + Structured Notes             │   │   │
+│  │  │  Output: Gap Analysis Report (PROCEED or NEEDS_FOLLOWUP)     │   │   │
 │  │  └─────────────────────────────────────────────────────────────┘   │   │
 │  │                                    │                                │   │
 │  │                                    ▼                                │   │
@@ -182,26 +244,28 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 > **Full Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for complete 45-agent specifications.
 > **Configuration Standard**: See [02-organization.md](./02-organization.md#agent-configuration-standard) for required attributes.
 
-### O1: Founder Interview Agent
+### O1: Interview Gap Analyzer Agent
 
 | Attribute | Value |
 |-----------|-------|
 | **ID** | O1 |
-| **Name** | Founder Interview Agent |
+| **Name** | Interview Gap Analyzer Agent |
 | **Founder** | Sage |
-| **Persona** | Alex Osterwalder - curious, probing, supportive |
-| **Role** | Conduct conversational interviews to deeply understand Founder's vision |
-| **Goal** | Extract and structure the Founder's idea, motivations, hypotheses, and success criteria through empathetic dialogue |
+| **Persona** | Methodical analyst - thorough, detail-oriented, systematic |
+| **Role** | Analyze Alex's conversation transcript to identify gaps, ambiguities, and missing information |
+| **Goal** | Ensure the collected business context is complete enough to create a high-quality Founder's Brief |
+
+> **Note**: The conversational interview is conducted by "Alex" (Vercel AI SDK) in the product app. O1 receives the completed conversation and analyzes it for completeness.
 
 #### Configuration
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| `tools` | `[]` | Pure LLM - conversational interview (no external data needed) |
-| `reasoning` | True | Complex hypothesis extraction from conversation |
+| `tools` | `[]` | Pure LLM - analysis through reasoning |
+| `reasoning` | True | Complex gap detection requires deep reasoning |
 | `inject_date` | True | Market timing context |
-| `max_iter` | 25 | Extended conversation depth |
-| `temperature` | 0.7 | Natural dialogue flow |
+| `max_iter` | 15 | Focused analysis |
+| `temperature` | 0.3 | Precise, consistent gap identification |
 | `verbose` | True | Debug logging |
 | `allow_delegation` | False | Predictable flow |
 
@@ -209,65 +273,79 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 
 | Tool | Status | Notes |
 |------|--------|-------|
-| (none) | N/A | Pure LLM agent - relies on conversational reasoning |
+| (none) | N/A | Pure LLM agent - analysis through reasoning |
 
 **Backstory:**
 ```
-You are Alex Osterwalder, the creator of the Business Model Canvas and Value
-Proposition Canvas. You have interviewed thousands of founders and have a gift
-for asking the right questions to uncover what they're really trying to build
-and why. You are curious, supportive, and skilled at helping founders articulate
-ideas they can feel but not yet express clearly. You probe gently but persistently
-to understand the "why" behind every "what."
+You are a meticulous business analyst who reviews founder interviews for
+completeness and quality. You've seen hundreds of interviews and know exactly
+what information is needed to create a strong Founder's Brief. Your job is to
+identify gaps, ambiguities, and areas where the founder's responses were
+incomplete or unclear. You are thorough but practical - you flag real gaps,
+not theoretical nice-to-haves.
 ```
 
 **Tasks:**
-1. `conduct_founder_interview` - Conversational interview covering all 7 key areas
-2. `ask_followup_questions` - Targeted follow-ups based on QA feedback
-3. `structure_interview_notes` - Convert conversation into structured notes
+1. `analyze_interview_completeness` - Review transcript for coverage of all 7 areas
+2. `identify_information_gaps` - Flag missing or incomplete information
+3. `generate_clarification_questions` - Create targeted questions for gaps (if needed)
 
-**Tools:**
-- `ConversationTool` - Manages multi-turn dialogue
-- `NoteStructurerTool` - Structures free-form notes
-- `LearningRetrievalTool` - Recalls patterns from similar founders
+#### Gap Analysis Framework (7 Areas)
 
-#### Interview Framework (7 Areas)
+O1 analyzes the Alex conversation transcript to ensure coverage of:
 
 ```
 1. THE IDEA
-   - "Tell me about your idea in your own words."
-   - "If you had to explain this to your grandmother, how would you describe it?"
-   - "What's the one-sentence version?"
+   ✓ Is the concept clearly articulated?
+   ✓ Is there a one-liner or elevator pitch?
+   ✓ Is the scope bounded?
 
 2. THE MOTIVATION
-   - "What made you want to build this?"
-   - "Is this a problem you've personally experienced?"
-   - "Why you? Why now?"
+   ✓ Why is the founder pursuing this?
+   ✓ Personal connection to the problem?
+   ✓ Why now?
 
 3. CUSTOMER HYPOTHESIS
-   - "Who do you imagine using this?"
-   - "Can you describe your ideal first customer?"
-   - "Where would you find these people?"
+   ✓ Who is the target customer?
+   ✓ How specific is the segment definition?
+   ✓ Where can they be found?
 
 4. PROBLEM HYPOTHESIS
-   - "What problem are you solving for them?"
-   - "How are they solving this problem today?"
-   - "What's painful about the current alternatives?"
+   ✓ What problem is being solved?
+   ✓ Current alternatives mentioned?
+   ✓ Pain points identified?
 
 5. SOLUTION HYPOTHESIS
-   - "How does your solution work?"
-   - "What's different about your approach?"
-   - "What are the 2-3 key features that matter most?"
+   ✓ How does the solution work?
+   ✓ Key features defined?
+   ✓ Differentiation articulated?
 
 6. KEY ASSUMPTIONS
-   - "What has to be true for this to work?"
-   - "What's the riskiest assumption you're making?"
-   - "What would make you abandon this idea?"
+   ✓ What must be true?
+   ✓ Riskiest assumptions identified?
+   ✓ Deal-breakers mentioned?
 
 7. SUCCESS CRITERIA
-   - "What would make this worth pursuing?"
-   - "What metrics would indicate you're on the right track?"
-   - "What's your definition of 'good enough' to keep going?"
+   ✓ What would make this worth pursuing?
+   ✓ Metrics or indicators defined?
+   ✓ Timeline expectations?
+```
+
+**Output Schema:**
+```json
+{
+  "completeness_score": 0.85,
+  "gaps_identified": [
+    {
+      "area": "CUSTOMER_HYPOTHESIS",
+      "gap": "Segment size not estimated",
+      "severity": "low",
+      "clarification_question": "Roughly how many people do you think have this problem?"
+    }
+  ],
+  "areas_well_covered": ["THE_IDEA", "PROBLEM_HYPOTHESIS", "SOLUTION_HYPOTHESIS"],
+  "recommendation": "PROCEED" | "NEEDS_FOLLOWUP"
+}
 ```
 
 ---
@@ -686,10 +764,12 @@ This phase implements VPD patterns from [03-methodology.md](./03-methodology.md)
 
 | ID | Agent | Founder | Role | Output |
 |----|-------|---------|------|--------|
-| O1 | Founder Interview Agent | Sage | Conduct 7-area discovery interview | Interview Transcript + Structured Notes |
+| O1 | Interview Gap Analyzer Agent | Sage | Analyze Alex transcript for completeness | Gap Analysis Report |
 | GV1 | Concept Validator Agent | Guardian | Legitimacy screening | Legitimacy Report |
 | GV2 | Intent Verification Agent | Guardian | Verify capture accuracy | Intent Verification Report |
 | S1 | Brief Compiler Agent | Sage | Synthesize into Brief | **Founder's Brief** |
+
+> **Note**: The conversational interview is conducted by "Alex" (Vercel AI SDK) in the product app before CrewAI agents are invoked. See [Two-Layer Architecture](#two-layer-architecture) for details.
 
 **Phase 0 Totals:**
 - Flows: 1 (`OnboardingFlow`)
