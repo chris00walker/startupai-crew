@@ -6,7 +6,7 @@ last_reviewed: "2026-01-13"
 
 # Recently Delivered
 
-## Timeline Clarification (2026-01-10)
+## Timeline Clarification (2026-01-13)
 
 | Date | Event | Notes |
 |------|-------|-------|
@@ -19,7 +19,60 @@ last_reviewed: "2026-01-13"
 | 2026-01-10 | **Landing Page Migration** | ADR-003: Supabase Storage replaces Netlify |
 | 2026-01-10 20:00 | **Plan Audit Complete** | All 4 today's plans audited, docs aligned |
 | 2026-01-10 22:00 | **Asset Generation Specs** | Blueprint Pattern, Progressive Images, Ad Platform Library |
-| **Next** | Complete Phase 3-4 live test | Phase 2 verified, Phase 3-4 pending |
+| 2026-01-13 | **Two-Layer Onboarding** | O1 renamed, transcript passed, consultant path fixed |
+| **Next** | Deploy & test two-layer | Then Phase 3-4 live test |
+
+---
+
+## Two-Layer Onboarding Architecture (2026-01-13)
+
+**Status**: ✅ IMPLEMENTED - Pending deployment and testing
+
+Implemented the two-layer architecture for Phase 0 onboarding:
+- **Layer 1**: "Alex" chat (Vercel AI SDK) collects conversation transcript
+- **Layer 2**: OnboardingCrew (Modal) validates and compiles Founder's Brief
+
+### Problem Statement
+
+The original implementation had O1 configured as "Founder Interview Agent" which was meant to conduct interviews. However:
+1. Alex already conducts the interview via Vercel AI SDK in the product app
+2. Only a brief summary was passed to Modal, not the full transcript
+3. Consultant onboarding path didn't trigger Modal validation at all
+
+### Solution Implemented
+
+| Change | Location | Commit |
+|--------|----------|--------|
+| Rename O1 to "Interview Gap Analyzer" | `crew.py`, `agents.yaml` | `5176462` |
+| Update O1: `reasoning=True`, `temperature=0.3` | `crew.py` | `5176462` |
+| Update task to "analyze transcript" | `tasks.yaml` | `5176462` |
+| Add `conversation_transcript` to Modal API | `app.py`, `phase_0.py` | `5176462` |
+| Pass full transcript from founder complete | `onboarding/complete/route.ts` | `a9ae0d7` |
+| Add Modal kickoff to consultant complete | `consultant/onboarding/complete/route.ts` | `a9ae0d7` |
+| Update Modal client types | `modal-client.ts`, `founder-validation.ts` | `a9ae0d7` |
+
+### Files Changed
+
+**CrewAI Backend (startupai-crew)**:
+- `src/crews/onboarding/crew.py` - O1 agent config
+- `src/crews/onboarding/config/agents.yaml` - O1 role/goal/backstory
+- `src/crews/onboarding/config/tasks.yaml` - Task descriptions
+- `src/modal_app/app.py` - KickoffRequest model
+- `src/modal_app/phases/phase_0.py` - Pass transcript to crew
+
+**Product App (app.startupai.site)**:
+- `frontend/src/lib/crewai/modal-client.ts` - Request interface
+- `frontend/src/lib/crewai/founder-validation.ts` - Build inputs function
+- `frontend/src/app/api/onboarding/complete/route.ts` - Pass transcript
+- `frontend/src/app/api/consultant/onboarding/complete/route.ts` - Add Modal kickoff
+- `frontend/src/components/onboarding/ConsultantOnboardingWizardV2.tsx` - Handle response
+
+### Next Steps
+
+1. Deploy changes to Modal
+2. Test founder path end-to-end
+3. Test consultant path end-to-end
+4. Verify O1 produces completeness_score and gaps_identified output
 
 ---
 

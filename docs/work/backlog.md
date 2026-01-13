@@ -63,11 +63,17 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 2. Decide on AdPlatform strategy (implement APIs or remove)
 3. Implement or remove stub tools
 
+**Two-Layer Onboarding** (implemented 2026-01-13):
+- ✅ O1 renamed to "Interview Gap Analyzer"
+- ✅ Full conversation_transcript passed to Modal
+- ✅ Consultant path now triggers Modal validation
+- ⏳ Pending: Deploy to Modal and test
+
 **Agent Wiring Gaps** (from feature audit 2026-01-13):
 
 | Phase | Agents with `tools=[]` | Impact |
 |-------|------------------------|--------|
-| 0 | O1, GV1, GV2, S1 (all 4) | Onboarding uses pure LLM |
+| 0 | O1, GV1, GV2, S1 (all 4) | Onboarding uses pure LLM (by design - analyzes transcript) |
 | 1 | CP2, CP4, CP6, FA2 (rankers) | Rankings based on LLM judgment only |
 | 3 | FB1, FB2, FB3 (all 3) | **Feasibility assessed without research** |
 | 4 | F2, F3, SY1, SY2, SY3, VGV3 (6) | Synthesis without learning capture |

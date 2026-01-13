@@ -28,13 +28,38 @@ The architecture works but validation results are consistently negative:
 
 ## Phase 0: Onboarding
 
-### Status: ✅ PASSED
+### Status: ✅ PASSED (Two-Layer Architecture Implemented)
 
 | Metric | Value |
 |--------|-------|
+| Layer 1 | "Alex" chat (Vercel AI SDK) - collects conversation |
+| Layer 2 | OnboardingCrew (Modal) - validates and compiles brief |
 | Crews | OnboardingCrew (1) |
 | Agents | 4 (O1, GV1, GV2, S1) |
 | HITL | `approve_founders_brief` |
+
+### Two-Layer Architecture (2026-01-13)
+
+```
+[Layer 1: "Alex" Chat - Product App]
+  ├── Founders: /onboarding/founder
+  ├── Consultants: /onboarding/consultant
+  ├── Vercel AI SDK + OpenAI streaming
+  ├── 7 conversational stages
+  └── Output: conversation_transcript + extracted_data
+                    │
+                    ▼ (on completion)
+[Layer 2: OnboardingCrew - Modal]
+  ├── O1: Interview Gap Analyzer (NOT interviewer)
+  ├── GV1: Concept Validator
+  ├── GV2: Intent Verifier
+  ├── S1: Brief Compiler
+  └── Output: Founder's Brief + HITL checkpoint
+```
+
+**Implementation Commits**:
+- startupai-crew: `5176462` - feat: implement two-layer onboarding architecture
+- app.startupai.site: `a9ae0d7` - feat: pass conversation transcript to Modal
 
 ### Test Results
 
@@ -52,6 +77,7 @@ The architecture works but validation results are consistently negative:
 | QA legitimacy check | ✅ Good | PASS status |
 | Template interpolation | ✅ Fixed | Issues #2, #3 resolved |
 | Business context capture | ✅ Good | One-liner, problem, customer, solution hypotheses |
+| Two-layer architecture | ✅ Implemented | Full transcript passed to Modal |
 
 ### Issues Found
 
@@ -59,10 +85,18 @@ The architecture works but validation results are consistently negative:
 |---|-------|--------|-----|
 | 2 | Template variable not found | ✅ Fixed | Remove context-dependent vars (`46c7da6`) |
 | 3 | Customer Profile hallucinated | ✅ Fixed | Add vars back with section headers (`b96e7a7`) |
+| 14 | O1 misconfigured as interviewer | ✅ Fixed | Renamed to Interview Gap Analyzer (`5176462`) |
+| 15 | Transcript not passed to Modal | ✅ Fixed | Pass full conversation_transcript (`a9ae0d7`) |
+| 16 | Consultant path skipped Modal | ✅ Fixed | Added Modal kickoff to consultant complete route |
 
 ### Remaining Work
 
-None - Phase 0 is working correctly.
+| Task | Priority | Status |
+|------|----------|--------|
+| Deploy two-layer changes to Modal | P0 | ⏳ Pending |
+| Test founder path with transcript | P0 | ⏳ Pending |
+| Test consultant path with transcript | P0 | ⏳ Pending |
+| Verify O1 produces gap analysis output | P1 | ⏳ Pending |
 
 ---
 
