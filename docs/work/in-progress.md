@@ -286,6 +286,27 @@ When unblocked:
 
 ---
 
+## Schema Alignment
+
+### P0: Modal Tables (✅ DEPLOYED)
+
+| Table | Status |
+|-------|--------|
+| `validation_runs` | ✅ Deployed |
+| `validation_progress` | ✅ Deployed |
+| `hitl_requests` | ✅ Deployed |
+
+### P1-P3: VPD Tables (Planned)
+
+| Table | Purpose | Status |
+|-------|---------|--------|
+| `founders_briefs` | VPD-aligned Phase 0 output | ⏳ Planned |
+| `customer_profile_elements` | Jobs/Pains/Gains | ⏳ Planned |
+| `value_map_elements` | Products/Relievers/Creators | ⏳ Planned |
+| `test_cards` / `learning_cards` | TBI framework | ⏳ Planned |
+
+---
+
 ## Next Steps
 
 1. **P0**: Fix placeholder HTML generation (add output_pydantic to build tasks)

@@ -6,7 +6,7 @@ last_reviewed: "2026-01-13"
 
 # Work Tracking
 
-**Current Status:** Modal serverless DEPLOYED. Tool integration COMPLETE. Phase 3-4 testing in progress.
+**Current Status:** Modal serverless DEPLOYED. Tool quality issues identified. Phase 3-4 blocked.
 
 ## Architecture Summary
 
@@ -17,10 +17,20 @@ last_reviewed: "2026-01-13"
 | Crews | 14 | All implemented |
 | Agents | 45 | All configured |
 | HITL Checkpoints | 10 | All operational |
-| Tools | 15 | ✅ All wired to 35+ agents |
+| Tools | 15 wired | ⚠️ 4 working, 7 stubs, 4 quality issues |
 | Tests | 678+ | ✅ Passing |
 
 **Production URL**: `https://chris00walker--startupai-validation-fastapi-app.modal.run`
+
+### Three-Layer Architecture
+
+| Layer | Technology | Status |
+|-------|------------|--------|
+| Interaction | Netlify Edge Functions | ✅ Production |
+| Orchestration | Supabase (PostgreSQL + Realtime) | ✅ Production |
+| Compute | Modal (ephemeral, pay-per-second) | ✅ Production |
+
+**ADR**: [ADR-002](../adr/002-modal-serverless-migration.md)
 
 ## Current Priority: Phase 3-4 Live Testing
 
@@ -30,38 +40,25 @@ See [in-progress.md](./in-progress.md) for current state.
 
 ## Quick Links
 
+- [In Progress](./in-progress.md) - Active work items + per-phase status
 - [Backlog](./backlog.md) - Hypothesis queue
-- [In Progress](./in-progress.md) - Active work items
-- [Done](./done.md) - Recently delivered
-- [Phases](./phases.md) - Engineering phases + MCP tool roadmap
-- [Cross-Repo Blockers](./cross-repo-blockers.md) - Dependencies and downstream impacts
-- [Modal Live Testing](./modal-live-testing.md) - Live testing progress and learnings
+- [Done](./done.md) - Recently delivered + decision log
+- [Roadmap](./roadmap.md) - Quarterly planning
+- [Cross-Repo Blockers](./cross-repo-blockers.md) - Dependencies
+- [Modal Live Testing](./modal-live-testing.md) - Test session logs
 
-## Architecture Status
+## Implementation Status
 
-### Modal Serverless (PRODUCTION)
+| Component | Code | Evidence Quality |
+|-----------|------|------------------|
+| Modal Infrastructure | ✅ Complete | N/A |
+| Phase 0 (Onboarding) | ✅ Complete | ⚠️ LLM-only |
+| Phase 1 (VPC Discovery) | ✅ Complete | ⚠️ Partial (only Tavily works) |
+| Phase 2 (Desirability) | ✅ Complete | 🔴 Blocked (no ad APIs, placeholder HTML) |
+| Phase 3 (Feasibility) | ✅ Complete | ⏳ Not tested |
+| Phase 4 (Viability) | ✅ Complete | ⏳ Not tested |
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Modal Infrastructure | ✅ DEPLOYED | Production, pay-per-second |
-| Supabase Orchestration | ✅ DEPLOYED | State persistence, Realtime |
-| Phase 0 (Onboarding) | ✅ TESTED | 1 crew, 4 agents |
-| Phase 1 (VPC Discovery) | ✅ TESTED | 5 crews, 18 agents |
-| Phase 2 (Desirability) | ✅ TESTED | 3 crews, 9 agents |
-| Phase 3 (Feasibility) | ⏳ PENDING | 2 crews, 5 agents |
-| Phase 4 (Viability) | ⏳ PENDING | 3 crews, 9 agents |
-| Tool Integration | ✅ COMPLETE | 15 tools, 35+ agents |
-
-### Legacy 3-Repo Workaround (ARCHIVED)
-
-| Component | Status | Notes |
-|-----------|--------|-------|
-| 3-Crew Architecture | 🗄️ ARCHIVED | Replaced by Modal |
-| Crew 1 (Intake) | 🗄️ ARCHIVED | Was this repo |
-| Crew 2 (Validation) | 🗄️ ARCHIVED | Was separate repo |
-| Crew 3 (Decision) | 🗄️ ARCHIVED | Was separate repo |
-
-See [ADR-002](../adr/002-modal-serverless-migration.md) for migration rationale.
+**Details**: See [in-progress.md](./in-progress.md) for per-phase breakdown.
 
 ## Cross-Repo Coordination
 
@@ -75,7 +72,7 @@ When completing phase milestones, update downstream blockers files to notify tho
 
 - Bi-weekly sprint planning
 - Monthly roadmap review
-- Every crew/flow change documented in `work/features/` with scope, test plan, checklist, delivery notes
+- Major changes documented in [done.md](./done.md)
 
 ## Related Documents
 
@@ -86,4 +83,4 @@ When completing phase milestones, update downstream blockers files to notify tho
 - [Cross-Repo Blockers](./cross-repo-blockers.md) - Dependency tracking
 
 ---
-**Last Updated**: 2026-01-09
+**Last Updated**: 2026-01-13

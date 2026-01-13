@@ -23,6 +23,45 @@ last_reviewed: "2026-01-13"
 
 ---
 
+## Decision Log
+
+### Remove D1 Interview Agent (2026-01-12)
+
+**Decision**: Remove D1 from DiscoveryCrew
+
+**Rationale**:
+- TranscriptionTool is a stub (no Whisper API)
+- CalendarTool generates fake time slots
+- Agent produces hallucinated interviews, not real customer data
+- Surveys are more appropriate for automated SAY evidence
+
+**Impact**: DiscoveryCrew reduces from 5 to 4 agents.
+
+### SurveyTool Integration - Tally (2026-01-12)
+
+**Decision**: Integrate Tally for survey-based SAY evidence
+
+**Rationale**:
+- Free unlimited submissions (unlike Typeform's 10/month)
+- Native API and webhooks
+- Good respondent UX
+
+**Status**: Not yet implemented.
+
+### Supabase Storage for Landing Pages (2026-01-10)
+
+**Decision**: Use Supabase Storage instead of Netlify for landing pages
+
+**Rationale**:
+- Netlify token had permission issues
+- Landing pages are temporary artifacts, not permanent sites
+- Supabase already in stack
+
+**ADR**: [ADR-003](../adr/003-landing-page-storage-migration.md)
+**Status**: ✅ Implemented
+
+---
+
 ## Asset Generation Architecture (2026-01-10 22:00)
 
 Complete specifications for asset generation tools supporting Phase 2 validation.
