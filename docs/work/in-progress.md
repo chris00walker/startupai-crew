@@ -93,10 +93,24 @@ The architecture works but validation results are consistently negative:
 
 | Task | Priority | Status |
 |------|----------|--------|
-| Deploy two-layer changes to Modal | P0 | ⏳ Pending |
-| Test founder path with transcript | P0 | ⏳ Pending |
-| Test consultant path with transcript | P0 | ⏳ Pending |
-| Verify O1 produces gap analysis output | P1 | ⏳ Pending |
+| Deploy two-layer changes to Modal | P0 | ✅ Complete (2026-01-13) |
+| Test founder path with transcript | P0 | ✅ Complete - API test verified |
+| Test consultant path with transcript | P0 | ⏳ Pending UI test |
+| Verify O1 produces gap analysis output | P1 | ✅ Complete - task `analyze_interview_gaps` runs |
+
+### Test Results (2026-01-13)
+
+**Run ID**: `bc3c88e9-d80d-4f13-a10d-a7d271ba0bed`
+
+| Step | Status | Evidence |
+|------|--------|----------|
+| Modal deploy | ✅ | Deployed in 3.1s |
+| Health check | ✅ | `{"status":"healthy"}` |
+| Kickoff with transcript | ✅ | Returned run_id |
+| O1 task name | ✅ | `analyze_interview_gaps` (renamed from conduct_founder_interview) |
+| OnboardingCrew completion | ✅ | Phase 0 100% complete |
+| HITL checkpoint | ✅ | `approve_founders_brief` created |
+| Founder's Brief | ✅ | All fields populated from transcript |
 
 ---
 
