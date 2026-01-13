@@ -63,6 +63,20 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 2. Decide on AdPlatform strategy (implement APIs or remove)
 3. Implement or remove stub tools
 
+**Agent Wiring Gaps** (from feature audit 2026-01-13):
+
+| Phase | Agents with `tools=[]` | Impact |
+|-------|------------------------|--------|
+| 0 | O1, GV1, GV2, S1 (all 4) | Onboarding uses pure LLM |
+| 1 | CP2, CP4, CP6, FA2 (rankers) | Rankings based on LLM judgment only |
+| 3 | FB1, FB2, FB3 (all 3) | **Feasibility assessed without research** |
+| 4 | F2, F3, SY1, SY2, SY3, VGV3 (6) | Synthesis without learning capture |
+
+**Priority Wiring**:
+1. **P1**: Phase 3 FeasibilityBuildCrew - needs research capability
+2. **P2**: Phase 4 SynthesisCrew - needs LearningCardTool
+3. **P3**: Ranker agents - could use AnalyticsTool for evidence-based ranking
+
 ---
 
 ## Priority 1: E2E Validation
@@ -102,18 +116,28 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 > **If** we provide an end-to-end flow from onboarding to analysis results display,
 > **Then** users will complete the full analysis and find value in the output.
 
-**Status**: BLOCKED by Priority 1 (E2E validation)
+**Status**: ⚠️ PARTIALLY COMPLETE - Backend wired, frontend gaps
 
-**Current State**:
-- ✅ Modal deployment live
-- ✅ API endpoints working
-- ❌ Product app doesn't call Modal endpoints
-- ❌ Product app doesn't display validation results
+**Current State** (verified 2026-01-13):
+
+| Layer | Status | Details |
+|-------|--------|---------|
+| `/api/analyze` → Modal `/kickoff` | ✅ Wired | `createModalClient().kickoff()` works |
+| `/api/crewai/status` → Modal `/status` | ✅ Wired | Polling works |
+| `PATCH /api/approvals/[id]` → Modal `/hitl/approve` | ✅ Wired | HITL decisions work |
+| Webhook receives progress | ✅ Wired | Inserts into `validation_progress` |
+| Approvals UI + Realtime | ✅ Wired | `/approvals` shows HITL requests |
+| **Progress UI + Realtime** | ❌ Missing | No subscription to `validation_progress` |
+| **Validation results display** | ❌ Missing | No UI shows final results |
+| **Progress timeline component** | ❌ Missing | No component shows crew/agent progress |
 
 **Build Required** (Product App repo):
-- [ ] Wire onboarding complete → Modal `/kickoff`
-- [ ] Display results from `validation_runs` table
-- [ ] Display HITL approval UI
+- [x] Wire onboarding complete → Modal `/kickoff`
+- [x] Display HITL approval UI
+- [ ] **Add Realtime subscription to `validation_progress`**
+- [ ] **Create progress timeline component** showing crew/agent/task progress
+- [ ] **Create validation results view** showing final outputs (VPC, evidence, signals)
+- [ ] **Wire evidence explorer** to display validation evidence
 
 ---
 
