@@ -104,11 +104,18 @@ web_app.add_middleware(
 # -----------------------------------------------------------------------------
 
 class KickoffRequest(BaseModel):
-    """Request to start a new validation run."""
+    """Request to start a new validation run.
+
+    Two-layer architecture:
+    - Layer 1: "Alex" chat in product app collects conversation_transcript
+    - Layer 2: This endpoint triggers OnboardingCrew for validation
+    """
     project_id: UUID
     user_id: UUID
     entrepreneur_input: str = Field(..., min_length=10)
     session_id: Optional[UUID] = None
+    conversation_transcript: Optional[str] = None  # Full conversation from Alex chat
+    user_type: Optional[str] = "founder"  # "founder" or "consultant"
 
 
 class KickoffResponse(BaseModel):
@@ -233,6 +240,8 @@ async def kickoff(
         "phase_state": {
             "entrepreneur_input": request.entrepreneur_input,
             "session_id": str(request.session_id) if request.session_id else None,
+            "conversation_transcript": request.conversation_transcript,
+            "user_type": request.user_type or "founder",
         },
         "started_at": datetime.now(timezone.utc).isoformat(),
     }).execute()

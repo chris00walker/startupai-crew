@@ -1,42 +1,63 @@
 # OnboardingCrew Task Definitions
 # Phase 0: Transform Founder's raw idea into structured Founder's Brief
+#
+# Two-Layer Architecture:
+# - Layer 1: "Alex" chat (Vercel AI SDK in product app) conducts conversational interview
+# - Layer 2: This crew validates and compiles the Founder's Brief
 
-conduct_founder_interview:
+analyze_interview_gaps:
   description: >
-    Conduct a comprehensive conversational interview with the founder to understand
-    their business idea. Cover all 7 key areas:
+    Analyze the conversation transcript from the "Alex" interview to identify gaps
+    in the 7 interview stages. "Alex" is the AI chat assistant in the product app
+    that already conducted the conversational interview - your job is to review
+    the transcript and determine if it's complete enough to proceed.
 
-    1. THE IDEA: Ask them to describe their idea in their own words. Get the
-       one-sentence version they'd tell their grandmother.
+    CONVERSATION TRANSCRIPT (from Alex chat):
+    {conversation_transcript}
 
-    2. THE MOTIVATION: Understand what made them want to build this. Is it a
-       problem they've personally experienced? Why them, why now?
-
-    3. CUSTOMER HYPOTHESIS: Who do they imagine using this? Can they describe
-       their ideal first customer? Where would they find these people?
-
-    4. PROBLEM HYPOTHESIS: What problem are they solving? How are customers
-       solving this today? What's painful about current alternatives?
-
-    5. SOLUTION HYPOTHESIS: How does their solution work? What's different about
-       their approach? What are the 2-3 key features that matter most?
-
-    6. KEY ASSUMPTIONS: What has to be true for this to work? What's the riskiest
-       assumption they're making? What would make them abandon this idea?
-
-    7. SUCCESS CRITERIA: What would make this worth pursuing? What metrics would
-       indicate they're on the right track? What's "good enough" to keep going?
-
-    Founder's input to analyze:
+    EXTRACTED DATA (summary from Alex):
     {entrepreneur_input}
+
+    USER TYPE: {user_type}
+
+    Review each of the 7 stages for completeness:
+
+    1. VISION: Is the core idea clearly articulated? Is there a one-liner version?
+
+    2. PROBLEM: Is the problem statement specific? Is it validated by examples?
+
+    3. CUSTOMER: Is the target customer segment defined? Are characteristics clear?
+
+    4. SOLUTION: Are proposed solutions described? Are key features identified?
+
+    5. MARKET: Is market context provided? Are competitors mentioned?
+
+    6. TRACTION: Is current progress or validation documented? What's been tried?
+
+    7. GOALS: Are validation goals clear? What does success look like?
+
+    For each gap found, provide:
+    - Which stage has the gap
+    - What specific information is missing
+    - A suggested follow-up question to fill the gap
   expected_output: >
-    A structured interview summary containing:
-    - Raw interview notes organized by the 7 areas
-    - Key quotes from the founder (verbatim)
-    - Identified gaps or areas needing clarification
-    - Initial hypothesis statements extracted from responses
-    - Confidence level in each area (high/medium/low)
-  agent: o1_founder_interview
+    A gap analysis report in JSON format:
+    {
+      "completeness_score": 0-100,
+      "gaps_identified": [
+        {
+          "stage": "PROBLEM | CUSTOMER | etc.",
+          "missing_info": "What's missing",
+          "follow_up_question": "Suggested question to ask"
+        }
+      ],
+      "recommendation": "COMPLETE | NEEDS_FOLLOWUP",
+      "analysis_summary": "Brief summary of transcript quality"
+    }
+
+    Mark as COMPLETE if score >= 70 and no critical gaps in PROBLEM, CUSTOMER, or SOLUTION.
+    Mark as NEEDS_FOLLOWUP if score < 70 or critical gaps exist.
+  agent: o1_interview_gap_analyzer
 
 validate_concept_legitimacy:
   description: >
@@ -69,8 +90,8 @@ validate_concept_legitimacy:
     - Has some conceivable revenue model
     - Not already tried and failed catastrophically
 
-    Review the interview output provided by the previous task (conduct_founder_interview)
-    to validate the business concept's legitimacy.
+    Review the gap analysis output from the previous task (analyze_interview_gaps)
+    along with the conversation transcript to validate the business concept's legitimacy.
   expected_output: >
     A legitimacy report in JSON format:
     {
@@ -84,7 +105,7 @@ validate_concept_legitimacy:
     }
   agent: gv1_concept_validator
   context:
-    - conduct_founder_interview
+    - analyze_interview_gaps
 
 verify_intent_capture:
   description: >
@@ -117,8 +138,8 @@ verify_intent_capture:
     - Are success criteria measurable?
     - Are assumptions testable?
 
-    Review the interview output from the previous task (conduct_founder_interview)
-    and compare it against the founder's original input to verify accuracy.
+    Review the gap analysis output from the previous task (analyze_interview_gaps)
+    along with the conversation transcript to verify the founder's intent was captured accurately.
   expected_output: >
     An intent verification report:
     {
@@ -132,7 +153,7 @@ verify_intent_capture:
     }
   agent: gv2_intent_verification
   context:
-    - conduct_founder_interview
+    - analyze_interview_gaps
 
 compile_founders_brief:
   description: >
@@ -185,7 +206,7 @@ compile_founders_brief:
        - overall_status: APPROVED, REJECTED, or PENDING
 
     Use the outputs from the previous tasks in the context:
-    - Interview output from conduct_founder_interview
+    - Gap analysis from analyze_interview_gaps
     - Legitimacy report from validate_concept_legitimacy
     - Intent verification from verify_intent_capture
   expected_output: >
@@ -197,6 +218,6 @@ compile_founders_brief:
     - Honest: Hypotheses clearly marked as unvalidated
   agent: s1_brief_compiler
   context:
-    - conduct_founder_interview
+    - analyze_interview_gaps
     - validate_concept_legitimacy
     - verify_intent_capture

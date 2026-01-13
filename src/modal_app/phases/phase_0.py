@@ -1,11 +1,13 @@
 """
 Phase 0: Onboarding Flow
 
-Captures the Founder's Brief through structured interview and validation.
+Two-layer architecture:
+- Layer 1: "Alex" chat (Vercel AI SDK in product app) conducts conversational interview
+- Layer 2: This flow validates and compiles the Founder's Brief
 
 Crew: OnboardingCrew (4 agents)
 Agents:
-    - O1 (Founder Interview): Conducts 7-area discovery interview
+    - O1 (Interview Gap Analyzer): Analyzes Alex conversation for completeness
     - GV1 (Concept Validator): Legitimacy screening
     - GV2 (Intent Verification): Ensures accurate capture
     - S1 (Brief Compiler): Synthesizes into Founder's Brief
@@ -49,6 +51,8 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     )
 
     entrepreneur_input = state.get("entrepreneur_input", "")
+    conversation_transcript = state.get("conversation_transcript", "")
+    user_type = state.get("user_type", "founder")
 
     # ==========================================================================
     # Execute OnboardingCrew
@@ -57,13 +61,13 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     # Import here to avoid circular imports during Modal image build
     from src.crews.onboarding import run_onboarding_crew
 
-    # Task 1: Founder Interview (O1)
+    # Task 1: Interview Gap Analysis (O1) - analyzes Alex conversation
     update_progress(
         run_id=run_id,
         phase=0,
         crew="OnboardingCrew",
         agent="O1",
-        task="conduct_founder_interview",
+        task="analyze_interview_gaps",
         status="in_progress",
         progress_pct=10,
     )
@@ -103,7 +107,12 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
 
     try:
         # Execute the crew - this runs all 4 agents in sequence
-        founders_brief = run_onboarding_crew(entrepreneur_input)
+        # Pass both the transcript (from Alex) and extracted data
+        founders_brief = run_onboarding_crew(
+            entrepreneur_input=entrepreneur_input,
+            conversation_transcript=conversation_transcript,
+            user_type=user_type,
+        )
 
         # Update progress after successful completion
         update_progress(
