@@ -54,24 +54,45 @@ The product app's `wiring-matrix.md` (lines 53-58) raised these integration ques
 
 ### Q3: Phase 0 endpoint mapping - spec vs product app?
 
-**Answer**: SEPARATED BY DESIGN ✅
+**Answer**: TWO-LAYER ARCHITECTURE ✅
 
-| Layer | Responsibility | Endpoints |
-|-------|----------------|-----------|
-| Product App | Onboarding interview UI | `/api/onboarding/*`, `/api/chat` |
-| CrewAI (Modal) | Phase 0 OnboardingCrew execution | `/kickoff` triggers all phases |
+Phase 0 uses a **two-layer design** that separates conversational data collection from validation:
+
+| Layer | Name | Technology | Responsibility |
+|-------|------|------------|----------------|
+| 1 | **"Alex" Chat** | Vercel AI SDK + OpenAI | Conversational interview (7 stages) with real-time streaming |
+| 2 | **OnboardingCrew** | CrewAI on Modal | Gap analysis, validation, Brief compilation |
+
+**Endpoints by Layer**:
+
+| Layer | Endpoints |
+|-------|-----------|
+| Layer 1 (Alex) | `/api/onboarding/*`, `/api/chat` |
+| Layer 2 (CrewAI) | `/kickoff` triggers Phase 0 → Phase 4 |
 
 **Flow**:
 ```
-[Product App Onboarding] → Captures entrepreneur_input via AI chat
-                       → POST /api/onboarding/complete
-                       → POST /kickoff to Modal with entrepreneur_input
-                       → Phase 0 OnboardingCrew processes
-                       → FoundersBrief generated
-                       → HITL checkpoint created
+[Layer 1: "Alex" Chat]
+  ├── /onboarding/founder or /onboarding/consultant page
+  ├── User converses with "Alex" (Vercel AI SDK streaming)
+  ├── 7 conversational stages cover business context
+  └── Output: entrepreneur_input (conversation transcript + extracted data)
+                       │
+                       ▼ (on completion)
+[Layer 2: OnboardingCrew]
+  ├── POST /api/onboarding/complete triggers POST /kickoff to Modal
+  ├── O1 (Interview Gap Analyzer) analyzes Alex conversation for completeness
+  ├── GV1 validates concept legitimacy
+  ├── GV2 verifies intent capture accuracy
+  ├── S1 compiles structured Founder's Brief
+  └── HITL checkpoint created for founder approval
 ```
 
-The spec's `/interview/start` endpoint is not needed - the product app's `/api/onboarding/*` handles the interview UI, and Phase 0 receives the final `entrepreneur_input`.
+**Why Two Layers?**
+- **Layer 1 (Alex)**: Best UX for interviews - real-time streaming, instant iteration on prompts
+- **Layer 2 (CrewAI)**: Multi-agent validation logic - thorough gap analysis, legitimacy checks
+
+The spec's `/interview/start` endpoint is not needed - "Alex" handles the interview in the product app.
 
 ### Q4: HITL flow - approval_requests table alignment?
 
@@ -505,6 +526,7 @@ The product app's feature docs that reference this repo:
 
 | Date | Change |
 |------|--------|
+| 2026-01-13 | Documented two-layer Phase 0 architecture (Alex chat + OnboardingCrew) |
 | 2026-01-13 | Initial document, answered product app questions |
 
 ---

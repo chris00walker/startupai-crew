@@ -33,14 +33,20 @@ Complete per-phase breakdown of all 14 Crews with their 45 Agents, Tasks, and To
 
 ## Phase 0: Onboarding
 
+> **Two-Layer Architecture**: Phase 0 uses a two-layer design:
+> 1. **"Alex" Chat** (Product App) - Vercel AI SDK conducts the 7-stage conversational interview
+> 2. **OnboardingCrew** (Modal/CrewAI) - Validates, analyzes gaps, and structures the Brief
+>
+> The interview is NOT conducted by CrewAI agents - O1 analyzes the completed Alex conversation.
+
 ### OnboardingCrew
 **File**: `src/crews/onboarding/crew.py`
-**Purpose**: Transform founder input into structured Founder's Brief
+**Purpose**: Validate Alex conversation and compile Founder's Brief
 **Process**: Sequential
 
 | Agent ID | Role | Founder | Tools | Reasoning | Status |
 |----------|------|---------|-------|-----------|--------|
-| O1 | Founder Interview | Sage | `[]` | No | `placeholder` |
+| O1 | Interview Gap Analyzer | Sage | `[]` | Yes | `placeholder` |
 | GV1 | Concept Validator | Guardian | `[]` | Yes | `placeholder` |
 | GV2 | Intent Verification | Guardian | `[]` | Yes | `placeholder` |
 | S1 | Brief Compiler | Sage | `[]` | No | `placeholder` |
@@ -48,7 +54,7 @@ Complete per-phase breakdown of all 14 Crews with their 45 Agents, Tasks, and To
 **Tasks**:
 | Task | Agent | Output |
 |------|-------|--------|
-| `conduct_founder_interview` | O1 | Interview results |
+| `analyze_interview_completeness` | O1 | Gap analysis report |
 | `validate_concept_legitimacy` | GV1 | Legitimacy check |
 | `verify_intent_capture` | GV2 | Verification results |
 | `compile_founders_brief` | S1 | `FoundersBrief` (Pydantic) |

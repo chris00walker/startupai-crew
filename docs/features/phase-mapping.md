@@ -27,7 +27,18 @@ Compare master architecture specifications against actual implementation to iden
 
 ### Spec Reference
 - **Document**: `docs/master-architecture/04-phase-0-onboarding.md`
-- **Purpose**: Capture Founder's Brief through AI-guided interview
+- **Purpose**: Capture Founder's Brief through two-layer architecture
+
+### Two-Layer Architecture
+
+Phase 0 uses a **two-layer design** (documented in spec as of 2026-01-13):
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Layer 1: "Alex" Chat** | Vercel AI SDK (product app) | Conversational interview (7 stages) |
+| **Layer 2: OnboardingCrew** | CrewAI (Modal) | Gap analysis, validation, Brief compilation |
+
+The conversational interview is conducted by "Alex" in the product app (`/onboarding/founder`), NOT by CrewAI agents. O1 is now "Interview Gap Analyzer" - it analyzes the completed Alex conversation for completeness.
 
 ### Implementation
 - **File**: `src/modal_app/phases/phase_0.py`
@@ -39,9 +50,10 @@ Compare master architecture specifications against actual implementation to iden
 |---------|------|----------------|--------|
 | Crew | OnboardingCrew | OnboardingCrew | ✅ Match |
 | Agents | 4 (O1, GV1, GV2, S1) | 4 (O1, GV1, GV2, S1) | ✅ Match |
+| O1 Role | Interview Gap Analyzer | Interview Gap Analyzer | ✅ Match |
 | Tasks | 4 | 4 | ✅ Match |
 | HITL | `approve_founders_brief` | `approve_founders_brief` | ✅ Match |
-| Input | `entrepreneur_input` | `entrepreneur_input` | ✅ Match |
+| Input | `entrepreneur_input` (from Alex) | `entrepreneur_input` | ✅ Match |
 | Output | `FoundersBrief` model | `FoundersBrief` model | ✅ Match |
 | QA validation | QA report required | QA status in checkpoint context | ✅ Match |
 | Session linking | Optional session_id | session_id in phase_state | ✅ Match |
@@ -50,8 +62,7 @@ Compare master architecture specifications against actual implementation to iden
 
 | Gap | Severity | Resolution |
 |-----|----------|------------|
-| Spec mentions interview stage progression | Low | Handled by product app onboarding, not this phase |
-| Spec mentions `/interview/start` endpoint | Informational | Product app uses `/api/onboarding/*` instead |
+| None | - | Two-layer architecture now documented in spec |
 
 ### Alignment: 95%
 
@@ -266,7 +277,7 @@ Compare master architecture specifications against actual implementation to iden
 | Divergence | Reason | Impact |
 |------------|--------|--------|
 | Checkpoint consolidation | Reduce approval fatigue | Fewer HITL interruptions |
-| Product app handles onboarding interview | Separation of concerns | Cleaner architecture |
+| Two-layer Phase 0 ("Alex" + OnboardingCrew) | Best-in-class UX for interview + multi-agent validation | Real-time streaming chat for users, robust validation for quality |
 | Signal-based HITL routing in Phase 2 | Innovation Physics methodology | Dynamic checkpoints |
 
 ### Unintentional Gaps
