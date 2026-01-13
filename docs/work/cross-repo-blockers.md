@@ -1,8 +1,7 @@
 ---
 purpose: "Cross-repository dependency tracking for coordinated delivery"
 status: "active"
-last_reviewed: "2026-01-10 22:00"
-last_synced: "2026-01-10 - Asset generation specs complete, docs updated"
+last_reviewed: "2026-01-13"
 ---
 
 # Cross-Repository Blockers

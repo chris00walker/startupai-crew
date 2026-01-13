@@ -1,8 +1,7 @@
 ---
 purpose: "Private technical source of truth for engineering roadmap"
 status: "active"
-last_reviewed: "2026-01-10"
-last_audit: "2026-01-10 - Plan audit complete, roadmap aligned with reality"
+last_reviewed: "2026-01-13"
 ---
 
 # Roadmap
