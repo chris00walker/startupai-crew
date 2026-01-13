@@ -33,8 +33,10 @@ Complete per-phase breakdown of all 14 Crews with their 45 Agents, Tasks, and To
 
 ## Phase 0: Onboarding
 
-> **Two-Layer Architecture**: Phase 0 uses a two-layer design:
+> **Two-Layer Architecture**: Phase 0 uses a two-layer design for both Founders and Consultants:
 > 1. **"Alex" Chat** (Product App) - Vercel AI SDK conducts the 7-stage conversational interview
+>    - Founders: `/onboarding/founder` (validating own startup)
+>    - Consultants: `/onboarding/consultant` (onboarding client business)
 > 2. **OnboardingCrew** (Modal/CrewAI) - Validates, analyzes gaps, and structures the Brief
 >
 > The interview is NOT conducted by CrewAI agents - O1 analyzes the completed Alex conversation.

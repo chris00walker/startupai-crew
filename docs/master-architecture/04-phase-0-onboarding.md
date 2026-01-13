@@ -15,17 +15,22 @@ Transform the Founder's raw idea into a structured **Founder's Brief** - the pri
 
 ## Two-Layer Architecture
 
-Phase 0 uses a **two-layer architecture** that separates conversational data collection from validation processing:
+Phase 0 uses a **two-layer architecture** that separates conversational data collection from validation processing. This applies to **both user types**:
+
+- **Founders**: `/onboarding/founder` - validating their own startup idea
+- **Consultants**: `/onboarding/consultant` - onboarding a client's business for validation
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  LAYER 1: "ALEX" CHAT (Product App - Vercel AI SDK)                         │
 │                                                                              │
 │  Technology: Vercel AI SDK + OpenAI (streaming chat)                        │
-│  Location: app.startupai.site/onboarding/founder (or /consultant)           │
+│  Location:                                                                   │
+│    • Founders: app.startupai.site/onboarding/founder                        │
+│    • Consultants: app.startupai.site/onboarding/consultant                  │
 │  Purpose: Conversational data collection with real-time streaming           │
 │                                                                              │
-│  7 Conversational Stages:                                                    │
+│  7 Conversational Stages (same for both user types):                        │
 │  1. Welcome & Introduction                                                   │
 │  2. Customer Discovery                                                       │
 │  3. Problem Definition                                                       │

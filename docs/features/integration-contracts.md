@@ -70,12 +70,13 @@ Phase 0 uses a **two-layer design** that separates conversational data collectio
 | Layer 1 (Alex) | `/api/onboarding/*`, `/api/chat` |
 | Layer 2 (CrewAI) | `/kickoff` triggers Phase 0 → Phase 4 |
 
-**Flow**:
+**Flow** (applies to both Founders and Consultants):
 ```
 [Layer 1: "Alex" Chat]
-  ├── /onboarding/founder or /onboarding/consultant page
+  ├── Founders: /onboarding/founder (validating own startup)
+  ├── Consultants: /onboarding/consultant (onboarding client business)
   ├── User converses with "Alex" (Vercel AI SDK streaming)
-  ├── 7 conversational stages cover business context
+  ├── Same 7 conversational stages for both user types
   └── Output: entrepreneur_input (conversation transcript + extracted data)
                        │
                        ▼ (on completion)
