@@ -116,7 +116,7 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 > **If** we provide an end-to-end flow from onboarding to analysis results display,
 > **Then** users will complete the full analysis and find value in the output.
 
-**Status**: ⚠️ PARTIALLY COMPLETE - Backend wired, frontend gaps
+**Status**: ✅ MOSTLY COMPLETE - Core UI wired, results view uses existing components
 
 **Current State** (verified 2026-01-13):
 
@@ -127,17 +127,17 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 | `PATCH /api/approvals/[id]` → Modal `/hitl/approve` | ✅ Wired | HITL decisions work |
 | Webhook receives progress | ✅ Wired | Inserts into `validation_progress` |
 | Approvals UI + Realtime | ✅ Wired | `/approvals` shows HITL requests |
-| **Progress UI + Realtime** | ❌ Missing | No subscription to `validation_progress` |
-| **Validation results display** | ❌ Missing | No UI shows final results |
-| **Progress timeline component** | ❌ Missing | No component shows crew/agent progress |
+| Progress UI + Realtime | ✅ Wired | `useValidationProgress` hook with Realtime |
+| Progress timeline component | ✅ Wired | `ValidationProgressTimeline` component |
+| Validation results display | ✅ Wired | Uses existing `VPCReportViewer` + `InnovationPhysicsPanel` |
 
 **Build Required** (Product App repo):
 - [x] Wire onboarding complete → Modal `/kickoff`
 - [x] Display HITL approval UI
-- [ ] **Add Realtime subscription to `validation_progress`**
-- [ ] **Create progress timeline component** showing crew/agent/task progress
-- [ ] **Create validation results view** showing final outputs (VPC, evidence, signals)
-- [ ] **Wire evidence explorer** to display validation evidence
+- [x] Add Realtime subscription to `validation_progress`
+- [x] Create progress timeline component showing crew/agent/task progress
+- [x] Create validation results view showing final outputs (VPC, evidence, signals)
+- [ ] **Wire evidence explorer** to display validation evidence (uses existing component)
 
 ---
 
