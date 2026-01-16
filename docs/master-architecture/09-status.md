@@ -20,7 +20,7 @@ This document provides an **authoritative, cross-repository view** of implementa
 |---------|--------|------------|--------------|
 | **AI Founders Core** (startupai-crew) | **MCP architecture ready** | ~80% | 60h MCP tool implementation |
 | **Marketing Site** (startupai.site) | Production, static export | ~95% | None (fully unblocked) |
-| **Product App** (app.startupai.site) | Modal integration complete | ~95% | Awaiting MCP completion |
+| **Product App** (app.startupai.site) | Two-Pass Onboarding deployed | ~95% | ADR-005 implementation |
 
 > **MCP Architecture Ready (2026-01-10)**: Adopted Model Context Protocol as unified tool interface. 35 tools (13 EXISTS, 10 MCP Custom, 4 MCP External, 8 LLM-Based) mapped to 45 agents. Asset generation tools (LandingPageGeneratorTool, AdCreativeGeneratorTool) fully specified. Observability architecture defined. See `reference/tool-specifications.md` and `reference/observability-architecture.md`.
 
@@ -514,10 +514,17 @@ Marketing activity feed shows real activity
 
 | Date | Changes |
 |------|---------|
-| **2026-01-16** | Two-Pass Onboarding Architecture |
+| **2026-01-16** | ADR-005 Approved: State-First Synchronized Loop |
+| | Addresses latent durability risks in Two-Pass Architecture (partial saves, race conditions) |
+| | PostgreSQL RPC as atomic commit point with row-level locking |
+| | Splits `chat_history` from `phase_state` for clean separation |
+| | Implementation sequence: PR 1 (Schema), PR 2 (RPC), PR 3 (Modal), PR 4 (Frontend), PR 5 (Cleanup) |
+| | See [ADR-005](../adr/005-state-first-synchronized-loop.md) for full specification |
+| **2026-01-16** | Two-Pass Onboarding Architecture Deployed |
 | | Implemented deterministic backend assessment for Alex stage progression ([ADR-004](../adr/004-two-pass-onboarding-architecture.md)) |
 | | Replaced unreliable LLM tool-calling (18% call rate) with 100% deterministic backend |
 | | Pass 1: LLM conversation (streaming, no tools), Pass 2: Backend assessment (always runs) |
+| | Fixed errata (E1-E4) and live dogfooding issues (P2-P3) |
 | | Updated `04-phase-0-onboarding.md` with Two-Pass implementation details |
 | **2026-01-09** | MCP Architecture Design |
 | | Adopted Model Context Protocol (MCP) as unified tool interface |
@@ -605,6 +612,7 @@ Marketing activity feed shows real activity
 - [ADR-002](../adr/002-modal-serverless-migration.md) - Modal Serverless Migration (Current)
 - [ADR-003](../adr/003-landing-page-storage-migration.md) - Landing Page Storage Migration (Implemented)
 - [ADR-004](../adr/004-two-pass-onboarding-architecture.md) - Two-Pass Onboarding Architecture (Implemented)
+- [ADR-005](../adr/005-state-first-synchronized-loop.md) - State-First Synchronized Loop (Approved)
 
 ### Cross-Repo Status
 - `startupai.site/docs/work/cross-repo-blockers.md`

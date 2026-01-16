@@ -73,6 +73,7 @@ Phase 0 uses a **two-layer architecture** that separates conversational data col
 ### Two-Pass Stage Progression (Alex Implementation)
 
 > **ADR Reference**: See [ADR-004](../adr/004-two-pass-onboarding-architecture.md) for full implementation details.
+> **Evolution**: See [ADR-005](../adr/005-state-first-synchronized-loop.md) for approved next-generation architecture.
 
 Alex uses a **Two-Pass Architecture** for reliable stage progression:
 
@@ -95,6 +96,19 @@ Pass 1: Conversation (streaming)     Pass 2: Assessment (deterministic)
 2. Backend checks coverage against stage thresholds (70-85%)
 3. Stage advances automatically when threshold met
 4. At Stage 7 completion, triggers CrewAI Layer 2
+
+**Evolution (ADR-005 - Approved):**
+
+The Two-Pass Architecture addresses the immediate reliability issue but has latent durability risks:
+- Partial saves: Serverless `onFinish` can be killed after response
+- Race conditions: Last-write-wins merge in app layer
+- Hydration gaps: Frontend treats state as ephemeral
+
+ADR-005 proposes moving the state machine to PostgreSQL with RPC-based atomic commits:
+- `apply_onboarding_turn` RPC with idempotency and row locking
+- Split `chat_history` from `phase_state` for clean separation
+- Binary gate on field coverage for deterministic progress
+- Frontend hydration + realtime subscriptions
 
 ### What This Phase IS About
 
