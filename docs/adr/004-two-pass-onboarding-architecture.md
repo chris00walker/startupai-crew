@@ -1,6 +1,6 @@
 # ADR-004: Two-Pass Onboarding Architecture (Backend-Driven Assessment)
 
-**Status**: Implemented (Errata Pending - see Changelog 2026-01-16)
+**Status**: Implemented (Errata Fixed - see Changelog 2026-01-16)
 **Date**: 2026-01-16
 **Decision Makers**: Chris Walker, Claude AI Assistant
 **Context**: Onboarding stage progression reliability
@@ -251,3 +251,4 @@ Tools and `toolChoice: 'auto'` resume. Known 18% tool call rate issue returns, b
 |            | - MEDIUM: Legacy sessions without stage tags have messages filtered out (undercounted coverage) |
 |            | - LOW: Progress tests use local helper instead of exported function |
 |            | See [Implementation Plan Errata](/home/chris/.claude/plans/async-mixing-ritchie.md#errata-2026-01-16-post-implementation-audit) for fixes |
+| 2026-01-16 | **ERRATA FIXED** (commit `902ef0c`): All 4 issues resolved. 69 tests pass. |
