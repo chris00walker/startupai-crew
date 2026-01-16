@@ -5,6 +5,7 @@
 **Decision Makers**: Chris Walker, Claude AI Assistant
 **Context**: Onboarding stage progression reliability
 **Related**: [Plan: async-mixing-ritchie.md](/home/chris/.claude/plans/async-mixing-ritchie.md)
+**Evolution**: [ADR-005: State-First Synchronized Loop](./005-state-first-synchronized-loop.md) - Proposed successor addressing concurrency and serverless durability
 
 ## Summary
 
