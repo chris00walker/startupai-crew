@@ -252,3 +252,7 @@ Tools and `toolChoice: 'auto'` resume. Known 18% tool call rate issue returns, b
 |            | - LOW: Progress tests use local helper instead of exported function |
 |            | See [Implementation Plan Errata](/home/chris/.claude/plans/async-mixing-ritchie.md#errata-2026-01-16-post-implementation-audit) for fixes |
 | 2026-01-16 | **ERRATA FIXED** (commit `902ef0c`): All 4 issues resolved. 69 tests pass. |
+| 2026-01-16 | **LIVE DOGFOODING FIXES** (discovered during testing with chris00walker@proton.me): |
+|            | - P2 HIGH: Progress regressed after auto-advance (used new stage's 0 coverage) → Fixed in `6c6a4db` |
+|            | - P3 MEDIUM: "Invalid Date" for legacy messages without timestamps → Fixed in `b1c02b9` |
+|            | See [Implementation Plan](/home/chris/.claude/plans/async-mixing-ritchie.md#live-dogfooding-fixes-2026-01-16) for details |
