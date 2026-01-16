@@ -1,7 +1,7 @@
 ---
 purpose: Phase 0 specification - Founder's Brief capture
 status: active
-last_reviewed: 2026-01-13
+last_reviewed: 2026-01-16
 vpd_compliance: true
 ---
 
@@ -69,6 +69,32 @@ Phase 0 uses a **two-layer architecture** that separates conversational data col
 | **Purpose** | Data collection | Validation & structuring |
 
 **Key Principle**: Alex collects, CrewAI validates. The separation ensures best-in-class UX for the conversational interview while leveraging CrewAI's multi-agent orchestration for validation logic.
+
+### Two-Pass Stage Progression (Alex Implementation)
+
+> **ADR Reference**: See [ADR-004](../adr/004-two-pass-onboarding-architecture.md) for full implementation details.
+
+Alex uses a **Two-Pass Architecture** for reliable stage progression:
+
+```
+Pass 1: Conversation (streaming)     Pass 2: Assessment (deterministic)
+┌─────────────────────────────────┐  ┌─────────────────────────────────┐
+│ LLM generates response          │  │ Backend ALWAYS runs             │
+│ NO tools, just conversation     │→ │ generateObject for quality      │
+│ Streams to user immediately     │  │ assessment after each response  │
+└─────────────────────────────────┘  └─────────────────────────────────┘
+```
+
+**Why Two Passes?**
+- LLM tool-calling is unreliable for state management (observed 18% call rate)
+- Conversation quality (streaming, empathetic) conflicts with structured assessment
+- Deterministic backend ensures 100% assessment coverage
+
+**Stage Progression Logic:**
+1. Backend extracts data from conversation after each response
+2. Backend checks coverage against stage thresholds (70-85%)
+3. Stage advances automatically when threshold met
+4. At Stage 7 completion, triggers CrewAI Layer 2
 
 ### What This Phase IS About
 

@@ -1,8 +1,8 @@
 ---
 purpose: Authoritative ecosystem status across all three services
 status: active
-last_reviewed: 2026-01-10
-last_updated: 2026-01-10
+last_reviewed: 2026-01-16
+last_updated: 2026-01-16
 vpd_compliance: true
 ---
 
@@ -374,7 +374,7 @@ Legacy deployment (reference only):
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Supabase Auth | ✅ Production | GitHub OAuth, JWT sessions |
-| Onboarding chat | ✅ Complete | Vercel AI SDK, 7 stages, streaming, session resume |
+| Onboarding chat | ✅ Complete | Vercel AI SDK, 7 stages, streaming, Two-Pass Architecture ([ADR-004](../adr/004-two-pass-onboarding-architecture.md)) |
 | Alex persona | ✅ Complete | Team awareness of 6 AI Founders |
 | Founder dashboard | ✅ Complete | 595 lines, 5 tabs |
 | Consultant dashboard | ✅ Complete | 376 lines, real portfolio data |
@@ -514,6 +514,11 @@ Marketing activity feed shows real activity
 
 | Date | Changes |
 |------|---------|
+| **2026-01-16** | Two-Pass Onboarding Architecture |
+| | Implemented deterministic backend assessment for Alex stage progression ([ADR-004](../adr/004-two-pass-onboarding-architecture.md)) |
+| | Replaced unreliable LLM tool-calling (18% call rate) with 100% deterministic backend |
+| | Pass 1: LLM conversation (streaming, no tools), Pass 2: Backend assessment (always runs) |
+| | Updated `04-phase-0-onboarding.md` with Two-Pass implementation details |
 | **2026-01-09** | MCP Architecture Design |
 | | Adopted Model Context Protocol (MCP) as unified tool interface |
 | | 33 tools: 13 EXISTS, 10 MCP Custom, 4 MCP External, 6 LLM-Based |
@@ -598,6 +603,8 @@ Marketing activity feed shows real activity
 ### Architecture Decision Records
 - [ADR-001](../adr/001-flow-to-crew-migration.md) - Flow to 3-Crew Migration (Superseded)
 - [ADR-002](../adr/002-modal-serverless-migration.md) - Modal Serverless Migration (Current)
+- [ADR-003](../adr/003-landing-page-storage-migration.md) - Landing Page Storage Migration (Implemented)
+- [ADR-004](../adr/004-two-pass-onboarding-architecture.md) - Two-Pass Onboarding Architecture (Implemented)
 
 ### Cross-Repo Status
 - `startupai.site/docs/work/cross-repo-blockers.md`
