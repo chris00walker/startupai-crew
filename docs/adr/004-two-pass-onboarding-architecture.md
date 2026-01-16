@@ -1,6 +1,6 @@
 # ADR-004: Two-Pass Onboarding Architecture (Backend-Driven Assessment)
 
-**Status**: Implemented
+**Status**: Implemented (Errata Pending - see Changelog 2026-01-16)
 **Date**: 2026-01-16
 **Decision Makers**: Chris Walker, Claude AI Assistant
 **Context**: Onboarding stage progression reliability
@@ -93,6 +93,18 @@ export function hashMessageForIdempotency(
 ): string
 ```
 
+**ConversationMessage Interface**:
+
+```typescript
+// Messages stored in conversation_history must include timestamp for UI rendering
+export interface ConversationMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  stage?: number;      // Stage tag for assessment filtering
+  timestamp?: string;  // ISO timestamp for UI display (REQUIRED for proper rendering)
+}
+```
+
 **Quality Assessment Schema**:
 
 ```typescript
@@ -106,8 +118,9 @@ const qualityAssessmentSchema = z.object({
     target_customers: z.array(z.string()).optional(),
     // ... all 25+ stage-specific fields
   }).optional(),
-  keyInsights: z.array(z.string()).optional(),        // Stage 7 only
-  recommendedNextSteps: z.array(z.string()).optional(), // Stage 7 only
+  // Stage 7 completion: MUST have .min(3) to prevent completion stall
+  keyInsights: z.array(z.string()).min(3).optional(),
+  recommendedNextSteps: z.array(z.string()).min(3).optional(),
 });
 ```
 
@@ -130,6 +143,12 @@ const qualityAssessmentSchema = z.object({
    - 1s, 2s, 4s delays (capped at 5s)
    - Failure marker stored for admin monitoring
    - Never blocks user conversation
+
+5. **Legacy Message Handling**: Fallback for untagged messages
+   - Assessment filters by `stage` tag: `history.filter(m => m.stage === stage)`
+   - Pre-deployment sessions lack stage tags
+   - Fallback: if no tagged messages, include all non-system messages
+   - Ensures resumed legacy sessions continue to progress
 
 ## Consequences
 
@@ -226,3 +245,9 @@ Tools and `toolChoice: 'auto'` resume. Known 18% tool call rate issue returns, b
 | Date | Change |
 |------|--------|
 | 2026-01-16 | Initial ADR created and implementation complete |
+| 2026-01-16 | **ERRATA IDENTIFIED** (post-implementation audit by Codex + manual review): |
+|            | - HIGH: `ConversationMessage` missing `timestamp` field (UI shows "Invalid Date" on resume) |
+|            | - MEDIUM: Schema allows < 3 items for Stage 7 arrays but completion requires >= 3 (stall risk) |
+|            | - MEDIUM: Legacy sessions without stage tags have messages filtered out (undercounted coverage) |
+|            | - LOW: Progress tests use local helper instead of exported function |
+|            | See [Implementation Plan Errata](/home/chris/.claude/plans/async-mixing-ritchie.md#errata-2026-01-16-post-implementation-audit) for fixes |
