@@ -257,3 +257,10 @@ Tools and `toolChoice: 'auto'` resume. Known 18% tool call rate issue returns, b
 |            | - P2 HIGH: Progress regressed after auto-advance (used new stage's 0 coverage) → Fixed in `6c6a4db` |
 |            | - P3 MEDIUM: "Invalid Date" for legacy messages without timestamps → Fixed in `b1c02b9` |
 |            | See [Implementation Plan](/home/chris/.claude/plans/async-mixing-ritchie.md#live-dogfooding-fixes-2026-01-16) for details |
+| 2026-01-18 | **OpenRouter Auto-Router Model Selection**: |
+|            | - Replaced hardcoded `claude-3.5-haiku` with `openrouter/auto` for intelligent model selection |
+|            | - Enabled `require_parameters: true` for structured JSON output with response healing |
+|            | - Root cause: Netlify deployment missing ANTHROPIC_API_KEY; OpenRouter fallback used Claude which has unreliable JSON output |
+|            | - Solution: OpenRouter auto-router selects optimal model across 60+ providers for each task |
+|            | - Files modified: `quality-assessment.ts`, `consultant-quality-assessment.ts` |
+|            | See [Plan: prancy-tickling-quokka.md](/home/chris/.claude/plans/prancy-tickling-quokka.md) for context |

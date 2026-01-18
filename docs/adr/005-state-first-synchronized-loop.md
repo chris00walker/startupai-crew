@@ -1,7 +1,8 @@
 # ADR-005: State-First Synchronized Loop (DB-First Onboarding State Machine)
 
-**Status**: Proposed
+**Status**: Accepted (Amended)
 **Date**: 2026-01-16
+**Amended**: 2026-01-16 (Architecture Reality Check)
 **Decision Makers**: Chris Walker, Claude AI Assistant
 **Context**: Onboarding durability, concurrency, and serverless reliability
 **Supersedes**: Extends [ADR-004: Two-Pass Onboarding Architecture](./004-two-pass-onboarding-architecture.md)
@@ -10,7 +11,33 @@
 
 Adopt a database-first onboarding state machine where **Postgres RPC is the atomic commit point**, with split chat vs. structured state, idempotency and versioning, and frontend hydration with realtime subscriptions.
 
-This moves us from "works in dogfooding" to "impossible to break" under concurrency, refreshes, and serverless execution constraints.
+This moves us from "works in dogfooding" to **pragmatic durability** for regular messages and **guaranteed durability** for Stage 7 completion.
+
+## Amendment: Architecture Reality Check (2026-01-16)
+
+### Original vs. Feasible Architecture
+
+The original ADR proposed Modal as the streaming master for Phase 0 chat. Implementation revealed this is **technically infeasible**:
+
+| Constraint | Impact |
+|------------|--------|
+| Modal 150-second HTTP timeout | Phase 0 conversations can last 10-15 minutes |
+| Netlify 30-second function timeout | `onFinish` can be killed after response returns |
+| Serverless isolation | No shared state between requests |
+
+**Resolution**: Next.js handles interactive streaming; Modal handles post-completion validation only.
+
+### Revised Durability Model
+
+| Message Type | Durability Level | Mechanism | Acceptable Risk |
+|--------------|------------------|-----------|-----------------|
+| Regular chat (Stages 1-6) | Client-coordinated | Split /stream + /save, localStorage fallback | Tab close mid-save loses 1 message |
+| Stage advancement | Client-coordinated | localStorage fallback | Retry recovers on next mount |
+| **Stage 7 completion** | **Server-side** | **Queue + background processor** | **Zero data loss** |
+
+**Rationale**: Losing 1 message mid-conversation is recoverable (user re-types). Losing the Stage 7 summary + CrewAI kickoff is NOT recoverable (hours of work lost). The hybrid approach concentrates guarantees where they matter most.
+
+---
 
 ## Context
 
@@ -57,104 +84,143 @@ The architectural mismatch requires an architectural solution.
 ### Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         STATE-FIRST SYNCHRONIZED LOOP                    │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  User Message                                                            │
-│       │                                                                  │
-│       ▼                                                                  │
-│  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │                    Modal Two-Pass Handler                        │    │
-│  │  ┌─────────────────┐    ┌─────────────────┐                     │    │
-│  │  │ Pass 1: Persona │ →  │ Pass 2: Auditor │                     │    │
-│  │  │ (streaming)     │    │ (extraction)    │                     │    │
-│  │  └─────────────────┘    └─────────────────┘                     │    │
-│  │           │                      │                               │    │
-│  │           └──────────┬───────────┘                               │    │
-│  │                      ▼                                           │    │
-│  │         ┌─────────────────────────┐                              │    │
-│  │         │ MANDATORY: Call RPC     │  ← Cannot return until       │    │
-│  │         │ (even if extraction     │    RPC commits               │    │
-│  │         │  fails)                 │                              │    │
-│  │         └─────────────────────────┘                              │    │
-│  └─────────────────────────────────────────────────────────────────┘    │
-│                              │                                           │
-│                              ▼                                           │
-│  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │              PostgreSQL RPC: apply_onboarding_turn               │    │
-│  │  ┌──────────────────────────────────────────────────────────┐   │    │
-│  │  │ 1. SELECT ... FOR UPDATE (serialize writers)             │   │    │
-│  │  │ 2. Check message_id idempotency                          │   │    │
-│  │  │ 3. Append chat_turn to chat_history                      │   │    │
-│  │  │ 4. Deep-merge patch into phase_state                     │   │    │
-│  │  │ 5. Compute progress from field coverage                  │   │    │
-│  │  │ 6. Increment version                                     │   │    │
-│  │  │ 7. COMMIT (atomic)                                       │   │    │
-│  │  └──────────────────────────────────────────────────────────┘   │    │
-│  └─────────────────────────────────────────────────────────────────┘    │
-│                              │                                           │
-│                              ▼                                           │
-│  ┌─────────────────────────────────────────────────────────────────┐    │
-│  │                    Frontend (Hydration + Realtime)               │    │
-│  │  ┌─────────────────┐    ┌─────────────────┐                     │    │
-│  │  │ On Mount:       │    │ Realtime Sub:   │                     │    │
-│  │  │ Hydrate from DB │    │ UPDATE events   │                     │    │
-│  │  │ (full state)    │    │ → UI refresh    │                     │    │
-│  │  └─────────────────┘    └─────────────────┘                     │    │
-│  │                              │                                   │    │
-│  │                              ▼                                   │    │
-│  │                    "Saved ✓ v12"                                 │    │
-│  └─────────────────────────────────────────────────────────────────┘    │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                   STATE-FIRST SYNCHRONIZED LOOP (AMENDED)                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  LAYER 1: INTERACTIVE STREAMING (Next.js/Netlify)                           │
+│  ════════════════════════════════════════════════                           │
+│                                                                              │
+│  User Message                                                                │
+│       │                                                                      │
+│       ▼                                                                      │
+│  /api/chat/stream (stateless)                                               │
+│    - Auth + session validation                                               │
+│    - Stream AI response (Groq via OpenRouter)                                │
+│    - NO persistence, NO onFinish callback                                    │
+│       │                                                                      │
+│       ▼ (stream complete)                                                    │
+│  Frontend (Optimistic UI)                                                    │
+│    - Shows message immediately                                               │
+│    - Saves partial progress to localStorage (recovery cache)                 │
+│    - Calls /api/chat/save                                                    │
+│       │                                                                      │
+│       ▼                                                                      │
+│  /api/chat/save (atomic)                                                     │
+│    - Pass 2: Quality assessment (Stages 1-6 only)                            │
+│    - Call RPC: apply_onboarding_turn                                         │
+│    - Returns { version, stageAdvanced, progress }                            │
+│       │                                                                      │
+│       ▼                                                                      │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │              PostgreSQL RPC: apply_onboarding_turn                   │    │
+│  │  ┌──────────────────────────────────────────────────────────────┐   │    │
+│  │  │ 1. SELECT ... FOR UPDATE (serialize writers)                 │   │    │
+│  │  │ 2. Check expected_version (reject out-of-order)              │   │    │
+│  │  │ 3. Check message_id idempotency                              │   │    │
+│  │  │ 4. Append chat_turn to conversation_history                  │   │    │
+│  │  │ 5. Deep-merge patch into stage_data                          │   │    │
+│  │  │ 6. Compute progress from field coverage                      │   │    │
+│  │  │ 7. Increment version                                         │   │    │
+│  │  │ 8. COMMIT (atomic)                                           │   │    │
+│  │  └──────────────────────────────────────────────────────────────┘   │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│       │                                                                      │
+│       ▼                                                                      │
+│  Frontend confirms: "Saved ✓ v12"                                           │
+│  localStorage cleared (no longer needed)                                     │
+│                                                                              │
+│  ════════════════════════════════════════════════════════════════════════   │
+│                                                                              │
+│  LAYER 2: STAGE 7 COMPLETION (Queue + Background Processor)                 │
+│  ═══════════════════════════════════════════════════════════                │
+│                                                                              │
+│  /api/chat/save detects Stage 7 complete                                    │
+│       │                                                                      │
+│       ▼                                                                      │
+│  complete_onboarding_with_kickoff RPC (ATOMIC)                              │
+│    - Mark session completed                                                  │
+│    - Insert into pending_completions queue                                   │
+│    - Single transaction (rollback if either fails)                           │
+│       │                                                                      │
+│       ▼                                                                      │
+│  Background Processor (Edge Function, pg_cron)                              │
+│    - Claim work item (FOR UPDATE SKIP LOCKED)                               │
+│    - Run quality assessment                                                  │
+│    - Create project                                                          │
+│    - Call Modal kickoff                                                      │
+│    - Update queue with workflow_id                                           │
+│    - Retry with backoff (max 10 → dead_letter)                              │
+│                                                                              │
+│  ════════════════════════════════════════════════════════════════════════   │
+│                                                                              │
+│  LAYER 3: POST-COMPLETION VALIDATION (Modal)                                │
+│  ═══════════════════════════════════════════                                │
+│                                                                              │
+│  Modal OnboardingCrew                                                        │
+│    - Validates Founder's Brief                                               │
+│    - Creates HITL checkpoint for approval                                    │
+│    - Runs async (not blocking chat)                                          │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Five Pillars
+### Five Pillars (Amended)
 
-#### Pillar A: Modal Two-Pass Orchestrator (Sequential + Mandatory)
+#### Pillar A: Split Stream/Save Endpoints (Amended from Modal)
+
+**Original**: Modal Two-Pass Orchestrator
+**Amended**: Next.js Split Endpoints (Modal 150s limit makes streaming infeasible)
 
 For each user message:
 
-1. **Pass 1 (Persona)**: Generate assistant response (streaming-friendly)
-2. **Pass 2 (Auditor)**: Extract structured JSON patch aligned to stage schema
-3. **Mandatory Persistence**: Function MUST NOT terminate until RPC commit succeeds
+1. **`/api/chat/stream`**: Generate assistant response (streaming, stateless)
+2. **`/api/chat/save`**: Extract structured JSON patch + persist to RPC
+3. **Mandatory Persistence**: Save MUST complete before showing "Saved ✓"
 
 **Critical Rule**: Even if extraction fails, the chat message MUST still be saved. The RPC accepts `patch = null` gracefully.
 
-```python
-# Modal handler - MUST await RPC before returning
-async def handle_message(run_id: str, user_message: str) -> str:
-    message_id = generate_uuid()
+```typescript
+// Next.js /api/chat/save handler
+export async function POST(request: NextRequest) {
+  const { sessionId, messageId, userMessage, assistantMessage, expectedVersion } = await request.json();
 
-    # Pass 1: Generate response
-    assistant_response = await generate_persona_response(user_message)
+  // Pass 2: Extract structured data (may fail)
+  let patch = null;
+  try {
+    const assessment = await assessConversationQuality(stage, history, existingBrief);
+    patch = assessment?.extractedData || null;
+  } catch (error) {
+    console.warn('[save] Extraction failed, saving chat only');
+  }
 
-    # Pass 2: Extract structured data (may fail)
-    try:
-        patch = await extract_structured_patch(user_message, assistant_response)
-    except Exception:
-        patch = None  # Extraction failed, but chat still saved
+  // MANDATORY: Call RPC (blocks until committed)
+  const chatTurn = {
+    message_id: messageId,
+    role: 'user',
+    content: userMessage,
+    timestamp: new Date().toISOString(),
+  };
+  const assistantTurn = {
+    message_id: `${messageId}-assistant`,
+    role: 'assistant',
+    content: assistantMessage,
+    timestamp: new Date().toISOString(),
+  };
 
-    # MANDATORY: Call RPC (blocks until committed)
-    chat_turn = {
-        "message_id": message_id,
-        "user": user_message,
-        "assistant": assistant_response,
-        "timestamp": datetime.utcnow().isoformat()
-    }
+  const { data: result } = await supabase.rpc('apply_onboarding_turn', {
+    p_session_id: sessionId,
+    p_message_id: messageId,
+    p_chat_turns: [chatTurn, assistantTurn],
+    p_patch: patch,
+    p_expected_version: expectedVersion,  // Out-of-order defense
+  });
 
-    result = await supabase.rpc("apply_onboarding_turn", {
-        "p_run_id": run_id,
-        "p_message_id": message_id,
-        "p_chat_turn": chat_turn,
-        "p_patch": patch
-    })
-
-    return assistant_response  # Only return AFTER commit
+  return NextResponse.json(result);
+}
 ```
 
-#### Pillar B: PostgreSQL RPC as Atomic Commit Point
+#### Pillar B: PostgreSQL RPC as Atomic Commit Point (With expected_version)
 
 Move "fetch → merge → compute → save" into a single PostgreSQL function with transactional guarantees.
 
@@ -166,21 +232,22 @@ Move "fetch → merge → compute → save" into a single PostgreSQL function wi
 | No duplicates | `message_id` idempotency check |
 | No partial saves | Single transaction commits atomically |
 | Auditability | `version` is monotonic, enables "Saved v12" UX |
-| Out-of-order defense | Slower completions can't revert state |
+| **Out-of-order defense** | **`expected_version` rejects stale writes** |
 
 ```sql
 CREATE OR REPLACE FUNCTION apply_onboarding_turn(
-    p_run_id UUID,
+    p_session_id VARCHAR(255),
     p_message_id UUID,
-    p_chat_turn JSONB,
-    p_patch JSONB DEFAULT NULL
+    p_chat_turns JSONB,
+    p_patch JSONB DEFAULT NULL,
+    p_expected_version INT DEFAULT NULL  -- Out-of-order defense
 )
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-    v_run RECORD;
+    v_session RECORD;
     v_new_history JSONB;
     v_new_state JSONB;
     v_new_version INT;
@@ -188,62 +255,78 @@ DECLARE
     v_new_stage INT;
 BEGIN
     -- 1. Lock row for update (serializes concurrent writers)
-    SELECT * INTO v_run
-    FROM validation_runs
-    WHERE id = p_run_id
+    SELECT * INTO v_session
+    FROM onboarding_sessions
+    WHERE session_id = p_session_id
       AND user_id = auth.uid()  -- RLS-safe
     FOR UPDATE;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Run not found or unauthorized';
+        RETURN jsonb_build_object('status', 'not_found');
     END IF;
 
-    -- 2. Idempotency: check if message_id already exists
-    IF v_run.chat_history @> jsonb_build_array(jsonb_build_object('message_id', p_message_id)) THEN
-        -- Already processed, return current state (no-op)
+    -- 2. Out-of-order defense: reject stale writes
+    IF p_expected_version IS NOT NULL AND v_session.version != p_expected_version THEN
         RETURN jsonb_build_object(
-            'status', 'duplicate',
-            'version', v_run.version,
-            'current_stage', v_run.current_stage
+            'status', 'version_conflict',
+            'current_version', v_session.version,
+            'expected_version', p_expected_version
         );
     END IF;
 
-    -- 3. Append chat turn to history
-    v_new_history := v_run.chat_history || jsonb_build_array(p_chat_turn);
+    -- 3. Idempotency: check if message_id already exists
+    IF v_session.conversation_history @> jsonb_build_array(
+        jsonb_build_object('message_id', p_message_id)
+    ) THEN
+        -- Already processed, return current state (no-op)
+        RETURN jsonb_build_object(
+            'status', 'duplicate',
+            'version', v_session.version,
+            'current_stage', v_session.current_stage
+        );
+    END IF;
 
-    -- 4. Deep-merge patch into phase_state (if provided)
+    -- 4. Append chat turns to history
+    v_new_history := v_session.conversation_history || p_chat_turns;
+
+    -- 5. Deep-merge patch into stage_data (if provided)
     IF p_patch IS NOT NULL THEN
-        v_new_state := jsonb_deep_merge(v_run.phase_state, p_patch);
+        v_new_state := jsonb_deep_merge(
+            COALESCE(v_session.stage_data, '{}'::jsonb),
+            jsonb_build_object('brief', p_patch)
+        );
     ELSE
-        v_new_state := v_run.phase_state;
+        v_new_state := v_session.stage_data;
     END IF;
 
-    -- 5. Compute progress from field coverage (deterministic)
-    v_progress := compute_stage_progress(v_run.current_stage, v_new_state);
+    -- 6. Compute progress from field coverage (deterministic)
+    v_progress := compute_stage_progress(v_session.current_stage, v_new_state);
 
-    -- 6. Check stage advancement (binary gate: all required fields present)
-    v_new_stage := v_run.current_stage;
-    IF stage_requirements_met(v_run.current_stage, v_new_state) THEN
-        v_new_stage := LEAST(v_run.current_stage + 1, 7);
+    -- 7. Check stage advancement (binary gate: required fields present)
+    v_new_stage := v_session.current_stage;
+    IF stage_requirements_met(v_session.current_stage, v_new_state) THEN
+        v_new_stage := LEAST(v_session.current_stage + 1, 7);
     END IF;
 
-    -- 7. Increment version and update
-    v_new_version := v_run.version + 1;
+    -- 8. Increment version and update
+    v_new_version := COALESCE(v_session.version, 0) + 1;
 
-    UPDATE validation_runs
-    SET chat_history = v_new_history,
-        phase_state = v_new_state,
+    UPDATE onboarding_sessions
+    SET conversation_history = v_new_history,
+        stage_data = v_new_state,
         current_stage = v_new_stage,
         version = v_new_version,
         overall_progress = v_progress,
-        updated_at = NOW()
-    WHERE id = p_run_id;
+        message_count = COALESCE(message_count, 0) + jsonb_array_length(p_chat_turns),
+        last_activity = NOW()
+    WHERE session_id = p_session_id;
 
-    -- 8. Return result for frontend
+    -- 9. Return result for frontend
     RETURN jsonb_build_object(
         'status', 'committed',
         'version', v_new_version,
         'current_stage', v_new_stage,
+        'stage_advanced', v_new_stage > v_session.current_stage,
         'progress', v_progress
     );
 END;
@@ -256,34 +339,19 @@ Separate concerns to prevent cross-contamination:
 
 | Column | Purpose | Properties |
 |--------|---------|------------|
-| `chat_history` | Durable record of conversation turns | Append-only, includes `message_id` |
-| `phase_state` | Structured business data per stage | Deep-merged from extraction patches |
+| `conversation_history` | Durable record of conversation turns | Append-only, includes `message_id` |
+| `stage_data.brief` | Structured business data per stage | Deep-merged from extraction patches |
 
 **Benefits**:
 - Extraction failures don't corrupt conversation integrity
-- Prompts can reference `chat_history` without parsing business state
-- Queries against `phase_state` are clean and typed
-
-```typescript
-// phase_state structure (typed per stage)
-interface PhaseState {
-  stage1?: {
-    business_concept?: string;
-    inspiration?: string;
-  };
-  stage2?: {
-    target_segment?: string;
-    customer_pain_points?: string[];
-  };
-  // ... stages 3-7
-}
-```
+- Prompts can reference `conversation_history` without parsing business state
+- Queries against `stage_data` are clean and typed
 
 #### Pillar D: Deterministic Progress + Binary Gate
 
 Replace fuzzy LLM-assessed thresholds with **field-coverage requirements**.
 
-**Stage Advancement Rule**: Stage N advances to N+1 if and only if ALL required fields for stage N are non-null/non-empty in `phase_state`.
+**Stage Advancement Rule**: Stage N advances to N+1 if and only if ALL required fields for stage N are non-null/non-empty in `stage_data.brief`.
 
 ```sql
 -- Deterministic stage requirements (no LLM opinion)
@@ -294,18 +362,31 @@ CREATE OR REPLACE FUNCTION stage_requirements_met(
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 AS $$
+DECLARE
+    v_brief JSONB;
 BEGIN
+    v_brief := COALESCE(p_state->'brief', '{}'::jsonb);
+
     CASE p_stage
         WHEN 1 THEN
-            RETURN p_state->'stage1'->>'business_concept' IS NOT NULL
-               AND p_state->'stage1'->>'inspiration' IS NOT NULL;
+            RETURN v_brief->>'business_concept' IS NOT NULL
+               AND v_brief->>'inspiration' IS NOT NULL;
         WHEN 2 THEN
-            RETURN p_state->'stage2'->>'target_segment' IS NOT NULL
-               AND jsonb_array_length(COALESCE(p_state->'stage2'->'customer_pain_points', '[]')) >= 2;
-        -- ... stages 3-7
+            RETURN jsonb_array_length(COALESCE(v_brief->'target_customers', '[]')) >= 1
+               AND jsonb_array_length(COALESCE(v_brief->'customer_segments', '[]')) >= 1;
+        WHEN 3 THEN
+            RETURN v_brief->>'problem_description' IS NOT NULL
+               AND v_brief->>'pain_level' IS NOT NULL;
+        WHEN 4 THEN
+            RETURN v_brief->>'solution_description' IS NOT NULL
+               AND v_brief->>'unique_value_prop' IS NOT NULL;
+        WHEN 5 THEN
+            RETURN jsonb_array_length(COALESCE(v_brief->'competitors', '[]')) >= 1;
+        WHEN 6 THEN
+            RETURN v_brief->>'budget_range' IS NOT NULL;
         WHEN 7 THEN
-            RETURN jsonb_array_length(COALESCE(p_state->'stage7'->'key_insights', '[]')) >= 3
-               AND jsonb_array_length(COALESCE(p_state->'stage7'->'next_steps', '[]')) >= 3;
+            RETURN jsonb_array_length(COALESCE(v_brief->'short_term_goals', '[]')) >= 1
+               AND jsonb_array_length(COALESCE(v_brief->'success_metrics', '[]')) >= 1;
         ELSE
             RETURN FALSE;
     END CASE;
@@ -313,68 +394,68 @@ END;
 $$;
 ```
 
-**Progress Calculation**: Derived from field coverage, not stored (to avoid drift).
+**Progress Calculation**: Derived from field coverage, stored for query convenience but only updated inside RPC.
 
-```sql
--- Progress = (filled required fields / total required fields) per stage
-CREATE OR REPLACE FUNCTION compute_stage_progress(
-    p_stage INT,
-    p_state JSONB
-)
-RETURNS INT
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    v_base INT;
-    v_stage_progress FLOAT;
-BEGIN
-    -- Base progress from completed stages (0-85%)
-    v_base := ((p_stage - 1) * 100) / 7;
+#### Pillar E: Frontend Hydration + Realtime + localStorage Reconciliation (Amended)
 
-    -- Stage progress from field coverage (0-14% within stage)
-    v_stage_progress := calculate_field_coverage(p_stage, p_state) * (100.0 / 7);
+The frontend is a **view** of database state, with localStorage as a **recovery cache**.
 
-    RETURN LEAST(95, v_base + v_stage_progress::INT);
-END;
-$$;
-```
+**Reconciliation Rules**:
 
-#### Pillar E: Frontend Hydration + Realtime
-
-The frontend is a **view** of database state, not the source of truth.
+| Scenario | Resolution |
+|----------|------------|
+| Mount with no localStorage | Hydrate from DB |
+| Mount with localStorage pending saves | Attempt recovery, then hydrate from DB |
+| localStorage version < DB version | Discard localStorage, DB wins |
+| localStorage version = DB version | localStorage is stale cache, discard |
+| Realtime UPDATE received | Update UI, clear related localStorage |
+| Save succeeds | Clear localStorage for that message |
+| Save fails | Keep in localStorage for retry |
 
 **On Mount**:
 ```typescript
-// Hydrate from DB (not localStorage, not URL params)
-const { data: run } = await supabase
-  .from('validation_runs')
+// 1. Check for pending saves in localStorage
+const pending = getPendingSaves(sessionId);
+if (pending.length > 0) {
+  await recoverPendingSaves(pending);  // Attempt to save to DB
+}
+
+// 2. Hydrate from DB (source of truth)
+const { data: session } = await supabase
+  .from('onboarding_sessions')
   .select('*')
-  .eq('id', runId)
+  .eq('session_id', sessionId)
   .single();
 
-setMessages(run.chat_history);
-setPhaseState(run.phase_state);
-setCurrentStage(run.current_stage);
-setVersion(run.version);
+setMessages(session.conversation_history);
+setStageData(session.stage_data);
+setCurrentStage(session.current_stage);
+setVersion(session.version);
+
+// 3. Clear any localStorage that's now stale
+clearStalePendingSaves(sessionId, session.version);
 ```
 
 **Realtime Subscription**:
 ```typescript
-// Subscribe to updates for this run
+// Subscribe to updates for this session
 const subscription = supabase
-  .channel(`run:${runId}`)
+  .channel(`session:${sessionId}`)
   .on('postgres_changes', {
     event: 'UPDATE',
     schema: 'public',
-    table: 'validation_runs',
-    filter: `id=eq.${runId}`
+    table: 'onboarding_sessions',
+    filter: `session_id=eq.${sessionId}`
   }, (payload) => {
     // Backend committed - update UI
-    setMessages(payload.new.chat_history);
-    setPhaseState(payload.new.phase_state);
+    setMessages(payload.new.conversation_history);
+    setStageData(payload.new.stage_data);
     setCurrentStage(payload.new.current_stage);
     setVersion(payload.new.version);
     showSaveConfirmation(`Saved v${payload.new.version}`);
+
+    // Clear localStorage - DB is now authoritative
+    clearPendingSaves(sessionId);
   })
   .subscribe();
 ```
@@ -391,170 +472,181 @@ const subscription = supabase
 └─────────────────────────────────────────┘
 ```
 
+---
+
 ## Data Model
 
-### Primary Table: `validation_runs`
+### Primary Table: `onboarding_sessions` (Existing, with version column)
 
 ```sql
-CREATE TABLE validation_runs (
+-- Add version column to existing table
+ALTER TABLE onboarding_sessions
+ADD COLUMN IF NOT EXISTS version INT NOT NULL DEFAULT 0;
+
+-- Existing columns used:
+-- session_id VARCHAR(255) PRIMARY KEY
+-- user_id UUID NOT NULL
+-- conversation_history JSONB DEFAULT '[]'
+-- stage_data JSONB DEFAULT '{}'
+-- current_stage INT DEFAULT 1
+-- overall_progress INT DEFAULT 0
+-- status VARCHAR(50) DEFAULT 'active'
+-- message_count INT DEFAULT 0
+-- last_activity TIMESTAMPTZ
+-- created_at TIMESTAMPTZ
+```
+
+### Queue Table: `pending_completions` (Stage 7 Durability)
+
+```sql
+CREATE TABLE pending_completions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id),
-    project_id UUID REFERENCES projects(id),
+    session_id VARCHAR(255) NOT NULL UNIQUE,  -- Prevents duplicate kickoffs
+    user_id UUID NOT NULL,
+    conversation_history JSONB NOT NULL,
+    stage_data JSONB NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',  -- pending, processing, completed, dead_letter
+    attempts INT DEFAULT 0,
+    last_attempt TIMESTAMPTZ,
+    workflow_id VARCHAR(255),  -- Populated on successful kickoff
+    project_id UUID,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    completed_at TIMESTAMPTZ,
+    error_message TEXT,
 
-    -- Split state (Pillar C)
-    chat_history JSONB NOT NULL DEFAULT '[]'::jsonb,
-    phase_state JSONB NOT NULL DEFAULT '{}'::jsonb,
-
-    -- Progression
-    current_stage INT NOT NULL DEFAULT 1,
-    overall_progress INT NOT NULL DEFAULT 0,
-    status TEXT NOT NULL DEFAULT 'active',
-
-    -- Versioning (Pillar B)
-    version INT NOT NULL DEFAULT 0,
-
-    -- Timestamps
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    CONSTRAINT fk_session FOREIGN KEY (session_id)
+        REFERENCES onboarding_sessions(session_id) ON DELETE CASCADE
 );
 
--- Indexes
-CREATE INDEX idx_validation_runs_user ON validation_runs(user_id);
-CREATE INDEX idx_validation_runs_status ON validation_runs(status);
-
--- RLS
-ALTER TABLE validation_runs ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own runs"
-    ON validation_runs FOR SELECT
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own runs"
-    ON validation_runs FOR UPDATE
-    USING (auth.uid() = user_id);
+-- Safe claiming for parallel workers
+CREATE INDEX idx_pending_completions_status ON pending_completions(status, created_at);
 ```
 
-### Migration from `onboarding_sessions`
+### Atomic Completion RPC (Stage 7)
 
 ```sql
--- Migrate existing data
-INSERT INTO validation_runs (
-    id, user_id, project_id,
-    chat_history, phase_state,
-    current_stage, overall_progress, status,
-    version, created_at, updated_at
+CREATE OR REPLACE FUNCTION complete_onboarding_with_kickoff(
+    p_session_id VARCHAR(255),
+    p_user_id UUID
 )
-SELECT
-    session_id,
-    user_id,
-    project_id,
-    COALESCE(conversation_history, '[]'::jsonb),
-    COALESCE(stage_data->'brief', '{}'::jsonb),
-    current_stage,
-    overall_progress,
-    status,
-    1,  -- Start versioning
-    created_at,
-    last_activity
-FROM onboarding_sessions;
+RETURNS JSONB
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_session RECORD;
+BEGIN
+    -- Lock and fetch session
+    SELECT * INTO v_session
+    FROM onboarding_sessions
+    WHERE session_id = p_session_id
+    FOR UPDATE;
+
+    IF v_session IS NULL THEN
+        RETURN jsonb_build_object('status', 'not_found');
+    END IF;
+
+    IF v_session.status = 'completed' THEN
+        -- Already completed - but ensure queue row exists (recovery case)
+        IF NOT EXISTS (SELECT 1 FROM pending_completions WHERE session_id = p_session_id) THEN
+            -- Missing queue row - re-insert for recovery
+            INSERT INTO pending_completions (session_id, user_id, conversation_history, stage_data)
+            VALUES (p_session_id, p_user_id, v_session.conversation_history, v_session.stage_data);
+            RETURN jsonb_build_object('status', 'requeued');
+        END IF;
+        RETURN jsonb_build_object('status', 'already_completed');
+    END IF;
+
+    -- ATOMIC: Mark complete AND insert queue row in same transaction
+    UPDATE onboarding_sessions
+    SET status = 'completed',
+        completed_at = NOW(),
+        last_activity = NOW()
+    WHERE session_id = p_session_id;
+
+    INSERT INTO pending_completions (session_id, user_id, conversation_history, stage_data)
+    VALUES (p_session_id, p_user_id, v_session.conversation_history, v_session.stage_data)
+    ON CONFLICT (session_id) DO NOTHING;  -- Idempotent
+
+    RETURN jsonb_build_object('status', 'queued');
+END;
+$$;
 ```
+
+---
 
 ## Operational Guarantees
 
-With RPC + split state + idempotency + versioning:
+With RPC + split state + idempotency + versioning + expected_version:
 
 | Failure Mode | Prevention Mechanism |
 |--------------|---------------------|
-| Partial saves | Modal blocks until RPC COMMIT |
+| Partial saves (Stages 1-6) | Split /stream + /save; localStorage recovery |
+| Partial saves (Stage 7) | Queue + background processor with retry |
 | Data loss on refresh | Frontend hydrates from DB |
 | Stage lock | Binary gate on field coverage |
 | 0% progress | Progress derived from persisted fields |
 | Concurrent clobbering | `FOR UPDATE` serializes writers |
 | Duplicate messages | `message_id` idempotency check |
-| Out-of-order updates | `version` is monotonic |
+| **Out-of-order updates** | **`expected_version` rejects stale writes** |
+| Tab close mid-stream | localStorage saves partial progress |
+| Tab close before save | localStorage recovery on next mount |
+| **Worker crashes mid-processing** | **Lease timeout: items stuck > 5 min are reclaimed** |
+| **Missing queue row (completed session)** | **Recovery: RPC re-inserts missing queue row** |
 
-## Answers to Open Questions
+### Accepted Limitations
 
-### Q1: Should progress be stored or derived?
+| Limitation | Impact | Mitigation |
+|------------|--------|------------|
+| Tab close mid-stream (Stages 1-6) | 1 message lost | User re-types; partial progress in localStorage |
+| Tab close before save starts | 1 message lost | localStorage recovery on next mount |
+| Network failure | Save delayed | Retry 3x with backoff; localStorage fallback |
 
-**Recommendation: Derive, with optional cache.**
-
-- Primary: Always derive progress from `phase_state` field coverage
-- Cache: Store `overall_progress` in table for query convenience, but ONLY update it inside the RPC
-- This prevents drift between stored and computed values
-
-### Q2: Do we need `validation_progress` event log immediately?
-
-**Recommendation: Start with `validation_runs` subscription, add event log later.**
-
-- Phase 1: Subscribe to `validation_runs` UPDATE events (sufficient for MVP)
-- Phase 2: Add `validation_events` append-only log for richer analytics/debugging
-- The event log adds complexity; validate core architecture first
-
-### Q3: Should auto-advance be server-driven or UI-driven?
-
-**Recommendation: Server-driven in RPC.**
-
-- Stage advancement happens atomically with state update (inside RPC)
-- UI receives new stage via realtime subscription
-- Prevents race where UI thinks it advanced but DB disagrees
-- Binary gate logic lives in one place (PostgreSQL), not duplicated in UI
-
-## Consequences
-
-### Positive
-
-1. **Impossible to partially save** - RPC is atomic, Modal blocks until commit
-2. **Impossible to lose data on refresh** - Frontend always hydrates from DB
-3. **Impossible to clobber under concurrency** - Row-level locking serializes
-4. **Impossible to duplicate messages** - `message_id` idempotency
-5. **Deterministic progress** - No LLM opinion, just field coverage
-6. **Auditable state** - `version` enables "Saved v12" UX and debugging
-7. **Clean separation** - Chat history vs. business state don't contaminate each other
-
-### Negative
-
-1. **Migration complexity** - Must migrate `onboarding_sessions` → `validation_runs`
-2. **PostgreSQL function maintenance** - RPC logic lives in SQL, not TypeScript
-3. **Realtime dependency** - Requires Supabase Realtime to be reliable
-4. **Testing complexity** - Must test RPC functions separately
-
-### Mitigations
-
-| Risk | Mitigation |
-|------|------------|
-| Migration | Backfill script with validation; keep old table as backup |
-| SQL maintenance | Keep RPC simple; complex logic in helper functions |
-| Realtime failure | Fallback polling on subscription error |
-| Testing | Supabase local for RPC tests; Jest for frontend hydration |
+---
 
 ## Implementation Sequence
 
-### PR 1: Schema + Migration
-- Add `validation_runs` table with `chat_history`, `phase_state`, `version`
+### PR 1: Schema + RPC
+- Add `version` column to `onboarding_sessions`
 - Create `jsonb_deep_merge` helper function
-- Migration script from `onboarding_sessions`
+- Create `apply_onboarding_turn` RPC with row lock + idempotency + expected_version
+- Create `stage_requirements_met` and `compute_stage_progress` functions
 
-### PR 2: Core RPC
-- Implement `apply_onboarding_turn` with row lock + idempotency
-- Implement `stage_requirements_met` and `compute_stage_progress`
-- Unit tests for RPC functions
+### PR 2: Stream Endpoint
+- Create `/api/chat/stream` (stateless, no persistence)
+- Extract streaming logic from current `/api/chat/route.ts`
+- Remove `onFinish` callback entirely
 
-### PR 3: Modal Handler Update
-- Update Modal to call RPC instead of direct Supabase updates
-- Ensure handler blocks until RPC commit
-- Handle extraction failures gracefully (chat still saved)
+### PR 3: Save Endpoint
+- Create `/api/chat/save` (calls RPC)
+- Run quality assessment (Pass 2) for Stages 1-6
+- Call `apply_onboarding_turn` RPC
+- Handle version conflicts (refetch + retry)
 
-### PR 4: Frontend Hydration + Realtime
-- Hydrate from `validation_runs` on mount
-- Subscribe to realtime updates filtered by `id=eq.runId`
-- Show "Saved v{version}" confirmation
-- Remove localStorage/URL state dependencies
+### PR 4: Frontend Integration
+- Update `handleSubmit` to call `/stream` then `/save`
+- Add "Saved ✓ v{X}" indicator
+- Add retry logic with exponential backoff
+- Add localStorage fallback for pending saves
+- Implement reconciliation rules
 
-### PR 5: Cleanup + Deprecation
-- Deprecate `onboarding_sessions` table
-- Remove Two-Pass `onFinish` callback logic
-- Update documentation
+### PR 5: Recovery Logic
+- Check localStorage for pending saves on mount
+- Attempt recovery before DB hydration
+- Clear stale localStorage after successful recovery/hydration
+
+### PR 6: Stage 7 Queue
+- Create `pending_completions` table
+- Create `complete_onboarding_with_kickoff` atomic RPC
+- Create background processor (Edge Function or pg_cron)
+- Implement safe claiming with `FOR UPDATE SKIP LOCKED`
+- Retry with exponential backoff (max 10 → dead_letter)
+
+### PR 7: Cleanup
+- Deprecate old `/api/chat/route.ts`
+- Update tests
+- Add E2E tests for save flow, version conflicts, Stage 7 queue
+
+---
 
 ## Verification
 
@@ -564,7 +656,7 @@ With RPC + split state + idempotency + versioning:
 supabase test db
 
 # Frontend hydration tests
-pnpm test -- --testPathPattern="validation-runs"
+pnpm test -- --testPathPattern="onboarding"
 
 # E2E: concurrent submission test
 pnpm test:e2e -- concurrent-onboarding
@@ -572,28 +664,53 @@ pnpm test:e2e -- concurrent-onboarding
 
 ### Manual
 1. Start onboarding, refresh mid-conversation → chat history preserved
-2. Open two tabs, submit simultaneously → no clobbering, both messages saved
-3. Kill browser mid-message → next visit shows last saved state
+2. Open two tabs, submit simultaneously → version conflict detected, both messages eventually saved
+3. Kill browser mid-message → next visit recovers from localStorage or shows last DB state
 4. Complete stage requirements → stage advances automatically
-5. Check "Saved v{X}" updates in realtime
+5. Check "Saved v{X}" updates after each message
+6. Complete Stage 7 → verify queued and processed by background worker
+
+---
 
 ## Rollback Plan
 
 If critical issues arise:
 
-1. Revert Modal handler to direct Supabase updates
+1. Revert to monolithic `/api/chat/route.ts` with `onFinish`
 2. Frontend reads from `onboarding_sessions` (still populated)
 3. Two-Pass Architecture (ADR-004) resumes with known limitations
+
+---
 
 ## References
 
 - [ADR-004: Two-Pass Onboarding Architecture](./004-two-pass-onboarding-architecture.md)
+- [Implementation Plan](/home/chris/.claude/plans/shiny-growing-sprout.md)
 - [Supabase Row Level Security](https://supabase.com/docs/guides/auth/row-level-security)
 - [PostgreSQL FOR UPDATE](https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE)
 - [Supabase Realtime](https://supabase.com/docs/guides/realtime)
+
+---
 
 ## Changelog
 
 | Date | Change |
 |------|--------|
 | 2026-01-16 | Initial ADR proposed |
+| 2026-01-16 | **AMENDED**: Architecture Reality Check - Modal 150s limit makes streaming infeasible; adopted Next.js split /stream + /save; added expected_version for out-of-order defense; kept onboarding_sessions (no migration to validation_runs); added localStorage reconciliation rules; clarified pragmatic vs guaranteed durability |
+| 2026-01-18 | **AMENDMENT: Pillar D Implementation Reality** |
+|            | - SQL-based `stage_requirements_met()` and `compute_stage_progress()` functions were **not implemented** |
+|            | - Actual implementation uses TypeScript `shouldAdvanceStage()` in `quality-assessment.ts` |
+|            | - **Topic-based advancement**: Stage advances when 75%+ of topics discussed (not field presence) |
+|            | - This approach is more flexible for conversational UX but diverges from the deterministic SQL gate described in Pillar D |
+|            | - Related: [precious-kindling-balloon.md](/home/chris/.claude/plans/precious-kindling-balloon.md) TDD implementation |
+| 2026-01-18 | **AMENDMENT: SummaryModal Approve/Revise Split Completion Flow** |
+|            | - Problem: `complete_onboarding_with_kickoff()` inserted queue row immediately on Stage 7 completion |
+|            | - This broke the Revise flow - pg_cron processed queue regardless of user choice |
+|            | - Solution: Split completion into two discrete RPCs |
+|            | - `queue_onboarding_for_kickoff()` - Called when user clicks "Approve" in SummaryModal |
+|            | - `reset_session_for_revision()` - Called when user clicks "Revise", cancels pending queue, resets session |
+|            | - `/api/chat/save` no longer auto-queues; returns `queued: false` |
+|            | - New endpoints: `/api/onboarding/queue`, `/api/onboarding/revise` |
+|            | - Migration: `20260118000001_split_completion_flow.sql` |
+|            | See [Plan: prancy-tickling-quokka.md](/home/chris/.claude/plans/prancy-tickling-quokka.md) for implementation details |
