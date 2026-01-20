@@ -1,69 +1,92 @@
 ---
 document_type: feature-audit
 status: active
-last_verified: 2026-01-13
+last_verified: 2026-01-19
+architectural_pivot: 2026-01-19
 ---
 
 # Crew-Agent-Task Matrix
 
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start - no AI, no agents. Agent count: 45 → 43. See [ADR-006](../adr/006-quick-start-architecture.md).
+
 ## Purpose
-Complete per-phase breakdown of all 14 Crews with their 45 Agents, Tasks, and Tool wiring.
+Complete per-phase breakdown of all 14 Crews with their 43 Agents, Tasks, and Tool wiring.
 
 ## Summary Statistics
 
 | Metric | Canonical | Implemented | Gap |
 |--------|-----------|-------------|-----|
 | Crews | 14 | 14 | 0 |
-| Agents | 45 | 45 | 0 |
-| Tasks | ~68 | 68 | 0 |
-| Agents with tools | - | 24 | - |
+| Agents | 43 | 43 | 0 |
+| Tasks | ~66 | 66 | 0 |
+| Agents with tools | - | 22 | - |
 | Agents without tools | - | 21 | - |
 
 ## Crew Distribution by Phase
 
 | Phase | Crews | Agents | Tasks | Status |
 |-------|-------|--------|-------|--------|
-| 0 | 1 | 4 | 4 | `active` |
-| 1 | 5 | 18 | 23 | `active` |
+| 0 | 0 | 0 | 0 | `Quick Start (no AI)` |
+| 1 | 6 | 20 | 25 | `active` |
 | 2 | 3 | 9 | 12 | `active` |
 | 3 | 2 | 5 | 13 | `active` |
 | 4 | 3 | 9 | 16 | `active` |
 
 ---
 
-## Phase 0: Onboarding
+## Phase 0: Quick Start (No AI)
 
-> **Two-Layer Architecture**: Phase 0 uses a two-layer design for both Founders and Consultants:
-> 1. **"Alex" Chat** (Product App) - Vercel AI SDK conducts the 7-stage conversational interview
->    - Founders: `/onboarding/founder` (validating own startup)
->    - Consultants: `/onboarding/consultant` (onboarding client business)
-> 2. **OnboardingCrew** (Modal/CrewAI) - Validates, analyzes gaps, and structures the Brief
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start - a single form input. See [ADR-006](../adr/006-quick-start-architecture.md).
 >
-> The interview is NOT conducted by CrewAI agents - O1 analyzes the completed Alex conversation.
+> **No AI in Phase 0**: The 7-stage conversation and OnboardingCrew were removed. Users enter a business idea (1-3 sentences) and optionally upload a pitch deck. Phase 1 starts immediately.
 
-### OnboardingCrew
-**File**: `src/crews/onboarding/crew.py`
-**Purpose**: Validate Alex conversation and compile Founder's Brief
+### No Crews in Phase 0
+
+Phase 0 has **no AI, no crews, no agents, no HITL checkpoints**.
+
+| Metric | Value |
+|--------|-------|
+| Crews | 0 |
+| Agents | 0 |
+| Duration | ~30 seconds |
+| AI Cost | $0 |
+
+### Deprecated: OnboardingCrew
+
+~~**File**: `src/crews/onboarding/crew.py`~~
+
+The following agents were removed or moved:
+
+| Agent ID | Previous Role | Status |
+|----------|---------------|--------|
+| O1 | Interview Gap Analyzer | **DELETED** |
+| GV1 | Concept Validator | **Moved to Phase 1 BriefGenerationCrew** |
+| GV2 | Intent Verification | **DELETED** |
+| S1 | Brief Compiler | **Moved to Phase 1 BriefGenerationCrew** |
+
+---
+
+## Phase 1: VPC Discovery + Brief Generation
+
+### BriefGenerationCrew (NEW)
+**File**: `src/crews/discovery/brief_generation_crew.py` (planned)
+**Purpose**: Generate Founder's Brief from AI research (replaces Phase 0 interview)
 **Process**: Sequential
 
 | Agent ID | Role | Founder | Tools | Reasoning | Status |
 |----------|------|---------|-------|-----------|--------|
-| O1 | Interview Gap Analyzer | Sage | `[]` | Yes | `placeholder` |
 | GV1 | Concept Validator | Guardian | `[]` | Yes | `placeholder` |
-| GV2 | Intent Verification | Guardian | `[]` | Yes | `placeholder` |
 | S1 | Brief Compiler | Sage | `[]` | No | `placeholder` |
 
 **Tasks**:
 | Task | Agent | Output |
 |------|-------|--------|
-| `analyze_interview_completeness` | O1 | Gap analysis report |
 | `validate_concept_legitimacy` | GV1 | Legitimacy check |
-| `verify_intent_capture` | GV2 | Verification results |
 | `compile_founders_brief` | S1 | `FoundersBrief` (Pydantic) |
 
----
+**HITL Checkpoint**: `approve_discovery_output` (combined Brief + VPC review)
 
-## Phase 1: VPC Discovery
+---
 
 ### DiscoveryCrew
 **File**: `src/crews/discovery/discovery_crew.py`
@@ -346,7 +369,8 @@ Complete per-phase breakdown of all 14 Crews with their 45 Agents, Tasks, and To
 
 | Crew | Agents | Compliant |
 |------|--------|-----------|
-| OnboardingCrew | 4 | Yes |
+| ~~OnboardingCrew~~ | ~~4~~ | ~~Removed (Quick Start)~~ |
+| BriefGenerationCrew | 2 | Yes |
 | DiscoveryCrew | 5 | Yes |
 | CustomerProfileCrew | 6 | Yes |
 | ValueDesignCrew | 3 | Yes |
@@ -368,7 +392,7 @@ Complete per-phase breakdown of all 14 Crews with their 45 Agents, Tasks, and To
 ## Gaps / TODOs
 
 ### Tool Wiring Gaps
-- **OnboardingCrew**: All 4 agents have `tools=[]` (placeholder) - may need conversation/synthesis tools
+- **BriefGenerationCrew**: Both agents have `tools=[]` (placeholder) - pure LLM reasoning by design
 - **FeasibilityBuildCrew**: All 3 agents have `tools=[]` - may need code analysis tools
 - **SynthesisCrew**: All 3 agents have `tools=[]` - pure reasoning agents
 - **ViabilityGovernanceCrew G3**: Has `tools=[]` - may need LearningCardTool like Phase 2 G3

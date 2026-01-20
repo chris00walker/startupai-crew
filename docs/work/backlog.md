@@ -1,5 +1,7 @@
 # StartupAI Validation Backlog
 
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start. Agent count: 45 → 43. See [ADR-006](../adr/006-quick-start-architecture.md).
+
 This is not a feature list. It's a queue of **hypotheses to validate** using lean startup methodology: Build → Measure → Learn.
 
 ## How to Use This Document
@@ -16,7 +18,7 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 ### Hypothesis: Tools Enable Evidence-Based Validation
 
-> **If** we wire tools to all 45 agents with working external connections,
+> **If** we wire tools to all 43 agents with working external connections,
 > **Then** agents will produce evidence-based outputs instead of hallucinations.
 
 **Status**: ⚠️ **PARTIALLY COMPLETE** - Structure done, quality issues remain
@@ -69,12 +71,12 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 - ✅ Consultant path now triggers Modal validation
 - ⏳ Pending: Deploy to Modal and test
 
-**Agent Wiring Gaps** (from feature audit 2026-01-13):
+**Agent Wiring Gaps** (updated 2026-01-19 for Quick Start):
 
 | Phase | Agents with `tools=[]` | Impact |
 |-------|------------------------|--------|
-| 0 | O1, GV1, GV2, S1 (all 4) | Onboarding uses pure LLM (by design - analyzes transcript) |
-| 1 | CP2, CP4, CP6, FA2 (rankers) | Rankings based on LLM judgment only |
+| 0 | None (Quick Start has no agents) | No AI in Phase 0 |
+| 1 | GV1, S1 (BriefGenerationCrew), CP2, CP4, CP6, FA2 (rankers) | Brief generation uses pure LLM (by design) |
 | 3 | FB1, FB2, FB3 (all 3) | **Feasibility assessed without research** |
 | 4 | F2, F3, SY1, SY2, SY3, VGV3 (6) | Synthesis without learning capture |
 
@@ -160,10 +162,10 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 ### Hypothesis: Multi-Crew System Enables Scale ✅ VALIDATED
 
-> **If** we structure validation as 5 Flows with 14 Crews and 45 Agents,
+> **If** we structure validation as 4 Flows with 14 Crews and 43 Agents,
 > **Then** we can deliver higher quality analysis with clear accountability.
 
-**Status**: ✅ COMPLETE - Architecture implemented
+**Status**: ✅ COMPLETE - Architecture implemented (updated for Quick Start pivot)
 
 ---
 
@@ -200,8 +202,8 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Modal Infrastructure | ✅ Complete | Production deployment live |
-| 14 Crews / 45 Agents | ✅ Complete | Structure complete |
-| 10 HITL Checkpoints | ✅ Complete | All operational |
+| 14 Crews / 43 Agents | ✅ Complete | Structure complete (Quick Start pivot) |
+| 10 HITL Checkpoints | ✅ Complete | All operational (Phase 0 has no HITL) |
 | Tool Wiring | ✅ Complete | 15 tools attached to agents |
 | **Tool Quality** | ⚠️ **Issues** | 4/15 tools work, 7 stubs, 4 quality issues |
 | Live Testing Phase 0-2 | ⚠️ Complete | Results disappointing |
@@ -210,9 +212,13 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 ---
 
-**Last Updated**: 2026-01-13
+**Last Updated**: 2026-01-19
 
 **Latest Changes**:
+- Updated for Quick Start architectural pivot (ADR-006)
+- Agent count: 45 → 43 (O1, GV2 deleted)
+- Flow count: 5 → 4 (OnboardingFlow deleted)
+- Phase 0 now has no AI, no agents, no HITL
 - Downgraded "Tool Integration" from COMPLETE to PARTIALLY COMPLETE
 - Added honest assessment of tool quality issues
 - Updated status to reflect 4/15 tools actually working

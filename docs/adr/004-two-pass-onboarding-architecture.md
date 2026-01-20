@@ -1,11 +1,14 @@
 # ADR-004: Two-Pass Onboarding Architecture (Backend-Driven Assessment)
 
-**Status**: Implemented (Errata Fixed - see Changelog 2026-01-16)
+**Status**: Partially Superseded (Phase 0 replaced by Quick Start - see ADR-006)
 **Date**: 2026-01-16
 **Decision Makers**: Chris Walker, Claude AI Assistant
 **Context**: Onboarding stage progression reliability
 **Related**: [Plan: async-mixing-ritchie.md](/home/chris/.claude/plans/async-mixing-ritchie.md)
 **Evolution**: [ADR-005: State-First Synchronized Loop](./005-state-first-synchronized-loop.md) - Proposed successor addressing concurrency and serverless durability
+**Superseded By**: [ADR-006: Quick Start Architecture](./006-quick-start-architecture.md) - Phase 0 no longer uses AI conversation
+
+> **Note (2026-01-19)**: Phase 0 was simplified to Quick Start (single form input, no AI conversation). This ADR's Two-Pass Architecture is no longer applicable to Phase 0. It may still be relevant for future AI-driven conversational features elsewhere in the product.
 
 ## Summary
 

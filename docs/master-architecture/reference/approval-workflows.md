@@ -1,17 +1,20 @@
 ---
 purpose: Human-in-the-loop approval workflow patterns
 status: active
-last_reviewed: 2026-01-08
+last_reviewed: 2026-01-19
 vpd_compliance: true
+architectural_update: 2026-01-19
 ---
 
 # Approval Workflows
 
 Human-in-the-loop (HITL) patterns for StartupAI's gated validation system.
 
+> **Architectural Update (2026-01-19)**: Phase 0 no longer has HITL checkpoints. The first approval is now `approve_discovery_output` in Phase 1, which combines Founder's Brief review with VPC review.
+
 > **VPD Framework**: Approval workflows implement governance patterns from the Value Proposition Design framework. See phase documents for HITL specifications:
-> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 HITL (approve_founders_brief)
-> - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 HITL (experiment, pricing, VPC completion)
+> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0: Quick Start (no HITL)
+> - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 HITL (discovery output, experiment, pricing)
 > - [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 HITL (campaign, spend, gate)
 > - [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 HITL (feasibility gate)
 > - [08-phase-4-viability.md](../08-phase-4-viability.md) - Phase 4 HITL (viability gate, final decision)
@@ -24,8 +27,8 @@ Certain AI decisions require human approval before proceeding. This document con
 
 | Phase | Gate | Approvals | Purpose |
 |-------|------|-----------|---------|
-| **Phase 0** | Onboarding → VPC Discovery | 1 | Validate Founder's Brief before analysis |
-| **Phase 1** | VPC Discovery → Validation | 3 | Experiment approval, pricing tests, VPC completion |
+| **Phase 0** | Quick Start → VPC Discovery | 0 | No HITL (simple form submission) |
+| **Phase 1** | VPC Discovery → Desirability | 3 | Discovery output (brief + VPC), experiment, pricing |
 | **Phase 2+** | Desirability → Feasibility → Viability | 7 | Campaign, spend, stage gates, pivots |
 
 ## Approval Flow Architecture
@@ -107,44 +110,59 @@ Certain AI decisions require human approval before proceeding. This document con
 
 ---
 
-## Phase 0: Onboarding Approvals
+## Phase 0: Quick Start (No Approvals)
 
-Phase 0 has a single critical approval checkpoint gating entry to Phase 1.
+> **Architectural Update (2026-01-19)**: Phase 0 was simplified to Quick Start. No HITL checkpoints exist in Phase 0.
 
-| Approval Type | Approver | Agents | Task | Rationale |
-|---------------|----------|--------|------|-----------|
-| `approve_founders_brief` | Founder + Guardian | O1, GV1, GV2, S1 | brief_approval | Ensure Brief accurately captures founder intent before analysis |
+Phase 0 is now a simple form submission with no AI involvement:
+- User enters business idea (1-3 sentences)
+- System creates project record
+- Phase 1 is triggered immediately
 
-### Founder's Brief Approval Context
+**Previous checkpoint `approve_founders_brief` has been replaced by `approve_discovery_output` in Phase 1.**
 
-The approval request includes:
-- **The Idea**: Concept and one-liner
-- **Problem Hypothesis**: Who, what, current alternatives
-- **Customer Hypothesis**: Segment, characteristics
-- **Solution Hypothesis**: Approach, key features
-- **Key Assumptions**: Ranked by risk level
-- **Success Criteria**: Target metrics (problem_resonance, zombie_ratio, fit_score)
-- **QA Report**: Concept legitimacy + intent verification status
-
-### Approval Decisions
-
-| Decision | Next Action |
-|----------|-------------|
-| **Approve** | Proceed to Phase 1 VPC Discovery |
-| **Revise** | Return to interview for clarification |
-| **Reject** | Close project (concept fails legitimacy check) |
+See [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) for details.
 
 ---
 
 ## Phase 1: VPC Discovery Approvals
 
-Phase 1 has three approval checkpoints for experiment governance.
+Phase 1 has three approval checkpoints. The first is a combined checkpoint for brief + VPC approval.
 
 | Approval Type | Approver | Agents | Task | Rationale |
 |---------------|----------|--------|------|-----------|
+| `approve_discovery_output` | Founder + Compass | GV1, S1, FIT_SCORE | discovery_approval | **NEW**: Combined brief + VPC approval |
 | `approve_experiment_plan` | Founder + Guardian | E1 | experiment_approval | Validate test designs before execution |
 | `approve_pricing_test` | Founder + Ledger | W1 | pricing_approval | Pricing tests require founder consent |
-| `approve_vpc_completion` | Founder + Guardian | F1, F2 | vpc_gate_approval | Confirm fit score ≥70 before Phase 2 |
+
+### Discovery Output Approval Context (NEW)
+
+> **Replaces**: `approve_founders_brief` (Phase 0) + `approve_vpc_completion` (Phase 1)
+
+The combined approval request includes:
+
+**Founder's Brief (AI-Generated):**
+- **The Idea**: Refined from user's raw input
+- **Problem Hypothesis**: Generated from market research
+- **Customer Hypothesis**: Generated from market research
+- **Solution Hypothesis**: Synthesized from input + research
+- **Key Assumptions**: AI-prioritized for testing
+- **Market Research**: Market size, trends, competitors
+
+**Value Proposition Canvas:**
+- **Customer Profile**: Discovered Jobs, Pains, Gains (ranked)
+- **Value Map**: Designed Products, Pain Relievers, Gain Creators
+- **Fit Score**: Quantified alignment (threshold ≥70)
+
+All fields are editable by the user before approval.
+
+### Approval Decisions
+
+| Decision | Next Action |
+|----------|-------------|
+| **Approve** | Proceed to Phase 2 Desirability |
+| **Request Changes** | User edits fields, regenerates affected sections |
+| **Request Research** | System gathers more evidence |
 
 ### Experiment Plan Approval Context
 

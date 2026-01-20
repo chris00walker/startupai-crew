@@ -1,8 +1,9 @@
 ---
 purpose: Single source of truth for 6 AI Founders and agents (Phase 0-4)
 status: active
-last_reviewed: 2026-01-13
+last_reviewed: 2026-01-19
 vpd_compliance: true
+architectural_update: 2026-01-19
 ---
 
 # StartupAI Organizational Structure
@@ -68,7 +69,8 @@ PHASE (Business Concept)
 
 | Phase | Flow | Crew | Agents |
 |-------|------|------|--------|
-| 0: Onboarding | `OnboardingFlow` | `OnboardingCrew` | O1 (Gap Analyzer), GV1, GV2, S1 |
+| 0: Quick Start | N/A | N/A | (No agents - simple form submission) |
+| 1: VPC Discovery | `VPCDiscoveryFlow` | `BriefGenerationCrew` | GV1, S1 (moved from Phase 0) |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `DiscoveryCrew` | E1, D1, D2, D3, D4 |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `CustomerProfileCrew` | J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK |
 | 1: VPC Discovery | `VPCDiscoveryFlow` | `ValueDesignCrew` | V1, V2, V3 |
@@ -83,7 +85,9 @@ PHASE (Business Concept)
 | 4: Viability | `ViabilityFlow` | `SynthesisCrew` | C1, C2, C3 |
 | 4: Viability | `ViabilityFlow` | `GovernanceCrew` | G1, G2, G3 |
 
-**Totals**: 5 Phases, 5 Flows, 14 Crews, 45 Agents
+**Totals**: 5 Phases, 4 Flows (Phase 0 has no flow), 14 Crews, 43 Agents
+
+> **Note (2026-01-19)**: Phase 0 was simplified to Quick Start (no AI). O1 and GV2 were deleted. GV1 and S1 moved to Phase 1 `BriefGenerationCrew`. See [04-phase-0-onboarding.md](./04-phase-0-onboarding.md).
 
 ## The AI Founders Team
 
@@ -485,37 +489,52 @@ Compass (CPO) sits at the center, balancing natural tensions:
 
 Specialist agents execute specific tasks within each founder's domain. Agents are organized by phase:
 
-- **Phase 0 (Onboarding)**: 4 agents - Founder's Brief creation
-- **Phase 1+ (Validation)**: 18+ agents - VPC Discovery through Decision
+- **Phase 0 (Quick Start)**: 0 agents - Simple form submission (no AI)
+- **Phase 1+ (Validation)**: 20 agents - VPC Discovery (includes brief generation) through Decision
 
-### Phase 0: Onboarding Agents
+### Phase 0: Quick Start (No Agents)
 
-Phase 0 uses a **two-layer architecture**:
-1. **Layer 1 ("Alex" Chat)**: Conversational interview in the product app using Vercel AI SDK
-2. **Layer 2 (OnboardingCrew)**: CrewAI agents that validate and structure the collected data
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified from a 7-stage AI conversation to a single form submission. See [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) for details.
 
-See [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) for full specification.
+Phase 0 is now a **Quick Start** flow with no CrewAI involvement:
 
-**Flow**: `OnboardingFlow`
-**Crew**: `OnboardingCrew` (4 agents)
+- User enters business idea (1-3 sentences)
+- System creates project record
+- Phase 1 is triggered immediately
 
-| ID | Agent | Founder | Crew | Task Focus |
-|----|-------|---------|------|------------|
-| **O1** | Interview Gap Analyzer Agent | Sage | OnboardingCrew | Analyzes Alex's conversation transcript for completeness and identifies gaps |
-| **GV1** | Concept Validator Agent | Guardian | OnboardingCrew | Legitimacy screening (legal, ethical, feasible, sane) |
-| **GV2** | Intent Verification Agent | Guardian | OnboardingCrew | Ensures Founder's Brief accurately captures founder's intent |
-| **S1** | Brief Compiler Agent | Sage | OnboardingCrew | Synthesizes all inputs into structured Founder's Brief |
+**Flow**: N/A (no orchestration needed)
+**Crew**: N/A (no agents)
+**HITL**: None (first checkpoint is in Phase 1)
 
-> **Note**: The 7-area discovery interview (idea, motivation, customer, problem, solution, assumptions, success criteria) is conducted by "Alex" in the product app, not by CrewAI agents. O1 receives the completed conversation and analyzes it for quality.
+#### Agents Removed or Moved
 
-**Phase 0 HITL Checkpoint**: `approve_founders_brief` - Founder reviews and approves their brief before Phase 1 begins.
+| Former ID | Former Name | Disposition |
+|-----------|-------------|-------------|
+| ~~O1~~ | ~~Interview Gap Analyzer Agent~~ | **DELETED** - no interview to analyze |
+| GV1 | Concept Validator Agent | **MOVED** to Phase 1 `BriefGenerationCrew` |
+| ~~GV2~~ | ~~Intent Verification Agent~~ | **DELETED** - no transcript to verify |
+| S1 | Brief Compiler Agent | **MOVED** to Phase 1 `BriefGenerationCrew` |
+
+**Reason for change**: AI in the critical path caused non-deterministic behavior (57-92% progress variance), high cost ($17+ per user), and test flakiness. Quick Start eliminates these issues.
 
 ### Phase 1: VPC Discovery Agents
 
-Phase 1 agents discover customer reality (Customer Profile) and design value (Value Map) using the VPD framework. See [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) for full specification.
+Phase 1 agents discover customer reality (Customer Profile) and design value (Value Map) using the VPD framework. **Phase 1 now also generates the Founder's Brief from research.** See [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) for full specification.
 
 **Flow**: `VPCDiscoveryFlow`
-**Crews**: 5 crews (18 agents total)
+**Crews**: 6 crews (20 agents total)
+
+#### BriefGenerationCrew (2 agents) - NEW
+
+> **Added 2026-01-19**: These agents moved from Phase 0 when the architecture was simplified.
+
+| ID | Agent | Founder | Task Focus |
+|----|-------|---------|------------|
+| **GV1** | Concept Validator Agent | Guardian | Legitimacy screening before research begins |
+| **S1** | Brief Compiler Agent | Sage | Synthesizes research into Founder's Brief |
+
+**Input**: `raw_idea` (1-3 sentences from Quick Start)
+**Output**: Complete Founder's Brief generated from AI research
 
 #### DiscoveryCrew (5 agents)
 
@@ -860,7 +879,11 @@ Agents fall into three categories based on tool requirements:
 
 | Date | Change | Rationale |
 |------|--------|-----------|
-| 2026-01-13 | Documented two-layer Phase 0 architecture (Alex chat + CrewAI validation) | Align documentation with implementation reality |
+| 2026-01-19 | **ARCHITECTURAL PIVOT**: Phase 0 simplified to Quick Start (no AI) | AI in critical path caused non-determinism, $17+ cost, test flakiness |
+| 2026-01-19 | Deleted O1 (Interview Gap Analyzer) and GV2 (Intent Verification) | No interview transcript to process |
+| 2026-01-19 | Moved GV1 and S1 to Phase 1 `BriefGenerationCrew` | Brief now generated from research, not user input |
+| 2026-01-19 | Agent count 45 → 43 | Two agents deleted |
+| 2026-01-13 | Documented two-layer Phase 0 architecture (Alex chat + CrewAI validation) | Align documentation with implementation reality (SUPERSEDED 2026-01-19) |
 | 2026-01-13 | Renamed O1 from "Founder Interview Agent" to "Interview Gap Analyzer Agent" | Alex conducts interview, O1 analyzes completeness |
 | 2026-01-09 | Added Agent Configuration Standard section with required attributes, temperature guidelines, constructor pattern | Bullet-proof specifications before code implementation |
 | 2026-01-07 | Added CrewAI Pattern Hierarchy section with complete crew summary | Align with CrewAI documentation patterns |

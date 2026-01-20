@@ -1,8 +1,9 @@
 ---
 purpose: Repository introduction, architecture overview, and quick start
 status: active
-last_reviewed: 2026-01-13
+last_reviewed: 2026-01-20
 vpd_compliance: true
+architectural_pivot: 2026-01-19
 ---
 
 # StartupAI Crew - Introduction & Architecture
@@ -113,45 +114,51 @@ PHASE (Business Concept)
 
 > **Single Source**: See [02-organization.md](./02-organization.md) for complete agent details. Phase specifications: [04-phase-0](./04-phase-0-onboarding.md), [05-phase-1](./05-phase-1-vpc-discovery.md), [06-phase-2](./06-phase-2-desirability.md), [07-phase-3](./07-phase-3-feasibility.md), [08-phase-4](./08-phase-4-viability.md).
 
-### Phase 0: Onboarding (Founder's Brief)
+### Phase 0: Quick Start (No AI)
 
-**Purpose**: Capture business hypothesis and create Founder's Brief
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start. See [ADR-006](../adr/006-quick-start-architecture.md).
 
-**Architecture**: Two-layer design separating data collection from validation:
+**Purpose**: Fast capture of business idea (30 seconds)
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Layer 1: "Alex" Chat** | Vercel AI SDK (product app) | Conversational interview with real-time streaming |
-| **Layer 2: OnboardingCrew** | CrewAI (Modal) | Validate, analyze gaps, structure into Brief |
+**Architecture**: Simple form submission with no AI:
 
-**Flow**: `OnboardingFlow` - Orchestrates validation after Alex completes interview
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Quick Start Form** | Product App (Next.js) | User enters business idea + optional context |
+| **Phase 1 Trigger** | API call | Immediately starts Phase 1 after submission |
+
+**Flow**: None - form submission only, no CrewAI in Phase 0
+
+| Metric | Value |
+|--------|-------|
+| Duration | ~30 seconds |
+| AI Cost | $0 |
+| Crews | None |
+| Agents | None |
+| HITL | None |
+
+**Output**: `raw_idea` and optional `additional_context` passed to Phase 1
+
+**Brief Generation**: The Founder's Brief is now AI-generated in Phase 1 by BriefGenerationCrew (GV1 + S1)
+
+**HITL**: Combined with Phase 1 as `approve_discovery_output` (Brief + VPC approval)
+
+### Phase 1: VPC Discovery (Brief Generation + Customer Profile + Value Map)
+
+**Purpose**: Generate Founder's Brief from research, discover customer reality, design value using VPD framework
+
+**Flow**: `VPCDiscoveryFlow` - Orchestrates brief generation and discovery crews with fit routing
 
 | Crew | Agents | Focus | Output |
 |------|--------|-------|--------|
-| OnboardingCrew | O1, GV1, GV2, S1 | Gap analysis, validation, synthesis | **Founder's Brief** |
-
-- **O1**: Interview Gap Analyzer Agent (ensures Alex collected complete information)
-- **GV1**: Concept Validator Agent (legitimacy screening)
-- **GV2**: Intent Verification Agent (capture accuracy)
-- **S1**: Brief Compiler Agent (synthesize into structured Brief)
-
-**HITL**: `approve_founders_brief` - Founder approves brief before Phase 1
-
-### Phase 1: VPC Discovery (Customer Profile + Value Map)
-
-**Purpose**: Discover customer reality and design value using VPD framework
-
-**Flow**: `VPCDiscoveryFlow` - Orchestrates discovery crews with fit routing
-
-| Crew | Agents | Focus | Output |
-|------|--------|-------|--------|
+| BriefGenerationCrew | GV1, S1 | Generate Founder's Brief from research | **Founder's Brief** |
 | DiscoveryCrew | E1, D1, D2, D3, D4 | Experiment design, evidence collection | SAY + DO evidence |
 | CustomerProfileCrew | J1, J2, P1, P2, G1, G2 | Jobs, Pains, Gains research + ranking | Customer Profile |
 | ValueDesignCrew | V1, V2, V3 | Products, Pain Relievers, Gain Creators | Value Map |
 | WTPCrew | W1, W2 | Willingness-to-pay experiments | WTP validation |
 | FitAssessmentCrew | F1, F2 | Fit scoring, iteration routing | **Validated VPC** (fit ≥ 70) |
 
-**HITL**: `approve_experiment_plan`, `approve_pricing_test`, `approve_vpc_completion`
+**HITL**: `approve_discovery_output` (combined Brief + VPC), `approve_experiment_plan`, `approve_pricing_test`
 
 ### Phase 2: Desirability Validation
 
@@ -206,17 +213,21 @@ PHASE (Business Concept)
 
 **Outputs** (structured deliverables per phase):
 
-### Phase 0 (Onboarding)
-- **Founder's Brief** (structured hypothesis capture):
+### Phase 0 (Quick Start)
+- `raw_idea`: User's business idea text (1-3 sentences)
+- `additional_context`: Optional supplementary context (pitch deck text, notes)
+- `project_id`: Created project UUID
+- → Phase 1 starts immediately
+
+### Phase 1 (VPC Discovery + Brief Generation)
+- **Founder's Brief** (AI-generated from research):
   - The Idea (concept, one-liner)
   - Problem Hypothesis (who, what, alternatives)
   - Customer Hypothesis (segment, characteristics)
   - Solution Hypothesis (approach, features)
   - Key Assumptions (ranked by risk)
   - Success Criteria (founder-defined validation goals)
-- QA Report (concept legitimacy + intent verification)
-
-### Phase 1 (VPC Discovery)
+- QA Report (concept legitimacy validation)
 - **Validated Value Proposition Canvas**:
   - Customer Profile (Jobs, Pains, Gains - ranked and evidence-backed)
   - Value Map (Products, Pain Relievers, Gain Creators)
@@ -272,5 +283,5 @@ For deployment, API usage, and development commands, see:
 
 ---
 
-**Status**: Multi-phase architecture with VPD framework compliance
-**Last Updated**: 2026-01-13
+**Status**: Multi-phase architecture with VPD framework compliance (Quick Start pivot 2026-01-19)
+**Last Updated**: 2026-01-20

@@ -1,10 +1,13 @@
 ---
 purpose: "Private technical source of truth for active work"
 status: "active"
-last_reviewed: "2026-01-13"
+last_reviewed: "2026-01-19"
+architectural_pivot: "2026-01-19"
 ---
 
 # In Progress
+
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start. Agent count: 45 → 43. See [ADR-006](../adr/006-quick-start-architecture.md).
 
 ## Overall Status
 
@@ -12,9 +15,10 @@ last_reviewed: "2026-01-13"
 |--------|--------|
 | **Current Run** | `e3368f64-89e9-49c0-8d42-d5cbc16f8eeb` (StartupAI dogfood) |
 | **Infrastructure** | ✅ Modal deployed, Supabase operational |
-| **Tools** | ✅ 15 tools wired to 35+ agents |
+| **Tools** | ✅ 15 tools wired to 33+ agents |
 | **Tests** | ✅ 678+ passing |
-| **Live Testing** | ⚠️ Phase 0-2 tested, results disappointing |
+| **Live Testing** | ⚠️ Phase 1-2 tested, results disappointing |
+| **Quick Start Pivot** | ✅ Documented (ADR-006), implementation pending |
 
 ### Summary of Concerns
 
@@ -26,91 +30,52 @@ The architecture works but validation results are consistently negative:
 
 ---
 
-## Phase 0: Onboarding
+## Phase 0: Quick Start (No AI)
 
-### Status: ✅ PASSED (Two-Layer Architecture Implemented)
+### Status: ✅ DOCUMENTED - Implementation Pending
+
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified from 7-stage AI conversation to Quick Start. See [ADR-006](../adr/006-quick-start-architecture.md).
 
 | Metric | Value |
 |--------|-------|
-| Layer 1 | "Alex" chat (Vercel AI SDK) - collects conversation |
-| Layer 2 | OnboardingCrew (Modal) - validates and compiles brief |
-| Crews | OnboardingCrew (1) |
-| Agents | 4 (O1, GV1, GV2, S1) |
-| HITL | `approve_founders_brief` |
+| Input | Single form: business idea + optional context |
+| Duration | 30 seconds |
+| AI Cost | $0 |
+| Crews | None (no AI in Phase 0) |
+| Agents | None |
+| HITL | None |
 
-### Two-Layer Architecture (2026-01-13)
+### Quick Start Architecture
 
 ```
-[Layer 1: "Alex" Chat - Product App]
-  ├── Founders: /onboarding/founder
-  ├── Consultants: /onboarding/consultant
-  ├── Vercel AI SDK + OpenAI streaming
-  ├── 7 conversational stages
-  └── Output: conversation_transcript + extracted_data
+[Quick Start Form - Product App]
+  ├── User enters business idea (1-3 sentences)
+  ├── Optional: upload pitch deck or paste notes
+  └── Submit triggers Phase 1 immediately
                     │
-                    ▼ (on completion)
-[Layer 2: OnboardingCrew - Modal]
-  ├── O1: Interview Gap Analyzer (NOT interviewer)
-  ├── GV1: Concept Validator
-  ├── GV2: Intent Verifier
-  ├── S1: Brief Compiler
-  └── Output: Founder's Brief + HITL checkpoint
+                    ▼
+[Phase 1 starts immediately]
+  ├── BriefGenerationCrew generates Founder's Brief from research
+  ├── DiscoveryCrew, CustomerProfileCrew, etc. continue
+  └── HITL: approve_discovery_output (Brief + VPC combined)
 ```
 
-**Implementation Commits**:
-- startupai-crew: `5176462` - feat: implement two-layer onboarding architecture
-- app.startupai.site: `a9ae0d7` - feat: pass conversation transcript to Modal
-
-### Test Results
-
-| Session | Run ID | Result | Notes |
-|---------|--------|--------|-------|
-| Session 1 | `5f10f61a-...` | ✅ PASSED | AI chatbot for SMB e-commerce |
-| Session 2 | `52fe3efa-...` | ✅ PASSED | Same business, post-tool integration |
-| Session 3 | `e3368f64-...` | ✅ PASSED | StartupAI dogfood, 85% confidence |
-
-### Quality Assessment
-
-| Aspect | Status | Notes |
-|--------|--------|-------|
-| Founder's Brief structure | ✅ Good | Full VPD structure captured |
-| QA legitimacy check | ✅ Good | PASS status |
-| Template interpolation | ✅ Fixed | Issues #2, #3 resolved |
-| Business context capture | ✅ Good | One-liner, problem, customer, solution hypotheses |
-| Two-layer architecture | ✅ Implemented | Full transcript passed to Modal |
-
-### Issues Found
-
-| # | Issue | Status | Fix |
-|---|-------|--------|-----|
-| 2 | Template variable not found | ✅ Fixed | Remove context-dependent vars (`46c7da6`) |
-| 3 | Customer Profile hallucinated | ✅ Fixed | Add vars back with section headers (`b96e7a7`) |
-| 14 | O1 misconfigured as interviewer | ✅ Fixed | Renamed to Interview Gap Analyzer (`5176462`) |
-| 15 | Transcript not passed to Modal | ✅ Fixed | Pass full conversation_transcript (`a9ae0d7`) |
-| 16 | Consultant path skipped Modal | ✅ Fixed | Added Modal kickoff to consultant complete route |
-
-### Remaining Work
+### Migration Status
 
 | Task | Priority | Status |
 |------|----------|--------|
-| Deploy two-layer changes to Modal | P0 | ✅ Complete (2026-01-13) |
-| Test founder path with transcript | P0 | ✅ Complete - API test verified |
-| Test consultant path with transcript | P0 | ⏳ Pending UI test |
-| Verify O1 produces gap analysis output | P1 | ✅ Complete - task `analyze_interview_gaps` runs |
+| ADR-006 created | P0 | ✅ Complete |
+| Master architecture updated | P0 | ✅ Complete |
+| Frontend docs updated | P0 | ✅ Complete |
+| Crew docs updated | P0 | ✅ Complete |
+| Quick Start UI implementation | P0 | ⏳ Pending |
+| Delete 7-stage conversation code | P1 | ⏳ Pending |
+| Update Modal API to accept `raw_idea` | P1 | ⏳ Pending |
+| Implement BriefGenerationCrew in Phase 1 | P1 | ⏳ Pending |
 
-### Test Results (2026-01-13)
+### Historical Reference (Superseded)
 
-**Run ID**: `bc3c88e9-d80d-4f13-a10d-a7d271ba0bed`
-
-| Step | Status | Evidence |
-|------|--------|----------|
-| Modal deploy | ✅ | Deployed in 3.1s |
-| Health check | ✅ | `{"status":"healthy"}` |
-| Kickoff with transcript | ✅ | Returned run_id |
-| O1 task name | ✅ | `analyze_interview_gaps` (renamed from conduct_founder_interview) |
-| OnboardingCrew completion | ✅ | Phase 0 100% complete |
-| HITL checkpoint | ✅ | `approve_founders_brief` created |
-| Founder's Brief | ✅ | All fields populated from transcript |
+~~Two-Layer Architecture (2026-01-13)~~ - Replaced by Quick Start. The 7-stage AI conversation and OnboardingCrew (4 agents) were removed. See [done.md](done.md) for historical details.
 
 ---
 
@@ -364,4 +329,4 @@ When unblocked:
 5. **P1**: Test Phase 4 end-to-end
 
 ---
-**Last Updated**: 2026-01-13
+**Last Updated**: 2026-01-19

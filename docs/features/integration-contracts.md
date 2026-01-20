@@ -1,8 +1,11 @@
 ---
 document_type: feature-audit
 status: active
-last_verified: 2026-01-13
+last_verified: 2026-01-20
+architectural_pivot: 2026-01-19
 ---
+
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start (no AI). See [ADR-006](../adr/006-quick-start-architecture.md).
 
 # Integration Contracts
 
@@ -54,46 +57,55 @@ The product app's `wiring-matrix.md` (lines 53-58) raised these integration ques
 
 ### Q3: Phase 0 endpoint mapping - spec vs product app?
 
-**Answer**: TWO-LAYER ARCHITECTURE ✅
+> **Updated (2026-01-19)**: The Two-Layer Architecture was replaced by Quick Start. See [ADR-006](../adr/006-quick-start-architecture.md).
 
-Phase 0 uses a **two-layer design** that separates conversational data collection from validation:
+**Answer**: QUICK START ARCHITECTURE ✅
 
-| Layer | Name | Technology | Responsibility |
-|-------|------|------------|----------------|
-| 1 | **"Alex" Chat** | Vercel AI SDK + OpenAI | Conversational interview (7 stages) with real-time streaming |
-| 2 | **OnboardingCrew** | CrewAI on Modal | Gap analysis, validation, Brief compilation |
+Phase 0 is now a **simple form submission** with no AI:
 
-**Endpoints by Layer**:
+| Component | Technology | Responsibility |
+|-----------|------------|----------------|
+| **Quick Start Form** | Product App (Next.js) | User enters business idea + optional context |
+| **Phase 1 Trigger** | API call | Immediately starts Phase 1 after submission |
 
-| Layer | Endpoints |
-|-------|-----------|
-| Layer 1 (Alex) | `/api/onboarding/*`, `/api/chat` |
-| Layer 2 (CrewAI) | `/kickoff` triggers Phase 0 → Phase 4 |
+**Endpoints**:
 
-**Flow** (applies to both Founders and Consultants):
+| Endpoint | Purpose |
+|----------|---------|
+| `/api/projects/quick-start` | Create project and trigger Phase 1 |
+| `/kickoff` | Triggered immediately after Quick Start submission |
+
+**Flow**:
 ```
-[Layer 1: "Alex" Chat]
-  ├── Founders: /onboarding/founder (validating own startup)
-  ├── Consultants: /onboarding/consultant (onboarding client business)
-  ├── User converses with "Alex" (Vercel AI SDK streaming)
-  ├── Same 7 conversational stages for both user types
-  └── Output: entrepreneur_input (conversation transcript + extracted data)
+[Quick Start Form]
+  ├── User enters business idea (1-3 sentences)
+  ├── Optional: upload pitch deck or paste notes
+  └── Submit triggers Phase 1 immediately
                        │
-                       ▼ (on completion)
-[Layer 2: OnboardingCrew]
-  ├── POST /api/onboarding/complete triggers POST /kickoff to Modal
-  ├── O1 (Interview Gap Analyzer) analyzes Alex conversation for completeness
-  ├── GV1 validates concept legitimacy
-  ├── GV2 verifies intent capture accuracy
-  ├── S1 compiles structured Founder's Brief
-  └── HITL checkpoint created for founder approval
+                       ▼
+[Phase 1: BriefGenerationCrew]
+  ├── GV1 validates concept legitimacy (from market research)
+  ├── S1 compiles AI-generated Founder's Brief
+  ├── DiscoveryCrew, CustomerProfileCrew, etc. continue
+  └── HITL: approve_discovery_output (combined Brief + VPC)
 ```
 
-**Why Two Layers?**
-- **Layer 1 (Alex)**: Best UX for interviews - real-time streaming, instant iteration on prompts
-- **Layer 2 (CrewAI)**: Multi-agent validation logic - thorough gap analysis, legitimacy checks
+**Why Quick Start?**
+- **30 seconds** vs 20-25 minute conversation
+- **$0 AI cost** for Phase 0
+- **Faster time-to-value** for users
+- Founder's Brief is **AI-generated from research** instead of extracted from conversation
 
-The spec's `/interview/start` endpoint is not needed - "Alex" handles the interview in the product app.
+<details>
+<summary>Historical Reference (Two-Layer Architecture - Superseded)</summary>
+
+The previous Two-Layer Architecture used:
+- Layer 1: "Alex" Chat (Vercel AI SDK) for 7-stage conversational interview
+- Layer 2: OnboardingCrew (CrewAI) for gap analysis, validation, Brief compilation
+
+This was replaced by Quick Start on 2026-01-19.
+
+</details>
 
 ### Q4: HITL flow - approval_requests table alignment?
 
@@ -474,17 +486,18 @@ Both repos access these tables:
 ### E2E Test Flow
 
 ```
-1. Product App: Create user + project
-2. Product App: POST /api/analyze (triggers Modal)
-3. Modal: Runs Phase 0
-4. Modal: Creates HITL checkpoint
-5. Modal: Sends webhook to Product App
-6. Product App: Shows approval in /approvals
-7. Product App: PATCH /api/approvals/[id]
-8. Modal: Resumes from checkpoint
-9. Modal: Completes all phases
-10. Modal: Sends completion webhook
-11. Product App: Shows results
+1. Product App: Create user
+2. Product App: Submit Quick Start form (POST /api/projects/quick-start)
+3. Product App: POST /api/analyze (triggers Modal)
+4. Modal: Runs Phase 1 (BriefGenerationCrew, DiscoveryCrew, etc.)
+5. Modal: Creates HITL checkpoint (approve_discovery_output)
+6. Modal: Sends webhook to Product App
+7. Product App: Shows approval in /approvals
+8. Product App: PATCH /api/approvals/[id]
+9. Modal: Resumes from checkpoint
+10. Modal: Completes all phases (2-4)
+11. Modal: Sends completion webhook
+12. Product App: Shows results
 ```
 
 ### Test Accounts
@@ -502,9 +515,9 @@ This document bridges to all other feature audit documents:
 
 | Document | What It Covers |
 |----------|----------------|
-| [flow-inventory.md](./flow-inventory.md) | 5 Flows, entry/exit criteria |
-| [crew-agent-task-matrix.md](./crew-agent-task-matrix.md) | 14 Crews, 45 Agents, 68 Tasks |
-| [hitl-checkpoint-map.md](./hitl-checkpoint-map.md) | 10 HITL checkpoints |
+| [flow-inventory.md](./flow-inventory.md) | 4 Flows, entry/exit criteria |
+| [crew-agent-task-matrix.md](./crew-agent-task-matrix.md) | 14 Crews, 43 Agents, 68 Tasks |
+| [hitl-checkpoint-map.md](./hitl-checkpoint-map.md) | 10 HITL checkpoints (Phase 0 has none) |
 | [api-entrypoints.md](./api-entrypoints.md) | 4 API endpoints |
 | [tool-wiring-matrix.md](./tool-wiring-matrix.md) | 19 tools, wiring status |
 | [phase-mapping.md](./phase-mapping.md) | Spec vs implementation |
@@ -527,6 +540,7 @@ The product app's feature docs that reference this repo:
 
 | Date | Change |
 |------|--------|
+| 2026-01-20 | Updated for Quick Start pivot (ADR-006) - replaced Two-Layer with Quick Start |
 | 2026-01-13 | Documented two-layer Phase 0 architecture (Alex chat + OnboardingCrew) |
 | 2026-01-13 | Initial document, answered product app questions |
 

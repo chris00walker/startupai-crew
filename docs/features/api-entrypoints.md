@@ -1,8 +1,11 @@
 ---
 document_type: feature-audit
 status: active
-last_verified: 2026-01-13
+last_verified: 2026-01-20
+architectural_pivot: 2026-01-19
 ---
+
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start (no AI). See [ADR-006](../adr/006-quick-start-architecture.md).
 
 # API Entrypoints
 
@@ -182,13 +185,13 @@ interface HITLRequest {
 
 #### Phase Mapping
 
-| Phase | Name |
-|-------|------|
-| 0 | Onboarding |
-| 1 | VPC Discovery |
-| 2 | Desirability |
-| 3 | Feasibility |
-| 4 | Viability |
+| Phase | Name | AI? |
+|-------|------|-----|
+| 0 | Quick Start | No (form only) |
+| 1 | VPC Discovery + Brief Generation | Yes |
+| 2 | Desirability | Yes |
+| 3 | Feasibility | Yes |
+| 4 | Viability | Yes |
 
 #### Data Sources
 
@@ -214,17 +217,26 @@ curl -X GET \
   "progress": [
     {
       "id": "abc123",
-      "phase": 0,
-      "crew": "OnboardingCrew",
-      "agent": "O1-FounderInterview",
-      "task": "founder_interview",
+      "phase": 1,
+      "crew": "BriefGenerationCrew",
+      "agent": "GV1-ConceptValidator",
+      "task": "validate_concept",
       "status": "completed",
-      "created_at": "2026-01-13T10:00:00Z"
+      "created_at": "2026-01-20T10:00:00Z"
+    },
+    {
+      "id": "abc124",
+      "phase": 1,
+      "crew": "BriefGenerationCrew",
+      "agent": "S1-BriefCompiler",
+      "task": "compile_brief",
+      "status": "completed",
+      "created_at": "2026-01-20T10:01:00Z"
     }
   ],
   "hitl_pending": null,
-  "started_at": "2026-01-13T09:55:00Z",
-  "updated_at": "2026-01-13T10:05:00Z"
+  "started_at": "2026-01-20T09:55:00Z",
+  "updated_at": "2026-01-20T10:05:00Z"
 }
 ```
 
@@ -245,7 +257,7 @@ curl -X GET \
 ```typescript
 interface HITLApproveRequest {
   run_id: string;           // UUID - Validation run ID
-  checkpoint: string;       // Checkpoint name (e.g., "approve_founders_brief")
+  checkpoint: string;       // Checkpoint name (e.g., "approve_discovery_output")
   decision: Decision;       // Selected decision
   feedback?: string;        // Optional human feedback
   custom_segment_data?: {   // Required if decision is "custom_segment"
@@ -299,7 +311,7 @@ curl -X POST \
   -H "Content-Type: application/json" \
   -d '{
     "run_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "checkpoint": "approve_founders_brief",
+    "checkpoint": "approve_discovery_output",
     "decision": "approved",
     "feedback": "Brief looks comprehensive, proceed."
   }'
@@ -310,7 +322,7 @@ curl -X POST \
 {
   "status": "resumed",
   "next_phase": 1,
-  "message": "Validation resumed from checkpoint 'approve_founders_brief'. Advancing to Phase 1."
+  "message": "Validation resumed from checkpoint 'approve_discovery_output'. Advancing to Phase 1."
 }
 ```
 

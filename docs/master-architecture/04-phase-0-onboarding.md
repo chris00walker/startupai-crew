@@ -1,826 +1,388 @@
 ---
-purpose: Phase 0 specification - Founder's Brief capture
+purpose: Phase 0 specification - Quick Start (simplified onboarding)
 status: active
-last_reviewed: 2026-01-16
+last_reviewed: 2026-01-19
 vpd_compliance: true
+architectural_pivot: 2026-01-19
 ---
 
-# Phase 0: Onboarding
+# Phase 0: Quick Start
 
-> **Methodology Reference**: See [03-methodology.md](./03-methodology.md) for VPD framework patterns.
+> **Architectural Pivot (2026-01-19)**: This document reflects a fundamental simplification of the onboarding process. The previous 7-stage conversational interview has been replaced with a Quick Start flow. See [Architectural Decision](#architectural-decision) for rationale.
 
 ## Purpose
 
-Transform the Founder's raw idea into a structured **Founder's Brief** - the prime artifact that informs all subsequent phases.
+Get users into validation as fast as possible. Phase 0 captures the minimal information needed to begin Phase 1 research.
 
-## Two-Layer Architecture
+**The Founder's Brief is now an OUTPUT of Phase 1, not an INPUT collected during onboarding.**
 
-Phase 0 uses a **two-layer architecture** that separates conversational data collection from validation processing. This applies to **both user types**:
-
-- **Founders**: `/onboarding/founder` - validating their own startup idea
-- **Consultants**: `/onboarding/consultant` - onboarding a client's business for validation
+## Quick Start Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  LAYER 1: "ALEX" CHAT (Product App - Vercel AI SDK)                         │
+│                           QUICK START                                        │
 │                                                                              │
-│  Technology: Vercel AI SDK + OpenAI (streaming chat)                        │
-│  Location:                                                                   │
-│    • Founders: app.startupai.site/onboarding/founder                        │
-│    • Consultants: app.startupai.site/onboarding/consultant                  │
-│  Purpose: Conversational data collection with real-time streaming           │
+│  Entry: User signs up and lands on onboarding page                          │
+│  Exit: Project created, Phase 1 triggered                                   │
+│  Duration: ~30 seconds                                                       │
+│  AI Calls: 0                                                                 │
 │                                                                              │
-│  7 Conversational Stages (same for both user types):                        │
-│  1. Welcome & Introduction                                                   │
-│  2. Customer Discovery                                                       │
-│  3. Problem Definition                                                       │
-│  4. Solution Validation                                                      │
-│  5. Competitive Analysis                                                     │
-│  6. Resources & Constraints                                                  │
-│  7. Goals & Next Steps                                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  Output: Raw conversation transcript + extracted business context            │
+│  User provides:                                                              │
+│  • Business idea (1-3 sentences, free text)                                 │
+│  • Optional: Upload pitch deck or paste notes                               │
+│                                                                              │
+│  System creates:                                                             │
+│  • Project record with raw_idea                                             │
+│  • Validation run record                                                     │
+│                                                                              │
+│  System triggers:                                                            │
+│  • Phase 1 via Modal /kickoff                                               │
+│                                                                              │
+│  User redirected to:                                                         │
+│  • Dashboard showing "Phase 1: Researching your idea..."                    │
+│                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼ (on completion)
+```
+
+### Why This Works
+
+| Aspect | Old (7-Stage Conversation) | New (Quick Start) |
+|--------|---------------------------|-------------------|
+| Time to start | 30+ minutes | 30 seconds |
+| AI cost | $17+ per user | $0 |
+| Determinism | 57-92% variance | 100% deterministic |
+| User effort | Answer 28 fields | Write 1-3 sentences |
+| Data quality | User guesses | AI researches |
+
+**Key Insight**: Phase 1 (VPC Discovery) already researches market, customers, and competitors. Having users provide this information upfront was redundant—and often wrong.
+
+---
+
+## User Flows
+
+### Founder (Direct)
+
+```
+1. Sign up → redirect to /onboarding/founder
+2. Enter business idea (30 seconds)
+3. Click "Start Validation"
+4. System creates project + triggers Phase 1
+5. Redirect to dashboard (shows Phase 1 progress)
+6. Phase 1 completes → HITL: approve_discovery_output
+7. Continue to Phase 2
+```
+
+**Entry Point:** `/onboarding/founder`
+
+**UI Specification:**
+```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  LAYER 2: ONBOARDING CREW (Modal - CrewAI)                                  │
 │                                                                              │
-│  Technology: CrewAI agents on Modal serverless                              │
-│  Purpose: Validate, analyze gaps, and structure the collected data          │
+│                    What's your business idea?                               │
 │                                                                              │
-│  4 Agents:                                                                   │
-│  • O1: Interview Gap Analyzer - identifies missing/incomplete information   │
-│  • GV1: Concept Validator - legitimacy screening                           │
-│  • GV2: Intent Verification - ensures capture accuracy                     │
-│  • S1: Brief Compiler - creates structured Founder's Brief                 │
+│   Describe your startup idea in a few sentences. Tell us what you're        │
+│   building and who it's for.                                                │
 │                                                                              │
-│  Output: Validated Founder's Brief (prime artifact)                         │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                                                                      │   │
+│   │ Example: "A meal planning app that helps busy parents reduce food   │   │
+│   │ waste and save time on weekly meal decisions."                      │   │
+│   │                                                                      │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │ Have a pitch deck or notes? (optional)                              │   │
+│   │                                                                      │   │
+│   │ [ Upload PDF ]  [ Paste text ]                                      │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│                       [ Start Validation → ]                                 │
+│                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Why Two Layers?
+**Validation Rules:**
+- Business idea: Required, min 10 characters
+- Pitch deck: Optional, max 10MB PDF
+- Notes: Optional, max 10,000 characters
 
-| Concern | Layer 1 (Alex) | Layer 2 (CrewAI) |
-|---------|----------------|------------------|
-| **UX** | Real-time streaming chat | Batch processing (latency acceptable) |
-| **Iteration** | Prompt changes deploy instantly | Agent changes require Modal redeploy |
-| **Cost** | Direct OpenAI calls (cheaper) | CrewAI orchestration (heavier) |
-| **Purpose** | Data collection | Validation & structuring |
+### Consultant (Client Management)
 
-**Key Principle**: Alex collects, CrewAI validates. The separation ensures best-in-class UX for the conversational interview while leveraging CrewAI's multi-agent orchestration for validation logic.
-
-### Two-Pass Stage Progression (Alex Implementation)
-
-> **ADR Reference**: See [ADR-004](../adr/004-two-pass-onboarding-architecture.md) for full implementation details.
-> **Evolution**: See [ADR-005](../adr/005-state-first-synchronized-loop.md) for approved next-generation architecture.
-
-Alex uses a **Two-Pass Architecture** for reliable stage progression:
+**Constraint:** Consultants can only add Founders who have already signed up.
 
 ```
-Pass 1: Conversation (streaming)     Pass 2: Assessment (deterministic)
-┌─────────────────────────────────┐  ┌─────────────────────────────────┐
-│ LLM generates response          │  │ Backend ALWAYS runs             │
-│ NO tools, just conversation     │→ │ generateObject for quality      │
-│ Streams to user immediately     │  │ assessment after each response  │
-└─────────────────────────────────┘  └─────────────────────────────────┘
+1. Sign up → redirect to /consultant-dashboard
+2. Dashboard shows "Add your first client"
+3. Search for client by email (must be existing Founder)
+4. Enter business idea on client's behalf
+5. System creates project under client's account
+6. Consultant linked as advisor
+7. Phase 1 runs for client's project
+8. Consultant reviews HITL checkpoints with client
 ```
 
-**Why Two Passes?**
-- LLM tool-calling is unreliable for state management (observed 18% call rate)
-- Conversation quality (streaming, empathetic) conflicts with structured assessment
-- Deterministic backend ensures 100% assessment coverage
+**Entry Point:** `/consultant-dashboard` → Add Client
 
-**Stage Progression Logic:**
-1. Backend extracts data from conversation after each response
-2. Backend checks coverage against stage thresholds (70-85%)
-3. Stage advances automatically when threshold met
-4. At Stage 7 completion, triggers CrewAI Layer 2
+**UI Specification:**
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Add Client                                                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Find your client:                                                          │
+│  (Client must have an existing StartupAI Founder account)                   │
+│                                                                              │
+│  ┌───────────────────────────────────────────────────────┐ [ Search ]       │
+│  │ client@example.com                                     │                  │
+│  └───────────────────────────────────────────────────────┘                  │
+│                                                                              │
+│  ✓ Found: Sarah Johnson (sarah@example.com)                                 │
+│                                                                              │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│                                                                              │
+│  What's their business idea?                                                │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │                                                                      │   │
+│   │ [Same input as Founder Quick Start]                                 │   │
+│   │                                                                      │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│                       [ Start Validation → ]                                 │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
-**Evolution (ADR-005 - Approved):**
+**Relationship Model:**
+- Project belongs to Client (Founder)
+- Consultant is linked as `advisor_id` on project
+- Both can view project progress
+- Consultant can approve HITL checkpoints (configurable)
 
-The Two-Pass Architecture addresses the immediate reliability issue but has latent durability risks:
-- Partial saves: Serverless `onFinish` can be killed after response
-- Race conditions: Last-write-wins merge in app layer
-- Hydration gaps: Frontend treats state as ephemeral
+---
 
-ADR-005 proposes moving the state machine to PostgreSQL with RPC-based atomic commits:
-- `apply_onboarding_turn` RPC with idempotency and row locking
-- Split `chat_history` from `phase_state` for clean separation
-- Binary gate on field coverage for deterministic progress
-- Frontend hydration + realtime subscriptions
+## Backend Flow
 
-### What This Phase IS About
+### API: Quick Start Submission
 
-- Understanding what the Founder wants to build
-- Capturing their hypotheses (not validating them)
-- Ensuring the concept is legitimate
-- Creating a structured brief for downstream work
+**Endpoint:** `POST /api/projects/quick-start`
 
-### What This Phase Is NOT About
+**Request:**
+```json
+{
+  "raw_idea": "A meal planning app that helps busy parents...",
+  "additional_context": "Optional notes or extracted pitch deck text",
+  "client_id": "uuid (optional - for consultant flow)"
+}
+```
 
-- Customer research
-- Market validation
-- Building anything
-- Competitive analysis
+**Response:**
+```json
+{
+  "project_id": "uuid",
+  "validation_run_id": "uuid",
+  "status": "phase_1_started",
+  "redirect_url": "/projects/{project_id}"
+}
+```
+
+**Backend Steps:**
+1. Validate input
+2. Create `project` record
+3. Create `validation_run` record
+4. Call Modal `/kickoff` with `raw_idea`
+5. Return project ID
+
+### Database Changes
+
+**New field on `projects` table:**
+```sql
+ALTER TABLE projects ADD COLUMN raw_idea TEXT NOT NULL;
+ALTER TABLE projects ADD COLUMN additional_context TEXT;
+```
+
+**Removed dependencies:**
+- `onboarding_sessions` table → deprecated (can be dropped after migration)
+- `entrepreneur_briefs` table → now populated by Phase 1, not Phase 0
+
+---
+
+## Phase 1 Integration
+
+Phase 1 (VPC Discovery) now has expanded responsibilities:
+
+### Input
+```json
+{
+  "project_id": "uuid",
+  "raw_idea": "A meal planning app that helps busy parents...",
+  "additional_context": "Optional notes..."
+}
+```
+
+### New Phase 1 Outputs
+1. **Founder's Brief** - Generated from research (not user input)
+2. **Customer Profile** - VPC left side
+3. **Value Map** - VPC right side
+
+### Combined HITL Checkpoint
+
+**Old:** Two separate checkpoints
+- `approve_founders_brief` (Phase 0)
+- `approve_vpc` (Phase 1)
+
+**New:** Single combined checkpoint
+- `approve_discovery_output` (Phase 1)
+
+User reviews all three outputs together before proceeding to Phase 2.
+
+---
+
+## What Was Removed
+
+### Removed Components
+
+| Component | Reason |
+|-----------|--------|
+| 7-stage conversation (Alex/Maya) | Replaced by single text input |
+| Per-message AI assessment | No conversation to assess |
+| Stage progression logic | No stages |
+| OnboardingCrew (4 agents) | No transcript to process |
+| Two-Pass Architecture | No passes needed |
+
+### Removed Agents
+
+| Agent ID | Name | Disposition |
+|----------|------|-------------|
+| O1 | Interview Gap Analyzer | DELETED - no interview |
+| GV1 | Concept Validator | MOVED to Phase 1 |
+| GV2 | Intent Verification | DELETED - no transcript |
+| S1 | Brief Compiler | MOVED to Phase 1 |
+
+**Net effect:** OnboardingCrew dissolved. Validation and compilation responsibilities moved to Phase 1 VPCDiscoveryCrew.
+
+### Removed Code (Frontend)
+
+| File | Lines | Reason |
+|------|-------|--------|
+| `founder-quality-assessment.ts` | ~400 | No assessment needed |
+| `founder-stages-config.ts` | ~200 | No stages |
+| `consultant-quality-assessment.ts` | ~300 | No assessment needed |
+| `consultant-stages-config.ts` | ~150 | No stages |
+| `founder-onboarding-prompt.ts` | ~300 | No AI conversation |
+| `consultant-onboarding-prompt.ts` | ~120 | No AI conversation |
+| Streaming chat components | ~500 | No streaming |
+
+**Total:** ~2000 lines of complex code removed.
+
+---
+
+## Architectural Decision
+
+### Problem Statement
+
+The original Phase 0 had AI in the critical path:
+1. AI generates questions
+2. User responds freely
+3. AI extracts data from response
+4. AI assesses completeness
+5. Loop until "done"
+
+This caused:
+- **Non-determinism:** Same conversation → different progress (57-92% variance)
+- **High cost:** $17+ per test run, $1.47 per "free" model attempt
+- **Test flakiness:** E2E tests unreliable
+- **Slow onboarding:** 30+ minutes per user
+
+### Root Cause
+
+> We put AI in the critical path for something that doesn't require AI.
+
+The 7-stage conversation collected information that Phase 1 would research anyway:
+- Market size → Phase 1 researches this
+- Competitors → Phase 1 researches this
+- Customer segments → Phase 1 researches this
+
+Users were guessing answers that AI could find more accurately.
+
+### Solution
+
+1. **Remove AI from Phase 0** - Quick Start is a simple form
+2. **Move brief generation to Phase 1** - AI researches, then compiles brief
+3. **Combine HITL checkpoints** - User reviews brief + VPC together
+
+### Benefits
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Time to start validation | 30+ min | 30 sec |
+| Onboarding AI cost | $17+ | $0 |
+| Test determinism | ~75% | 100% |
+| Code complexity | 2000+ lines | ~100 lines |
+| User friction | High | Minimal |
+
+---
+
+## Migration Notes
+
+### Existing Projects
+
+Projects created before this change have `entrepreneur_brief` populated from the old conversation flow. These will continue to work—Phase 1 can use the existing brief instead of generating one.
+
+### Feature Flag
+
+During transition:
+```env
+FEATURE_QUICK_START=true  # Use new flow
+FEATURE_QUICK_START=false # Use legacy conversation
+```
+
+### Data Migration
+
+No immediate migration required. The `onboarding_sessions` table can be retained for historical data and dropped after 90 days if no issues arise.
+
+---
+
+## Entry/Exit Criteria
 
 ### Entry Criteria
-
-- Founder has a business idea they want to validate
-- Founder is ready to commit time to the interview process
+- User has signed up and is authenticated
+- User lands on onboarding page
 
 ### Exit Criteria
-
-- `approve_founders_brief` HITL checkpoint passed
-- Founder's Brief artifact created and approved
-- Concept legitimacy verified (legal, ethical, feasible, sane)
-
----
-
-## CrewAI Pattern Mapping
-
-> **Pattern Reference**: See [00-introduction.md](./00-introduction.md) for CrewAI pattern hierarchy.
-
-| Pattern | This Phase |
-|---------|------------|
-| **Phase** | Phase 0: Onboarding (business concept) |
-| **Flow** | `OnboardingFlow` (orchestrates the crew) |
-| **Crew** | `OnboardingCrew` (4 collaborative agents) |
-| **Agents** | O1, GV1, GV2, S1 |
-
----
-
-## OnboardingFlow
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           ONBOARDING FLOW                                    │
-│                                                                              │
-│  Entry: Conversation transcript from "Alex" chat (product app)              │
-│  Exit: Approved Founder's Brief ready for Phase 1                           │
-│                                                                              │
-│  Flow: OnboardingFlow                                                        │
-│  Crew: OnboardingCrew (O1, GV1, GV2, S1)                                    │
-│                                                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  LAYER 1: "ALEX" CHAT (Product App - NOT part of CrewAI)            │   │
-│  │                                                                      │   │
-│  │  Technology: Vercel AI SDK + OpenAI (streaming)                     │   │
-│  │  Location: /onboarding/founder or /onboarding/consultant            │   │
-│  │                                                                      │   │
-│  │  Conversational interview covering 7 stages:                        │   │
-│  │  • Welcome & Introduction                                           │   │
-│  │  • Customer Discovery                                               │   │
-│  │  • Problem Definition                                               │   │
-│  │  • Solution Validation                                              │   │
-│  │  • Competitive Analysis                                             │   │
-│  │  • Resources & Constraints                                          │   │
-│  │  • Goals & Next Steps                                               │   │
-│  │                                                                      │   │
-│  │  Output: Conversation transcript + extracted business context       │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                    │                                         │
-│                          (on completion)                                     │
-│                                    │                                         │
-│                                    ▼                                         │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  LAYER 2: ONBOARDING CREW (Modal - CrewAI)                          │   │
-│  │                      (4 Collaborative Agents)                        │   │
-│  │                                                                      │   │
-│  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  O1: INTERVIEW GAP ANALYZER AGENT                            │   │   │
-│  │  │                                                              │   │   │
-│  │  │  Analyzes Alex's conversation transcript for completeness:   │   │   │
-│  │  │  • Are all 7 areas covered?                                  │   │   │
-│  │  │  • Any gaps or ambiguities?                                  │   │   │
-│  │  │  • Information quality sufficient?                           │   │   │
-│  │  │                                                              │   │   │
-│  │  │  Output: Gap Analysis Report (PROCEED or NEEDS_FOLLOWUP)     │   │   │
-│  │  └─────────────────────────────────────────────────────────────┘   │   │
-│  │                                    │                                │   │
-│  │                                    ▼                                │   │
-│  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  GV1: CONCEPT VALIDATOR AGENT                                │   │   │
-│  │  │                                                              │   │   │
-│  │  │  Validates the concept is legitimate:                        │   │   │
-│  │  │  • NOT illegal (drugs, weapons, fraud, etc.)                │   │   │
-│  │  │  • NOT immoral (exploitation, harm, deception)              │   │   │
-│  │  │  • NOT ridiculous (perpetual motion, time travel)           │   │   │
-│  │  │  • NOT impossible with current technology                   │   │   │
-│  │  │  • Passes basic business sanity checks                      │   │   │
-│  │  │                                                              │   │   │
-│  │  │  Output: Legitimacy Report (PASS/FAIL + reasons)            │   │   │
-│  │  └─────────────────────────────────────────────────────────────┘   │   │
-│  │                                    │                                │   │
-│  │                                    ▼                                │   │
-│  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  GV2: INTENT VERIFICATION AGENT                              │   │   │
-│  │  │                                                              │   │   │
-│  │  │  Verifies the interview captured intent correctly:           │   │   │
-│  │  │  • Does the summary reflect what Founder said?              │   │   │
-│  │  │  • Are there gaps in understanding?                         │   │   │
-│  │  │  • Are there contradictions to resolve?                     │   │   │
-│  │  │  • Should we ask follow-up questions?                       │   │   │
-│  │  │                                                              │   │   │
-│  │  │  Output: Intent Verification Report (PASS/NEEDS FOLLOWUP)   │   │   │
-│  │  └─────────────────────────────────────────────────────────────┘   │   │
-│  │                                    │                                │   │
-│  │                                    ▼                                │   │
-│  │  ┌─────────────────────────────────────────────────────────────┐   │   │
-│  │  │  S1: BRIEF COMPILER AGENT                                    │   │   │
-│  │  │                                                              │   │   │
-│  │  │  Synthesizes all inputs into structured Founder's Brief:     │   │   │
-│  │  │  • The Idea (concept, one-liner, description)               │   │   │
-│  │  │  • Problem Hypothesis (who, what, current alternatives)     │   │   │
-│  │  │  • Customer Hypothesis (segment, characteristics)           │   │   │
-│  │  │  • Solution Hypothesis (approach, key features)             │   │   │
-│  │  │  • Key Assumptions (what must be true)                      │   │   │
-│  │  │  • Success Criteria (what would make this worth pursuing)   │   │   │
-│  │  │  • QA Status (legitimacy + intent verification)             │   │   │
-│  │  │                                                              │   │   │
-│  │  │  Output: FOUNDER'S BRIEF (Prime Artifact)                   │   │   │
-│  │  └─────────────────────────────────────────────────────────────┘   │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                    │                                         │
-│                                    ▼                                         │
-│                         ┌─────────────────────┐                             │
-│                         │  @router()          │                             │
-│                         │  intent_gate        │                             │
-│                         └─────────┬───────────┘                             │
-│                                   │                                          │
-│                    ┌──────────────┼──────────────┐                          │
-│                    │              │              │                           │
-│             [NEEDS_FOLLOWUP]   [FAIL]      [PASS]                           │
-│                    │              │              │                           │
-│                    ▼              ▼              ▼                           │
-│              Loop back      Reject with    Proceed to                       │
-│              to O1 with     explanation    HITL approval                    │
-│              questions                                                       │
-│                    │                             │                           │
-│                    └─────────────────────────────┘                          │
-│                                    │                                         │
-│                                    ▼                                         │
-│                    ┌───────────────────────────────┐                        │
-│                    │  HITL: approve_founders_brief │                        │
-│                    │                               │                        │
-│                    │  Founder reviews brief:       │                        │
-│                    │  • Is this what I meant?      │                        │
-│                    │  • Any corrections needed?    │                        │
-│                    │  • Ready to proceed?          │                        │
-│                    └───────────────────────────────┘                        │
-│                                    │                                         │
-│                          ┌─────────┴─────────┐                              │
-│                          │                   │                               │
-│                       REJECT              APPROVE                            │
-│                          │                   │                               │
-│                          ▼                   ▼                               │
-│                   Loop back with       FOUNDER'S BRIEF                      │
-│                   corrections          (Ready for Phase 1)                  │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Agent Specifications
-
-> **Full Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for complete 45-agent specifications.
-> **Configuration Standard**: See [02-organization.md](./02-organization.md#agent-configuration-standard) for required attributes.
-
-### O1: Interview Gap Analyzer Agent
-
-| Attribute | Value |
-|-----------|-------|
-| **ID** | O1 |
-| **Name** | Interview Gap Analyzer Agent |
-| **Founder** | Sage |
-| **Persona** | Methodical analyst - thorough, detail-oriented, systematic |
-| **Role** | Analyze Alex's conversation transcript to identify gaps, ambiguities, and missing information |
-| **Goal** | Ensure the collected business context is complete enough to create a high-quality Founder's Brief |
-
-> **Note**: The conversational interview is conducted by "Alex" (Vercel AI SDK) in the product app. O1 receives the completed conversation and analyzes it for completeness.
-
-#### Configuration
-
-| Parameter | Value | Rationale |
-|-----------|-------|-----------|
-| `tools` | `[]` | Pure LLM - analysis through reasoning |
-| `reasoning` | True | Complex gap detection requires deep reasoning |
-| `inject_date` | True | Market timing context |
-| `max_iter` | 15 | Focused analysis |
-| `temperature` | 0.3 | Precise, consistent gap identification |
-| `verbose` | True | Debug logging |
-| `allow_delegation` | False | Predictable flow |
-
-#### Tool Status
-
-| Tool | Status | Notes |
-|------|--------|-------|
-| (none) | N/A | Pure LLM agent - analysis through reasoning |
-
-**Backstory:**
-```
-You are a meticulous business analyst who reviews founder interviews for
-completeness and quality. You've seen hundreds of interviews and know exactly
-what information is needed to create a strong Founder's Brief. Your job is to
-identify gaps, ambiguities, and areas where the founder's responses were
-incomplete or unclear. You are thorough but practical - you flag real gaps,
-not theoretical nice-to-haves.
-```
-
-**Tasks:**
-1. `analyze_interview_completeness` - Review transcript for coverage of all 7 areas
-2. `identify_information_gaps` - Flag missing or incomplete information
-3. `generate_clarification_questions` - Create targeted questions for gaps (if needed)
-
-#### Gap Analysis Framework (7 Areas)
-
-O1 analyzes the Alex conversation transcript to ensure coverage of:
-
-```
-1. THE IDEA
-   ✓ Is the concept clearly articulated?
-   ✓ Is there a one-liner or elevator pitch?
-   ✓ Is the scope bounded?
-
-2. THE MOTIVATION
-   ✓ Why is the founder pursuing this?
-   ✓ Personal connection to the problem?
-   ✓ Why now?
-
-3. CUSTOMER HYPOTHESIS
-   ✓ Who is the target customer?
-   ✓ How specific is the segment definition?
-   ✓ Where can they be found?
-
-4. PROBLEM HYPOTHESIS
-   ✓ What problem is being solved?
-   ✓ Current alternatives mentioned?
-   ✓ Pain points identified?
-
-5. SOLUTION HYPOTHESIS
-   ✓ How does the solution work?
-   ✓ Key features defined?
-   ✓ Differentiation articulated?
-
-6. KEY ASSUMPTIONS
-   ✓ What must be true?
-   ✓ Riskiest assumptions identified?
-   ✓ Deal-breakers mentioned?
-
-7. SUCCESS CRITERIA
-   ✓ What would make this worth pursuing?
-   ✓ Metrics or indicators defined?
-   ✓ Timeline expectations?
-```
-
-**Output Schema:**
-```json
-{
-  "completeness_score": 0.85,
-  "gaps_identified": [
-    {
-      "area": "CUSTOMER_HYPOTHESIS",
-      "gap": "Segment size not estimated",
-      "severity": "low",
-      "clarification_question": "Roughly how many people do you think have this problem?"
-    }
-  ],
-  "areas_well_covered": ["THE_IDEA", "PROBLEM_HYPOTHESIS", "SOLUTION_HYPOTHESIS"],
-  "recommendation": "PROCEED" | "NEEDS_FOLLOWUP"
-}
-```
-
----
-
-### GV1: Concept Validator Agent
-
-| Attribute | Value |
-|-----------|-------|
-| **ID** | GV1 |
-| **Name** | Concept Validator Agent |
-| **Founder** | Guardian |
-| **Role** | Validate that the concept is legitimate and worth pursuing |
-| **Goal** | Screen out illegal, immoral, ridiculous, or impossible concepts before resources are invested |
-
-#### Configuration
-
-| Parameter | Value | Rationale |
-|-----------|-------|-----------|
-| `tools` | `[]` | Pure LLM - validation through reasoning |
-| `reasoning` | True | Legal/ethical analysis requires deep reasoning |
-| `inject_date` | True | Current regulatory context |
-| `max_iter` | 15 | Focused validation checks |
-| `temperature` | 0.1 | Strict compliance checking |
-| `verbose` | True | Debug logging |
-| `allow_delegation` | False | Predictable flow |
-
-#### Tool Status
-
-| Tool | Status | Notes |
-|------|--------|-------|
-| (none) | N/A | Pure LLM agent - validation through reasoning |
-
-**Backstory:**
-```
-You are a seasoned business ethics advisor who has seen every type of startup
-pitch imaginable. Your job is to be the responsible gatekeeper - not to crush
-dreams, but to ensure founders aren't pursuing something that's fundamentally
-flawed, harmful, or impossible. You apply rigorous but fair criteria to assess
-whether a concept should proceed to validation.
-```
-
-**Tasks:**
-1. `validate_concept_legitimacy` - Apply legitimacy screening criteria
-
-**Legitimacy Criteria:**
-
-```
-LEGAL CHECK
-├── Not involved in illegal goods/services (drugs, weapons, trafficking)
-├── Not facilitating fraud or financial crimes
-├── Not violating intellectual property laws
-├── Not circumventing regulations (securities, healthcare, etc.)
-└── Compliant with major jurisdiction laws (US, EU)
-
-ETHICAL CHECK
-├── Not exploiting vulnerable populations
-├── Not causing environmental harm
-├── Not enabling harassment or discrimination
-├── Not spreading misinformation
-├── Transparent about what it does
-└── Not designed to deceive users
-
-FEASIBILITY CHECK
-├── Not requiring technology that doesn't exist
-├── Not violating laws of physics
-├── Not requiring resources that are impossible to obtain
-└── Has some plausible path to execution
-
-BUSINESS SANITY CHECK
-├── Has identifiable potential customers
-├── Solves a problem someone might have
-├── Has some conceivable revenue model
-└── Not already been tried and failed catastrophically
-```
-
-**Output Schema:**
-```json
-{
-  "legitimacy_status": "PASS | FAIL | NEEDS_REVIEW",
-  "legal_check": {
-    "status": "PASS | FAIL",
-    "flags": [],
-    "notes": ""
-  },
-  "ethical_check": {
-    "status": "PASS | FAIL",
-    "flags": [],
-    "notes": ""
-  },
-  "feasibility_check": {
-    "status": "PASS | FAIL",
-    "flags": [],
-    "notes": ""
-  },
-  "business_sanity_check": {
-    "status": "PASS | FAIL",
-    "flags": [],
-    "notes": ""
-  },
-  "overall_recommendation": "",
-  "concerns_to_address": []
-}
-```
-
----
-
-### GV2: Intent Verification Agent
-
-| Attribute | Value |
-|-----------|-------|
-| **ID** | GV2 |
-| **Name** | Intent Verification Agent |
-| **Founder** | Guardian |
-| **Role** | Verify that the interview accurately captured the Founder's intent |
-| **Goal** | Ensure no miscommunication or gaps before creating the Brief |
-
-#### Configuration
-
-| Parameter | Value | Rationale |
-|-----------|-------|-----------|
-| `tools` | `[]` | Pure LLM - intent matching through reasoning |
-| `reasoning` | True | Nuanced intent analysis |
-| `inject_date` | True | Context freshness |
-| `max_iter` | 15 | Focused verification |
-| `temperature` | 0.1 | Precise intent matching |
-| `verbose` | True | Debug logging |
-| `allow_delegation` | False | Predictable flow |
-
-#### Tool Status
-
-| Tool | Status | Notes |
-|------|--------|-------|
-| (none) | N/A | Pure LLM agent - verification through reasoning |
-
-**Backstory:**
-```
-You are a meticulous editor and fact-checker. You've seen how miscommunication
-early in a project can lead to months of wasted work. Your job is to compare
-what the Founder said with what was captured, identify any gaps, contradictions,
-or areas of ambiguity, and flag them for clarification.
-```
-
-**Tasks:**
-1. `verify_intent_capture` - Compare transcript to structured notes
-2. `identify_gaps` - Find missing information
-3. `flag_contradictions` - Identify inconsistencies
-4. `generate_followup_questions` - Create targeted questions for gaps
-
-**Verification Checklist:**
-```
-COMPLETENESS
-├── All 7 interview areas covered?
-├── Customer hypothesis captured?
-├── Problem hypothesis captured?
-├── Solution hypothesis captured?
-├── Key assumptions identified?
-└── Success criteria defined?
-
-ACCURACY
-├── Summary reflects what was said?
-├── No words put in Founder's mouth?
-├── Nuances preserved?
-└── Enthusiasm level captured?
-
-CLARITY
-├── Ambiguous terms clarified?
-├── Industry jargon explained?
-├── Scope clearly bounded?
-└── Target market defined?
-
-CONSISTENCY
-├── Customer and problem align?
-├── Solution addresses stated problem?
-├── Success criteria are measurable?
-└── Assumptions are testable?
-```
-
----
-
-### S1: Brief Compiler Agent
-
-| Attribute | Value |
-|-----------|-------|
-| **ID** | S1 |
-| **Name** | Brief Compiler Agent |
-| **Founder** | Sage |
-| **Role** | Synthesize all inputs into the structured Founder's Brief |
-| **Goal** | Create a clear, comprehensive, well-organized Brief that will guide all downstream work |
-
-#### Configuration
-
-| Parameter | Value | Rationale |
-|-----------|-------|-----------|
-| `tools` | `[]` | Pure LLM - synthesis through reasoning |
-| `reasoning` | True | Complex document synthesis |
-| `inject_date` | True | Timestamp the brief |
-| `max_iter` | 20 | Thorough compilation |
-| `temperature` | 0.3 | Balanced synthesis |
-| `verbose` | True | Debug logging |
-| `allow_delegation` | False | Predictable flow |
-
-#### Tool Status
-
-| Tool | Status | Notes |
-|------|--------|-------|
-| (none) | N/A | Pure LLM agent - synthesis through reasoning |
-
-**Backstory:**
-```
-You are a master synthesizer who can take messy, conversational input and
-transform it into clear, structured documentation. You understand that the
-Founder's Brief is the single most important document in the validation process -
-it will inform every subsequent flow and crew. You take pride in creating Briefs
-that are complete, accurate, and actionable.
-```
-
-**Tasks:**
-1. `compile_founders_brief` - Create the structured Brief document
-2. `highlight_key_assumptions` - Identify the riskiest assumptions
-3. `define_validation_priorities` - Suggest what to validate first
-
----
-
-## Output Schemas
-
-### Founder's Brief (Prime Artifact)
-
-```python
-class FoundersBrief(BaseModel):
-    """The prime artifact from Phase 0 - input to all downstream phases."""
-
-    # Identity
-    brief_id: str
-    founder_id: str
-    session_id: str
-    created_at: datetime
-    updated_at: datetime
-    version: int = 1
-
-    # The Idea
-    the_idea: TheIdea
-
-    # Hypotheses (NOT validated - captured for testing)
-    problem_hypothesis: ProblemHypothesis
-    customer_hypothesis: CustomerHypothesis
-    solution_hypothesis: SolutionHypothesis
-
-    # Assumptions & Success
-    key_assumptions: List[Assumption]
-    success_criteria: SuccessCriteria
-
-    # Founder Context
-    founder_context: FounderContext
-
-    # QA Status
-    qa_status: QAStatus
-
-    # Metadata
-    metadata: InterviewMetadata
-
-
-class TheIdea(BaseModel):
-    one_liner: str
-    description: str
-    inspiration: str
-    unique_insight: str
-
-
-class ProblemHypothesis(BaseModel):
-    problem_statement: str
-    who_has_this_problem: str
-    frequency: str
-    current_alternatives: str
-    why_alternatives_fail: str
-    evidence_of_problem: Optional[str] = None
-
-
-class CustomerHypothesis(BaseModel):
-    primary_segment: str
-    segment_description: str
-    characteristics: List[str]
-    where_to_find_them: str
-    estimated_size: Optional[str] = None
-    validation_status: str = "HYPOTHESIS - NOT VALIDATED"
-
-
-class SolutionHypothesis(BaseModel):
-    proposed_solution: str
-    key_features: List[str]
-    differentiation: str
-    unfair_advantage: Optional[str] = None
-    validation_status: str = "HYPOTHESIS - NOT VALIDATED"
-
-
-class Assumption(BaseModel):
-    assumption: str
-    category: Literal["customer", "problem", "solution", "business_model"]
-    risk_level: Literal["high", "medium", "low"]
-    how_to_test: str
-    validated: bool = False
-
-
-class SuccessCriteria(BaseModel):
-    minimum_viable_signal: str
-    deal_breakers: List[str]
-    target_metrics: Dict[str, str]
-    timeline: Optional[str] = None
-
-
-class FounderContext(BaseModel):
-    founder_background: str
-    motivation: str
-    time_commitment: Literal["full_time", "part_time", "exploring"]
-    resources_available: str
-
-
-class QAStatus(BaseModel):
-    legitimacy_check: Literal["PASS", "FAIL", "NEEDS_REVIEW"]
-    legitimacy_notes: str = ""
-    intent_verification: Literal["PASS", "FAIL", "NEEDS_FOLLOWUP"]
-    intent_notes: str = ""
-    overall_status: Literal["APPROVED", "REJECTED", "PENDING"]
-
-
-class InterviewMetadata(BaseModel):
-    interview_duration_minutes: int
-    interview_turns: int
-    followup_questions_asked: int
-    confidence_score: float
-```
-
----
-
-## HITL Checkpoint
-
-### `approve_founders_brief`
-
-| Attribute | Value |
-|-----------|-------|
-| **Checkpoint ID** | `approve_founders_brief` |
-| **Phase** | 0 |
-| **Owner** | Founder (Human) + Sage |
-| **Purpose** | Founder confirms the Brief accurately captures their intent |
-| **Required for Exit** | Yes |
-
-**Presentation to Founder:**
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                     YOUR FOUNDER'S BRIEF                                     │
-│                                                                              │
-│  Please review this summary of your idea. We want to make sure we           │
-│  understood you correctly before we begin validation.                        │
-│                                                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  THE IDEA                                                                    │
-│  [One-liner and description displayed]                                      │
-│                                                                              │
-│  THE PROBLEM YOU'RE SOLVING                                                  │
-│  [Problem hypothesis displayed]                                              │
-│                                                                              │
-│  WHO YOU'RE BUILDING FOR                                                     │
-│  [Customer hypothesis displayed - marked as HYPOTHESIS]                     │
-│                                                                              │
-│  YOUR PROPOSED SOLUTION                                                      │
-│  [Solution hypothesis displayed - marked as HYPOTHESIS]                     │
-│                                                                              │
-│  KEY ASSUMPTIONS WE'LL TEST                                                  │
-│  [Ranked list of assumptions]                                               │
-│                                                                              │
-│  YOUR SUCCESS CRITERIA                                                       │
-│  [What would make this worth pursuing]                                      │
-│                                                                              │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  [ ] This captures my idea correctly                                        │
-│  [ ] I'd like to make corrections (please specify)                          │
-│                                                                              │
-│  [APPROVE & CONTINUE]     [REQUEST CHANGES]                                 │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-**Decision Options:**
-- `APPROVE` → Proceed to Phase 1: VPC Discovery
-- `REJECT` → Loop back to Interview Agent with corrections
-
----
-
-## Methodology Compliance
-
-This phase implements VPD patterns from [03-methodology.md](./03-methodology.md):
-
-| Pattern | Implementation |
-|---------|----------------|
-| **Hypothesis Capture** | All customer/problem/solution elements marked as "HYPOTHESIS - NOT VALIDATED" |
-| **Assumptions Mapping** | S1 identifies and risk-ranks assumptions using 2×2 matrix logic |
-| **Test Card Preparation** | Key assumptions include `how_to_test` field for Phase 1 |
-| **SAY Focus** | This phase captures what Founder says; Phase 1 discovers what customers DO |
-
-**Key Principle**: Phase 0 captures the Founder's beliefs. Phase 1+ tests them against reality. Never confuse hypothesis with validated truth.
+- Project created with `raw_idea`
+- Phase 1 triggered via Modal
+- User redirected to dashboard
+
+**No HITL checkpoint in Phase 0.** The first HITL is now in Phase 1: `approve_discovery_output`.
 
 ---
 
 ## Summary
 
-### CrewAI Pattern Summary
+### What Phase 0 Does Now
+1. Capture business idea (1-3 sentences)
+2. Create project record
+3. Trigger Phase 1
+4. Redirect to dashboard
 
-| Pattern | Implementation |
-|---------|----------------|
-| **Phase** | Phase 0: Onboarding |
-| **Flow** | `OnboardingFlow` |
-| **Crew** | `OnboardingCrew` (4 agents) |
+### What Phase 0 Does NOT Do
+- Collect 28 fields of data
+- Run AI conversations
+- Assess quality or completeness
+- Generate Founder's Brief
 
-### Agent Summary
+### Pattern Summary
 
-| ID | Agent | Founder | Role | Output |
-|----|-------|---------|------|--------|
-| O1 | Interview Gap Analyzer Agent | Sage | Analyze Alex transcript for completeness | Gap Analysis Report |
-| GV1 | Concept Validator Agent | Guardian | Legitimacy screening | Legitimacy Report |
-| GV2 | Intent Verification Agent | Guardian | Verify capture accuracy | Intent Verification Report |
-| S1 | Brief Compiler Agent | Sage | Synthesize into Brief | **Founder's Brief** |
-
-> **Note**: The conversational interview is conducted by "Alex" (Vercel AI SDK) in the product app before CrewAI agents are invoked. See [Two-Layer Architecture](#two-layer-architecture) for details.
-
-**Phase 0 Totals:**
-- Flows: 1 (`OnboardingFlow`)
-- Crews: 1 (`OnboardingCrew`)
-- Agents: 4
-- HITL Checkpoints: 1
+| Pattern | This Phase |
+|---------|------------|
+| **Phase** | Phase 0: Quick Start |
+| **Flow** | N/A (no CrewAI involvement) |
+| **Crew** | N/A |
+| **Agents** | 0 |
+| **HITL** | None (moved to Phase 1) |
 
 ---
 
@@ -828,18 +390,78 @@ This phase implements VPD patterns from [03-methodology.md](./03-methodology.md)
 
 ### Architecture
 - [00-introduction.md](./00-introduction.md) - Quick start and orientation
-- [01-ecosystem.md](./01-ecosystem.md) - Three-service architecture overview
-- [02-organization.md](./02-organization.md) - 6 AI Founders and agents
-- [03-methodology.md](./03-methodology.md) - VPD framework reference
+- [01-ecosystem.md](./01-ecosystem.md) - Three-service architecture
+- [02-organization.md](./02-organization.md) - Agent organization
+- [03-methodology.md](./03-methodology.md) - VPD framework
 
 ### Phase Specifications
-- **Phase 0: Onboarding** - (this document)
-- [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery (next phase)
+- **Phase 0: Quick Start** - (this document)
+- [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery + Brief Generation
 - [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
 - [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation
 - [08-phase-4-viability.md](./08-phase-4-viability.md) - Viability + Decision
 
-### Reference
-- [09-status.md](./09-status.md) - Current implementation status
-- [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
-- [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
+### Historical
+- [adr/004-two-pass-onboarding-architecture.md](../adr/004-two-pass-onboarding-architecture.md) - SUPERSEDED
+- [adr/005-state-first-synchronized-loop.md](../adr/005-state-first-synchronized-loop.md) - SUPERSEDED
+
+---
+
+## Appendix: Founder's Brief Schema
+
+The Founder's Brief schema remains unchanged. It is now an OUTPUT of Phase 1 rather than Phase 0.
+
+```python
+class FoundersBrief(BaseModel):
+    """Generated by Phase 1 from research + raw_idea."""
+
+    # Identity
+    brief_id: str
+    project_id: str
+    created_at: datetime
+    version: int = 1
+
+    # The Idea (from user input)
+    the_idea: TheIdea
+
+    # Hypotheses (generated from research - NOT validated)
+    problem_hypothesis: ProblemHypothesis
+    customer_hypothesis: CustomerHypothesis
+    solution_hypothesis: SolutionHypothesis
+
+    # Assumptions & Success (AI-generated priorities)
+    key_assumptions: List[Assumption]
+    success_criteria: SuccessCriteria
+
+    # Research Context (new - from Phase 1 research)
+    market_research: MarketResearch
+    competitor_analysis: CompetitorAnalysis
+
+    # QA Status
+    qa_status: QAStatus
+
+
+class TheIdea(BaseModel):
+    """Extracted from user's raw_idea input."""
+    raw_input: str  # Original user text
+    one_liner: str  # AI-refined summary
+    description: str  # AI-expanded description
+    category: str  # AI-classified industry/category
+
+
+class MarketResearch(BaseModel):
+    """New - generated by Phase 1 research."""
+    market_size: str
+    growth_rate: str
+    key_trends: List[str]
+    regulatory_considerations: List[str]
+
+
+class CompetitorAnalysis(BaseModel):
+    """New - generated by Phase 1 research."""
+    direct_competitors: List[Competitor]
+    indirect_alternatives: List[str]
+    market_gaps: List[str]
+```
+
+See [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) for full brief generation specification.

@@ -1,12 +1,13 @@
 ---
 purpose: "Private technical source of truth for recently delivered work"
 status: "active"
-last_reviewed: "2026-01-13"
+last_reviewed: "2026-01-19"
+architectural_pivot: "2026-01-19"
 ---
 
 # Recently Delivered
 
-## Timeline Clarification (2026-01-13)
+## Timeline Clarification (2026-01-19)
 
 | Date | Event | Notes |
 |------|-------|-------|
@@ -19,18 +20,67 @@ last_reviewed: "2026-01-13"
 | 2026-01-10 | **Landing Page Migration** | ADR-003: Supabase Storage replaces Netlify |
 | 2026-01-10 20:00 | **Plan Audit Complete** | All 4 today's plans audited, docs aligned |
 | 2026-01-10 22:00 | **Asset Generation Specs** | Blueprint Pattern, Progressive Images, Ad Platform Library |
-| 2026-01-13 | **Two-Layer Onboarding** | O1 renamed, transcript passed, consultant path fixed |
-| **Next** | Deploy & test two-layer | Then Phase 3-4 live test |
+| 2026-01-13 | ~~**Two-Layer Onboarding**~~ | O1 renamed, transcript passed, consultant path fixed |
+| 2026-01-19 | **Quick Start Architecture** | Phase 0 simplified to single form, ADR-006 created |
+| **Next** | Implement Quick Start UI | Backend + frontend implementation |
 
 ---
 
-## Two-Layer Onboarding Architecture (2026-01-13)
+## Quick Start Architecture (2026-01-19)
 
-**Status**: ✅ IMPLEMENTED - Pending deployment and testing
+**Status**: ✅ DOCUMENTED - ADR-006 created
 
-Implemented the two-layer architecture for Phase 0 onboarding:
-- **Layer 1**: "Alex" chat (Vercel AI SDK) collects conversation transcript
-- **Layer 2**: OnboardingCrew (Modal) validates and compiles Founder's Brief
+> **This supersedes Two-Layer Onboarding (2026-01-13)**. The 7-stage AI conversation was replaced with a single form input.
+
+### Key Changes
+
+| Before | After |
+|--------|-------|
+| 7-stage AI conversation | Single form: business idea + optional context |
+| 30+ minutes onboarding | 30 seconds |
+| $17+ AI cost | $0 |
+| 57-92% progress variance | 100% deterministic |
+| OnboardingCrew (4 agents) | BriefGenerationCrew (2 agents) in Phase 1 |
+
+### Agent Changes
+
+| Agent | Previous | New |
+|-------|----------|-----|
+| O1: Interview Gap Analyzer | Phase 0 OnboardingCrew | **DELETED** |
+| GV1: Concept Validator | Phase 0 OnboardingCrew | Phase 1 BriefGenerationCrew |
+| GV2: Intent Verifier | Phase 0 OnboardingCrew | **DELETED** |
+| S1: Brief Compiler | Phase 0 OnboardingCrew | Phase 1 BriefGenerationCrew |
+
+### HITL Checkpoint Changes
+
+| Before | After |
+|--------|-------|
+| `approve_founders_brief` (Phase 0) | Removed |
+| `approve_vpc_completion` (Phase 1) | Combined into `approve_discovery_output` (Phase 1) |
+
+### Architecture Metrics
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Flows | 5 | 4 (OnboardingFlow deleted) |
+| Crews | 14 | 14 (OnboardingCrew → BriefGenerationCrew) |
+| Agents | 45 | 43 (O1, GV2 deleted) |
+
+### ADR Reference
+
+See [ADR-006: Quick Start Architecture](../adr/006-quick-start-architecture.md)
+
+---
+
+## Two-Layer Onboarding Architecture (2026-01-13) - SUPERSEDED
+
+**Status**: ~~✅ IMPLEMENTED~~ **SUPERSEDED by Quick Start (ADR-006)**
+
+> **Note (2026-01-19)**: This architecture was superseded by Quick Start. The two-layer approach is no longer used for Phase 0. See "Quick Start Architecture" section above.
+
+~~Implemented the two-layer architecture for Phase 0 onboarding:~~
+- ~~**Layer 1**: "Alex" chat (Vercel AI SDK) collects conversation transcript~~
+- ~~**Layer 2**: OnboardingCrew (Modal) validates and compiles Founder's Brief~~
 
 ### Problem Statement
 
@@ -790,4 +840,4 @@ Final implementation of architectural improvements bringing the system to 100% c
 
 ---
 
-**Last Updated**: 2026-01-10 15:08
+**Last Updated**: 2026-01-19

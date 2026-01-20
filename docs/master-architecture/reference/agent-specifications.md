@@ -1,13 +1,16 @@
 ---
-purpose: Complete specification of all 45 agents with tools, configs, and output schemas
+purpose: Complete specification of all 43 agents with tools, configs, and output schemas
 status: active
-last_reviewed: 2026-01-09
+last_reviewed: 2026-01-20
 vpd_compliance: true
+architectural_pivot: 2026-01-19
 ---
 
 # Agent Specifications
 
-This document provides the complete specification for all 45 agents in the StartupAI system. Each specification includes configuration parameters, tool requirements, output schemas, and task integration details.
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start (no AI). Agent count: 45 → 43. OnboardingCrew was dissolved; GV1 and S1 moved to Phase 1 BriefGenerationCrew. See [ADR-006](../../adr/006-quick-start-architecture.md).
+
+This document provides the complete specification for all 43 agents in the StartupAI system. Each specification includes configuration parameters, tool requirements, output schemas, and task integration details.
 
 **Usage**: This is the authoritative reference for implementing agent configurations. Developers should be able to implement any agent without asking clarifying questions.
 
@@ -20,21 +23,38 @@ This document provides the complete specification for all 45 agents in the Start
 
 ## Table of Contents
 
-1. [Phase 0: Onboarding (4 agents)](#phase-0-onboarding)
-2. [Phase 1: VPC Discovery (18 agents)](#phase-1-vpc-discovery)
+1. [Phase 0: Quick Start (0 agents - No AI)](#phase-0-quick-start)
+2. [Phase 1: VPC Discovery (20 agents)](#phase-1-vpc-discovery)
 3. [Phase 2: Desirability (9 agents)](#phase-2-desirability)
 4. [Phase 3: Feasibility (5 agents)](#phase-3-feasibility)
 5. [Phase 4: Viability (9 agents)](#phase-4-viability)
 
 ---
 
-## Phase 0: Onboarding
+## Phase 0: Quick Start
 
-**Flow**: `OnboardingFlow`
-**Crew**: `OnboardingCrew`
-**Agents**: 4 (O1, GV1, GV2, S1)
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start - a simple form submission with no AI. See [ADR-006](../../adr/006-quick-start-architecture.md).
 
-### O1 - Founder Interview Agent
+**Flow**: None (form submission only)
+**Crew**: None
+**Agents**: 0
+
+Phase 0 is now a **Quick Start form** that takes ~30 seconds. Users enter their business idea and optional context, then Phase 1 starts immediately.
+
+The Founder's Brief is now AI-generated in Phase 1 by BriefGenerationCrew.
+
+---
+
+## ~~Phase 0: Onboarding~~ (Superseded)
+
+<details>
+<summary>Historical Reference (OnboardingCrew - Superseded Jan 19, 2026)</summary>
+
+**Flow**: `OnboardingFlow` (deleted)
+**Crew**: `OnboardingCrew` (dissolved)
+**Agents**: 4 (O1, GV1, GV2, S1) - O1 and GV2 deleted; GV1 and S1 moved to Phase 1 BriefGenerationCrew
+
+### O1 - Founder Interview Agent (DELETED)
 
 | Attribute | Value |
 |-----------|-------|
@@ -220,13 +240,54 @@ class FoundersBrief(BaseModel):
 - **Output**: FoundersBrief for HITL approval → Phase 1
 - **Context**: Final agent in OnboardingCrew; triggers `approve_founders_brief` HITL
 
+</details>
+
 ---
 
 ## Phase 1: VPC Discovery
 
 **Flow**: `VPCDiscoveryFlow`
-**Crews**: DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew
-**Agents**: 18
+**Crews**: BriefGenerationCrew (NEW), DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew
+**Agents**: 20 (includes 2 from BriefGenerationCrew)
+
+### BriefGenerationCrew (2 agents) - NEW
+
+> **Added (2026-01-19)**: Generates Founder's Brief from user's raw idea using AI research. Moved from Phase 0.
+
+#### GV1 - Concept Validator Agent (Moved from Phase 0)
+
+| Attribute | Value |
+|-----------|-------|
+| **ID** | GV1 |
+| **Founder** | Guardian (CGO) |
+| **Crew** | BriefGenerationCrew |
+| **Phase** | 1 (VPC Discovery) |
+
+**Configuration**: Same as previous Phase 0 spec. Pure LLM agent for legitimacy validation.
+
+**Output**: LegitimacyReport for S1 brief compilation.
+
+---
+
+#### S1 - Brief Compiler Agent (Moved from Phase 0)
+
+| Attribute | Value |
+|-----------|-------|
+| **ID** | S1 |
+| **Founder** | Sage (CSO) |
+| **Crew** | BriefGenerationCrew |
+| **Phase** | 1 (VPC Discovery) |
+
+**Configuration**: Same as previous Phase 0 spec. Pure LLM agent for brief synthesis.
+
+**Output**: FoundersBrief for HITL approval → Discovery continues.
+
+**Task Integration**:
+- **Input**: User's `raw_idea` from Quick Start, AI-conducted market research
+- **Output**: FoundersBrief for HITL `approve_discovery_output` checkpoint
+- **Context**: Generates Founder's Brief from research instead of extracting from conversation
+
+---
 
 ### DiscoveryCrew (5 agents)
 
@@ -1923,10 +1984,12 @@ Same as Phase 2 governance agents, providing final validation, security review, 
 
 ## Summary Statistics
 
+> **Updated (2026-01-19)**: Agent count reduced from 45 to 43 due to Quick Start pivot. O1 and GV2 deleted.
+
 | Metric | Count |
 |--------|-------|
-| **Total Agents** | 45 |
-| **Pure LLM Agents** | 13 (no tools needed) |
+| **Total Agents** | 43 |
+| **Pure LLM Agents** | 11 (no tools needed) |
 | **Tool-Equipped Agents** | 32 |
 | **Existing Tools (ready to wire)** | 13 |
 | **Stub Tools (need implementation)** | 20 |
@@ -1935,11 +1998,11 @@ Same as Phase 2 governance agents, providing final validation, security review, 
 
 | Founder | Agent Count |
 |---------|-------------|
-| Sage (CSO) | 12 |
+| Sage (CSO) | 11 |
 | Forge (CTO) | 9 |
 | Pulse (CMO) | 8 |
 | Compass (CPO) | 6 |
-| Guardian (CGO) | 8 |
+| Guardian (CGO) | 7 |
 | Ledger (CFO) | 5 |
 
 ### Agents by Tool Category

@@ -1,10 +1,12 @@
 # StartupAI Crew - AI Founders Engine
 
-**5-Flow/14-Crew/45-Agent validation engine powering the AI Founders team**
+**4-Flow/14-Crew/43-Agent validation engine powering the AI Founders team**
 
-This repository is the brain of the StartupAI ecosystem - a validation pipeline that delivers Fortune 500-quality strategic analysis through 6 AI Founders and 45 specialist agents.
+This repository is the brain of the StartupAI ecosystem - a validation pipeline that delivers Fortune 500-quality strategic analysis through 6 AI Founders and 43 specialist agents.
 
-> **Current Focus**: Phase 0 durability fixes. Two-Pass Architecture ([ADR-004](docs/adr/004-two-pass-onboarding-architecture.md)) implemented. State-First Synchronized Loop ([ADR-005](docs/adr/005-state-first-synchronized-loop.md)) approved for implementation.
+> **Current Focus**: Phase 1-4 testing. Quick Start Architecture ([ADR-006](docs/adr/006-quick-start-architecture.md)) implemented - Phase 0 is now a simple form submission with no AI.
+
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start. Agent count: 45 → 43 (O1, GV2 deleted). OnboardingFlow deleted. Founder's Brief now AI-generated in Phase 1 by BriefGenerationCrew.
 
 ---
 
@@ -21,12 +23,12 @@ This repository is the brain of the StartupAI ecosystem - a validation pipeline 
 | **Guardian** | CGO | Governance, accountability, oversight |
 | **Ledger** | CFO | Finance, viability, compliance |
 
-### Canonical Architecture (5 Flows / 14 Crews / 45 Agents)
+### Canonical Architecture (4 Flows / 14 Crews / 43 Agents)
 
 | Phase | Flow | Crews | Agents |
 |-------|------|-------|--------|
-| **0** | OnboardingFlow | OnboardingCrew | 4 (O1, GV1, GV2, S1) |
-| **1** | VPCDiscoveryFlow | Discovery, CustomerProfile, ValueDesign, WTP, FitAssessment | 18 |
+| **0** | (Quick Start) | None | 0 (no AI) |
+| **1** | VPCDiscoveryFlow | BriefGeneration, Discovery, CustomerProfile, ValueDesign, WTP, FitAssessment | 20 |
 | **2** | DesirabilityFlow | Build, Growth, Governance | 9 |
 | **3** | FeasibilityFlow | Build, Governance | 5 |
 | **4** | ViabilityFlow | Finance, Synthesis, Governance | 9 |
@@ -34,11 +36,11 @@ This repository is the brain of the StartupAI ecosystem - a validation pipeline 
 ### Gated Validation (VPD Framework)
 
 ```
-Phase 0 (Onboarding) → [HITL] →
-Phase 1 (VPC Discovery) → [HITL] →
-Phase 2 (Desirability) → [HITL] →
-Phase 3 (Feasibility) → [HITL] →
-Phase 4 (Viability) → [HITL] → Decision
+Phase 0 (Quick Start - 30 sec form) →
+Phase 1 (VPC Discovery + Brief) → [HITL: approve_discovery_output] →
+Phase 2 (Desirability) → [HITL: signal-dependent] →
+Phase 3 (Feasibility) → [HITL: approve_feasibility_gate] →
+Phase 4 (Viability) → [HITL: request_human_decision] → Decision
 ```
 
 ---
@@ -125,7 +127,7 @@ cp .env.example .env
 ### 4. Run Locally
 ```bash
 # Test a crew directly
-uv run python -c "from src.crews.onboarding.crew import OnboardingCrew; print(OnboardingCrew())"
+uv run python -c "from src.crews.discovery.brief_generation_crew import BriefGenerationCrew; print(BriefGenerationCrew())"
 
 # Or use Modal local development (after Modal setup)
 modal serve src/modal_app/app.py
@@ -145,8 +147,7 @@ startupai-crew/
 │   │   └── helpers/              # Pivot selection, segment alternatives
 │   │
 │   ├── crews/                    # 14 Crew definitions (all implemented)
-│   │   ├── onboarding/           # OnboardingCrew (4 agents)
-│   │   ├── discovery/            # 5 crews: Discovery, CustomerProfile, ValueDesign, WTP, FitAssessment
+│   │   ├── discovery/            # 6 crews: BriefGeneration, Discovery, CustomerProfile, ValueDesign, WTP, FitAssessment
 │   │   ├── desirability/         # 3 crews: Build, Growth, Governance
 │   │   ├── feasibility/          # 2 crews: Build, Governance
 │   │   └── viability/            # 3 crews: Finance, Synthesis, Governance
@@ -213,10 +214,12 @@ curl https://chris00walker--startupai-validation-fastapi-app.modal.run/health
 
 ### Output (VPD Framework Phases)
 
-**Phase 0 - Onboarding:**
-- Founder's Brief (hypothesis capture)
+**Phase 0 - Quick Start:**
+- Raw idea + optional context (form input, ~30 seconds)
+- → Phase 1 starts immediately
 
-**Phase 1 - VPC Discovery:**
+**Phase 1 - VPC Discovery + Brief Generation:**
+- Founder's Brief (AI-generated from research)
 - Customer Profiles (Jobs/Pains/Gains)
 - Value Map (Products/Pain Relievers/Gain Creators)
 - Fit Score (≥70 to proceed)
@@ -260,30 +263,34 @@ curl https://chris00walker--startupai-validation-fastapi-app.modal.run/health
 
 ## Current Status
 
-> **Modal Migration COMPLETE.** Live testing Phase 0-2 validated. See [ADR-002](docs/adr/002-modal-serverless-migration.md) for architecture details.
+> **Modal Migration COMPLETE.** Quick Start Architecture ([ADR-006](docs/adr/006-quick-start-architecture.md)) implemented. Live testing Phase 1-2 validated. See [ADR-002](docs/adr/002-modal-serverless-migration.md) for architecture details.
 
 **Canonical Architecture:**
-- 5 Phases, 5 Flows, 14 Crews, 45 Agents, 10 HITL checkpoints
+- 5 Phases, 4 Flows, 14 Crews, 43 Agents, 10 HITL checkpoints (Phase 0 has none)
 
 **Migration Status:**
 - [x] Infrastructure setup (Modal account, Supabase tables)
 - [x] Code migration (modal_app/, crews/, state/)
-- [x] Testing (500+ tests: crew tests + E2E integration)
+- [x] Testing (678+ tests: crew tests + E2E integration)
 - [x] Deployment (Production URL live)
-- [x] Live testing Phase 0-2 (6 issues found and fixed)
+- [x] Quick Start Architecture implemented ([ADR-006](docs/adr/006-quick-start-architecture.md))
+- [x] Live testing Phase 1-2 (issues fixed)
 - [ ] Live testing Phase 3-4
 
-**Phase 0 Durability (2026-01-16):**
-- [x] Two-Pass Architecture implemented ([ADR-004](docs/adr/004-two-pass-onboarding-architecture.md))
-- [x] Errata fixed (E1-E4) + live dogfooding issues (P2-P3)
-- [ ] State-First Synchronized Loop ([ADR-005](docs/adr/005-state-first-synchronized-loop.md)) - Approved, implementation pending
+**Quick Start Pivot (2026-01-19):**
+- [x] Phase 0 simplified to form submission (no AI, no conversation)
+- [x] OnboardingFlow deleted, BriefGenerationCrew added to Phase 1
+- [x] Agent count reduced: 45 → 43 (O1, GV2 deleted)
+- [x] HITL checkpoint: `approve_discovery_output` (combined Brief + VPC)
 
 **What Changed:**
 - FROM: Legacy 3-crew deployment (3 repos, InvokeCrewAIAutomationTool chaining)
 - TO: Modal serverless (1 repo, native Python orchestration)
+- FROM: 7-stage AI conversation (20-25 min)
+- TO: Quick Start form (~30 seconds)
 
 ---
 
-**Status:** Modal Deployed, Phase 0 Durability In Progress
-**Last Updated:** 2026-01-16
+**Status:** Modal Deployed, Quick Start Implemented
+**Last Updated:** 2026-01-20
 **License:** Proprietary - StartupAI Platform

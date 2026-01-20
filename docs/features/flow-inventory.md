@@ -1,101 +1,114 @@
 ---
 document_type: feature-audit
 status: active
-last_verified: 2026-01-13
+last_verified: 2026-01-19
+architectural_pivot: 2026-01-19
 ---
 
 # Flow Inventory
 
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start - no OnboardingFlow. See [ADR-006](../adr/006-quick-start-architecture.md).
+
 ## Purpose
-Authoritative inventory of all 5 Flows in the StartupAI validation engine with entry/exit criteria and HITL checkpoints.
+Authoritative inventory of all 4 Flows in the StartupAI validation engine with entry/exit criteria and HITL checkpoints.
 
 ## Quick Reference
 
 | Phase | Flow | Crews | Agents | HITL Checkpoint | Status |
 |-------|------|-------|--------|-----------------|--------|
-| 0 | OnboardingFlow | 1 | 4 | `approve_founders_brief` | `active` |
-| 1 | VPCDiscoveryFlow | 5 | 18 | `approve_vpc_completion` | `active` |
+| 0 | ~~OnboardingFlow~~ | 0 | 0 | None | `Quick Start (no AI)` |
+| 1 | VPCDiscoveryFlow | 6 | 20 | `approve_discovery_output` | `active` |
 | 2 | DesirabilityFlow | 3 | 9 | `approve_desirability_gate` / `approve_segment_pivot` / `approve_value_pivot` | `active` |
 | 3 | FeasibilityFlow | 2 | 5 | `approve_feasibility_gate` | `active` |
 | 4 | ViabilityFlow | 3 | 9 | `request_human_decision` | `active` |
 
-**Totals**: 5 Flows, 14 Crews, 45 Agents, 10 HITL Checkpoints
+**Totals**: 4 Flows, 14 Crews, 43 Agents, 10 HITL Checkpoints (Phase 0 has no HITL)
 
 ---
 
-## Phase 0: OnboardingFlow
+## Phase 0: Quick Start (No AI)
 
-**File**: `src/modal_app/phases/phase_0.py`
+> **Architectural Pivot (2026-01-19)**: Phase 0 was simplified to Quick Start. See [ADR-006](../adr/006-quick-start-architecture.md).
+
+### No OnboardingFlow
+
+Phase 0 is now a **simple form submission** - no AI, no flows, no crews.
+
+| Metric | Value |
+|--------|-------|
+| Duration | ~30 seconds |
+| AI Cost | $0 |
+| Crews | None |
+| Agents | None |
+| HITL Checkpoints | None |
 
 ### Entry Criteria
-- `entrepreneur_input` string from kickoff request (min 10 chars)
-- No prior phase completion required
-
-### Crews Executed
-1. **OnboardingCrew** (4 agents)
-   - O1: Founder Interview (Sage)
-   - GV1: Concept Validator (Guardian)
-   - GV2: Intent Verification (Guardian)
-   - S1: Brief Compiler (Sage)
-
-### HITL Checkpoint: `approve_founders_brief`
-
-| Option | Label | Description | Next Action |
-|--------|-------|-------------|-------------|
-| `approve` | Approve | Proceed to VPC Discovery | → Phase 1 |
-| `revise` | Request Revisions | Return for clarification | → Loop Phase 0 |
-| `reject` | Reject | Concept fails legitimacy check | → Fail |
-
-**Default Recommendation**: `approve`
+- User submits Quick Start form with `raw_idea` (min 10 chars)
+- Optional: `additional_context` (pitch deck text or notes)
 
 ### Exit Criteria
-- Human approval of Founder's Brief
-- `qa_status.overall_status` = valid
+- Form submitted successfully
+- Project created in database
+- Phase 1 triggered automatically
 
 ### Output
-- `founders_brief`: FoundersBrief Pydantic model (src/state/models.py:219)
+- `raw_idea`: User's business idea text
+- `additional_context`: Optional supplementary context
+- `project_id`: Created project UUID
+- → **Phase 1 starts immediately**
 
 ---
 
-## Phase 1: VPCDiscoveryFlow
+## Phase 1: VPCDiscoveryFlow + Brief Generation
 
 **File**: `src/modal_app/phases/phase_1.py`
 
 ### Entry Criteria
-- `founders_brief` from Phase 0
+- `raw_idea` from Quick Start form (Phase 0)
+- Optional: `additional_context` (pitch deck text or notes)
 - Optional: `pivot_context` if looping from Phase 2 segment pivot
 
 ### Crews Executed
-1. **DiscoveryCrew** (5 agents) - Segment discovery and research
-2. **CustomerProfileCrew** (6 agents) - Jobs, Pains, Gains extraction
-3. **ValueDesignCrew** (3 agents) - Pain Relievers, Gain Creators
-4. **WTPCrew** (2 agents) - Willingness-to-pay analysis
-5. **FitAssessmentCrew** (2 agents) - VPC fit scoring
+1. **BriefGenerationCrew** (2 agents) - Generates Founder's Brief from research (NEW)
+   - GV1: Concept Validator (moved from Phase 0)
+   - S1: Brief Compiler (moved from Phase 0)
+2. **DiscoveryCrew** (5 agents) - Segment discovery and research
+3. **CustomerProfileCrew** (6 agents) - Jobs, Pains, Gains extraction
+4. **ValueDesignCrew** (3 agents) - Pain Relievers, Gain Creators
+5. **WTPCrew** (2 agents) - Willingness-to-pay analysis
+6. **FitAssessmentCrew** (2 agents) - VPC fit scoring
+
+### Brief Generation (NEW)
+BriefGenerationCrew generates the Founder's Brief from:
+1. User's `raw_idea` (Quick Start input)
+2. Market research (AI-conducted)
+3. Competitor analysis (AI-conducted)
 
 ### Pivot Context Handling
 If `pivot_type == "segment_pivot"` (from Phase 2):
-- Injects `target_segment_hypothesis` into founders_brief
+- Injects `target_segment_hypothesis` into research
 - Prevents rediscovery of failed segment
 - File reference: `phase_1.py:57-80`
 
-### HITL Checkpoint: `approve_vpc_completion`
+### HITL Checkpoint: `approve_discovery_output` (Combined Brief + VPC)
 
 | Option | Label | Description | Next Action |
 |--------|-------|-------------|-------------|
-| `approve` | Approve | Proceed to Phase 2 | → Phase 2 |
-| `iterate` | Iterate | Re-run discovery with refinements | → Loop Phase 1 |
-| `segment_pivot` | Segment Pivot | Target different segment | → Loop Phase 1 |
+| `approve` | Approve | Brief and VPC are accurate, proceed | → Continue Phase 1 |
+| `edit` | Save Edits | User edited brief before approving | → Continue Phase 1 |
+| `reject` | Start Over | Research is fundamentally wrong | → Return to Quick Start |
 
-**Default Recommendation**: `approve` if fit_score >= 70, else `iterate`
+**Default Recommendation**: `approve` if fit_score >= 70, else `edit`
 
 ### Gate Condition
-- `fit_score >= 70` required to proceed
+- `fit_score >= 70` required to proceed to Phase 2
 
 ### Exit Criteria
-- Human approval of VPC completion
+- Human approval of discovery output (Brief + VPC)
 - Fit score meets threshold (70)
 
 ### Outputs
+- `founders_brief`: AI-generated Founder's Brief
 - `customer_profile`: CustomerProfile (Jobs, Pains, Gains)
 - `value_map`: ValueMap (Products, Pain Relievers, Gain Creators)
 - `wtp_results`: WTP analysis results
@@ -260,7 +273,7 @@ Per Innovation Physics methodology:
 
 ### Sequential Execution
 ```
-Phase 0 → [HITL approve_founders_brief] → Phase 1 → [HITL approve_vpc_completion] →
+Quick Start (30 sec) → Phase 1 → [HITL approve_discovery_output] →
 Phase 2 → [HITL signal-dependent] → Phase 3 → [HITL approve_feasibility_gate] →
 Phase 4 → [HITL request_human_decision] → COMPLETE
 ```
