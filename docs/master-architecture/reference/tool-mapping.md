@@ -26,7 +26,7 @@ This document defines the complete mapping from agents to their assigned tools, 
 | **MCP External** | 4 | Use existing MCP servers (Meta Ads, Google Ads, Calendar, Fetch) |
 | **MCP Custom** | 10 | Build as FastMCP tools on Modal |
 | **LLM-Based** | 8 | Structured LLM output with Pydantic |
-| **TOTAL** | 35 | All tools across 45 agents |
+| **TOTAL** | 35 | All tools across 43 agents |
 
 > **Observability**: All tools emit observability data. See [observability-architecture.md](./observability-architecture.md) for debugging workflows and database schema.
 
@@ -34,24 +34,27 @@ This document defines the complete mapping from agents to their assigned tools, 
 
 ## Complete Mapping Matrix
 
-### Phase 0: Onboarding
+### Phase 0: Quick Start
 
-| Agent | Crew | Tools | MCP Category | Output Schema |
-|-------|------|-------|--------------|---------------|
-| O1 | OnboardingCrew | ConversationTool, NoteStructurerTool, LearningRetrievalTool | LLM-Based (2), EXISTS (1) | InterviewTranscript |
-| GV1 | OnboardingCrew | GuardianReviewTool | EXISTS | LegitimacyReport |
-| GV2 | OnboardingCrew | `[]` (Pure LLM) | N/A | IntentVerificationReport |
-| S1 | OnboardingCrew | LearningRetrievalTool | EXISTS | FoundersBrief |
+> **Architectural Update (2026-01-19)**: Phase 0 was simplified to Quick Start with no AI agents. See [ADR-006](../../adr/006-quick-start-architecture.md).
 
 **Phase 0 Summary:**
-- 4 agents total
-- 2 pure LLM agents (no tools)
-- 2 tool-equipped agents
-- Tool breakdown: 2 EXISTS, 2 LLM-Based
+- 0 agents (no AI)
+- User submits form (raw_idea + hints)
+- Phase 1 triggered immediately
 
 ---
 
-### Phase 1: VPC Discovery
+### Phase 1: VPC Discovery + Brief Generation
+
+> **Note**: Phase 1 now includes BriefGenerationCrew (GV1, S1) which generates the Founder's Brief from research.
+
+#### BriefGenerationCrew (Stage A)
+
+| Agent | Tools | MCP Category | Output Schema |
+|-------|-------|--------------|---------------|
+| GV1 | GuardianReviewTool, WebSearchTool | EXISTS (1), MCP External (1) | MarketResearchReport |
+| S1 | LearningRetrievalTool | EXISTS | FoundersBrief |
 
 #### DiscoveryCrew
 
@@ -97,10 +100,10 @@ This document defines the complete mapping from agents to their assigned tools, 
 | FIT_ROUTE | `[]` (Pure LLM) | N/A | RoutingDecision |
 
 **Phase 1 Summary:**
-- 18 agents total
-- 7 pure LLM agents (no tools)
-- 11 tool-equipped agents
-- Tool breakdown: 5 EXISTS, 11 MCP Custom, 2 MCP External, 5 LLM-Based
+- 20 agents total (18 VPC + 2 BriefGenerationCrew)
+- 8 pure LLM agents (no tools)
+- 12 tool-equipped agents
+- Tool breakdown: 6 EXISTS, 11 MCP Custom, 3 MCP External, 5 LLM-Based
 
 ---
 

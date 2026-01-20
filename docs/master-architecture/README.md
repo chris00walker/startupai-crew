@@ -18,7 +18,7 @@ Start here and progress through the numbered documents:
 | 1 | [01-ecosystem.md](./01-ecosystem.md) | 3-service architecture overview | Second - understand the system |
 | 2 | [02-organization.md](./02-organization.md) | 6 founders, agents, VPD terminology | Third - understand the team |
 | 3 | [03-methodology.md](./03-methodology.md) | **VPD framework, evidence hierarchy, templates** | Before any implementation |
-| 4 | [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) | Phase 0: Founder's Brief capture | When implementing onboarding |
+| 4 | [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) | Phase 0: Quick Start | When implementing onboarding |
 | 5 | [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) | Phase 1: VPC Discovery (Customer Profile + Value Map) | When implementing discovery |
 | 6 | [06-phase-2-desirability.md](./06-phase-2-desirability.md) | Phase 2: Desirability validation | When implementing desirability |
 | 7 | [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) | Phase 3: Feasibility validation | When implementing feasibility |
@@ -34,24 +34,25 @@ Start here and progress through the numbered documents:
                          ═══════════════════════════
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  PHASE 0: ONBOARDING                                                        │
+│  PHASE 0: QUICK START                                                       │
 │  ────────────────────                                                       │
-│  • Input: Raw founder idea                                                  │
-│  • Agents: O1, GV1, GV2, S1 (4 agents)                                     │
-│  • Output: Founder's Brief                                                  │
-│  • HITL: approve_founders_brief                                             │
-│  • Purpose: Capture hypothesis (NOT validate)                               │
+│  • Input: Raw founder idea (1-3 sentences)                                  │
+│  • Agents: 0 (no AI)                                                        │
+│  • Output: Project record with raw_idea, hints                              │
+│  • HITL: None                                                               │
+│  • Purpose: Fast entry (~30 sec), trigger Phase 1                           │
 └────────────────────────────────────┬────────────────────────────────────────┘
                                      │
                                      ▼
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  PHASE 1: VPC DISCOVERY                                                     │
-│  ──────────────────────                                                     │
-│  • Input: Founder's Brief                                                   │
-│  • Agents: E1, D1-D4, J1-J2, PAIN_*, GAIN_*, V1-V3, W1-W2, FIT_* (18 agents)│
-│  • Output: Validated VPC (fit ≥ 70)                                        │
-│  • HITL: approve_experiment_plan, approve_pricing_test, approve_vpc_compl  │
-│  • Purpose: Discover customer reality, design value                         │
+│  PHASE 1: VPC DISCOVERY + BRIEF GENERATION                                  │
+│  ─────────────────────────────────────────                                  │
+│  • Input: raw_idea + hints from Quick Start                                 │
+│  • Agents: GV1, S1, E1, D1-D4, J1-J2, PAIN_*, GAIN_*, V1-V3, W1-W2, FIT_*  │
+│  • Output: Founder's Brief + Validated VPC (fit ≥ 70)                      │
+│  • HITL: approve_brief (Stage A), approve_discovery_output (Stage B),       │
+│          approve_experiment_plan, approve_pricing_test                      │
+│  • Purpose: Generate brief from research, discover customer reality         │
 └────────────────────────────────────┬────────────────────────────────────────┘
                                      │
                                      ▼
@@ -61,7 +62,7 @@ Start here and progress through the numbered documents:
 │  • Input: Validated VPC                                                     │
 │  • Agents: F1-F3, P1-P3, G1-G3 (9 agents)                                  │
 │  • Output: STRONG_COMMITMENT signal                                         │
-│  • HITL: approve_campaign_launch, approve_spend_increase, approve_desr_gate│
+│  • HITL: campaign_launch, spend_increase, desirability_gate (approve_*)     │
 │  • Purpose: Test "Do customers want it?" with real behavior                 │
 │  • Pivots: SEGMENT_PIVOT, VALUE_PIVOT                                       │
 └────────────────────────────────────┬────────────────────────────────────────┘
@@ -129,7 +130,7 @@ Detailed specifications extracted for standalone reference:
 
 ### By Phase
 
-- **Phase 0 (Onboarding)**: [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- **Phase 0 (Quick Start)**: [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Fast entry, triggers Phase 1
 - **Phase 1 (VPC Discovery)**: [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - Customer Profile + Value Map
 - **Phase 2 (Desirability)**: [06-phase-2-desirability.md](./06-phase-2-desirability.md) - "Do they want it?"
 - **Phase 3 (Feasibility)**: [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - "Can we build it?"

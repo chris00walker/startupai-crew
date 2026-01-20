@@ -236,9 +236,9 @@ class FoundersBrief(BaseModel):
 
 #### Task Integration
 
-- **Input**: InterviewTranscript (O1), LegitimacyReport (GV1), IntentVerificationReport (GV2)
-- **Output**: FoundersBrief for HITL approval → Phase 1
-- **Context**: Final agent in OnboardingCrew; triggers `approve_founders_brief` HITL
+- **Input**: raw_idea, hints, MarketResearch (GV1)
+- **Output**: FoundersBrief for HITL approval → Phase 1 Stage B
+- **Context**: Final agent in BriefGenerationCrew (Phase 1); triggers `approve_brief` HITL (Stage A)
 
 </details>
 
@@ -283,8 +283,8 @@ class FoundersBrief(BaseModel):
 **Output**: FoundersBrief for HITL approval → Discovery continues.
 
 **Task Integration**:
-- **Input**: User's `raw_idea` from Quick Start, AI-conducted market research
-- **Output**: FoundersBrief for HITL `approve_discovery_output` checkpoint
+- **Input**: User's `raw_idea` from Quick Start, AI-conducted market research (from GV1)
+- **Output**: FoundersBrief for HITL `approve_brief` checkpoint (Stage A)
 - **Context**: Generates Founder's Brief from research instead of extracting from conversation
 
 ---
@@ -1077,7 +1077,7 @@ class FitAssessment(BaseModel):
 
 - **Input**: All CustomerProfileCrew outputs, all ValueDesignCrew outputs, WTPCrew outputs
 - **Output**: FitAssessment for FIT_ROUTE
-- **Context**: First agent in FitAssessmentCrew; triggers `approve_vpc_completion` HITL
+- **Context**: First agent in FitAssessmentCrew; triggers `approve_discovery_output` HITL (Stage B)
 
 ---
 

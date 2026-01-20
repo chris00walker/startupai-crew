@@ -463,7 +463,7 @@ Disable `reasoning=False` for agents that:
 | Task | Effort | Impact |
 |------|--------|--------|
 | Migrate `src/intake_crew/tools/` → `src/shared/tools/` | 1h | Unblocks all tiers |
-| Apply IntakeCrew pattern to all 45 agents | 2h | Consistent configuration |
+| Apply IntakeCrew pattern to all 43 agents | 2h | Consistent configuration |
 | Wire `TavilySearchTool` to D2, J1, PAIN_RES, GAIN_RES | 1h | Real research data |
 | Wire `MethodologyCheckTool` to G1 agents | 1h | VPC validation |
 

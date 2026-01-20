@@ -774,15 +774,15 @@ When viability fails, strategic pivots affect specific BMC blocks:
 ## Validation Funnel Summary
 
 ```
-PHASE 0: ONBOARDING
-├── Input: Raw idea
-├── Output: Founder's Brief
-└── Gate: approve_founders_brief
+PHASE 0: QUICK START
+├── Input: Raw idea (1-3 sentences)
+├── Output: Project record with raw_idea, hints
+└── Gate: None (no HITL)
 
-PHASE 1: VPC DISCOVERY
-├── Input: Founder's Brief
-├── Output: Validated VPC (fit ≥ 70)
-└── Gate: approve_vpc_completion
+PHASE 1: VPC DISCOVERY + BRIEF GENERATION
+├── Input: raw_idea + hints
+├── Output: Founder's Brief + Validated VPC (fit ≥ 70)
+└── Gates: approve_brief (Stage A), approve_discovery_output (Stage B)
 
 PHASE 2: DESIRABILITY
 ├── Input: Validated VPC
@@ -819,7 +819,7 @@ TERMINAL: VALIDATED or KILLED
 - [03-methodology.md](./03-methodology.md) - VPD framework reference
 
 ### Phase Specifications
-- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Quick Start onboarding
 - [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery
 - [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
 - [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation (previous phase)

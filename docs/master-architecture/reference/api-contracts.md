@@ -111,10 +111,35 @@ curl -X POST https://startupai-crew--hitl-approve.modal.run \
   -H "Content-Type: application/json" \
   -d '{
     "run_id": "uuid",
-    "checkpoint": "approve_discovery_output",
+    "checkpoint": "approve_brief",
     "decision": "approved",
-    "feedback": "Optional human feedback"
+    "feedback": "Optional human feedback",
+    "edits": {
+      "the_idea": "Updated idea text (optional)",
+      "problem_hypothesis": "Updated problem (optional)"
+    }
   }'
+```
+
+**Valid Checkpoints (Phase 1):**
+| Checkpoint | Stage | Editable | Description |
+|------------|-------|----------|-------------|
+| `approve_brief` | Stage A | Yes | Review and edit AI-generated Founder's Brief |
+| `approve_discovery_output` | Stage B | No | Final review of Brief + VPC before Phase 2 |
+| `approve_experiment_plan` | - | No | Approve experiment mix before execution |
+| `approve_pricing_test` | - | No | Approve pricing tests involving real money |
+
+**Edits Field** (only for `approve_brief`):
+```json
+{
+  "edits": {
+    "the_idea": "string (optional)",
+    "problem_hypothesis": "string (optional)",
+    "customer_hypothesis": "string (optional)",
+    "solution_hypothesis": "string (optional)",
+    "key_assumptions": ["string"] // optional
+  }
+}
 ```
 
 ### HITL Approve Response
@@ -124,6 +149,15 @@ curl -X POST https://startupai-crew--hitl-approve.modal.run \
   "status": "resumed",
   "next_phase": 1,
   "message": "Validation resumed from checkpoint"
+}
+```
+
+**Response for `approve_brief` rejection:**
+```json
+{
+  "status": "iterate",
+  "next_checkpoint": "approve_brief",
+  "message": "Brief will be regenerated with feedback"
 }
 ```
 
@@ -159,21 +193,37 @@ curl -X POST https://app.startupai.site/api/projects/quick-start \
   -H "Content-Type: application/json" \
   -d '{
     "raw_idea": "A meal planning app that helps busy parents reduce food waste and save time on weekly meal decisions",
-    "additional_context": "Optional notes or extracted pitch deck text",
-    "client_id": "uuid (optional - for consultant flow)"
+    "hints": {
+      "industry": "consumer_tech",
+      "target_user": "parents",
+      "geography": "north_america"
+    },
+    "additional_context": "Optional notes (max 10,000 chars)",
+    "client_id": "uuid (optional - for consultant flow)",
+    "idempotency_key": "client-generated-uuid (optional)"
   }'
 ```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `raw_idea` | Yes | Business idea (min 10 chars) |
+| `hints` | No | Structured hints to constrain research (industry, target_user, geography) |
+| `additional_context` | No | Supplementary notes (max 10,000 chars) |
+| `client_id` | No | For consultant flow - creates project under client's account |
+| `idempotency_key` | No | Client-provided key to prevent duplicate runs |
 
 ### Quick Start Response
 ```json
 {
   "project_id": "uuid",
-  "validation_run_id": "uuid",
+  "run_id": "uuid",
   "status": "phase_1_started",
   "redirect_url": "/projects/{project_id}",
-  "message": "Phase 1 started. You will be notified when discovery is complete."
+  "message": "Phase 1 started. You will be notified when brief is ready for review."
 }
 ```
+
+> **Note**: Response uses `run_id` (not `validation_run_id`) to match Modal API conventions.
 
 ### Why This Changed
 
@@ -904,7 +954,7 @@ curl -X POST https://startupai-...crewai.com/experiments/learning-card \
     "failed": 2,
     "inconclusive": 1
   },
-  "next_recommended_action": "approve_vpc_completion|run_more_experiments|segment_pivot"
+  "next_recommended_action": "approve_discovery_output|run_more_experiments|segment_pivot"
 }
 ```
 

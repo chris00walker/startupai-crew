@@ -9,7 +9,7 @@ vpd_compliance: true
 # Flywheel Learning System Architecture
 
 > **VPD Framework**: The Flywheel System captures patterns from Value Proposition Design implementations. See phase documents for VPD patterns:
-> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Founder's Brief patterns
+> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Quick Start patterns
 > - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - VPC discovery patterns (Jobs, Pains, Gains)
 > - [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Desirability validation patterns
 > - [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Feasibility validation patterns

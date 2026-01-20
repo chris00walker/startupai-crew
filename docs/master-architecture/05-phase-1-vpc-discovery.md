@@ -43,8 +43,9 @@ architectural_update: 2026-01-19
 
 ### Exit Criteria
 
-- `approve_discovery_output` HITL passed (combined checkpoint)
-- Founder's Brief generated and approved
+- `approve_brief` HITL passed (Stage A - brief is editable)
+- `approve_discovery_output` HITL passed (Stage B - final review)
+- Founder's Brief generated, edited, and approved
 - Fit Score ≥ 70
 - Jobs addressed ≥ 75%
 - Pains addressed ≥ 75%
@@ -144,17 +145,30 @@ architectural_update: 2026-01-19
 
 See [Founder's Brief Schema](#founders-brief-schema-generated) below for full schema.
 
-### HITL: Combined Approval
+### HITL: Two-Stage Approval
 
-The brief and VPC are now approved in a single checkpoint: `approve_discovery_output`.
+Phase 1 has two HITL checkpoints:
 
-User reviews:
-1. **Founder's Brief** - AI-generated, editable
-2. **Customer Profile** - VPC left side (Jobs, Pains, Gains)
-3. **Value Map** - VPC right side (Products, Pain Relievers, Gain Creators)
-4. **Fit Assessment** - Numerical scores
+**Stage A: `approve_brief`** (after BriefGenerationCrew)
+- User reviews AI-generated Founder's Brief
+- All fields are **editable** with provenance markers
+- Edits become input for VPC crews
+- User approves to continue to Stage B
 
-This replaces the previous two-checkpoint model (`approve_founders_brief` + `approve_vpc_completion`).
+**Stage B: `approve_discovery_output`** (after VPC crews)
+- User reviews final output:
+  1. **Founder's Brief** - with any user edits applied
+  2. **Customer Profile** - VPC left side (Jobs, Pains, Gains)
+  3. **Value Map** - VPC right side (Products, Pain Relievers, Gain Creators)
+  4. **Fit Assessment** - Numerical scores
+- User approves to continue to Phase 2
+
+**Sequencing:**
+```
+BriefGenerationCrew → HITL: approve_brief (editable) → VPC crews → HITL: approve_discovery_output → Phase 2
+```
+
+This replaces the previous two-checkpoint model (`approve_founders_brief` in Phase 0 + `approve_vpc_completion` in Phase 1) with two checkpoints **within** Phase 1.
 
 ---
 
@@ -165,14 +179,15 @@ This replaces the previous two-checkpoint model (`approve_founders_brief` + `app
 | Pattern | This Phase |
 |---------|------------|
 | **Phase** | Phase 1: VPC Discovery (business concept) |
-| **Flow** | `VPCDiscoveryFlow` (orchestrates 5 crews) |
-| **Crews** | `DiscoveryCrew`, `CustomerProfileCrew`, `ValueDesignCrew`, `WTPCrew`, `FitAssessmentCrew` |
-| **Agents** | 18 total (E1, D1-D4, J1-J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK, V1-V3, W1-W2, FIT_SCORE, FIT_ROUTE) |
+| **Flow** | `VPCDiscoveryFlow` (orchestrates 6 crews) |
+| **Crews** | `BriefGenerationCrew`, `DiscoveryCrew`, `CustomerProfileCrew`, `ValueDesignCrew`, `WTPCrew`, `FitAssessmentCrew` |
+| **Agents** | 20 total (GV1, S1, E1, D1-D4, J1-J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK, V1-V3, W1-W2, FIT_SCORE, FIT_ROUTE) |
 
 ### Crew Composition
 
 | Crew | Agents | Purpose |
 |------|--------|---------|
+| **BriefGenerationCrew** | GV1, S1 | Validate concept + generate Founder's Brief |
 | **DiscoveryCrew** | E1, D1, D2, D3, D4 | Experiment design + evidence collection (SAY + DO) |
 | **CustomerProfileCrew** | J1, J2, PAIN_RES, PAIN_RANK, GAIN_RES, GAIN_RANK | Research + rank Jobs, Pains, Gains |
 | **ValueDesignCrew** | V1, V2, V3 | Design Products, Pain Relievers, Gain Creators |
@@ -187,20 +202,37 @@ This replaces the previous two-checkpoint model (`approve_founders_brief` + `app
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                      VPC DISCOVERY FLOW (ORCHESTRATOR)                       │
 │                                                                              │
-│  Entry: Founder's Brief from Phase 0                                        │
+│  Entry: raw_idea from Quick Start                                           │
 │  Exit: Validated VPC with fit_score ≥ 70                                    │
 │                                                                              │
 │  Flow: VPCDiscoveryFlow                                                      │
-│  Crews: DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew,                │
-│         WTPCrew, FitAssessmentCrew                                          │
+│  Crews: BriefGenerationCrew, DiscoveryCrew, CustomerProfileCrew,            │
+│         ValueDesignCrew, WTPCrew, FitAssessmentCrew                         │
 │                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │                         ┌─────────────────────┐                             │
 │                         │   @start()          │                             │
-│                         │   Founder's Brief   │                             │
-│                         │   (From Phase 0)    │                             │
+│                         │   raw_idea from     │                             │
+│                         │   Quick Start       │                             │
 │                         └──────────┬──────────┘                             │
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │  BRIEF GENERATION CREW (GV1, S1)                                     │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐    │  │
+│  │  │  GV1: Concept Validator   → Market research, validate concept│    │  │
+│  │  │  S1: Brief Compiler       → Generate Founder's Brief         │    │  │
+│  │  └─────────────────────────────────────────────────────────────┘    │  │
+│  │                                                                       │  │
+│  │  Output: Founder's Brief with provenance markers                     │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                    │                                         │
+│                                    ▼                                         │
+│                        ╔═══════════════════════╗                            │
+│                        ║  HITL: approve_brief  ║                            │
+│                        ║  (Stage A - editable) ║                            │
+│                        ╚═══════════════════════╝                            │
 │                                    │                                         │
 │                                    ▼                                         │
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
@@ -299,8 +331,8 @@ This replaces the previous two-checkpoint model (`approve_founders_brief` + `app
 │                      │            │            │                             │
 │                      ▼            ▼            ▼                             │
 │              SEGMENT_PIVOT   ITERATE    ┌─────────────────────┐            │
-│              (wrong customer) (refine)  │  approve_vpc_compl  │            │
-│                      │            │     │  (HITL)             │            │
+│              (wrong customer) (refine)  │ approve_discovery   │            │
+│                      │            │     │ _output (HITL)      │            │
 │                      │            │     └──────────┬──────────┘            │
 │                      │            │                │                        │
 │                      │            │         APPROVE│REJECT                  │
@@ -1111,16 +1143,38 @@ class EvidenceSummary(BaseModel):
 
 ## HITL Checkpoints
 
-### `approve_discovery_output` (NEW - Combined Checkpoint)
+Phase 1 has four HITL checkpoints total: two stage-gate checkpoints (`approve_brief`, `approve_discovery_output`) plus two experiment checkpoints (`approve_experiment_plan`, `approve_pricing_test`). This replaces the previous cross-phase model:
+
+### `approve_brief` (Stage A)
+
+| Attribute | Value |
+|-----------|-------|
+| **Checkpoint ID** | `approve_brief` |
+| **Phase** | 1 (Stage A) |
+| **Owner** | Sage + Founder |
+| **Purpose** | Review and edit AI-generated Founder's Brief |
+| **Required for Exit** | Yes (before VPC crews run) |
+| **Editable** | Yes - all brief fields can be modified |
+
+**When triggered**: After BriefGenerationCrew completes
+
+**User actions**:
+1. Review AI-generated brief with provenance markers
+2. Edit any fields (tracked as user modifications)
+3. Approve to continue to VPC crews
+
+### `approve_discovery_output` (Stage B)
 
 | Attribute | Value |
 |-----------|-------|
 | **Checkpoint ID** | `approve_discovery_output` |
-| **Phase** | 1 |
+| **Phase** | 1 (Stage B) |
 | **Owner** | Compass + Founder |
-| **Purpose** | Approve Founder's Brief + VPC before Phase 2 |
+| **Purpose** | Final review of Brief + VPC before Phase 2 |
 | **Required for Exit** | Yes |
 | **Replaces** | `approve_founders_brief` (Phase 0) + `approve_vpc_completion` (Phase 1) |
+
+**Important**: Stage B is **read-only**. If user wants changes, they must reject and loop back to Stage A (`approve_brief`) where editing is allowed.
 
 **Presentation:**
 ```
@@ -1128,32 +1182,29 @@ class EvidenceSummary(BaseModel):
 │                     DISCOVERY COMPLETE                                       │
 │                                                                              │
 │  Based on your idea, here's what we've discovered and designed.             │
-│  Please review and edit if needed before we proceed.                        │
+│  Review the complete output before proceeding to Phase 2.                   │
 │                                                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ═══════════════════════════════════════════════════════════════════════   │
-│  FOUNDER'S BRIEF (Generated from Research)                                  │
+│  FOUNDER'S BRIEF (with your edits from Stage A)                             │
 │  ═══════════════════════════════════════════════════════════════════════   │
 │                                                                              │
 │  YOUR IDEA                                                                   │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
 │  │ "A meal planning app that helps busy parents reduce food waste..."  │   │
-│  │                                                          [ Edit ]   │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                              │
 │  PROBLEM HYPOTHESIS                                                          │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
 │  │ Busy parents spend 3-5 hours/week on meal planning, resulting in   │   │
 │  │ $150/month in food waste. Current solutions require too much...     │   │
-│  │                                                          [ Edit ]   │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                              │
 │  CUSTOMER HYPOTHESIS                                                         │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
 │  │ Dual-income families with children under 12, household income      │   │
 │  │ $80-150K, suburban, health-conscious...                             │   │
-│  │                                                          [ Edit ]   │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                              │
 │  MARKET RESEARCH (AI-Generated)                                              │
@@ -1274,7 +1325,7 @@ class EvidenceSummary(BaseModel):
 - Flows: 1 (`VPCDiscoveryFlow`)
 - Crews: 6 (added `BriefGenerationCrew`)
 - Agents: 20 (added GV1, S1 from Phase 0)
-- HITL Checkpoints: 3 (`approve_discovery_output`, `approve_experiment_plan`, `approve_pricing_test`)
+- HITL Checkpoints: 4 (`approve_brief`, `approve_discovery_output`, `approve_experiment_plan`, `approve_pricing_test`)
 
 ---
 

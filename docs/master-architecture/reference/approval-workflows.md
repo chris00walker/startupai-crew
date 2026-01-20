@@ -10,7 +10,7 @@ architectural_update: 2026-01-19
 
 Human-in-the-loop (HITL) patterns for StartupAI's gated validation system.
 
-> **Architectural Update (2026-01-19)**: Phase 0 no longer has HITL checkpoints. The first approval is now `approve_discovery_output` in Phase 1, which combines Founder's Brief review with VPC review.
+> **Architectural Update (2026-01-20)**: Phase 0 no longer has HITL checkpoints. Phase 1 now has two-stage approval: `approve_brief` (editable brief review) followed by `approve_discovery_output` (final Brief + VPC review).
 
 > **VPD Framework**: Approval workflows implement governance patterns from the Value Proposition Design framework. See phase documents for HITL specifications:
 > - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0: Quick Start (no HITL)
@@ -28,7 +28,7 @@ Certain AI decisions require human approval before proceeding. This document con
 | Phase | Gate | Approvals | Purpose |
 |-------|------|-----------|---------|
 | **Phase 0** | Quick Start → VPC Discovery | 0 | No HITL (simple form submission) |
-| **Phase 1** | VPC Discovery → Desirability | 3 | Discovery output (brief + VPC), experiment, pricing |
+| **Phase 1** | VPC Discovery → Desirability | 4 | Brief (editable), discovery output, experiment, pricing |
 | **Phase 2+** | Desirability → Feasibility → Viability | 7 | Campaign, spend, stage gates, pivots |
 
 ## Approval Flow Architecture
@@ -119,7 +119,7 @@ Phase 0 is now a simple form submission with no AI involvement:
 - System creates project record
 - Phase 1 is triggered immediately
 
-**Previous checkpoint `approve_founders_brief` has been replaced by `approve_discovery_output` in Phase 1.**
+**Previous checkpoint `approve_founders_brief` has been replaced by two checkpoints in Phase 1: `approve_brief` (editable brief review) and `approve_discovery_output` (final review).**
 
 See [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) for details.
 
@@ -127,21 +127,27 @@ See [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) for details.
 
 ## Phase 1: VPC Discovery Approvals
 
-Phase 1 has three approval checkpoints. The first is a combined checkpoint for brief + VPC approval.
+Phase 1 has four approval checkpoints. The first two form a two-stage approval for the Founder's Brief and VPC.
 
-| Approval Type | Approver | Agents | Task | Rationale |
-|---------------|----------|--------|------|-----------|
-| `approve_discovery_output` | Founder + Compass | GV1, S1, FIT_SCORE | discovery_approval | **NEW**: Combined brief + VPC approval |
-| `approve_experiment_plan` | Founder + Guardian | E1 | experiment_approval | Validate test designs before execution |
-| `approve_pricing_test` | Founder + Ledger | W1 | pricing_approval | Pricing tests require founder consent |
+| Approval Type | Approver | Agents | Task | Stage | Rationale |
+|---------------|----------|--------|------|-------|-----------|
+| `approve_brief` | Founder + Sage | GV1, S1 | brief_approval | Stage A | **NEW**: Editable brief review |
+| `approve_discovery_output` | Founder + Compass | FIT_SCORE | discovery_approval | Stage B | Final Brief + VPC review |
+| `approve_experiment_plan` | Founder + Guardian | E1 | experiment_approval | - | Validate test designs before execution |
+| `approve_pricing_test` | Founder + Ledger | W1 | pricing_approval | - | Pricing tests require founder consent |
 
-### Discovery Output Approval Context (NEW)
+### Brief Approval Context (Stage A)
 
-> **Replaces**: `approve_founders_brief` (Phase 0) + `approve_vpc_completion` (Phase 1)
+> **New checkpoint**: Added to allow brief editing before VPC crews run.
 
-The combined approval request includes:
+**When triggered**: After BriefGenerationCrew completes
 
-**Founder's Brief (AI-Generated):**
+**User actions**:
+1. Review AI-generated brief with provenance markers (📝 user input, 🔬 AI research)
+2. **Edit any fields** (edits tracked: `edited_by: "user"`, `original_value: "..."`)
+3. Approve to continue to VPC crews
+
+**Brief content** (all editable):
 - **The Idea**: Refined from user's raw input
 - **Problem Hypothesis**: Generated from market research
 - **Customer Hypothesis**: Generated from market research
@@ -149,20 +155,31 @@ The combined approval request includes:
 - **Key Assumptions**: AI-prioritized for testing
 - **Market Research**: Market size, trends, competitors
 
+### Discovery Output Approval Context (Stage B)
+
+> **Replaces**: `approve_founders_brief` (Phase 0) + `approve_vpc_completion` (Phase 1)
+
+**When triggered**: After VPC crews complete (using edited brief as input)
+
+The approval request includes:
+
+**Founder's Brief** (with any user edits from Stage A):
+- All brief sections as finalized by user at `approve_brief`
+
 **Value Proposition Canvas:**
 - **Customer Profile**: Discovered Jobs, Pains, Gains (ranked)
 - **Value Map**: Designed Products, Pain Relievers, Gain Creators
 - **Fit Score**: Quantified alignment (threshold ≥70)
 
-All fields are editable by the user before approval.
+> **Important**: Stage B is **read-only**. Editing happens only at Stage A (`approve_brief`).
 
 ### Approval Decisions
 
 | Decision | Next Action |
 |----------|-------------|
 | **Approve** | Proceed to Phase 2 Desirability |
-| **Request Changes** | User edits fields, regenerates affected sections |
-| **Request Research** | System gathers more evidence |
+| **Reject (Request Changes)** | Loop back to Stage A (`approve_brief`) for editing |
+| **Reject (Request Research)** | Re-run BriefGenerationCrew with feedback |
 
 ### Experiment Plan Approval Context
 
@@ -171,15 +188,6 @@ The approval request includes:
 - **Resource Requirements**: Time, cost, tools needed
 - **Assumption Priority**: Which assumptions this tests
 - **Expected Evidence**: SAY vs DO classification
-
-### VPC Completion Approval Context
-
-The approval request includes:
-- **Fit Score**: Current score (≥70 required)
-- **Customer Profile**: Validated Jobs, Pains, Gains
-- **Value Map**: Products/Services, Pain Relievers, Gain Creators
-- **Evidence Summary**: Experiments run, pass/fail rates
-- **Recommendation**: Proceed to Phase 2 or iterate
 
 ---
 

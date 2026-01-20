@@ -125,9 +125,13 @@ AMP runs the code but doesn't manage persistence.
 - State recovery logic after failures
 
 **Phase 0 Specific Requirements**:
-- **Interview State**: Preserve multi-turn conversation context
-- **Founder's Brief**: Immutable once `approve_founders_brief` HITL passes
-- **Brief Injection**: Phase 1 crews receive complete brief in task context
+- **Quick Start State**: No AI, just form submission (raw_idea + hints)
+- **Trigger**: Phase 1 automatically on form submit
+
+**Phase 1 Stage A Specific Requirements**:
+- **BriefGenerationCrew**: Generates Founder's Brief from raw_idea + market research
+- **Brief Editability**: User can edit brief at `approve_brief` checkpoint
+- **Brief Immutability**: Once `approve_brief` passes, brief is locked for Stage B
 
 **Phase 1 Specific Requirements**:
 - **VPC State**: Customer Profile and Value Map must persist across experiments

@@ -105,8 +105,8 @@ Each validation phase involves specific services across the three layers:
 │   ───────────              ───────────────             ────────             │
 │                                                                              │
 │   ┌─────────────┐                                                           │
-│   │ Onboarding  │ ──────► Phase 0: Founder's Brief                          │
-│   │ UI Forms    │         (Sage, Guardian)                                  │
+│   │ Onboarding  │ ──────► Phase 0: Quick Start (raw_idea)                   │
+│   │ UI Forms    │         (no AI - form only)                               │
 │   └─────────────┘                │                                          │
 │                                  ▼                                          │
 │                          Phase 1: VPC Discovery ──────► Customer Profile    │
@@ -219,7 +219,7 @@ Modal (Compute)                      Supabase                    Product App
 - [ADR-002](../adr/002-modal-serverless-migration.md) - Modal serverless migration decision
 
 ### Phase Specifications
-- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Quick Start onboarding
 - [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery
 - [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
 - [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation

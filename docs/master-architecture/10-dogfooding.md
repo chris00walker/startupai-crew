@@ -44,9 +44,9 @@ StartupAI must be its own first and most demanding customer. All planning, devel
 
 ### Before Any Release
 1. **Founder Journey** (chris00walker@proton.me)
-   - [ ] Complete onboarding with StartupAI business description
-   - [ ] Approve Phase 0 Founder's Brief
-   - [ ] Review and approve Phase 1 VPC completion
+   - [ ] Complete Quick Start with StartupAI business description
+   - [ ] Approve Phase 1 Brief (approve_brief checkpoint)
+   - [ ] Review and approve Phase 1 VPC (approve_discovery_output checkpoint)
    - [ ] View Phase 2 landing page generation
    - [ ] Approve all HITL checkpoints in the path
 

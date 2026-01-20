@@ -76,7 +76,7 @@ StartupAI uses the [Model Context Protocol (MCP)](https://modelcontextprotocol.i
 | **MCP External** | 4 | Use existing MCP servers |
 | **MCP Custom** | 10 | Build as FastMCP tools on Modal |
 | **LLM-Based** | 8 | Structured output with Pydantic (includes Asset Generation) |
-| **TOTAL** | 35 | All tools across 45 agents |
+| **TOTAL** | 35 | All tools across 43 agents |
 
 ### Asset Generation Tools (NEW)
 

@@ -392,10 +392,10 @@ Guardian is **always Consulted, never Accountable** for execution decisions. Gua
 
 | Gate | Accountable (A) | Responsible (R) | Guardian Role |
 |------|-----------------|-----------------|---------------|
-| `approve_founders_brief` | Sage | S1 | **Consulted** (legitimacy) |
+| `approve_brief` | Sage | GV1, S1 | **Consulted** (legitimacy) |
+| `approve_discovery_output` | Compass | FIT_SCORE | **Consulted** (quality) |
 | `approve_experiment_plan` | Sage | E1 | **Consulted** (methodology) |
 | `approve_pricing_test` | Ledger | W1, W2 | **Consulted** (compliance) |
-| `approve_vpc_completion` | Compass | FIT_SCORE, FIT_ROUTE | **Consulted** (quality) |
 | `approve_campaign_launch` | Pulse | P1, P3 | **Consulted** (brand safety) |
 | `approve_desirability_gate` | Compass | Evidence synthesis | **Consulted** (methodology) |
 | `approve_feasibility_gate` | Forge | F3 | **Consulted** (security) |
@@ -408,21 +408,20 @@ Guardian is **always Consulted, never Accountable** for execution decisions. Gua
 
 Human-in-the-loop (HITL) approvals are distributed across founders based on domain expertise and phase. Each approval type has a primary owner who prepares the approval request and a governance reviewer.
 
-#### Phase 0 Approvals (Onboarding)
+#### Phase 0 Approvals (Quick Start)
 
-| Approval Type | Primary Owner | Prepares Request | Governance Review |
-|---------------|---------------|------------------|-------------------|
-| **Founder's Brief** (`approve_founders_brief`) | Sage + Founder | Brief content, hypothesis capture | Guardian (GV1, GV2) |
-| **Concept Legitimacy** | Guardian (GV1) | Legal, ethical, feasibility screening | Sage |
-| **Intent Verification** | Guardian (GV2) | Brief accuracy vs founder intent | Sage |
+> **Architectural Update (2026-01-20)**: Phase 0 has no HITL checkpoints. It's a simple form submission.
+
+No approvals in Phase 0. All approvals moved to Phase 1.
 
 #### Phase 1 Approvals (VPC Discovery)
 
 | Approval Type | Primary Owner | Prepares Request | Governance Review |
 |---------------|---------------|------------------|-------------------|
+| **Brief Review** (`approve_brief`) | Sage (GV1, S1) | AI-generated brief (editable) | Guardian |
+| **Discovery Output** (`approve_discovery_output`) | Compass (FIT_SCORE) | Final brief + VPC, fit score | Guardian |
 | **Experiment Plan** (`approve_experiment_plan`) | Sage (E1) | Experiment mix, cost, timeline | Guardian |
 | **Pricing Tests** (`approve_pricing_test`) | Ledger (W1, W2) | Price points, payment methods | Guardian |
-| **VPC Completion** (`approve_vpc_completion`) | Compass (FIT_SCORE) | Fit score, evidence summary | Guardian |
 
 #### Phase 2+ Approvals (Validation)
 
@@ -452,20 +451,26 @@ Guardian serves as the approval orchestrator, ensuring:
 
 ### The Founder's Brief Handoff
 
-The **Founder's Brief** is the contract between Phase 0 (Onboarding) and Phase 1+ (Validation):
+> **Architectural Update (2026-01-19)**: The Founder's Brief is now an OUTPUT of Phase 1, not an input collected during Phase 0 onboarding. See [ADR-006](../adr/006-quick-start-architecture.md).
 
-**Phase 0 (Onboarding) captures:**
-- The Idea (concept, one-liner hypothesis)
-- Problem Hypothesis (who, what, alternatives)
-- Customer Hypothesis (segment, characteristics)
-- Solution Hypothesis (approach, key features)
-- Key Assumptions (ranked by risk)
-- Success Criteria (what "validated" means)
-- Founder Context (stage, resources, constraints)
+The **Founder's Brief** is the contract between Phase 1 Stage A (Brief Generation) and Phase 1 Stage B+ (Validation):
 
-**Phase 1+ (Validation) receives:**
-- Structured Founder's Brief that informs all downstream analysis
-- Everything needed to begin VPC Discovery → Desirability → Feasibility → Viability
+**Phase 0 (Quick Start) captures:**
+- `raw_idea` - User's business idea in 1-3 sentences
+- `hints` - Optional context (industry, target_user, geography)
+- `additional_context` - Optional notes or details
+
+**Phase 1 Stage A (BriefGenerationCrew) generates:**
+- The Idea (refined from raw_idea + research)
+- Problem Hypothesis (from market research)
+- Customer Hypothesis (from market research)
+- Solution Hypothesis (synthesized from input + research)
+- Key Assumptions (AI-prioritized for testing)
+- Market Research (size, trends, competitors)
+
+**Phase 1 Stage B+ (Validation) receives:**
+- Founder's Brief after user review and editing at `approve_brief` checkpoint
+- Everything needed to continue VPC Discovery → Desirability → Feasibility → Viability
 
 > **VPD Note**: The Founder's Brief captures *hypotheses* about customer and value. Phase 1 VPC Discovery validates these against customer reality using experiments from the Testing Business Ideas framework.
 
@@ -580,9 +585,10 @@ Phase 1 agents discover customer reality (Customer Profile) and design value (Va
 | **FIT_ROUTE** | Iteration Router | Compass | Route back to appropriate crew if fit < 70 |
 
 **Phase 1 HITL Checkpoints**:
+- `approve_brief` - Review and edit AI-generated Founder's Brief (Stage A)
+- `approve_discovery_output` - Confirm Brief + VPC ready for Phase 2 (Stage B, fit ≥ 70)
 - `approve_experiment_plan` - Approve experiment mix before execution
 - `approve_pricing_test` - Approve tests involving real money
-- `approve_vpc_completion` - Confirm VPC ready for Phase 2 (fit ≥ 70)
 
 ### Phase 2: Desirability Agents
 
@@ -745,7 +751,7 @@ This organizational structure maps directly to CrewAI's documented patterns.
 |---------|----------------|----------------|
 | Phases (0-4) | Business concepts | Decompose into Flows |
 | Flows | `@start`, `@listen`, `@router` | `OnboardingFlow`, `VPCDiscoveryFlow`, etc. |
-| Crews | Collaborative agent groups | `OnboardingCrew`, `DiscoveryCrew`, etc. |
+| Crews | Collaborative agent groups | `BriefGenerationCrew`, `DiscoveryCrew`, etc. |
 | Agents | Individual executors | Defined in `config/agents.yaml` |
 | Tasks | Work items | Defined in `config/tasks.yaml` |
 
@@ -767,7 +773,7 @@ See [09-status.md](./09-status.md) for current implementation status and deploym
 
 ## Agent Configuration Standard
 
-Every agent in the StartupAI system MUST be configured with the following attributes. This standard ensures consistent behavior, proper tool access, and maintainable code across all 45 agents.
+Every agent in the StartupAI system MUST be configured with the following attributes. This standard ensures consistent behavior, proper tool access, and maintainable code across all 43 agents.
 
 ### Required Attributes
 
@@ -791,8 +797,8 @@ Temperature controls creativity vs consistency. Use the following guidelines bas
 | Research/Analysis | 0.1-0.3 | Factual accuracy, consistency, reproducible results | D2, J1, PAIN_RES, GAIN_RES, L1 |
 | Synthesis/Ranking | 0.3-0.5 | Balanced reasoning, structured evaluation | D4, PAIN_RANK, GAIN_RANK, FIT_SCORE, C1 |
 | Design/Creative | 0.6-0.8 | Innovation, variety, creative exploration | F1, V1, V2, V3, P1 |
-| Interview/Conversation | 0.7 | Natural dialogue, adaptive responses | O1, D1 |
-| Validation/QA | 0.1 | Strict methodology compliance, deterministic checks | G1, G2, GV1, GV2 |
+| Interview/Conversation | 0.7 | Natural dialogue, adaptive responses | D1 |
+| Validation/QA | 0.1 | Strict methodology compliance, deterministic checks | G1, G2, GV1 |
 
 ### Standard Agent Constructor Pattern
 
@@ -826,12 +832,12 @@ Agents fall into three categories based on tool requirements:
 
 | Category | Tool Configuration | Example Agents |
 |----------|-------------------|----------------|
-| **Tool-Equipped** | `tools=[tool1, tool2, ...]` - Specific tools for external data access | D2, J1, F2, P1 |
-| **Pure LLM** | `tools=[]` - No external tools, relies on reasoning | GV1, GV2, S1, FIT_SCORE |
+| **Tool-Equipped** | `tools=[tool1, tool2, ...]` - Specific tools for external data access | D2, J1, F2, P1, GV1 |
+| **Pure LLM** | `tools=[]` - No external tools, relies on reasoning | S1, FIT_SCORE |
 | **Hybrid** | Mixed tool + LLM reasoning | D1, D4, C1 |
 
 **Reference**: See [reference/tool-mapping.md](./reference/tool-mapping.md) for complete agent-to-tool mapping.
-**Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for full specifications of all 45 agents.
+**Reference**: See [reference/agent-specifications.md](./reference/agent-specifications.md) for full specifications of all 43 agents.
 
 ---
 
@@ -862,7 +868,7 @@ Agents fall into three categories based on tool requirements:
 - [03-methodology.md](./03-methodology.md) - VPD framework reference (Test Cards, Learning Cards, evidence hierarchy)
 
 ### Phase Specifications
-- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Quick Start onboarding
 - [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery (Customer Profile + Value Map)
 - [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
 - [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation

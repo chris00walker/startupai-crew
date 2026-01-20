@@ -35,7 +35,7 @@ VALUE PROPOSITION DESIGN → [Test Cycles] → VPC GATE → [Test Cycles] → DE
 - **VPD comes first**: You must design and validate the Value Proposition Canvas (Customer Profile + Value Map) before testing desirability. There's no point asking "do they want it?" until you've validated you're targeting the correct customer segment.
 - **Test cycles at every stage**: Each phase requires iterative testing. VPD itself requires cycles to achieve Problem-Solution Fit (fit score ≥ 70).
 - **Non-linear with pivots**: This is NOT a straight linear process. At any point, a critical failure in Testing Business Ideas can force a pivot (SEGMENT_PIVOT, VALUE_PIVOT, FEATURE_PIVOT, PRICE_PIVOT, COST_PIVOT, MODEL_PIVOT) that loops back to an earlier phase.
-- **Gates are checkpoints**: Each gate (`approve_vpc_completion`, `approve_desirability_gate`, `approve_feasibility_gate`, `approve_viability_gate`) requires evidence-based validation before proceeding.
+- **Gates are checkpoints**: Each gate (`approve_discovery_output`, `approve_desirability_gate`, `approve_feasibility_gate`, `approve_viability_gate`) requires evidence-based validation before proceeding.
 
 ### 3. CrewAI Pattern Hierarchy
 

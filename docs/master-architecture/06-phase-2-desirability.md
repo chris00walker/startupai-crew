@@ -30,7 +30,7 @@ Test whether customers **actually want** the value proposition designed in Phase
 ### Entry Criteria
 
 - Phase 1 complete: VPC approved with fit ≥ 70
-- `approve_vpc_completion` HITL passed
+- `approve_discovery_output` HITL passed (Stage B)
 - Customer Profile and Value Map validated
 
 ### Exit Criteria
@@ -687,7 +687,7 @@ These validated blocks provide the foundation for Phase 3 (Feasibility) to asses
 - [03-methodology.md](./03-methodology.md) - VPD framework reference
 
 ### Phase Specifications
-- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Quick Start onboarding
 - [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery (previous phase)
 - **Phase 2: Desirability** - (this document)
 - [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation (next phase)

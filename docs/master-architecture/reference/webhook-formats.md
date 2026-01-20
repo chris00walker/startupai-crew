@@ -72,7 +72,7 @@ Sent when a human approval checkpoint is reached.
 interface HITLRequiredEvent {
   event_type: 'hitl_required';
   run_id: string;
-  checkpoint_id: string;  // e.g., 'approve_founders_brief'
+  checkpoint_id: string;  // e.g., 'approve_brief', 'approve_discovery_output'
   phase: number;
   context: {
     summary: string;

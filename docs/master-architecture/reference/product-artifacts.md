@@ -178,14 +178,17 @@ Evidence quality is weighted by behavioral commitment level:
 | **Stated** | 1 | Interview response, survey | SAY |
 | **Implied** | 0.5 | Review mining, social listening | SAY |
 
-### VPC Completion Approval
+### Discovery Output Approval (Stage B)
 
-The `approve_vpc_completion` HITL checkpoint fires when:
+The `approve_discovery_output` HITL checkpoint fires when:
 - Fit score ≥ 70
 - At least 3 experiments completed
 - No untested high-priority assumptions remain
 
+> **Note**: This checkpoint replaces the previous `approve_vpc_completion`. It follows `approve_brief` (Stage A) where the Founder's Brief was editable.
+
 Approval context includes:
+- Founder's Brief (as finalized at Stage A)
 - Customer Profile summary (validated Jobs/Pains/Gains)
 - Value Map coverage analysis
 - Experiment results and learnings
@@ -416,7 +419,7 @@ interface RouterStatus {
 ## Related Documents
 
 - [03-methodology.md](../03-methodology.md) - VPD framework and Strategyzer mapping
-- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 Founder's Brief capture
+- [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 Quick Start
 - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 VPC Discovery
 - [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 Desirability validation
 - [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 Feasibility validation

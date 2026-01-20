@@ -29,7 +29,7 @@ StartupAI follows the recommended pattern for building agentic systems:
    - Tool-use tasks → Single agents
    - Complex reasoning → Multi-agent Crews
 
-> **Implementation Note**: StartupAI uses CrewAI Flows + Crews on Modal serverless. The canonical architecture is 5 flows / 14 crews / 45 agents with Supabase state + HITL checkpoints.
+> **Implementation Note**: StartupAI uses CrewAI Flows + Crews on Modal serverless. The canonical architecture is 4 flows / 14 crews / 43 agents with Supabase state + HITL checkpoints.
 
 ### Anti-Patterns to Avoid
 
@@ -671,7 +671,7 @@ How this phase implements VPD patterns (reference this document)
 - [02-organization.md](./02-organization.md) - 6 AI Founders and agents
 
 ### Phase Specifications
-- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Quick Start onboarding
 - [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery (Customer Profile + Value Map)
 - [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
 - [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation

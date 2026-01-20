@@ -279,15 +279,16 @@ Legacy deployment (reference only):
 |------------|-------|---------|
 | (none) | N/A | Phase 0 has no HITL - simple form submission |
 
-> **Note (2026-01-19)**: The `approve_founders_brief` checkpoint was moved to Phase 1 and combined with VPC approval into `approve_discovery_output`.
+> **Note (2026-01-20)**: Phase 1 now has two-stage approval: `approve_brief` (editable brief review, Stage A) followed by `approve_discovery_output` (final review, Stage B).
 
 #### Phase 1: VPC Discovery
 
-| Checkpoint | Owner | Purpose |
-|------------|-------|---------|
-| `approve_discovery_output` | Founder + Compass | **NEW**: Combined brief + VPC approval |
-| `approve_experiment_plan` | Sage (E1) | Experiment design approval |
-| `approve_pricing_test` | Ledger (W1, W2) | Pricing test approval |
+| Checkpoint | Owner | Purpose | Stage |
+|------------|-------|---------|-------|
+| `approve_brief` | Founder + Sage | **NEW**: Editable brief review | Stage A |
+| `approve_discovery_output` | Founder + Compass | Final Brief + VPC approval | Stage B |
+| `approve_experiment_plan` | Sage (E1) | Experiment design approval | - |
+| `approve_pricing_test` | Ledger (W1, W2) | Pricing test approval | - |
 
 #### Phase 2: Desirability
 
@@ -498,7 +499,9 @@ Triggers Modal validation (POST /api/projects/quick-start)
     ↓
 Modal processes through Phases 1-4 (14 crews, 43 agents)
     ↓
-HITL: approve_discovery_output (Brief + VPC review)
+HITL: approve_brief (editable brief review)
+    ↓
+HITL: approve_discovery_output (final Brief + VPC review)
     ↓
 Results persist to Supabase (validation_runs table)
     ↓
@@ -532,7 +535,7 @@ Marketing activity feed shows real activity
 | | O1 (Interview Gap Analyzer) and GV2 (Intent Verification) DELETED |
 | | GV1 and S1 MOVED to Phase 1 `BriefGenerationCrew` |
 | | Agent count: 45 → 43; Flow count: 5 → 4 |
-| | Combined HITL checkpoint: `approve_discovery_output` replaces separate brief + VPC approvals |
+| | Two-stage HITL in Phase 1: `approve_brief` (editable) → `approve_discovery_output` (final review) |
 | | See [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) for rationale |
 | **2026-01-16** | ADR-005 Approved: State-First Synchronized Loop |
 | | Addresses latent durability risks in Two-Pass Architecture (partial saves, race conditions) |
@@ -612,7 +615,7 @@ Marketing activity feed shows real activity
 - [03-methodology.md](./03-methodology.md) - VPD framework reference
 
 ### Phase Specifications
-- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Quick Start onboarding
 - [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery
 - [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation
 - [07-phase-3-feasibility.md](./07-phase-3-feasibility.md) - Feasibility validation
@@ -621,7 +624,7 @@ Marketing activity feed shows real activity
 ### Reference
 - [reference/api-contracts.md](./reference/api-contracts.md) - API specifications
 - [reference/approval-workflows.md](./reference/approval-workflows.md) - HITL patterns
-- [reference/agent-specifications.md](./reference/agent-specifications.md) - All 45 agent configurations
+- [reference/agent-specifications.md](./reference/agent-specifications.md) - All 43 agent configurations
 - [reference/tool-specifications.md](./reference/tool-specifications.md) - All 35 tool specifications
 - [reference/tool-mapping.md](./reference/tool-mapping.md) - Agent-to-tool mapping matrix
 - [reference/agentic-tool-framework.md](./reference/agentic-tool-framework.md) - Tool lifecycle + testing

@@ -593,7 +593,7 @@ The downgraded VPC must be re-tested in Phase 2 (Desirability) to confirm custom
 - [03-methodology.md](./03-methodology.md) - VPD framework reference
 
 ### Phase Specifications
-- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Founder's Brief capture
+- [04-phase-0-onboarding.md](./04-phase-0-onboarding.md) - Quick Start onboarding
 - [05-phase-1-vpc-discovery.md](./05-phase-1-vpc-discovery.md) - VPC Discovery
 - [06-phase-2-desirability.md](./06-phase-2-desirability.md) - Desirability validation (previous phase)
 - **Phase 3: Feasibility** - (this document)

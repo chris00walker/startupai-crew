@@ -304,13 +304,14 @@ Clear thresholds for what "validated" means at each gate:
 Visual showing all human approval points:
 
 ```
-PHASE 0 (Onboarding)
-    └─ [1] approve_founders_brief ← Founder reviews Brief
+PHASE 0 (Quick Start)
+    └─ No HITL (form submission only)
 
-PHASE 1 (VPC Discovery)
-    ├─ [2] approve_experiment_plan ← Founder approves test designs
-    ├─ [3] approve_pricing_test ← Founder consents to pricing experiments
-    └─ [4] approve_vpc_completion ← Founder confirms fit score ≥70
+PHASE 1 (VPC Discovery + Brief Generation)
+    ├─ [1] approve_brief ← Founder reviews/edits AI-generated Brief (Stage A)
+    ├─ [2] approve_discovery_output ← Founder reviews Brief + VPC (Stage B)
+    ├─ [3] approve_experiment_plan ← Founder approves test designs
+    └─ [4] approve_pricing_test ← Founder consents to pricing experiments
 
 PHASE 2 (Desirability)
     ├─ [5] approve_campaign_launch ← Creative approval
@@ -329,8 +330,8 @@ PHASE 4 (Viability)
 
 | Phase | Duration | Key Deliverables |
 |-------|----------|------------------|
-| **Phase 0** | 1-2 days | Founder's Brief |
-| **Phase 1** | 4-6 weeks | Validated VPC (fit ≥70) |
+| **Phase 0** | ~30 seconds | Project record (raw_idea, hints) |
+| **Phase 1** | 4-6 weeks | Founder's Brief + Validated VPC (fit ≥70) |
 | **Phase 2** | 4-8 weeks | Desirability + Feasibility gates |
 | **Phase 3** | 2-4 weeks | Viability + Final decision |
 | **Total** | 10-16 weeks | Validated Business Model |

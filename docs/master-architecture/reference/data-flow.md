@@ -102,23 +102,23 @@ Early-stage startups face challenges with...
 Tasks chain together via `context:` field:
 
 ```yaml
-conduct_founder_interview:
-  agent: o1_founder_interview
-  expected_output: "Structured interview summary..."
-
-validate_concept_legitimacy:
+# Phase 1 Stage A: BriefGenerationCrew
+conduct_market_research:
   agent: gv1_concept_validator
-  context:
-    - conduct_founder_interview  # Receives previous task output
-  expected_output: "JSON validation report..."
+  expected_output: "Market research report with competitors, trends..."
 
 compile_founders_brief:
   agent: s1_brief_compiler
   context:
-    - conduct_founder_interview
-    - validate_concept_legitimacy
-    - verify_intent_capture
-  expected_output: "Complete Founder's Brief..."
+    - conduct_market_research  # Receives previous task output
+  expected_output: "Complete Founder's Brief with provenance markers..."
+
+# Phase 1 Stage B: DiscoveryCrew (after approve_brief HITL)
+design_experiments:
+  agent: e1_experiment_designer
+  context:
+    - compile_founders_brief  # Receives edited brief from Stage A
+  expected_output: "Experiment plan with test cards..."
 ```
 
 ### 3. Pydantic Layer
@@ -128,7 +128,7 @@ compile_founders_brief:
 Tasks with `output_pydantic=ModelName` produce typed instances:
 
 ```python
-# Phase 0 Output
+# Phase 1 Stage A Output (from BriefGenerationCrew)
 class FoundersBrief(BaseModel):
     the_idea: TheIdea
     problem_hypothesis: ProblemHypothesis

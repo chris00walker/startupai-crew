@@ -10,7 +10,7 @@ vpd_compliance: true
 This document consolidates all SQL schema definitions used across the StartupAI ecosystem.
 
 > **VPD Framework**: This schema implements Value Proposition Design data structures. See phase documents for specifications:
-> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 Founder's Brief schema
+> - [04-phase-0-onboarding.md](../04-phase-0-onboarding.md) - Phase 0 Quick Start (raw_idea, hints)
 > - [05-phase-1-vpc-discovery.md](../05-phase-1-vpc-discovery.md) - Phase 1 VPC tables
 > - [06-phase-2-desirability.md](../06-phase-2-desirability.md) - Phase 2 experiment tracking
 > - [07-phase-3-feasibility.md](../07-phase-3-feasibility.md) - Phase 3 feasibility data
@@ -188,7 +188,7 @@ Stores HITL checkpoint state for the checkpoint-and-resume pattern.
 CREATE TABLE hitl_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     run_id UUID REFERENCES validation_runs(id),
-    checkpoint_name TEXT NOT NULL,  -- e.g., 'approve_founders_brief'
+    checkpoint_name TEXT NOT NULL,  -- e.g., 'approve_brief', 'approve_discovery_output'
     phase INTEGER NOT NULL,
     context JSONB NOT NULL,  -- Full context for approval decision
     status TEXT DEFAULT 'pending',  -- pending|approved|rejected|expired
@@ -224,42 +224,44 @@ run = supabase.table('validation_runs').insert({
 run_id = run.data[0]['id']
 
 # Log progress (triggers Realtime to UI)
+# Phase 1 Stage A: BriefGenerationCrew
 supabase.table('validation_progress').insert({
     'run_id': run_id,
-    'phase': 0,
-    'crew': 'OnboardingCrew',
-    'task': 'founder_interview',
+    'phase': 1,
+    'crew': 'BriefGenerationCrew',
+    'task': 'brief_generation',
     'status': 'started',
     'progress_pct': 0
 }).execute()
 
 # Checkpoint for HITL (container will terminate after this)
+# Stage A: After BriefGenerationCrew completes
 supabase.table('hitl_requests').insert({
     'run_id': run_id,
-    'checkpoint_name': 'approve_founders_brief',
-    'phase': 0,
-    'context': {'brief': founders_brief.dict()}
+    'checkpoint_name': 'approve_brief',
+    'phase': 1,
+    'context': {'brief': founders_brief.dict(), 'editable': True}
 }).execute()
 
 supabase.table('validation_runs').update({
     'status': 'paused',
-    'hitl_state': 'approve_founders_brief'
+    'hitl_state': 'approve_brief'
 }).eq('id', run_id).execute()
 # Container terminates here - $0 cost while waiting for human
 ```
 
 ---
 
-## Phase 0: Founder's Brief Tables
+## Phase 1 Stage A: Founder's Brief Tables
 
 **Status**: ⏳ Planned
 
 ### Founder's Briefs
 
-Stores the structured Founder's Brief output from Phase 0 onboarding.
+Stores the structured Founder's Brief output from Phase 1 Stage A (BriefGenerationCrew).
 
 ```sql
--- Founder's Brief (Phase 0 output)
+-- Founder's Brief (Phase 1 Stage A output)
 CREATE TABLE founders_briefs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID REFERENCES projects(id) UNIQUE,
@@ -417,7 +419,7 @@ CREATE TABLE vpc_fit_scores (
 
   -- Gate readiness
   gate_ready BOOLEAN DEFAULT false,
-  recommended_action TEXT,  -- 'approve_vpc_completion', 'iterate', 'segment_pivot'
+  recommended_action TEXT,  -- 'approve_discovery_output', 'iterate', 'segment_pivot'
 
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

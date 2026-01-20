@@ -70,8 +70,9 @@ Get users into validation as fast as possible. Phase 0 captures the minimal info
 3. Click "Start Validation"
 4. System creates project + triggers Phase 1
 5. Redirect to dashboard (shows Phase 1 progress)
-6. Phase 1 completes → HITL: approve_discovery_output
-7. Continue to Phase 2
+6. Phase 1 Stage A completes → HITL: approve_brief (editable)
+7. Phase 1 Stage B completes → HITL: approve_discovery_output (Brief + VPC)
+8. Continue to Phase 2
 ```
 
 **Entry Point:** `/onboarding/founder`
@@ -80,7 +81,7 @@ Get users into validation as fast as possible. Phase 0 captures the minimal info
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                                                              │
-│                    What's your business idea?                               │
+│                    What's your business idea? *                             │
 │                                                                              │
 │   Describe your startup idea in a few sentences. Tell us what you're        │
 │   building and who it's for.                                                │
@@ -92,10 +93,16 @@ Get users into validation as fast as possible. Phase 0 captures the minimal info
 │   │                                                                      │   │
 │   └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                              │
+│   Help us understand your market (optional but recommended)                  │
+│                                                                              │
+│   Industry:     [ Select...          ▼]                                     │
+│   Target user:  [ Select...          ▼]                                     │
+│   Geography:    [ Select...          ▼]                                     │
+│                                                                              │
 │   ┌─────────────────────────────────────────────────────────────────────┐   │
-│   │ Have a pitch deck or notes? (optional)                              │   │
+│   │ Have notes to share? (optional)                                     │   │
 │   │                                                                      │   │
-│   │ [ Upload PDF ]  [ Paste text ]                                      │   │
+│   │ [ Paste text ]                                                      │   │
 │   └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                              │
 │                       [ Start Validation → ]                                 │
@@ -103,9 +110,11 @@ Get users into validation as fast as possible. Phase 0 captures the minimal info
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+> **V1 Scope**: Text-only input. File upload (PDF, DOCX) deferred to V2.
+
 **Validation Rules:**
 - Business idea: Required, min 10 characters
-- Pitch deck: Optional, max 10MB PDF
+- Hints: Optional (industry, target_user, geography dropdowns)
 - Notes: Optional, max 10,000 characters
 
 ### Consultant (Client Management)
@@ -173,35 +182,66 @@ Get users into validation as fast as possible. Phase 0 captures the minimal info
 ```json
 {
   "raw_idea": "A meal planning app that helps busy parents...",
-  "additional_context": "Optional notes or extracted pitch deck text",
-  "client_id": "uuid (optional - for consultant flow)"
+  "hints": {
+    "industry": "consumer_tech",
+    "target_user": "parents",
+    "geography": "north_america"
+  },
+  "additional_context": "Optional notes (max 10,000 chars)",
+  "client_id": "uuid (optional - for consultant flow)",
+  "idempotency_key": "client-generated-uuid (optional)"
 }
 ```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `raw_idea` | Yes | Business idea (min 10 chars) |
+| `hints` | No | Structured hints to constrain research |
+| `additional_context` | No | Supplementary notes |
+| `client_id` | No | For consultant flow |
+| `idempotency_key` | No | Prevents duplicate runs |
 
 **Response:**
 ```json
 {
   "project_id": "uuid",
-  "validation_run_id": "uuid",
+  "run_id": "uuid",
   "status": "phase_1_started",
   "redirect_url": "/projects/{project_id}"
 }
 ```
 
+> **Note**: Response uses `run_id` (not `validation_run_id`) to match Modal API conventions.
+
 **Backend Steps:**
-1. Validate input
-2. Create `project` record
-3. Create `validation_run` record
-4. Call Modal `/kickoff` with `raw_idea`
-5. Return project ID
+1. Check idempotency (return existing run if duplicate)
+2. Check rate limits (return 429 if exceeded)
+3. Validate input
+4. Create `project` record with `raw_idea` and `hints`
+5. Create `validation_run` record
+6. Call Modal `/kickoff` with `raw_idea` and `hints`
+7. Return project ID and run ID
 
 ### Database Changes
 
-**New field on `projects` table:**
+**New fields on `projects` table:**
 ```sql
 ALTER TABLE projects ADD COLUMN raw_idea TEXT NOT NULL;
+ALTER TABLE projects ADD COLUMN hints JSONB;
 ALTER TABLE projects ADD COLUMN additional_context TEXT;
 ```
+
+**Hints schema:**
+```typescript
+// projects.hints JSONB structure
+interface ProjectHints {
+  industry?: string;        // e.g., "SaaS", "E-commerce", "Healthcare"
+  target_user?: string;     // e.g., "Small business owners", "Enterprise IT"
+  geography?: string;       // e.g., "North America", "Global", "UK"
+}
+```
+
+> **Design Note**: Hints are stored at the project level (not run level) because they describe the business context which doesn't change between validation runs. The hints guide BriefGenerationCrew's research but don't override AI-discovered insights.
 
 **Removed dependencies:**
 - `onboarding_sessions` table → deprecated (can be dropped after migration)
@@ -218,6 +258,11 @@ Phase 1 (VPC Discovery) now has expanded responsibilities:
 {
   "project_id": "uuid",
   "raw_idea": "A meal planning app that helps busy parents...",
+  "hints": {
+    "industry": "Consumer Apps",
+    "target_user": "Parents with children",
+    "geography": "North America"
+  },
   "additional_context": "Optional notes..."
 }
 ```
@@ -227,20 +272,36 @@ Phase 1 (VPC Discovery) now has expanded responsibilities:
 2. **Customer Profile** - VPC left side
 3. **Value Map** - VPC right side
 
-### Combined HITL Checkpoint
+### Phase 1 HITL Checkpoints
 
-**Old:** Two separate checkpoints
-- `approve_founders_brief` (Phase 0)
-- `approve_vpc` (Phase 1)
+**Old:** Two separate checkpoints in different phases
+- `approve_founders_brief` (Phase 0) - after 7-stage conversation
+- `approve_vpc_completion` (Phase 1) - after VPC generation
 
-**New:** Single combined checkpoint
-- `approve_discovery_output` (Phase 1)
+**New:** Two checkpoints within Phase 1
+- `approve_brief` (Phase 1, Stage A) - after BriefGenerationCrew, brief is editable
+- `approve_discovery_output` (Phase 1, Stage B) - after VPC generation, final review
 
-User reviews all three outputs together before proceeding to Phase 2.
+**Sequencing:**
+```
+Phase 1 Stage A: BriefGenerationCrew
+    ↓
+HITL: approve_brief (user can edit brief)
+    ↓
+Phase 1 Stage B: VPC crews run with edited brief
+    ↓
+HITL: approve_discovery_output (review Brief + VPC together)
+    ↓
+Phase 2
+```
+
+User edits the brief at `approve_brief`, then reviews the complete output at `approve_discovery_output` before proceeding to Phase 2.
 
 ---
 
 ## What Was Removed
+
+> **Historical Context (2026-01-19)**: This section documents the migration from the previous 7-stage conversational architecture to Quick Start. These components no longer exist in the current system.
 
 ### Removed Components
 
@@ -261,7 +322,7 @@ User reviews all three outputs together before proceeding to Phase 2.
 | GV2 | Intent Verification | DELETED - no transcript |
 | S1 | Brief Compiler | MOVED to Phase 1 |
 
-**Net effect:** OnboardingCrew dissolved. Validation and compilation responsibilities moved to Phase 1 VPCDiscoveryCrew.
+**Net effect (historical):** OnboardingCrew was dissolved. GV1 and S1 moved to Phase 1's BriefGenerationCrew.
 
 ### Removed Code (Frontend)
 
@@ -356,7 +417,7 @@ No immediate migration required. The `onboarding_sessions` table can be retained
 - Phase 1 triggered via Modal
 - User redirected to dashboard
 
-**No HITL checkpoint in Phase 0.** The first HITL is now in Phase 1: `approve_discovery_output`.
+**No HITL checkpoint in Phase 0.** The first HITL is now in Phase 1: `approve_brief` (after BriefGenerationCrew), followed by `approve_discovery_output` (after VPC crews).
 
 ---
 

@@ -87,11 +87,10 @@ Each validation flow maps to a Modal function:
 
 | Modal Function | Purpose | Phase | Timeout |
 |----------------|---------|-------|---------|
-| `@web_endpoint /kickoff` | Start validation | - | 30s |
+| `@web_endpoint /kickoff` | Start validation (Quick Start triggers Phase 1) | - | 30s |
 | `@web_endpoint /status/{run_id}` | Check progress | - | 10s |
 | `@web_endpoint /hitl/approve` | Resume after approval | - | 30s |
-| `@function phase_0_onboarding` | OnboardingFlow | 0 | 10min |
-| `@function phase_1_vpc_discovery` | VPCDiscoveryFlow | 1 | 30min |
+| `@function phase_1_vpc_discovery` | VPCDiscoveryFlow (includes BriefGenerationCrew) | 1 | 30min |
 | `@function phase_2_desirability` | DesirabilityFlow | 2 | 20min |
 | `@function phase_3_feasibility` | FeasibilityFlow | 3 | 15min |
 | `@function phase_4_viability` | ViabilityFlow | 4 | 20min |
@@ -101,32 +100,39 @@ Each validation flow maps to a Modal function:
 
 ```python
 @app.function(image=image, timeout=600)
-def phase_0_onboarding(run_id: str, project_id: str, founder_input: str):
-    """Execute Phase 0: Founder's Brief capture."""
-    from src.crews.phase0.onboarding_crew import OnboardingCrew
+def phase_1_vpc_discovery(run_id: str, project_id: str, raw_idea: str, hints: dict = None):
+    """Execute Phase 1: Brief Generation (Stage A) + VPC Discovery (Stage B)."""
+    from src.crews.phase1.brief_generation_crew import BriefGenerationCrew
+    from src.crews.phase1.discovery_crew import DiscoveryCrew
 
-    crew = OnboardingCrew()
-    result = crew.kickoff(inputs={"founder_input": founder_input})
+    # Phase 1 Stage A: Brief Generation
+    brief_crew = BriefGenerationCrew()
+    brief_result = brief_crew.kickoff(inputs={"raw_idea": raw_idea, "hints": hints})
 
     # Persist to Supabase
-    persist_phase_output(run_id, phase=0, output=result)
+    persist_phase_output(run_id, phase=1, stage="A", output=brief_result)
 
-    # Check for HITL checkpoint
-    if requires_hitl("approve_founders_brief", result):
-        checkpoint_and_terminate(run_id, "approve_founders_brief", result)
+    # HITL checkpoint: approve_brief (editable)
+    if requires_hitl("approve_brief", brief_result):
+        checkpoint_and_terminate(run_id, "approve_brief", brief_result)
+        # Container terminates here - user edits brief - resumed with edited brief
+
+    # Phase 1 Stage B: VPC Discovery (runs with edited brief from Stage A)
+    # ... VPC crews execute ...
 
     return result
 
 @app.web_endpoint(method="POST")
 def kickoff(request: dict):
-    """Start a new validation run."""
+    """Start a new validation run (triggered by Quick Start form submission)."""
     run_id = create_validation_run(request["project_id"])
 
-    # Spawn async execution
-    phase_0_onboarding.spawn(
+    # Phase 0 (Quick Start) is complete - spawn Phase 1 immediately
+    phase_1_vpc_discovery.spawn(
         run_id=run_id,
         project_id=request["project_id"],
-        founder_input=request["entrepreneur_input"]
+        raw_idea=request["raw_idea"],
+        hints=request.get("hints")
     )
 
     return {"run_id": run_id, "status": "started"}
@@ -341,13 +347,14 @@ HITL wait time:             $0.00 (container terminated)
 
 ```bash
 # View function logs
-modal app logs startupai-crew --filter phase_0
+modal app logs startupai-crew --filter phase_1
 
 # Test function locally
-modal run src/modal_app/app.py::phase_0_onboarding \
+modal run src/modal_app/app.py::phase_1_vpc_discovery \
   --run-id "test-123" \
   --project-id "proj-456" \
-  --founder-input "Test business idea"
+  --raw-idea "Test business idea" \
+  --hints '{"industry": "SaaS"}'
 
 # Check deployment status
 modal app list
