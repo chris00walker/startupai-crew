@@ -59,6 +59,11 @@ modal deploy src/modal_app/app.py    # Deploy to Modal
 modal serve src/modal_app/app.py     # Local dev with hot reload
 ```
 
+## Package Management
+
+Use `pnpm` for installs, upgrades, and scripts in Node.js subprojects. Avoid `npm` for dependency changes.
+When asked to upgrade dependencies, default to `pnpm up -L` unless a task specifies otherwise.
+
 ## Modal API (Production)
 **URL**: `https://chris00walker--startupai-validation-fastapi-app.modal.run`
 

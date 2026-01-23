@@ -206,6 +206,7 @@ def get_supabase():
 # API Endpoints
 # -----------------------------------------------------------------------------
 
+# @story US-F01, US-FT01, US-C07
 @web_app.post("/kickoff", response_model=KickoffResponse, status_code=202)
 async def kickoff(
     request: KickoffRequest,
@@ -256,6 +257,7 @@ async def kickoff(
     )
 
 
+# @story US-F08, US-F09, US-F10
 @web_app.get("/status/{run_id}", response_model=StatusResponse)
 async def get_status(
     run_id: UUID,
@@ -317,6 +319,7 @@ async def get_status(
     )
 
 
+# @story US-F03, US-H01, US-H02, US-H04, US-H05, US-H06, US-H07, US-H08, US-H09, US-P01, US-P02, US-P03, US-P04
 @web_app.post("/hitl/approve", response_model=HITLApproveResponse)
 async def hitl_approve(
     request: HITLApproveRequest,
@@ -578,6 +581,7 @@ async def hitl_approve(
         )
 
 
+# @story US-A05
 @web_app.get("/health")
 async def health_check():
     """Health check endpoint."""

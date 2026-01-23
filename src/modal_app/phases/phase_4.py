@@ -17,6 +17,8 @@ HITL Checkpoints:
     - request_human_decision
 """
 
+# @story US-H08, US-H09, US-P04
+
 import json
 import logging
 from typing import Any
