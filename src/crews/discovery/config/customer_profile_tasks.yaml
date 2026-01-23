@@ -1,5 +1,6 @@
 # CustomerProfileCrew Task Definitions
 # Phase 1: VPC Discovery - Jobs, Pains, Gains Discovery
+# @story US-AG03
 
 discover_jobs:
   description: >

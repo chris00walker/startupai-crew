@@ -1,5 +1,6 @@
 # FitAssessmentCrew Task Definitions
 # Phase 1: VPC Discovery - Fit Scoring + Iteration Routing
+# @story US-AG06
 
 calculate_fit_score:
   description: >

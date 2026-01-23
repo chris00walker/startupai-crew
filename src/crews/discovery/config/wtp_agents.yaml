@@ -1,5 +1,6 @@
 # WTPCrew Agent Definitions
 # Phase 1: VPC Discovery - Willingness to Pay Validation
+# @story US-AG05
 
 w1_pricing_experiment:
   role: >

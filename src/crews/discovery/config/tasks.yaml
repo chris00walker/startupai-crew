@@ -1,5 +1,6 @@
 # DiscoveryCrew Task Definitions
 # Phase 1: VPC Discovery - Segment Validation + Evidence Collection
+# @story US-AG02
 
 map_assumptions:
   description: >
