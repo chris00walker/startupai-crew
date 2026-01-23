@@ -7,6 +7,8 @@ Agents:
 - C1: Product PM (Compass) - Synthesize evidence, propose options
 - C2: Human Approval Agent (Compass) - Manage HITL decision
 - C3: Roadmap Writer (Compass) - Document decision and next steps
+
+@story US-AG13
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

@@ -11,6 +11,8 @@ Agents:
 - PAIN_RANK: Pain Ranking Agent (Sage) - Rank pains by severity
 - GAIN_RES: Gain Researcher (Sage) - Discover gains
 - GAIN_RANK: Gain Ranking Agent (Sage) - Rank gains by importance
+
+@story US-AG03
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

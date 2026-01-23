@@ -7,6 +7,8 @@ Phase 3 version has only G1 and G2 (no G3 Audit).
 Agents:
 - G1: QA Agent (Guardian) - Gate validation, methodology compliance
 - G2: Security Agent (Guardian) - Architecture security review
+
+@story US-AG11
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

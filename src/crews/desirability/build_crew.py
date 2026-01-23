@@ -8,6 +8,8 @@ Agents:
 - F1: UX/UI Designer (Forge) - Design landing page wireframes
 - F2: Frontend Developer (Forge) - Build landing pages (Next.js)
 - F3: Backend Developer (Forge) - Deploy artifacts (Netlify)
+
+@story US-AG07
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

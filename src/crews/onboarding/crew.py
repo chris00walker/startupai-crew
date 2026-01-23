@@ -15,6 +15,8 @@ Agents:
 - S1: Brief Compiler Agent (Sage) - Synthesizes into Founder's Brief
 
 HITL Checkpoint: approve_founders_brief
+
+@story US-AG01
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

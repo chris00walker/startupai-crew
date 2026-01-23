@@ -8,6 +8,8 @@ Agents:
 - V1: Solution Designer (Forge) - Design Products & Services
 - V2: Pain Reliever Designer (Forge) - Design Pain Relievers
 - V3: Gain Creator Designer (Forge) - Design Gain Creators
+
+@story US-AG04
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

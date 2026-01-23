@@ -11,6 +11,8 @@ Agents:
 HITL Checkpoints:
 - approve_campaign_launch - Before running ads
 - approve_spend_increase - Before budget increases
+
+@story US-AG08
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

@@ -9,6 +9,8 @@ Agents:
 - D2: Observation Agent (Pulse) - DO-indirect evidence (reviews, forums, trends)
 - D3: CTA Test Agent (Pulse) - DO-direct evidence (landing pages, ads)
 - D4: Evidence Triangulation Agent (Guardian) - Synthesize SAY vs DO
+
+@story US-AG02
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

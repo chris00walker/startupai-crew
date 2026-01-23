@@ -8,6 +8,8 @@ Agents:
 - F1: UX/UI Designer (Forge) - Map features to requirements, design lite variant
 - F2: Frontend Developer (Forge) - Assess frontend complexity
 - F3: Backend Developer (Forge) - Assess backend feasibility, set signal
+
+@story US-AG10
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

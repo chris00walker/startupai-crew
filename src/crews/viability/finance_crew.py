@@ -7,6 +7,8 @@ Agents:
 - L1: Financial Controller (Ledger) - Calculate CAC, LTV, margins
 - L2: Legal & Compliance (Ledger) - Regulatory constraints
 - L3: Economics Reviewer (Ledger) - Validate assumptions, benchmarks
+
+@story US-AG12
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

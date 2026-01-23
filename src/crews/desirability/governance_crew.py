@@ -10,6 +10,8 @@ Agents:
 - G3: Audit Agent (Guardian) - Decision logging
 
 Guardian's role is oversight (board-level), not execution.
+
+@story US-AG09
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

@@ -8,6 +8,8 @@ Agents:
 - FIT_ROUTE: Iteration Router (Compass) - Route by fit score
 
 HITL Checkpoint: approve_vpc_completion (when fit >= 70)
+
+@story US-AG06
 """
 
 from crewai import Agent, Crew, LLM, Process, Task
