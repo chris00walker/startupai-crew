@@ -206,7 +206,7 @@ def get_supabase():
 # API Endpoints
 # -----------------------------------------------------------------------------
 
-# @story US-F01, US-FT01, US-C07
+# @story US-F01, US-FT01, US-C07, US-AJ01
 @web_app.post("/kickoff", response_model=KickoffResponse, status_code=202)
 async def kickoff(
     request: KickoffRequest,

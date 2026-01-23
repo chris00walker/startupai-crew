@@ -15,7 +15,7 @@ Agents:
 HITL Checkpoint: approve_founders_brief
 """
 
-# @story US-F01, US-FT01
+# @story US-F01, US-FT01, US-AJ01
 
 import json
 import logging

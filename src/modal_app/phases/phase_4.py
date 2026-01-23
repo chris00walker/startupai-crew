@@ -17,7 +17,7 @@ HITL Checkpoints:
     - request_human_decision
 """
 
-# @story US-H08, US-H09, US-P04
+# @story US-H08, US-H09, US-P04, US-AJ06, US-AJ07
 
 import json
 import logging

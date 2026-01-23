@@ -18,7 +18,7 @@ HITL Checkpoints:
     - approve_vpc_completion
 """
 
-# @story US-F06, US-H01, US-H02
+# @story US-F06, US-H01, US-H02, US-AJ02, US-AJ03
 
 import json
 import logging
