@@ -1,5 +1,6 @@
 # ViabilityGovernanceCrew Agent Definitions
 # Phase 4: Viability - Final Governance
+# @story US-AG14
 
 g1_qa_agent:
   role: >

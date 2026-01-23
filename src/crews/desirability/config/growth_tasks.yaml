@@ -1,5 +1,6 @@
 # GrowthCrew Task Definitions
 # Phase 2: Desirability - Ad Campaigns and Evidence Collection
+# @story US-AG08
 
 create_ad_variants:
   description: >

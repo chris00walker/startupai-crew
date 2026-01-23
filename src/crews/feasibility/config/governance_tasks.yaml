@@ -1,5 +1,6 @@
 # FeasibilityGovernanceCrew Task Definitions
 # Phase 3: Feasibility - Gate Validation
+# @story US-AG11
 
 validate_assessment_methodology:
   description: >

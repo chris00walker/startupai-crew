@@ -1,5 +1,6 @@
 # ViabilityGovernanceCrew Task Definitions
 # Phase 4: Viability - Final Governance
+# @story US-AG14
 
 final_validation_check:
   description: >

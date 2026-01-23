@@ -1,5 +1,6 @@
 # FeasibilityBuildCrew Task Definitions
 # Phase 3: Feasibility - Technical Assessment
+# @story US-AG10
 
 extract_feature_requirements:
   description: >

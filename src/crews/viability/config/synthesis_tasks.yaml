@@ -1,5 +1,6 @@
 # SynthesisCrew Task Definitions
 # Phase 4: Viability - Evidence Synthesis and Decision
+# @story US-AG13
 
 synthesize_evidence:
   description: >

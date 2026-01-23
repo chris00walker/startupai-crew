@@ -1,5 +1,6 @@
 # GovernanceCrew Agent Definitions
 # Phase 2/3/4: Governance and Oversight
+# @story US-AG09
 
 g1_qa_agent:
   role: >
