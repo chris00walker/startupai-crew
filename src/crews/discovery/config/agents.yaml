@@ -1,6 +1,6 @@
 # DiscoveryCrew Agent Definitions
 # Phase 1: VPC Discovery - Segment Validation + Evidence Collection
-# @story US-AG02
+# @story US-AD01
 
 e1_experiment_designer:
   role: >

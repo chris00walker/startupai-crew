@@ -8,7 +8,7 @@ Agents:
 - C2: Human Approval Agent (Compass) - Manage HITL decision
 - C3: Roadmap Writer (Compass) - Document decision and next steps
 
-@story US-AG13
+@story US-AVB04
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

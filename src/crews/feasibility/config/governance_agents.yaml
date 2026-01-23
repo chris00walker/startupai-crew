@@ -1,6 +1,6 @@
 # FeasibilityGovernanceCrew Agent Definitions
 # Phase 3: Feasibility - Gate Validation
-# @story US-AG11
+# @story US-AFB03
 
 g1_qa_agent:
   role: >

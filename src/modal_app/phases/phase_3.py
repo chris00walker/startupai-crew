@@ -13,7 +13,7 @@ HITL Checkpoints:
     - approve_feasibility_gate
 """
 
-# @story US-H07, US-P03, US-AJ05, US-AJ07
+# @story US-H07, US-P03, US-AFB01, US-AH08
 
 import json
 import logging

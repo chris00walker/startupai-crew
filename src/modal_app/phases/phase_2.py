@@ -16,7 +16,7 @@ HITL Checkpoints:
     - approve_desirability_gate (or approve_segment_pivot / approve_value_pivot)
 """
 
-# @story US-H04, US-H05, US-H06, US-P01, US-P02, US-AJ04, US-AJ07
+# @story US-H04, US-H05, US-H06, US-P01, US-P02, US-ADB01, US-AH07
 
 import json
 import logging

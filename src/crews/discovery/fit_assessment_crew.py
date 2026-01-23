@@ -9,7 +9,7 @@ Agents:
 
 HITL Checkpoint: approve_vpc_completion (when fit >= 70)
 
-@story US-AG06
+@story US-AD09
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

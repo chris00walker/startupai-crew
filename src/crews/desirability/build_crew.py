@@ -9,7 +9,7 @@ Agents:
 - F2: Frontend Developer (Forge) - Build landing pages (Next.js)
 - F3: Backend Developer (Forge) - Deploy artifacts (Netlify)
 
-@story US-AG07
+@story US-ADB01
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

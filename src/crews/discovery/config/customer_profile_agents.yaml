@@ -1,6 +1,6 @@
 # CustomerProfileCrew Agent Definitions
 # Phase 1: VPC Discovery - Jobs, Pains, Gains Discovery
-# @story US-AG03
+# @story US-AD06
 
 j1_jtbd_researcher:
   role: >

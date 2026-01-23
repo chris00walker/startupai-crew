@@ -9,7 +9,7 @@ Agents:
 - F2: Frontend Developer (Forge) - Assess frontend complexity
 - F3: Backend Developer (Forge) - Assess backend feasibility, set signal
 
-@story US-AG10
+@story US-AFB02
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

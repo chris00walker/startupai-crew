@@ -8,7 +8,7 @@ Agents:
 - G1: QA Agent (Guardian) - Gate validation, methodology compliance
 - G2: Security Agent (Guardian) - Architecture security review
 
-@story US-AG11
+@story US-AFB03
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

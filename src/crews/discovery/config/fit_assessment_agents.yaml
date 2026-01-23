@@ -1,6 +1,6 @@
 # FitAssessmentCrew Agent Definitions
 # Phase 1: VPC Discovery - Fit Scoring + Iteration Routing
-# @story US-AG06
+# @story US-AD09
 
 fit_score_analyst:
   role: >

@@ -1,6 +1,6 @@
 # FinanceCrew Agent Definitions
 # Phase 4: Viability - Unit Economics
-# @story US-AG12
+# @story US-AVB01
 
 l1_financial_controller:
   role: >

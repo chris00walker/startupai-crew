@@ -1,6 +1,6 @@
 # FinanceCrew Task Definitions
 # Phase 4: Viability - Unit Economics
-# @story US-AG12
+# @story US-AVB01
 
 calculate_cac:
   description: >

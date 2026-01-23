@@ -9,7 +9,7 @@ Agents:
 
 HITL Checkpoint: approve_pricing_test (before any real money is involved)
 
-@story US-AG05
+@story US-AD08
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

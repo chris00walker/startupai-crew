@@ -9,7 +9,7 @@ Agents:
 - V2: Pain Reliever Designer (Forge) - Design Pain Relievers
 - V3: Gain Creator Designer (Forge) - Design Gain Creators
 
-@story US-AG04
+@story US-AD07
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

@@ -4,7 +4,7 @@
 # Two-Layer Architecture:
 # - Layer 1: "Alex" chat (Vercel AI SDK in product app) conducts conversational interview
 # - Layer 2: This crew validates and compiles the Founder's Brief
-# @story US-AG01
+# @story US-AB01
 
 o1_interview_gap_analyzer:
   role: >

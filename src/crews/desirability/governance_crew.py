@@ -11,7 +11,7 @@ Agents:
 
 Guardian's role is oversight (board-level), not execution.
 
-@story US-AG09
+@story US-ADB05
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

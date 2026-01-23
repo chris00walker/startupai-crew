@@ -12,7 +12,7 @@ Agents:
 - GAIN_RES: Gain Researcher (Sage) - Discover gains
 - GAIN_RANK: Gain Ranking Agent (Sage) - Rank gains by importance
 
-@story US-AG03
+@story US-AD06
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

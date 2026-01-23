@@ -1,6 +1,6 @@
 # WTPCrew Task Definitions
 # Phase 1: VPC Discovery - Willingness to Pay Validation
-# @story US-AG05
+# @story US-AD08
 
 design_wtp_experiments:
   description: >

@@ -8,7 +8,7 @@ Agents:
 - G2: Security Agent (Guardian) - PII scrubbing
 - G3: Audit Agent (Guardian) - Persist learnings to flywheel
 
-@story US-AG14
+@story US-AVB05
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

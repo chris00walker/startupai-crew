@@ -1,6 +1,6 @@
 # GrowthCrew Agent Definitions
 # Phase 2: Desirability - Ad Campaigns and Evidence Collection
-# @story US-AG08
+# @story US-ADB03
 
 p1_ad_creative:
   role: >

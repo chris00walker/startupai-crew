@@ -16,7 +16,7 @@ Agents:
 
 HITL Checkpoint: approve_founders_brief
 
-@story US-AG01
+@story US-AB01
 """
 
 from crewai import Agent, Crew, LLM, Process, Task

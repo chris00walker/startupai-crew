@@ -1,6 +1,6 @@
 # FeasibilityBuildCrew Agent Definitions
 # Phase 3: Feasibility - Technical Assessment
-# @story US-AG10
+# @story US-AFB02
 
 f1_requirements_analyst:
   role: >
