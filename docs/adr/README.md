@@ -22,7 +22,10 @@ Each ADR follows this template:
 | [001](./001-flow-to-crew-migration.md) | Flow to 3-Crew Architecture Migration | Superseded | 2025-12-05 |
 | [002](./002-modal-serverless-migration.md) | Modal Serverless Architecture Migration | Accepted | 2026-01-08 |
 | [003](./003-landing-page-storage-migration.md) | Landing Page Storage Migration (Netlify → Supabase) | Implemented | 2026-01-10 |
-| [004](./004-two-pass-onboarding-architecture.md) | Two-Pass Onboarding Architecture (Backend Assessment) | Implemented | 2026-01-16 |
+| [004](./004-two-pass-onboarding-architecture.md) | Two-Pass Onboarding Architecture (Backend Assessment) | Superseded | 2026-01-16 |
+| [005](./005-state-first-synchronized-loop.md) | State-First Synchronized Loop Architecture | Accepted | 2026-01-18 |
+| [006](./006-quick-start-architecture.md) | Quick Start Architecture (Phase 0 Simplification) | Accepted | 2026-01-19 |
+| [007](./007-hexagonal-domain.md) | Hexagonal Domain Preparation | Accepted | 2026-01-23 |
 
 ## Creating a New ADR
 
