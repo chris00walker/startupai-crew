@@ -1,24 +1,30 @@
 """
 Phase 1: VPC Discovery Flow
 
-Customer Profile + Value Map discovery with fit assessment.
+Two-stage architecture (Quick Start flow):
 
-Crews (5):
+Stage A - Brief Generation:
+    - BriefGenerationCrew: Generate Founder's Brief from raw_idea + hints
+    - HITL: approve_brief (editable)
+
+Stage B - VPC Discovery:
     - DiscoveryCrew: Segment discovery and research
     - CustomerProfileCrew: Jobs, Pains, Gains extraction
     - ValueDesignCrew: Pain Relievers, Gain Creators design
     - WTPCrew: Willingness-to-pay analysis
     - FitAssessmentCrew: VPC fit scoring
+    - HITL: approve_discovery_output
 
-Agents: 18 total
+Crews: 6 total (1 Stage A + 5 Stage B)
+Agents: 20 total (2 Stage A + 18 Stage B)
 
-HITL Checkpoints:
-    - approve_experiment_plan
-    - approve_pricing_test
-    - approve_vpc_completion
+Flow:
+    raw_idea + hints → BriefGenerationCrew → approve_brief
+        → DiscoveryCrew → CustomerProfileCrew → ValueDesignCrew
+        → WTPCrew → FitAssessmentCrew → approve_discovery_output
 """
 
-# @story US-F06, US-H01, US-H02, US-AD01, US-AH02
+# @story US-F06, US-H01, US-H02, US-AD01, US-AH02, US-AB01
 
 import json
 import logging
@@ -31,11 +37,14 @@ logger = logging.getLogger(__name__)
 
 def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     """
-    Execute Phase 1: VPC Discovery.
+    Execute Phase 1: VPC Discovery (two-stage).
+
+    Stage A: Generate Founder's Brief from raw_idea + hints
+    Stage B: Run VPC Discovery crews
 
     Args:
         run_id: Validation run ID
-        state: Current state dict (must contain founders_brief)
+        state: Current state dict
 
     Returns:
         Updated state with Phase 1 outputs and HITL checkpoint
@@ -45,15 +54,177 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     target_segment = state.get("target_segment_hypothesis")
     failed_segment = state.get("failed_segment")
 
+    # Check if we have a founders_brief yet
+    founders_brief = state.get("founders_brief")
+
     logger.info(json.dumps({
         "event": "phase_1_start",
         "run_id": run_id,
+        "has_founders_brief": founders_brief is not None,
         "is_pivot": pivot_type is not None,
         "pivot_type": pivot_type,
         "target_segment": target_segment.get("segment_name") if target_segment else None,
     }))
 
-    founders_brief = state.get("founders_brief", {})
+    # ==========================================================================
+    # Stage A: Brief Generation (if no founders_brief yet)
+    # ==========================================================================
+    if not founders_brief:
+        return _execute_stage_a(run_id, state)
+
+    # ==========================================================================
+    # Stage B: VPC Discovery (founders_brief exists)
+    # ==========================================================================
+    return _execute_stage_b(run_id, state, founders_brief)
+
+
+def _execute_stage_a(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
+    """
+    Execute Stage A: Generate Founder's Brief from raw_idea + hints.
+
+    Args:
+        run_id: Validation run ID
+        state: Current state dict (must contain raw_idea)
+
+    Returns:
+        HITL checkpoint: approve_brief
+    """
+    logger.info(json.dumps({
+        "event": "phase_1_stage_a_start",
+        "run_id": run_id,
+    }))
+
+    raw_idea = state.get("entrepreneur_input", state.get("raw_idea", ""))
+    hints = state.get("hints", "")
+
+    update_progress(
+        run_id=run_id,
+        phase=1,
+        crew="BriefGenerationCrew",
+        status="started",
+        progress_pct=0,
+    )
+
+    # Import here to avoid circular imports during Modal image build
+    from src.crews.discovery import run_brief_generation_crew
+
+    try:
+        update_progress(
+            run_id=run_id,
+            phase=1,
+            crew="BriefGenerationCrew",
+            agent="GV1",
+            task="validate_concept_legitimacy",
+            status="in_progress",
+            progress_pct=5,
+        )
+
+        founders_brief = run_brief_generation_crew(
+            raw_idea=raw_idea,
+            hints=hints,
+        )
+
+        # Convert to dict if it's a Pydantic model
+        founders_brief_dict = (
+            founders_brief.model_dump(mode="json")
+            if hasattr(founders_brief, "model_dump")
+            else founders_brief
+        )
+
+        update_progress(
+            run_id=run_id,
+            phase=1,
+            crew="BriefGenerationCrew",
+            status="completed",
+            progress_pct=15,
+        )
+
+    except Exception as e:
+        logger.error(json.dumps({
+            "event": "phase_1_stage_a_error",
+            "run_id": run_id,
+            "error": str(e),
+        }))
+        update_progress(
+            run_id=run_id,
+            phase=1,
+            crew="BriefGenerationCrew",
+            status="failed",
+            error_message=str(e),
+        )
+        raise
+
+    # ==========================================================================
+    # Prepare HITL Checkpoint: approve_brief
+    # ==========================================================================
+
+    logger.info(json.dumps({
+        "event": "phase_1_stage_a_hitl_checkpoint",
+        "run_id": run_id,
+        "checkpoint": "approve_brief",
+    }))
+
+    # Update state with Founder's Brief
+    updated_state = {
+        **state,
+        "founders_brief": founders_brief_dict,
+    }
+
+    # Return HITL checkpoint for human approval (editable brief)
+    return {
+        "state": updated_state,
+        "hitl_checkpoint": "approve_brief",
+        "hitl_title": "Review Founder's Brief",
+        "hitl_description": (
+            "Review and edit the AI-generated Founder's Brief before proceeding "
+            "to VPC Discovery. Make any corrections needed."
+        ),
+        "hitl_context": {
+            "founders_brief": founders_brief_dict,
+            "qa_status": founders_brief_dict.get("qa_status", {}),
+            "editable": True,  # Signal to UI that this brief can be edited
+        },
+        "hitl_options": [
+            {
+                "id": "approve",
+                "label": "Approve Brief",
+                "description": "Proceed to VPC Discovery with this brief",
+            },
+            {
+                "id": "iterate",
+                "label": "Regenerate",
+                "description": "Regenerate the brief with additional context",
+            },
+            {
+                "id": "reject",
+                "label": "Reject",
+                "description": "Concept fails legitimacy check - cannot proceed",
+            },
+        ],
+        "hitl_recommended": "approve",
+    }
+
+
+def _execute_stage_b(
+    run_id: str,
+    state: dict[str, Any],
+    founders_brief: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    Execute Stage B: VPC Discovery with existing crews.
+
+    Args:
+        run_id: Validation run ID
+        state: Current state dict
+        founders_brief: The approved Founder's Brief
+
+    Returns:
+        HITL checkpoint: approve_discovery_output
+    """
+    logger.info(json.dumps({
+        "event": "phase_1_stage_b_start",
+        "run_id": run_id,
+    }))
 
     # If this is a segment pivot, augment founder's brief with pivot context
     if pivot_type == "segment_pivot" and target_segment:
@@ -76,7 +247,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             "pivot_context": pivot_context,
         }
         logger.info(json.dumps({
-            "event": "phase_1_pivot_context_applied",
+            "event": "phase_1_stage_b_pivot_context_applied",
             "run_id": run_id,
             "target_segment": target_segment.get("segment_name"),
         }))
@@ -333,13 +504,13 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         raise
 
     # ==========================================================================
-    # Prepare HITL Checkpoint: approve_vpc_completion
+    # Prepare HITL Checkpoint: approve_discovery_output
     # ==========================================================================
 
     logger.info(json.dumps({
-        "event": "phase_1_hitl_checkpoint",
+        "event": "phase_1_stage_b_hitl_checkpoint",
         "run_id": run_id,
-        "checkpoint": "approve_vpc_completion",
+        "checkpoint": "approve_discovery_output",
         "fit_score": fit_assessment_dict.get("fit_score", 0),
     }))
 
@@ -370,7 +541,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     # Return HITL checkpoint for human approval
     return {
         "state": updated_state,
-        "hitl_checkpoint": "approve_vpc_completion",
+        "hitl_checkpoint": "approve_discovery_output",
         "hitl_title": "VPC Discovery Complete",
         "hitl_description": (
             f"VPC fit score: {fit_score}/100. "

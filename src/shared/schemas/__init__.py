@@ -21,14 +21,14 @@ class CrewOutput(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
-class OnboardingCrewOutput(CrewOutput):
-    """Output from OnboardingCrew (Phase 0)."""
+class BriefGenerationCrewOutput(CrewOutput):
+    """Output from BriefGenerationCrew (Phase 1 Stage A)."""
 
-    crew_name: str = "OnboardingCrew"
-    phase: int = 0
+    crew_name: str = "BriefGenerationCrew"
+    phase: int = 1
 
     founders_brief: dict[str, Any]
-    qa_report: dict[str, Any]
+    legitimacy_report: dict[str, Any]
 
 
 class DiscoveryCrewOutput(CrewOutput):

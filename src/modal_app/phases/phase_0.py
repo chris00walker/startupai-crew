@@ -1,18 +1,18 @@
 """
-Phase 0: Onboarding Flow
+Phase 0: Onboarding Pass-Through
 
-Two-layer architecture:
-- Layer 1: "Alex" chat (Vercel AI SDK in product app) conducts conversational interview
-- Layer 2: This flow validates and compiles the Founder's Brief
+Quick Start flow: Phase 0 is now a pass-through that stores the raw input
+and immediately triggers Phase 1 (which handles brief generation in Stage A).
 
-Crew: OnboardingCrew (4 agents)
-Agents:
-    - O1 (Interview Gap Analyzer): Analyzes Alex conversation for completeness
-    - GV1 (Concept Validator): Legitimacy screening
-    - GV2 (Intent Verification): Ensures accurate capture
-    - S1 (Brief Compiler): Synthesizes into Founder's Brief
+No crew execution. No HITL checkpoint.
 
-HITL Checkpoint: approve_founders_brief
+Input:
+    - entrepreneur_input (raw_idea): The founder's raw business idea
+    - hints: Optional context/hints provided by the founder
+
+Output:
+    - State with raw_idea and hints stored
+    - Triggers Phase 1 immediately
 """
 
 # @story US-F01, US-FT01, US-AB01
@@ -22,178 +22,75 @@ import logging
 from typing import Any
 
 from src.state import update_progress
-from src.state.models import FoundersBrief
 
 logger = logging.getLogger(__name__)
 
 
 def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     """
-    Execute Phase 0: Onboarding.
+    Execute Phase 0: Pass-through to Phase 1.
+
+    Quick Start flow - just stores the input and returns.
+    No crew execution, no HITL checkpoint.
 
     Args:
         run_id: Validation run ID
-        state: Current state dict
+        state: Current state dict (contains entrepreneur_input, hints)
 
     Returns:
-        Updated state with Phase 0 outputs and HITL checkpoint
+        Updated state ready for Phase 1
     """
     logger.info(json.dumps({
         "event": "phase_0_start",
         "run_id": run_id,
+        "flow": "quick_start_passthrough",
     }))
 
-    # Update progress: Phase started
+    # Update progress: Phase started and completed immediately
     update_progress(
         run_id=run_id,
         phase=0,
-        crew="OnboardingCrew",
+        crew="Passthrough",
         status="started",
         progress_pct=0,
     )
 
+    # Extract input data
     entrepreneur_input = state.get("entrepreneur_input", "")
-    conversation_transcript = state.get("conversation_transcript", "")
+    hints = state.get("hints", "")
     user_type = state.get("user_type", "founder")
 
-    # ==========================================================================
-    # Execute OnboardingCrew
-    # ==========================================================================
-
-    # Import here to avoid circular imports during Modal image build
-    from src.crews.onboarding import run_onboarding_crew
-
-    # Task 1: Interview Gap Analysis (O1) - analyzes Alex conversation
-    update_progress(
-        run_id=run_id,
-        phase=0,
-        crew="OnboardingCrew",
-        agent="O1",
-        task="analyze_interview_gaps",
-        status="in_progress",
-        progress_pct=10,
-    )
-
-    # Task 2: Concept Validation (GV1)
-    update_progress(
-        run_id=run_id,
-        phase=0,
-        crew="OnboardingCrew",
-        agent="GV1",
-        task="validate_concept_legitimacy",
-        status="queued",
-        progress_pct=10,
-    )
-
-    # Task 3: Intent Verification (GV2)
-    update_progress(
-        run_id=run_id,
-        phase=0,
-        crew="OnboardingCrew",
-        agent="GV2",
-        task="verify_intent_capture",
-        status="queued",
-        progress_pct=10,
-    )
-
-    # Task 4: Brief Compilation (S1)
-    update_progress(
-        run_id=run_id,
-        phase=0,
-        crew="OnboardingCrew",
-        agent="S1",
-        task="compile_founders_brief",
-        status="queued",
-        progress_pct=10,
-    )
-
-    try:
-        # Execute the crew - this runs all 4 agents in sequence
-        # Pass both the transcript (from Alex) and extracted data
-        founders_brief = run_onboarding_crew(
-            entrepreneur_input=entrepreneur_input,
-            conversation_transcript=conversation_transcript,
-            user_type=user_type,
-        )
-
-        # Update progress after successful completion
-        update_progress(
-            run_id=run_id,
-            phase=0,
-            crew="OnboardingCrew",
-            status="completed",
-            progress_pct=100,
-        )
-
-    except Exception as e:
-        logger.error(json.dumps({
-            "event": "phase_0_crew_error",
-            "run_id": run_id,
-            "error": str(e),
-        }))
-
-        update_progress(
-            run_id=run_id,
-            phase=0,
-            crew="OnboardingCrew",
-            status="failed",
-            progress_pct=0,
-            error_message=str(e),
-        )
-
-        raise
-
-    # ==========================================================================
-    # Prepare HITL Checkpoint: approve_founders_brief
-    # ==========================================================================
-
     logger.info(json.dumps({
-        "event": "phase_0_hitl_checkpoint",
+        "event": "phase_0_input_received",
         "run_id": run_id,
-        "checkpoint": "approve_founders_brief",
+        "input_length": len(entrepreneur_input),
+        "has_hints": bool(hints),
+        "user_type": user_type,
     }))
 
-    # Update state with Founder's Brief
-    updated_state = {
-        **state,
-        "founders_brief": founders_brief.model_dump(mode="json"),
-    }
+    # Update progress: Completed
+    update_progress(
+        run_id=run_id,
+        phase=0,
+        crew="Passthrough",
+        status="completed",
+        progress_pct=100,
+    )
 
-    # Return HITL checkpoint for human approval
+    logger.info(json.dumps({
+        "event": "phase_0_complete",
+        "run_id": run_id,
+        "next_phase": 1,
+    }))
+
+    # Return state - no HITL checkpoint, proceed directly to Phase 1
+    # Phase 1 Stage A (BriefGenerationCrew) will handle brief generation
     return {
-        "state": updated_state,
-        "hitl_checkpoint": "approve_founders_brief",
-        "hitl_title": "Approve Founder's Brief",
-        "hitl_description": (
-            "Review the Founder's Brief to ensure it accurately captures "
-            "the business idea before proceeding to VPC Discovery."
-        ),
-        "hitl_context": {
-            "founders_brief": founders_brief.model_dump(mode="json"),
-            "qa_status": {
-                "legitimacy_check": founders_brief.qa_status.legitimacy_check,
-                "legitimacy_notes": founders_brief.qa_status.legitimacy_notes,
-                "intent_verification": founders_brief.qa_status.intent_verification,
-                "intent_notes": founders_brief.qa_status.intent_notes,
-                "overall_status": founders_brief.qa_status.overall_status,
-            },
+        "state": {
+            **state,
+            "entrepreneur_input": entrepreneur_input,
+            "hints": hints,
+            "user_type": user_type,
         },
-        "hitl_options": [
-            {
-                "id": "approve",
-                "label": "Approve",
-                "description": "Proceed to VPC Discovery (Phase 1)",
-            },
-            {
-                "id": "revise",
-                "label": "Request Revisions",
-                "description": "Return for clarification with specific feedback",
-            },
-            {
-                "id": "reject",
-                "label": "Reject",
-                "description": "Concept fails legitimacy check - cannot proceed",
-            },
-        ],
-        "hitl_recommended": "approve",
+        # No hitl_checkpoint - proceed to Phase 1 immediately
     }

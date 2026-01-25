@@ -1,17 +1,46 @@
 """
 Phase 1: VPC Discovery Crews
 
-5 crews / 18 agents for discovering customer reality and designing value.
+6 crews / 20 agents for discovering customer reality and designing value.
+
+Includes BriefGenerationCrew for Quick Start flow (Phase 1 Stage A).
 """
 
-from typing import Any
+from typing import Any, Optional
 
+from src.crews.discovery.brief_generation_crew import BriefGenerationCrew
 from src.crews.discovery.discovery_crew import DiscoveryCrew
 from src.crews.discovery.customer_profile_crew import CustomerProfileCrew
 from src.crews.discovery.value_design_crew import ValueDesignCrew
 from src.crews.discovery.wtp_crew import WTPCrew
 from src.crews.discovery.fit_assessment_crew import FitAssessmentCrew
-from src.state.models import CustomerProfile, ValueMap, FitAssessment
+from src.state.models import CustomerProfile, ValueMap, FitAssessment, FoundersBrief
+
+
+def run_brief_generation_crew(
+    raw_idea: str,
+    hints: Optional[str] = None,
+) -> FoundersBrief:
+    """
+    Execute BriefGenerationCrew to generate a Founder's Brief from raw idea.
+
+    This is the Quick Start entry point for Phase 1 Stage A.
+
+    Args:
+        raw_idea: The founder's raw business idea
+        hints: Optional context/hints provided by the founder
+
+    Returns:
+        FoundersBrief ready for HITL approval at approve_brief checkpoint
+    """
+    crew = BriefGenerationCrew()
+    result = crew.crew().kickoff(
+        inputs={
+            "raw_idea": raw_idea,
+            "hints": hints or "",
+        }
+    )
+    return result.pydantic if hasattr(result, "pydantic") else result
 
 
 def run_discovery_crew(founders_brief: dict[str, Any]) -> dict[str, Any]:
@@ -129,11 +158,13 @@ def run_fit_assessment_crew(
 
 
 __all__ = [
+    "BriefGenerationCrew",
     "DiscoveryCrew",
     "CustomerProfileCrew",
     "ValueDesignCrew",
     "WTPCrew",
     "FitAssessmentCrew",
+    "run_brief_generation_crew",
     "run_discovery_crew",
     "run_customer_profile_crew",
     "run_value_design_crew",

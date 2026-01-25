@@ -1,5 +1,5 @@
 """
-FitAssessmentCrew - Phase 1: VPC Discovery - Fit Scoring + Iteration Routing
+FitAssessmentCrew - Phase 1 Stage B: VPC Discovery - Fit Scoring + Iteration Routing
 
 This crew scores Problem-Solution Fit and routes based on result.
 
@@ -7,7 +7,7 @@ Agents:
 - FIT_SCORE: Fit Analyst (Compass) - Score Customer Profile <-> Value Map fit
 - FIT_ROUTE: Iteration Router (Compass) - Route by fit score
 
-HITL Checkpoint: approve_vpc_completion (when fit >= 70)
+HITL Checkpoint: approve_discovery_output (when fit >= 70)
 
 @story US-AD09
 """

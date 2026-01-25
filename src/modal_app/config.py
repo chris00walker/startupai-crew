@@ -54,27 +54,27 @@ def get_settings() -> Settings:
 PHASE_CONFIG = {
     0: {
         "name": "Onboarding",
-        "flow": "OnboardingFlow",
-        "crews": ["OnboardingCrew"],
-        "agents": 4,
-        "hitl_checkpoints": ["approve_founders_brief"],
-        "timeout_seconds": 600,  # 10 minutes
+        "flow": "PassthroughFlow",  # Quick Start: pass-through to Phase 1
+        "crews": [],  # No crews - just stores input
+        "agents": 0,
+        "hitl_checkpoints": [],  # No HITL - proceeds directly to Phase 1
+        "timeout_seconds": 60,  # 1 minute (just stores state)
     },
     1: {
         "name": "VPC Discovery",
         "flow": "VPCDiscoveryFlow",
         "crews": [
-            "DiscoveryCrew",
+            "BriefGenerationCrew",  # Stage A: generates Founder's Brief
+            "DiscoveryCrew",  # Stage B: VPC Discovery crews
             "CustomerProfileCrew",
             "ValueDesignCrew",
             "WTPCrew",
             "FitAssessmentCrew",
         ],
-        "agents": 18,
+        "agents": 20,  # 2 Stage A (GV1, S1) + 18 Stage B
         "hitl_checkpoints": [
-            "approve_experiment_plan",
-            "approve_pricing_test",
-            "approve_vpc_completion",
+            "approve_brief",  # Stage A: after BriefGenerationCrew
+            "approve_discovery_output",  # Stage B: after FitAssessmentCrew
         ],
         "timeout_seconds": 1800,  # 30 minutes
     },

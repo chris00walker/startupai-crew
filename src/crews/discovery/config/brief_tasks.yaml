@@ -1,0 +1,131 @@
+# BriefGenerationCrew Task Definitions
+# Phase 1 Stage A: Transform raw idea + hints into structured Founder's Brief
+#
+# Quick Start Flow:
+# - validate_concept_legitimacy: GV1 screens for illegal/impossible concepts
+# - compile_founders_brief: S1 compiles brief WITH web research
+# @story US-AB01
+
+validate_concept_legitimacy:
+  description: >
+    Review the raw idea and hints to validate that the business concept is legitimate.
+    Apply rigorous screening criteria:
+
+    RAW IDEA:
+    {raw_idea}
+
+    HINTS (optional context provided by founder):
+    {hints}
+
+    LEGAL CHECK:
+    - Not involved in illegal goods/services (drugs, weapons, trafficking)
+    - Not facilitating fraud or financial crimes
+    - Not violating intellectual property laws
+    - Not circumventing regulations (securities, healthcare, etc.)
+    - Compliant with major jurisdiction laws (US, EU)
+
+    ETHICAL CHECK:
+    - Not exploiting vulnerable populations
+    - Not causing environmental harm
+    - Not enabling harassment or discrimination
+    - Not spreading misinformation
+    - Transparent about what it does
+
+    FEASIBILITY CHECK:
+    - Not requiring technology that doesn't exist
+    - Not violating laws of physics
+    - Not requiring impossible resources
+    - Has some plausible path to execution
+
+    BUSINESS SANITY CHECK:
+    - Has identifiable potential customers
+    - Solves a problem someone might have
+    - Has some conceivable revenue model
+    - Not already tried and failed catastrophically
+
+    Be fair but rigorous. Most legitimate business ideas should pass.
+  expected_output: >
+    A legitimacy report in JSON format:
+    {
+      "legitimacy_status": "PASS | FAIL | NEEDS_REVIEW",
+      "legal_check": {"status": "PASS|FAIL", "flags": [], "notes": ""},
+      "ethical_check": {"status": "PASS|FAIL", "flags": [], "notes": ""},
+      "feasibility_check": {"status": "PASS|FAIL", "flags": [], "notes": ""},
+      "business_sanity_check": {"status": "PASS|FAIL", "flags": [], "notes": ""},
+      "overall_recommendation": "Summary of why concept should/shouldn't proceed",
+      "concerns_to_address": ["List of specific concerns if any"]
+    }
+  agent: gv1_concept_validator
+
+compile_founders_brief:
+  description: >
+    Synthesize the raw idea, hints, and legitimacy report into a complete,
+    structured Founder's Brief. This is the PRIME ARTIFACT that will guide
+    all downstream validation work.
+
+    RAW IDEA:
+    {raw_idea}
+
+    HINTS:
+    {hints}
+
+    Use your web search tool (TavilySearchTool) to research:
+    1. The market context and size for this type of business
+    2. Existing competitors and alternatives
+    3. The target customer segment's characteristics and behaviors
+    4. Relevant industry trends and recent developments
+
+    The Founder's Brief must include:
+
+    1. THE IDEA
+       - one_liner: Single sentence description
+       - description: Full explanation
+       - inspiration: What motivated this idea (inferred from hints)
+       - unique_insight: What makes this approach different
+
+    2. PROBLEM HYPOTHESIS (marked as HYPOTHESIS - NOT VALIDATED)
+       - problem_statement: Clear articulation of the problem
+       - who_has_this_problem: Target customer description
+       - frequency: How often they face this problem
+       - current_alternatives: How they solve it today (research this)
+       - why_alternatives_fail: Pain points with current solutions
+
+    3. CUSTOMER HYPOTHESIS (marked as HYPOTHESIS - NOT VALIDATED)
+       - primary_segment: Who this is for
+       - segment_description: Detailed characteristics (research this)
+       - where_to_find_them: Acquisition channels
+
+    4. SOLUTION HYPOTHESIS (marked as HYPOTHESIS - NOT VALIDATED)
+       - proposed_solution: How it works
+       - key_features: Top 2-3 features
+       - differentiation: What makes it different from competitors (research this)
+
+    5. KEY ASSUMPTIONS (ranked by risk)
+       - List each assumption with: category, risk_level, how_to_test
+
+    6. SUCCESS CRITERIA
+       - minimum_viable_signal: What "validated" looks like
+       - deal_breakers: What would kill the idea
+       - target_metrics: Quantitative goals
+
+    7. FOUNDER CONTEXT
+       - background: Relevant experience (from hints)
+       - motivation: Why they're doing this
+       - time_commitment: Full-time, part-time, exploring
+       - resources_available: What they can invest
+
+    8. QA STATUS
+       - legitimacy_check: From GV1 (previous task)
+       - intent_verification: PASS (Quick Start flow)
+       - overall_status: APPROVED or PENDING
+  expected_output: >
+    A complete Founder's Brief as a structured JSON document matching the
+    FoundersBrief Pydantic model schema. The brief should be:
+    - Complete: All sections filled out based on research
+    - Accurate: Reflects the founder's actual idea
+    - Actionable: Clear enough to guide Phase 1 validation
+    - Honest: Hypotheses clearly marked as unvalidated
+    - Research-backed: Includes insights from web search
+  agent: s1_brief_compiler
+  context:
+    - validate_concept_legitimacy

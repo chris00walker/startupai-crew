@@ -2,20 +2,18 @@
 Crew definitions for StartupAI validation engine.
 
 14 crews organized by phase:
-- Phase 0: OnboardingCrew (1 crew, 4 agents)
-- Phase 1: DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew (5 crews, 18 agents)
+- Phase 0: Pass-through (no crews - Quick Start flow)
+- Phase 1: BriefGenerationCrew, DiscoveryCrew, CustomerProfileCrew, ValueDesignCrew, WTPCrew, FitAssessmentCrew (6 crews, 20 agents)
 - Phase 2: BuildCrew, GrowthCrew, GovernanceCrew (3 crews, 9 agents)
 - Phase 3: FeasibilityBuildCrew, FeasibilityGovernanceCrew (2 crews, 5 agents)
 - Phase 4: FinanceCrew, SynthesisCrew, ViabilityGovernanceCrew (3 crews, 9 agents)
 
-Total: 14 crews, 45 agents
+Total: 14 crews, 43 agents
 """
 
-# Phase 0: Onboarding
-from src.crews.onboarding import OnboardingCrew
-
-# Phase 1: VPC Discovery
+# Phase 1: VPC Discovery (includes BriefGenerationCrew for Stage A)
 from src.crews.discovery import (
+    BriefGenerationCrew,
     DiscoveryCrew,
     CustomerProfileCrew,
     ValueDesignCrew,
@@ -33,9 +31,8 @@ from src.crews.feasibility import FeasibilityBuildCrew, FeasibilityGovernanceCre
 from src.crews.viability import FinanceCrew, SynthesisCrew, ViabilityGovernanceCrew
 
 __all__ = [
-    # Phase 0
-    "OnboardingCrew",
-    # Phase 1
+    # Phase 1 (includes Stage A: BriefGenerationCrew)
+    "BriefGenerationCrew",
     "DiscoveryCrew",
     "CustomerProfileCrew",
     "ValueDesignCrew",

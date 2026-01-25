@@ -106,9 +106,10 @@ web_app.add_middleware(
 class KickoffRequest(BaseModel):
     """Request to start a new validation run.
 
-    Two-layer architecture:
-    - Layer 1: "Alex" chat in product app collects conversation_transcript
-    - Layer 2: This endpoint triggers OnboardingCrew for validation
+    Quick Start flow:
+    - Phase 0: Pass-through (stores raw_idea + hints)
+    - Phase 1 Stage A: BriefGenerationCrew generates Founder's Brief
+    - Phase 1 Stage B: VPC Discovery crews run
     """
     project_id: UUID
     user_id: UUID
@@ -488,6 +489,24 @@ async def hitl_approve(
                 next_phase=1,
                 pivot_type=pivot_type,
                 message=f"Pivot approved. Returning to Phase 1 for {pivot_type.replace('_', ' ')}.",
+            )
+        elif request.checkpoint == "approve_brief":
+            # Brief approved: Stay in Phase 1, continue to Stage B (VPC Discovery)
+            # The founders_brief is already in phase_state from Stage A
+
+            supabase.table("validation_runs").update({
+                "hitl_state": None,
+                "status": "running",
+                # Keep current_phase at 1 - Stage B will run next
+            }).eq("id", str(request.run_id)).execute()
+
+            # Spawn resume function to continue Phase 1 Stage B
+            resume_from_checkpoint.spawn(str(request.run_id), request.checkpoint)
+
+            return HITLApproveResponse(
+                status="resumed",
+                next_phase=1,
+                message="Brief approved. Proceeding to VPC Discovery (Stage B).",
             )
         else:
             # Standard approval: Advance to next phase

@@ -50,7 +50,7 @@ fit_route_agent:
     - Else: ITERATE_VALUE_MAP
 
     fit ≥ 70: VPC_COMPLETE
-    - Proceed to approve_vpc_completion HITL
+    - Proceed to approve_discovery_output HITL
     - Then on to Phase 2: Desirability
   verbose: true
   allow_delegation: false
