@@ -14,6 +14,11 @@ dependencies = [
     "tavily-python>=0.3.0",
     "fastapi>=0.128.0",
     "pydantic-settings>=2.11.0",
+    # Ad Platform SDKs (Epic 4)
+    "facebook-business>=19.0.0",      # Meta Marketing API
+    "google-ads>=25.0.0",             # Google Ads API
+    "requests-oauthlib>=2.0.0",       # X/Twitter OAuth 1.0A
+    "pinterest-api-sdk>=0.2.0",       # Pinterest Ads API
 ]
 
 [project.scripts]
