@@ -1008,11 +1008,11 @@ These were documented but do not exist yet:
 | Component | Status |
 |-----------|--------|
 | Product app unified webhook | ✅ Implemented (`/api/crewai/webhook`) |
-| Product app results webhook | ✅ Implemented (`/api/crewai/results`) |
-| Product app consultant webhook | ✅ Implemented (`/api/crewai/consultant`) |
+| Product app results webhook | ⚠️ Legacy (deprecated; use `/api/crewai/webhook` with `flow_type: "founder_validation"`) |
+| Product app consultant webhook | ⚠️ Legacy (deprecated; use `/api/crewai/webhook` with `flow_type: "consultant_onboarding"`) |
 | Product app approvals API | ✅ Implemented (`/api/approvals/` CRUD + webhook) |
-| Activity feed API | ❌ NOT IMPLEMENTED (marketing site feature) |
-| Metrics API | ❌ NOT IMPLEMENTED (marketing site feature) |
+| Activity feed API | ✅ Implemented (`GET /api/v1/public/activity`) |
+| Metrics API | ✅ Implemented (`GET /api/v1/public/metrics`) |
 
 ### Modal Serverless API
 | Component | Status |

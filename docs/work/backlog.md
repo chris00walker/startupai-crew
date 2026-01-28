@@ -182,7 +182,7 @@ This is not a feature list. It's a queue of **hypotheses to validate** using lea
 
 - **Real-time Streaming** - Unclear if wanted
 - **Advanced Market Data APIs** - Start with Tavily first
-- **Public Activity/Metrics APIs** - Need production traffic first
+- **Public Activity/Metrics APIs** - ✅ Shipped in Product App; marketing integration pending
 
 ---
 

@@ -374,10 +374,10 @@ ab6297d - feat: add Phase 2D - Privacy & Persistence Infrastructure
 - ✅ Business Model-Specific Viability - **IMPLEMENTED** (Area 7)
 - ✅ Budget Guardrails - **IMPLEMENTED** (Area 6)
 - ✅ Decision Rationale Persistence - **IMPLEMENTED** (Area 6)
+- ✅ Public Activity/Metrics APIs - **IMPLEMENTED** (`/api/v1/public/activity`, `/api/v1/public/metrics`)
 
 ### Non-Critical Gaps (Post-Launch)
-3. ❌ Public Activity/Metrics APIs - Marketing dependency, not critical path
-4. ⚠️ Dashboard visualizations - Queries defined, UI pending
+3. ⚠️ Dashboard visualizations - Queries defined, UI pending
 
 ### Quick Wins (1-2 Days)
 - Run remaining migrations in Supabase (004, 005, 006)
