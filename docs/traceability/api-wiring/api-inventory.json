@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "repo": "startupai-crew",
+  "generated_at": "2026-01-28T00:00:00Z",
+  "routes": [
+    {
+      "path": "/health",
+      "methods": ["GET"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Health check endpoint"
+    },
+    {
+      "path": "/kickoff",
+      "methods": ["POST"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Start a validation flow"
+    },
+    {
+      "path": "/status",
+      "methods": ["GET"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Get flow status"
+    },
+    {
+      "path": "/status/[runId]",
+      "methods": ["GET"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Get specific run status"
+    },
+    {
+      "path": "/webhook/complete",
+      "methods": ["POST"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Webhook callback when flow completes"
+    },
+    {
+      "path": "/hitl/pending",
+      "methods": ["GET"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Get pending HITL checkpoints"
+    },
+    {
+      "path": "/hitl/resume",
+      "methods": ["POST"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Resume from HITL checkpoint"
+    },
+    {
+      "path": "/brief/generate",
+      "methods": ["POST"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Generate entrepreneur brief"
+    },
+    {
+      "path": "/vpc/discover",
+      "methods": ["POST"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Run VPC discovery"
+    },
+    {
+      "path": "/desirability/test",
+      "methods": ["POST"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Run desirability tests"
+    },
+    {
+      "path": "/feasibility/analyze",
+      "methods": ["POST"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Run feasibility analysis"
+    },
+    {
+      "path": "/viability/evaluate",
+      "methods": ["POST"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Run viability evaluation"
+    },
+    {
+      "path": "/report/generate",
+      "methods": ["POST"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "Generate validation report"
+    },
+    {
+      "path": "/tools/list",
+      "methods": ["GET"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "List available MCP tools"
+    },
+    {
+      "path": "/agents/list",
+      "methods": ["GET"],
+      "type": "modal",
+      "base_url": "https://startupai--crew.modal.run",
+      "description": "List available agents"
+    }
+  ]
+}
