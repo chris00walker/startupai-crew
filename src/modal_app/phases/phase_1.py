@@ -24,13 +24,14 @@ Flow:
         → WTPCrew → FitAssessmentCrew → approve_discovery_output
 """
 
-# @story US-F06, US-H01, US-H02, US-AD01, US-AH02, US-AB01
+# @story US-F06, US-H01, US-H02, US-AD01, US-AH02, US-AB01, US-AD10
 
 import json
 import logging
 from typing import Any
 
 from src.state import update_progress
+from src.shared.gate_policies import evaluate_gate_for_user, DEFAULT_POLICIES
 
 logger = logging.getLogger(__name__)
 
@@ -534,9 +535,34 @@ def _execute_stage_b(
             "pivot_reason": updated_state.pop("pivot_reason", None),
         }
 
-    # Check if fit score meets threshold (70)
+    # Evaluate gate readiness using configurable policy
     fit_score = fit_assessment_dict.get("fit_score", 0)
-    gate_ready = fit_score >= 70
+    user_id = state.get("user_id")
+
+    # Build evidence summary for gate evaluation
+    evidence_summary = {
+        "experiments_run": fit_assessment_dict.get("experiments_run", 0),
+        "experiments_passed": fit_assessment_dict.get("experiments_passed", 0),
+        "weak_evidence_count": fit_assessment_dict.get("weak_evidence_count", 0),
+        "medium_evidence_count": fit_assessment_dict.get("medium_evidence_count", 0),
+        "strong_evidence_count": fit_assessment_dict.get("strong_evidence_count", 0),
+        "fit_score": fit_score,
+    }
+
+    if user_id:
+        # Evaluate against user's custom policy (falls back to defaults if none)
+        gate_result = evaluate_gate_for_user(
+            user_id=user_id,
+            gate="DESIRABILITY",
+            evidence_summary=evidence_summary,
+        )
+        gate_ready = gate_result.gate_ready
+        gate_blockers = gate_result.blockers
+    else:
+        # No user context - use hardcoded defaults for backwards compatibility
+        default_policy = DEFAULT_POLICIES["DESIRABILITY"]
+        gate_ready = fit_score >= default_policy.thresholds.get("fit_score", 70)
+        gate_blockers = [] if gate_ready else [f"fit_score {fit_score} < 70"]
 
     # Return HITL checkpoint for human approval
     return {
@@ -550,6 +576,7 @@ def _execute_stage_b(
         "hitl_context": {
             "fit_score": fit_score,
             "gate_ready": gate_ready,
+            "gate_blockers": gate_blockers if not gate_ready else [],
             "was_pivot": "last_pivot" in updated_state,
             "pivot_details": updated_state.get("last_pivot"),
             "customer_profile_summary": {

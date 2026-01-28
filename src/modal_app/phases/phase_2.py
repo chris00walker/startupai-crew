@@ -16,13 +16,14 @@ HITL Checkpoints:
     - approve_desirability_gate (or approve_segment_pivot / approve_value_pivot)
 """
 
-# @story US-H04, US-H05, US-H06, US-P01, US-P02, US-ADB01, US-AH07
+# @story US-H04, US-H05, US-H06, US-P01, US-P02, US-ADB01, US-AH07, US-ADB05
 
 import json
 import logging
 from typing import Any
 
 from src.state import update_progress
+from src.shared.gate_policies import evaluate_gate_for_user, DEFAULT_POLICIES
 from src.modal_app.helpers.segment_alternatives import (
     generate_alternative_segments,
     format_segment_options,
@@ -232,13 +233,15 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         raise
 
     # ==========================================================================
-    # Determine Desirability Signal
+    # Determine Desirability Signal with Configurable Gate Policy
     # ==========================================================================
 
     problem_resonance = desirability_dict.get("problem_resonance", 0.0)
     zombie_ratio = desirability_dict.get("zombie_ratio", 1.0)
+    ctr = desirability_dict.get("ctr", desirability_dict.get("conversion_rate", 0.0))
+    user_id = state.get("user_id")
 
-    # Signal determination per Innovation Physics
+    # Signal determination per Innovation Physics (unchanged logic)
     if problem_resonance < 0.3:
         signal = "no_interest"
         recommendation = "segment_pivot"
@@ -248,6 +251,31 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     else:
         signal = "strong_commitment"
         recommendation = "proceed"
+
+    # Build evidence summary for gate evaluation
+    evidence_summary = {
+        "experiments_run": desirability_dict.get("experiments_run", 1),
+        "experiments_passed": 1 if signal == "strong_commitment" else 0,
+        "weak_evidence_count": desirability_dict.get("weak_evidence_count", 0),
+        "medium_evidence_count": desirability_dict.get("medium_evidence_count", 0),
+        "strong_evidence_count": desirability_dict.get("strong_evidence_count", 0),
+        "ctr": ctr,
+        "problem_resonance": problem_resonance,
+        "zombie_ratio": zombie_ratio,
+    }
+
+    # Evaluate gate against user's configurable policy
+    if user_id:
+        gate_result = evaluate_gate_for_user(
+            user_id=user_id,
+            gate="DESIRABILITY",
+            evidence_summary=evidence_summary,
+            signal=signal,
+        )
+        gate_blockers = gate_result.blockers
+    else:
+        # Backwards compatibility - use defaults
+        gate_blockers = [] if signal == "strong_commitment" else [f"Signal: {signal}"]
 
     # ==========================================================================
     # Signal-Based HITL Checkpoint Routing
@@ -386,6 +414,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         "problem_resonance": problem_resonance,
         "zombie_ratio": zombie_ratio,
         "conversion_rate": desirability_dict.get("conversion_rate", 0.0),
+        "ctr": ctr,
         "ad_metrics": {
             "impressions": desirability_dict.get("ad_impressions", 0),
             "clicks": desirability_dict.get("ad_clicks", 0),
@@ -394,6 +423,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         },
         "recommendation": recommendation,
         "failed_segment": customer_profile.get("segment_name", "Unknown"),
+        "gate_blockers": gate_blockers,
     }
 
     # Add segment alternatives for pivot scenarios

@@ -13,13 +13,14 @@ HITL Checkpoints:
     - approve_feasibility_gate
 """
 
-# @story US-H07, US-P03, US-AFB01, US-AH08
+# @story US-H07, US-P03, US-AFB01, US-AH08, US-AFB03
 
 import json
 import logging
 from typing import Any
 
 from src.state import update_progress
+from src.shared.gate_policies import evaluate_gate_for_user, DEFAULT_POLICIES
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +158,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         raise
 
     # ==========================================================================
-    # Determine Feasibility Signal
+    # Determine Feasibility Signal with Configurable Gate Policy
     # ==========================================================================
 
     # Get signal from evidence (default to checking core_features_feasible)
@@ -175,6 +176,37 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             signal = "orange_constrained"
         else:
             signal = "green"
+
+    # Calculate monthly costs for gate evaluation
+    total_monthly_cost = (
+        feasibility_dict.get("api_costs_monthly", 0) +
+        feasibility_dict.get("infra_costs_monthly", 0)
+    )
+    user_id = state.get("user_id")
+
+    # Build evidence summary for gate evaluation
+    evidence_summary = {
+        "experiments_run": feasibility_dict.get("experiments_run", 1),
+        "experiments_passed": 1 if signal == "green" else 0,
+        "weak_evidence_count": feasibility_dict.get("weak_evidence_count", 0),
+        "medium_evidence_count": feasibility_dict.get("medium_evidence_count", 0),
+        "strong_evidence_count": feasibility_dict.get("strong_evidence_count", 0),
+        "monthly_cost": total_monthly_cost,
+        "core_features_feasible": feasibility_dict.get("core_features_feasible", True),
+    }
+
+    # Evaluate gate against user's configurable policy
+    if user_id:
+        gate_result = evaluate_gate_for_user(
+            user_id=user_id,
+            gate="FEASIBILITY",
+            evidence_summary=evidence_summary,
+            signal=signal,
+        )
+        gate_blockers = gate_result.blockers
+    else:
+        # Backwards compatibility - use signal-based logic
+        gate_blockers = [] if signal == "green" else [f"Signal: {signal}"]
 
     # ==========================================================================
     # Prepare HITL Checkpoint: approve_feasibility_gate
@@ -195,20 +227,15 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     }
 
     # Determine gate readiness and recommendation
-    if signal == "green":
+    if signal == "green" and len(gate_blockers) == 0:
         gate_ready = True
         recommendation = "proceed"
     elif signal == "orange_constrained":
         gate_ready = False
         recommendation = "feature_pivot"
-    else:  # red_impossible
+    else:  # red_impossible or has gate blockers
         gate_ready = False
-        recommendation = "kill"
-
-    total_monthly_cost = (
-        feasibility_dict.get("api_costs_monthly", 0) +
-        feasibility_dict.get("infra_costs_monthly", 0)
-    )
+        recommendation = "kill" if signal == "red_impossible" else "feature_pivot"
 
     # Build description
     signal_display = signal.upper().replace("_", " ")
@@ -244,6 +271,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             },
             "constraints": feasibility_dict.get("constraints", []),
             "recommendation": recommendation,
+            "gate_blockers": gate_blockers,
         },
         "hitl_options": [
             {

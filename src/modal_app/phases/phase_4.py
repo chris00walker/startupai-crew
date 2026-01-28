@@ -17,13 +17,14 @@ HITL Checkpoints:
     - request_human_decision
 """
 
-# @story US-H08, US-H09, US-P04, US-AVB01, US-AH10
+# @story US-H08, US-H09, US-P04, US-AVB01, US-AH10, US-AVB03
 
 import json
 import logging
 from typing import Any
 
 from src.state import update_progress
+from src.shared.gate_policies import evaluate_gate_for_user, DEFAULT_POLICIES
 
 logger = logging.getLogger(__name__)
 
@@ -251,7 +252,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         raise
 
     # ==========================================================================
-    # Determine Viability Signal and Final Decision
+    # Determine Viability Signal and Final Decision with Configurable Gate Policy
     # ==========================================================================
 
     # Get viability metrics
@@ -259,28 +260,56 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     ltv = viability_dict.get("ltv", 0)
     ltv_cac_ratio = viability_dict.get("ltv_cac_ratio", 0)
     tam = viability_dict.get("tam_usd", 0)
+    user_id = state.get("user_id")
 
     # Get signal from evidence
     signal_raw = viability_dict.get("signal")
     if signal_raw:
         signal = signal_raw.value if hasattr(signal_raw, "value") else str(signal_raw)
     else:
-        # Derive signal from metrics
-        if ltv_cac_ratio >= 3.0:
+        # Derive signal from metrics (default threshold, can be overridden by policy)
+        default_ltv_cac_threshold = DEFAULT_POLICIES["VIABILITY"].thresholds.get("ltv_cac_ratio", 3.0)
+        if ltv_cac_ratio >= default_ltv_cac_threshold:
             signal = "profitable"
         elif ltv_cac_ratio >= 1.0 and tam < 1_000_000:
             signal = "marginal"  # Zombie market
         else:
             signal = "underwater"
 
+    # Build evidence summary for gate evaluation
+    evidence_summary = {
+        "experiments_run": viability_dict.get("experiments_run", 1),
+        "experiments_passed": 1 if signal == "profitable" else 0,
+        "weak_evidence_count": viability_dict.get("weak_evidence_count", 0),
+        "medium_evidence_count": viability_dict.get("medium_evidence_count", 0),
+        "strong_evidence_count": viability_dict.get("strong_evidence_count", 0),
+        "ltv_cac_ratio": ltv_cac_ratio,
+        "cac": cac,
+        "ltv": ltv,
+        "tam": tam,
+    }
+
+    # Evaluate gate against user's configurable policy
+    if user_id:
+        gate_result = evaluate_gate_for_user(
+            user_id=user_id,
+            gate="VIABILITY",
+            evidence_summary=evidence_summary,
+            signal=signal,
+        )
+        gate_blockers = gate_result.blockers
+    else:
+        # Backwards compatibility - use signal-based logic
+        gate_blockers = [] if signal == "profitable" else [f"Signal: {signal}"]
+
     # Determine pivot recommendation
-    if signal == "profitable":
+    if signal == "profitable" and len(gate_blockers) == 0:
         pivot_recommendation = "no_pivot"
         final_decision = "proceed"
     elif signal == "marginal":
         pivot_recommendation = "strategic_pivot"
         final_decision = "pivot"
-    else:  # underwater
+    else:  # underwater or has gate blockers
         pivot_recommendation = "strategic_pivot"
         final_decision = "pivot"
 
@@ -316,7 +345,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         "decision_rationale": decision_rationale,
     }
 
-    gate_ready = signal == "profitable"
+    gate_ready = signal == "profitable" and len(gate_blockers) == 0
 
     # Return HITL checkpoint for human decision
     return {
@@ -349,6 +378,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             },
             "recommendation": final_decision,
             "rationale": decision_rationale,
+            "gate_blockers": gate_blockers,
         },
         "hitl_options": [
             {
