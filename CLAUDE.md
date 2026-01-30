@@ -141,6 +141,12 @@ docs/adr/                     # Architecture decisions
 
 **AMP deployment is deprecated** - see `docs/adr/002-modal-serverless-migration.md` for migration rationale.
 
+## ExecPlans
+
+- Use an ExecPlan (see `.agent/PLANS.md`) for complex features, cross-layer integrations, or significant refactors.
+- ExecPlans are living documents; keep them updated as work progresses.
+- When executing an ExecPlan, proceed milestone by milestone without asking for "next steps" between milestones unless blocked or scope changes.
+
 ---
 **Last Updated**: 2026-01-20
 **Architecture**: 5 Flows / 14 Crews / 45 Agents / 10 HITL
