@@ -119,20 +119,75 @@ Get users into validation as fast as possible. Phase 0 captures the minimal info
 
 ### Consultant (Client Management)
 
-**Constraint:** Consultants can only add Founders who have already signed up.
+> **Architectural Update (2026-02-03)**: The Consultant persona is part of the Portfolio Holder umbrella. See [02-organization.md](./02-organization.md#portfolio-holder-marketplace-umbrella) for the complete marketplace architecture.
 
+#### Three Connection Flows
+
+Consultants (Portfolio Holders) can establish relationships with Founders through three flows:
+
+**Flow 1: Invite-New** (Traditional)
 ```
 1. Sign up → redirect to /consultant-dashboard
-2. Dashboard shows "Add your first client"
-3. Search for client by email (must be existing Founder)
-4. Enter business idea on client's behalf
-5. System creates project under client's account
-6. Consultant linked as advisor
+2. Dashboard shows "Invite Client"
+3. Enter client email + select relationship_type (advisory, capital, program, service, ecosystem)
+4. System sends invite email with token
+5. Founder receives email → signs up → accepts/declines connection
+6. If accepted: Relationship active, consultant linked
 7. Phase 1 runs for client's project
 8. Consultant reviews HITL checkpoints with client
 ```
 
-**Entry Point:** `/consultant-dashboard` → Add Client
+**Flow 2: Link-Existing** (Marketplace)
+```
+1. Verified consultant browses Founder Directory
+2. Directory shows founders with:
+   - founder_directory_opt_in = TRUE
+   - problem_fit IN ('partial_fit', 'strong_fit')
+3. Consultant views founder's evidence package (badges only until connected)
+4. Consultant sends connection request with:
+   - relationship_type selection
+   - Optional message
+5. Founder reviews request on dashboard
+6. Founder accepts/declines (30-day cooldown on decline)
+7. If accepted: Full evidence access granted
+```
+
+**Flow 3: Founder RFQ** (Marketplace)
+```
+1. Founder creates Request for Quote (RFQ) specifying:
+   - What they need (capital, advisory, program, service, ecosystem)
+   - Industries, stage, timeline, budget range
+2. RFQ posted to RFQ Board (verified consultants only)
+3. Verified consultant browses RFQ Board
+4. Consultant responds with message
+5. Founder reviews responses
+6. Founder accepts/declines each response
+7. If accepted: Connection created with specified relationship_type
+```
+
+**Entry Point (Invite):** `/consultant-dashboard` → Invite Client
+**Entry Point (Browse):** `/consultant/founders` → Founder Directory (verified only)
+**Entry Point (RFQ):** `/consultant/rfq` → RFQ Board (verified only)
+
+#### Verification Requirement
+
+Only **verified** consultants can access:
+- Founder Directory (`/consultant/founders`)
+- RFQ Board (`/consultant/rfq`)
+
+Verification status is tied to paid subscription (Advisor $199/mo or Capital $499/mo). See [02-organization.md](./02-organization.md#verification-system) for details.
+
+#### Relationship Types
+
+| Type | Description | Typical Entities |
+|------|-------------|------------------|
+| `advisory` | Strategic guidance | Mentors, coaches, fractional executives |
+| `capital` | Funding support | Angels, VCs, family offices |
+| `program` | Cohort-based support | Accelerators, incubators |
+| `service` | Professional support | Lawyers, accountants, agencies |
+| `ecosystem` | Community and networking | Coworking, startup communities |
+
+**Entry Point (Traditional):** `/consultant-dashboard` → Add Client
 
 **UI Specification:**
 ```

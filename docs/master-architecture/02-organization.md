@@ -881,10 +881,124 @@ Agents fall into three categories based on tool requirements:
 
 ---
 
+## Portfolio Holder (Marketplace Umbrella)
+
+> **Added 2026-02-03**: The Portfolio Holder concept unifies five relationship types under a common umbrella. The UI label remains "Consultant" while the architectural umbrella is "Portfolio Holder."
+
+### Definition
+
+**Portfolio Holder**: Any entity that maintains relationships with multiple Founders and needs visibility into their validation progress.
+
+**Core job-to-be-done**: Track, support, and evaluate Founders using evidence-based validation data.
+
+### The Five Cohorts
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                              FOUNDER                                    │
+│                     (Validating a business idea)                        │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+    ┌───────────┬───────────┬───────┴───┬───────────┬───────────┐
+    │           │           │           │           │           │
+    ▼           ▼           ▼           ▼           ▼           │
+┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐          │
+│Capital │ │Advisory│ │Program │ │Service │ │Ecosystem│         │
+│Provider│ │Provider│ │Operator│ │Provider│ │Enabler │          │
+└────────┘ └────────┘ └────────┘ └────────┘ └────────┘          │
+    │           │           │           │           │           │
+    └───────────┴───────────┴─────┬─────┴───────────┴───────────┘
+                                  │
+                                  ▼
+                ┌─────────────────────────────────┐
+                │        PORTFOLIO HOLDER          │
+                │    "Show me the evidence"        │
+                │                                  │
+                │  Relationship Type:              │
+                │  • Capital (money)               │
+                │  • Advisory (guidance)           │
+                │  • Program (cohort)              │
+                │  • Service (professional)        │
+                │  • Ecosystem (community)         │
+                └─────────────────────────────────┘
+```
+
+| Cohort | Examples | Core Question | Pricing Tier |
+|--------|----------|---------------|--------------|
+| **Capital** | Angels, VCs, accelerators, family offices | "Will I get my money back?" | Capital ($499/mo) |
+| **Advisory** | Coaches, mentors, fractional execs | "Is my guidance being applied?" | Advisor ($199/mo) |
+| **Program** | Accelerators, incubators, university programs | "Is our program delivering outcomes?" | Capital ($499/mo) |
+| **Service** | Lawyers, accountants, marketing agencies | "Is this client worth the credit risk?" | Advisor ($199/mo) |
+| **Ecosystem** | Coworking spaces, startup communities | "How do we prove value to our community?" | Advisor ($199/mo) |
+
+### Verification System
+
+Portfolio Holders gain marketplace access through verification tied to their subscription:
+
+| Status | Meaning | Directory Access | RFQ Board | Grace Period |
+|--------|---------|------------------|-----------|--------------|
+| **Unverified** | Trial or no plan | Hidden | No access | N/A |
+| **Verified** | Paid Advisor/Capital tier | Full access | Full access | 7 days |
+| **Grace** | Payment failed, within 7 days | Full access | Full access | Counting down |
+| **Revoked** | Payment failed, past 7 days | Hidden | No access | N/A |
+
+### Three Connection Flows
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       CONNECTION FLOWS                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  FLOW 1: INVITE-NEW                                                      │
+│  ─────────────────────────────────                                       │
+│  Portfolio Holder invites a founder who isn't on platform yet            │
+│                                                                          │
+│  PH sends invite → Founder receives email → Founder signs up →           │
+│  Founder accepts connection → Relationship active                        │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  FLOW 2: LINK-EXISTING                                                   │
+│  ─────────────────────────────────                                       │
+│  Portfolio Holder requests connection to existing founder                │
+│                                                                          │
+│  PH browses Founder Directory → PH sends request →                       │
+│  Founder reviews → Founder accepts/declines → Relationship active/none   │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  FLOW 3: FOUNDER RFQ (Marketplace)                                       │
+│  ─────────────────────────────────                                       │
+│  Founder posts request seeking capital/advice                            │
+│                                                                          │
+│  Founder creates RFQ → Posted to RFQ Board → Verified PH views →         │
+│  PH responds with message → Founder reviews → Founder accepts/declines   │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Key Decision**: Founder acceptance is **required for ALL relationship types**. This ensures founder privacy and autonomy.
+
+### Two Marketplace Directories
+
+| Directory | Who Sees | Who Appears | Purpose |
+|-----------|----------|-------------|---------|
+| **Consultant Directory** | Authenticated founders | Verified, opted-in consultants | Founders find advisors/capital |
+| **Founder Directory** | Verified consultants only | Founders with `founder_directory_opt_in` + `problem_fit` ≥ partial_fit | Consultants find validated deal flow |
+
+### Architecture Reference
+
+- **Canonical Vision**: See `app.startupai.site/docs/specs/portfolio-holder-vision.md`
+- **Schema Changes**: See `app.startupai.site/frontend/src/db/schema/`
+- **User Stories**: See `app.startupai.site/docs/user-experience/stories/portfolio-holder.md`
+
+---
+
 ## Change Log
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-02-03 | **Portfolio Holder Marketplace**: Added umbrella concept with 5 relationship types, verification system, three connection flows, two directories | Two-sided marketplace architecture for validated deal flow |
 | 2026-01-19 | **ARCHITECTURAL PIVOT**: Phase 0 simplified to Quick Start (no AI) | AI in critical path caused non-determinism, $17+ cost, test flakiness |
 | 2026-01-19 | Deleted O1 (Interview Gap Analyzer) and GV2 (Intent Verification) | No interview transcript to process |
 | 2026-01-19 | Moved GV1 and S1 to Phase 1 `BriefGenerationCrew` | Brief now generated from research, not user input |

@@ -960,6 +960,266 @@ curl -X POST https://startupai-...crewai.com/experiments/learning-card \
 
 ---
 
+## Portfolio Holder Marketplace API
+
+> **Added 2026-02-03**: API endpoints for the two-sided marketplace connecting validated founders with portfolio holders (consultants, investors, advisors).
+
+**Base URL**: `https://app.startupai.site`
+
+### Directory Endpoints
+
+| Endpoint | Method | Purpose | Auth Required |
+|----------|--------|---------|---------------|
+| `/api/consultant/founders` | GET | Founder Directory - consultants browse opt-in founders | Verified consultant |
+| `/api/founder/consultants` | GET | Consultant Directory - founders browse verified consultants | Authenticated founder |
+
+#### Founder Directory Request (Consultant → Founders)
+
+```bash
+curl -X GET "https://app.startupai.site/api/consultant/founders?relationship_type=capital&industry=saas&stage=seed" \
+  -H "Authorization: Bearer {token}"
+```
+
+**Query Parameters:**
+| Param | Type | Description |
+|-------|------|-------------|
+| `relationship_type` | string | Filter by: advisory, capital, program, service, ecosystem |
+| `industry` | string | Filter by industry |
+| `stage` | string | Filter by stage |
+| `problem_fit` | string | Filter by fit: partial_fit, strong_fit |
+| `limit` | number | Results per page (default 20) |
+| `offset` | number | Pagination offset |
+
+**Response:**
+```json
+{
+  "founders": [
+    {
+      "id": "uuid",
+      "display_name": "Sarah J.",
+      "company": "TechStartup Inc",
+      "industry": "SaaS",
+      "stage": "seed",
+      "problem_fit": "strong_fit",
+      "evidence_badges": {
+        "interviews_completed": 12,
+        "experiments_passed": 8,
+        "fit_score": 78
+      },
+      "joined_at": "2026-01-15T10:00:00Z"
+    }
+  ],
+  "total": 45,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+**Access Control**: Only verified consultants (`verification_status IN ('verified', 'grace')`) can access this endpoint. Returns 403 for unverified.
+
+#### Consultant Directory Request (Founder → Consultants)
+
+```bash
+curl -X GET "https://app.startupai.site/api/founder/consultants?relationship_type=advisory" \
+  -H "Authorization: Bearer {token}"
+```
+
+**Response:**
+```json
+{
+  "consultants": [
+    {
+      "id": "uuid",
+      "name": "John Smith",
+      "organization": "Growth Advisors LLC",
+      "expertise_areas": ["SaaS", "B2B", "Growth Strategy"],
+      "bio_summary": "15 years helping founders...",
+      "verification_badge": "verified",
+      "relationship_types_offered": "advisory",
+      "connection_count": 24
+    }
+  ],
+  "total": 12,
+  "limit": 20,
+  "offset": 0
+}
+```
+
+### Connection Endpoints
+
+| Endpoint | Method | Purpose | Auth Required |
+|----------|--------|---------|---------------|
+| `/api/consultant/connections` | POST | Consultant requests connection to founder | Verified consultant |
+| `/api/founder/connections` | POST | Founder requests connection to consultant | Authenticated founder |
+| `/api/founder/connections/[id]/accept` | POST | Founder accepts consultant request | Authenticated founder |
+| `/api/founder/connections/[id]/decline` | POST | Founder declines consultant request | Authenticated founder |
+| `/api/consultant/connections/[id]/accept` | POST | Consultant accepts founder request | Verified consultant |
+| `/api/consultant/connections/[id]/decline` | POST | Consultant declines founder request | Verified consultant |
+
+#### Connection Request (Consultant → Founder)
+
+```bash
+curl -X POST "https://app.startupai.site/api/consultant/connections" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "founder_id": "uuid",
+    "relationship_type": "advisory",
+    "message": "I would love to help you with your go-to-market strategy..."
+  }'
+```
+
+**Cooldown Check**: Before creating, the API checks for 30-day cooldown:
+```sql
+SELECT 1 FROM consultant_clients
+WHERE consultant_id = :consultantId
+  AND client_id = :founderId
+  AND connection_status = 'declined'
+  AND declined_at + INTERVAL '30 days' > NOW();
+```
+Returns 429 if cooldown active.
+
+#### Accept Connection Request
+
+```bash
+curl -X POST "https://app.startupai.site/api/founder/connections/{id}/accept" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "confirmed_relationship_type": "advisory"
+  }'
+```
+
+**Response:**
+```json
+{
+  "connection_id": "uuid",
+  "status": "active",
+  "relationship_type": "advisory",
+  "accepted_at": "2026-02-03T10:00:00Z",
+  "message": "Connection established. You can now share validation evidence."
+}
+```
+
+#### Decline Connection Request
+
+```bash
+curl -X POST "https://app.startupai.site/api/founder/connections/{id}/decline" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "reason": "not_right_fit"
+  }'
+```
+
+**Response:**
+```json
+{
+  "connection_id": "uuid",
+  "status": "declined",
+  "declined_at": "2026-02-03T10:00:00Z",
+  "cooldown_ends_at": "2026-03-05T10:00:00Z",
+  "message": "Request declined. A new request can be sent after 30 days."
+}
+```
+
+### RFQ (Request for Quote) Endpoints
+
+| Endpoint | Method | Purpose | Auth Required |
+|----------|--------|---------|---------------|
+| `/api/founder/rfq` | GET | List founder's RFQs | Authenticated founder |
+| `/api/founder/rfq` | POST | Create new RFQ | Authenticated founder |
+| `/api/consultant/rfq` | GET | Browse RFQ Board | Verified consultant |
+| `/api/consultant/rfq/[id]/respond` | POST | Respond to RFQ | Verified consultant |
+| `/api/founder/rfq/[id]/responses` | GET | View responses to RFQ | Authenticated founder |
+| `/api/founder/rfq/[id]/responses/[responseId]/accept` | POST | Accept RFQ response | Authenticated founder |
+| `/api/founder/rfq/[id]/responses/[responseId]/decline` | POST | Decline RFQ response | Authenticated founder |
+
+#### Create RFQ Request
+
+```bash
+curl -X POST "https://app.startupai.site/api/founder/rfq" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Seeking seed funding advisor",
+    "description": "Looking for an experienced angel or early-stage VC to help with our seed round...",
+    "relationship_type": "capital",
+    "industries": ["SaaS", "B2B"],
+    "stage_preference": "seed",
+    "timeline": "3_months",
+    "budget_range": "equity_only"
+  }'
+```
+
+**Response:**
+```json
+{
+  "rfq_id": "uuid",
+  "status": "open",
+  "created_at": "2026-02-03T10:00:00Z",
+  "expires_at": "2026-03-05T10:00:00Z"
+}
+```
+
+#### Respond to RFQ (Consultant)
+
+```bash
+curl -X POST "https://app.startupai.site/api/consultant/rfq/{id}/respond" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "I have experience helping SaaS companies raise seed rounds..."
+  }'
+```
+
+### Marketplace Settings Endpoints
+
+| Endpoint | Method | Purpose | Auth Required |
+|----------|--------|---------|---------------|
+| `/api/consultant/profile/marketplace` | GET | Get consultant marketplace settings | Authenticated consultant |
+| `/api/consultant/profile/marketplace` | PUT | Update consultant marketplace settings | Authenticated consultant |
+| `/api/founder/profile/marketplace` | GET | Get founder marketplace settings | Authenticated founder |
+| `/api/founder/profile/marketplace` | PUT | Update founder marketplace settings | Authenticated founder |
+
+#### Update Consultant Marketplace Settings
+
+```bash
+curl -X PUT "https://app.startupai.site/api/consultant/profile/marketplace" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "directory_opt_in": true,
+    "default_relationship_type": "advisory"
+  }'
+```
+
+#### Update Founder Marketplace Settings
+
+```bash
+curl -X PUT "https://app.startupai.site/api/founder/profile/marketplace" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "founder_directory_opt_in": true
+  }'
+```
+
+### Verification Lifecycle
+
+Verification status is managed by Stripe webhooks:
+
+| Stripe Event | Action |
+|--------------|--------|
+| `customer.subscription.created` (Advisor/Capital) | Set `verification_status = 'verified'` |
+| `invoice.paid` (Advisor/Capital) | Maintain `verification_status = 'verified'` |
+| `customer.subscription.updated` (plan downgrade) | If no longer Advisor/Capital: set `verification_status = 'grace'`, start 7-day countdown |
+| `invoice.payment_failed` | Set `verification_status = 'grace'`, start 7-day countdown |
+| `customer.subscription.deleted` | Set `verification_status = 'revoked'` |
+| pg_cron (daily) | If `grace_started_at + 7 days < NOW()`: set `verification_status = 'revoked'` |
+
+---
+
 ## Aspirational Contracts (NOT IMPLEMENTED)
 
 These were documented but do not exist yet:
