@@ -418,6 +418,194 @@ The Copywriter agent adjusts tone per platform:
 
 ---
 
+## Ad Platform Impression Data Flow
+
+### The Problem
+
+Innovation Physics calculations require impression data from ad platforms to compute key metrics:
+
+```
+problem_resonance = (clicks + signups) / impressions
+zombie_ratio = (clicks - signups) / clicks
+```
+
+The `lp_pageviews` and `lp_submissions` tables capture on-site behavior, but `impressions` originate from ad platforms (Meta, LinkedIn, Google, TikTok). This section defines how platform impression data flows into the system.
+
+### Data Flow Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    AD PLATFORM METRICS DATA FLOW                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  AD PLATFORMS                 STARTUPAI-CREW                 SUPABASE       │
+│  ────────────                 ──────────────                 ────────       │
+│                                                                             │
+│  ┌─────────┐                  ┌─────────────────┐                           │
+│  │  Meta   │◄─── Polling ────►│ MetaAdsAdapter  │                           │
+│  └─────────┘    (Insights     │ .get_performance│                           │
+│                  API)         └────────┬────────┘                           │
+│  ┌─────────┐                           │                                    │
+│  │LinkedIn │◄─── Polling ────►│LinkedInAdapter │                            │
+│  └─────────┘    (Analytics    │.get_performance│                            │
+│                  API)         └────────┬────────┘                           │
+│  ┌─────────┐                           │        ┌──────────────────────┐   │
+│  │ Google  │◄─── Polling ────►│GoogleAdsAdapter│   │                      │   │
+│  └─────────┘    (Reports      │.get_performance├──►│ ad_platform_metrics  │   │
+│                  API)         └────────┬────────┘   │ (aggregated by run)  │   │
+│  ┌─────────┐                           │        └──────────────────────┘   │
+│  │ TikTok  │◄─── Polling ────►│TikTokAdsAdapter│            │               │
+│  └─────────┘    (Reporting    │.get_performance│            ▼               │
+│                  API)         └─────────────────┘   ┌──────────────────┐   │
+│                                                     │   PulseCrew      │   │
+│                                                     │   .compute_      │   │
+│                                                     │   desirability_  │   │
+│                                                     │   evidence()     │   │
+│                                                     └────────┬─────────┘   │
+│                                                              │              │
+│                                                              ▼              │
+│                                                     ┌──────────────────┐   │
+│                                                     │ problem_resonance│   │
+│                                                     │ zombie_ratio     │   │
+│                                                     │ evidence_strength│   │
+│                                                     └──────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Collection Method: Scheduled Polling
+
+**Decision**: Use scheduled polling rather than webhooks/callbacks.
+
+| Method | Pros | Cons |
+|--------|------|------|
+| **Polling (Selected)** | Universal support across platforms; simpler implementation; no webhook infrastructure needed | Slight delay (minutes); API rate limits |
+| Webhooks | Real-time updates | Not supported by most ad platforms; complex setup; requires public endpoint |
+| Streaming | Real-time | Only Meta supports (limited); high complexity |
+
+**Polling Schedule**:
+- **During active experiments**: Every 15 minutes via Modal cron job
+- **After experiment ends**: Final collection at experiment close, then archived
+- **Rate limit aware**: Respects platform-specific rate limits (see `src/tools/ads/interface.py`)
+
+### Platform API Integration
+
+Each ad platform adapter in `src/tools/ads/` implements `get_performance()`:
+
+| Platform | API | Metrics Endpoint | Latency |
+|----------|-----|------------------|---------|
+| Meta | Marketing API v19.0 | `/insights` | 15-30 min |
+| LinkedIn | Marketing API | `/analytics/campaigns` | 1-2 hours |
+| Google | Google Ads API | `/googleAds:searchStream` | 3-6 hours |
+| TikTok | Business API | `/report/integrated/get/` | 1-2 hours |
+
+**Note**: Platform reporting latency means impressions may lag real-time by up to 6 hours. This is acceptable for Innovation Physics calculations which operate on experiment-level aggregates (days, not minutes).
+
+### Schema: ad_platform_metrics
+
+New table to store aggregated platform metrics per run:
+
+```sql
+-- Ad platform performance metrics (aggregated from platform APIs)
+CREATE TABLE ad_platform_metrics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  run_id UUID NOT NULL REFERENCES validation_runs(id) ON DELETE CASCADE,
+  creative_id UUID REFERENCES ad_creatives(id) ON DELETE SET NULL,
+  platform ad_platform NOT NULL,
+
+  -- Time window
+  date_start DATE NOT NULL,
+  date_end DATE NOT NULL,
+  collected_at TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Core metrics (from platform APIs)
+  impressions BIGINT NOT NULL DEFAULT 0,
+  clicks BIGINT NOT NULL DEFAULT 0,
+  conversions BIGINT NOT NULL DEFAULT 0,
+  spend_cents BIGINT NOT NULL DEFAULT 0,
+
+  -- Platform-specific metrics
+  reach BIGINT,
+  frequency NUMERIC(5,2),
+  video_views BIGINT,
+  video_completions BIGINT,
+
+  -- Derived metrics (calculated on insert)
+  ctr NUMERIC(8,6) GENERATED ALWAYS AS (
+    CASE WHEN impressions > 0 THEN clicks::NUMERIC / impressions ELSE 0 END
+  ) STORED,
+  cpc_cents NUMERIC(10,2) GENERATED ALWAYS AS (
+    CASE WHEN clicks > 0 THEN spend_cents::NUMERIC / clicks ELSE 0 END
+  ) STORED,
+  cpm_cents NUMERIC(10,2) GENERATED ALWAYS AS (
+    CASE WHEN impressions > 0 THEN (spend_cents::NUMERIC / impressions) * 1000 ELSE 0 END
+  ) STORED,
+
+  -- Raw platform response (for debugging/audit)
+  raw_data JSONB,
+
+  -- Platform identifiers
+  platform_campaign_id TEXT,
+  platform_ad_set_id TEXT,
+  platform_ad_id TEXT,
+
+  UNIQUE(run_id, creative_id, platform, date_start, date_end)
+);
+
+-- Indexes
+CREATE INDEX idx_ad_platform_metrics_run ON ad_platform_metrics(run_id);
+CREATE INDEX idx_ad_platform_metrics_creative ON ad_platform_metrics(creative_id);
+CREATE INDEX idx_ad_platform_metrics_collected ON ad_platform_metrics(collected_at);
+
+-- RLS Policies
+ALTER TABLE ad_platform_metrics ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "ad_platform_metrics_select" ON ad_platform_metrics
+  FOR SELECT USING (run_id IN (
+    SELECT id FROM validation_runs WHERE project_id IN (
+      SELECT id FROM projects WHERE user_id = auth.uid()
+    )
+  ));
+```
+
+### Drizzle Schema: adPlatformMetrics
+
+```typescript
+// db/schema/ad-platform-metrics.ts
+import { pgTable, uuid, bigint, date, timestamp, text, numeric, jsonb } from 'drizzle-orm/pg-core';
+import { validationRuns } from './validation-runs';
+import { adCreatives, adPlatform } from './ad-creatives';
+
+export const adPlatformMetrics = pgTable('ad_platform_metrics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  runId: uuid('run_id').notNull().references(() => validationRuns.id, { onDelete: 'cascade' }),
+  creativeId: uuid('creative_id').references(() => adCreatives.id, { onDelete: 'set null' }),
+  platform: adPlatform('platform').notNull(),
+
+  dateStart: date('date_start').notNull(),
+  dateEnd: date('date_end').notNull(),
+  collectedAt: timestamp('collected_at').defaultNow(),
+
+  impressions: bigint('impressions', { mode: 'number' }).notNull().default(0),
+  clicks: bigint('clicks', { mode: 'number' }).notNull().default(0),
+  conversions: bigint('conversions', { mode: 'number' }).notNull().default(0),
+  spendCents: bigint('spend_cents', { mode: 'number' }).notNull().default(0),
+
+  reach: bigint('reach', { mode: 'number' }),
+  frequency: numeric('frequency', { precision: 5, scale: 2 }),
+  videoViews: bigint('video_views', { mode: 'number' }),
+  videoCompletions: bigint('video_completions', { mode: 'number' }),
+
+  rawData: jsonb('raw_data'),
+
+  platformCampaignId: text('platform_campaign_id'),
+  platformAdSetId: text('platform_ad_set_id'),
+  platformAdId: text('platform_ad_id'),
+});
+```
+
+---
+
 ## Data Model
 
 ### Schema Standardization
@@ -571,6 +759,85 @@ CREATE POLICY "ad_submissions_select" ON ad_submissions
 | `lp_pageviews` | **Missing** | Create schema |
 | `ad_creatives` | **Missing** | Create schema |
 | `ad_submissions` | **Missing** | Create schema |
+| `ad_platform_metrics` | **Missing** | Create schema |
+
+### Metrics Flow to Fit Score Computation
+
+The raw data captured in `lp_pageviews`, `lp_submissions`, and `ad_platform_metrics` aggregates into `DesirabilityMetrics` for Innovation Physics fit scoring.
+
+#### Data Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    RAW DATA → FIT SCORE PIPELINE                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  RAW COLLECTION (per variant)                                               │
+│  ────────────────────────────                                               │
+│  lp_pageviews      → clicks (unique session_id count)                       │
+│  lp_submissions    → signups (form submissions with email)                  │
+│  ad_platform_metrics → impressions, spend_usd (from platform APIs)          │
+│                                                                             │
+│        │                                                                    │
+│        ▼                                                                    │
+│  AGGREGATION (DesirabilityMetrics)                                          │
+│  ─────────────────────────────────                                          │
+│  PulseCrew collects per-platform metrics and computes aggregate:            │
+│  • impressions: SUM(ad_platform_metrics.impressions) per run                │
+│  • clicks: SUM(lp_pageviews unique sessions) per run                        │
+│  • signups: SUM(lp_submissions) with valid email                            │
+│  • spend_usd: SUM(ad_platform_metrics.spend_cents) / 100                    │
+│                                                                             │
+│        │                                                                    │
+│        ▼                                                                    │
+│  FIT SCORE COMPUTATION (Innovation Physics)                                 │
+│  ──────────────────────────────────────────                                 │
+│  problem_resonance = (clicks + signups) / impressions                       │
+│  zombie_ratio      = (clicks - signups) / clicks                            │
+│                                                                             │
+│  Thresholds:                                                                │
+│  • problem_resonance < 0.3  → SEGMENT_PIVOT (wrong audience)                │
+│  • zombie_ratio >= 0.7      → VALUE_PIVOT (interest without commitment)     │
+│  • Both passing             → STRONG_COMMITMENT (proceed to Feasibility)    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### DesirabilityMetrics Schema
+
+```python
+class DesirabilityMetrics(BaseModel):
+    experiment_id: str
+    platform: Platform           # META, GOOGLE, LINKEDIN, TIKTOK, AGGREGATE
+    ad_ids: List[str] = []
+    landing_page_ids: List[str] = []
+
+    # Raw counts
+    impressions: int = 0
+    clicks: int = 0
+    signups: int = 0
+
+    # Spend tracking
+    spend_usd: float = 0.0
+
+    # Computed by PulseCrew
+    cpc: Optional[float] = None  # cost per click
+    cpm: Optional[float] = None  # cost per mille
+    cvr: Optional[float] = None  # conversion rate (signups/clicks)
+```
+
+#### Integration Points
+
+| Component | Role | Location |
+|-----------|------|----------|
+| `lp_pageviews` | Raw click data | Supabase (this ADR) |
+| `lp_submissions` | Raw signup data | Supabase (this ADR) |
+| `ad_platform_metrics` | Raw impression/spend data | Supabase (this ADR) |
+| `DesirabilityMetrics` | Aggregated metrics | Flow state schema |
+| `compute_desirability_evidence()` | Fit score computation | PulseCrew |
+| `route_after_desirability()` | Pivot routing based on scores | Flow router |
+
+**Reference**: See [Innovation Physics Implementation](../concepts/innovation-physics.md) for the complete `compute_desirability_evidence()` function and routing logic.
 
 ---
 
@@ -603,6 +870,14 @@ CREATE POLICY "ad_submissions_select" ON ad_submissions
 - [ ] HITL checkpoint for brand review
 - [ ] Meta Ads API integration
 - [ ] LinkedIn Ads API integration
+
+### Pending - Phase 2 (Metrics Collection)
+
+- [ ] Create `ad_platform_metrics` table migration
+- [ ] Create Drizzle schema for `ad_platform_metrics`
+- [ ] Implement `MetricsCollectorTool` for scheduled polling
+- [ ] Modal cron job for 15-minute metrics collection
+- [ ] PulseCrew `compute_desirability_evidence()` aggregation
 
 ---
 
@@ -639,6 +914,9 @@ CREATE POLICY "ad_submissions_select" ON ad_submissions
    - *Mitigation*: HITL workflow available as interim solution
 3. **Platform API complexity**: Each ad platform has different APIs
    - *Mitigation*: Start with Meta + LinkedIn only
+4. **Fixed component registry**: The 10-component set (HeroSection, PainPoints, SolutionSection, FeatureGrid, TrustBadges, Testimonials, PricingCard, FAQ, CTASection, Footer) is enumerated in the Zod schema
+   - *Constraint*: Experiment types requiring video players, interactive demos, comparison tables, or multi-step wizards are not natively supported
+   - *Mitigation*: Registry is extensible via schema versioning; current components cover Strategyzer's Smoke Test and A/B Split Test experiment types, representing 95%+ of Phase 2 desirability validation use cases
 
 ### Neutral
 
@@ -666,6 +944,7 @@ CREATE POLICY "ad_submissions_select" ON ad_submissions
 | 2026-01-10 | Supabase Storage implementation complete |
 | 2026-02-02 | Expanded to Validation Asset Architecture |
 | 2026-02-03 | **v2.0**: Incorporated team feedback. Added: Tailwind UI decision, TrustBadges component, Blueprint JSON schema, token injection mechanism, corrected platform character limits (recommended vs max), Canva partnership strategy, tone parameter, indexes and RLS policies, Drizzle schema requirements. Resolved run_id type inconsistency. |
+| 2026-02-03 | **v2.1**: VPD methodology review. Added: Ad Platform Impression Data Flow section (polling architecture, `ad_platform_metrics` schema), Metrics Flow to Fit Score Computation section (Innovation Physics integration), fixed component registry constraint in Consequences. |
 
 ---
 
