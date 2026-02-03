@@ -1939,10 +1939,215 @@ NETLIFY_ACCESS_TOKEN=...
 
 ---
 
+---
+
+## Design Team Tools (Claude Code Swarm)
+
+> **Architecture Note**: Design team tools operate in the **Claude Code Swarm** (not CrewAI on Modal) because:
+> - Design agents need interactive user interviews (AskUserQuestion)
+> - Figma MCP requires Desktop Bridge (local process)
+> - DALL-E costs need real-time budget controls
+
+### Design Tool Summary
+
+| Tool | Purpose | Agents | MCP Server |
+|------|---------|--------|------------|
+| `dalle_generate` | Generate images via DALL-E 3 | Visual Designer, Graphic Designer | StartupAI DALL-E MCP |
+| `dalle_budget_status` | Check daily generation budget | All Design Agents | StartupAI DALL-E MCP |
+| `figma_get_file` | Read Figma file structure | All Design Agents | Official Figma MCP |
+| `figma_get_variables` | Extract design tokens | UI Designer, Visual Designer | Official Figma MCP |
+| `figma_get_components` | List component library | UI Designer | Official Figma MCP |
+| `figma_execute` | Create/modify designs | UI Designer, UX Designer | Figma Console MCP |
+| `figma_create_frame` | Create new frames | UI Designer, UX Designer | Figma Console MCP |
+| `figma_create_text` | Add text to designs | All Design Agents | Figma Console MCP |
+| `figma_insert_image` | Place images in Figma | Visual Designer, Graphic Designer | Figma Console MCP |
+
+---
+
+### StartupAI DALL-E MCP Server
+
+| Attribute | Value |
+|-----------|-------|
+| **Status** | Custom MCP Server |
+| **Location** | `~/.claude/mcp-servers/dalle/` |
+| **Transport** | stdio |
+| **Category** | Image Generation |
+
+**Features:**
+- DALL-E 3 integration with brand prompt injection
+- Automatic persistence to Supabase Storage (URL expiration handling)
+- Cost tracking with $5/day budget limit
+- Rate limiting (5 RPM for Tier 1)
+- Exponential backoff retry logic
+
+**Tool: `dalle_generate`**
+
+| Input | Type | Default | Description |
+|-------|------|---------|-------------|
+| `prompt` | string | (required) | Image description |
+| `size` | enum | `1024x1024` | `1024x1024`, `1792x1024`, `1024x1792` |
+| `style` | enum | `vivid` | `natural`, `vivid` |
+| `quality` | enum | `standard` | `standard`, `hd` |
+| `projectId` | uuid | - | Project for organization |
+| `assetType` | enum | `illustration` | Asset classification |
+| `category` | string | - | Subcategory |
+| `skipBrandPrompt` | boolean | `false` | Skip brand guidelines |
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `success` | boolean | Generation succeeded |
+| `imageUrl` | string | Permanent Supabase URL |
+| `storagePath` | string | Storage bucket path |
+| `revisedPrompt` | string | DALL-E's interpretation |
+| `cost` | string | Cost in USD |
+
+**Cost Reference:**
+
+| Size | Standard | HD |
+|------|----------|-----|
+| 1024×1024 | $0.04 | $0.08 |
+| 1792×1024 | $0.08 | $0.12 |
+| 1024×1792 | $0.08 | $0.12 |
+
+**Tool: `dalle_budget_status`**
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `dailyLimit` | string | Budget limit ($5.00) |
+| `spent` | string | Today's spending |
+| `remaining` | string | Budget remaining |
+| `withinBudget` | boolean | Can generate more |
+| `alertThreshold` | string | Alert threshold ($4.00) |
+
+**Database Tables:**
+
+| Table | Purpose |
+|-------|---------|
+| `design_assets` | Generated/approved assets |
+| `figma_project_links` | Figma URL ↔ Project mapping |
+| `design_generation_log` | Cost tracking, debugging |
+
+See `frontend/src/db/schema/design-assets.ts` for full schema.
+
+---
+
+### Official Figma MCP Server
+
+| Attribute | Value |
+|-----------|-------|
+| **Status** | External MCP Server (READ ONLY) |
+| **Setup** | `claude mcp add --transport http figma https://mcp.figma.com/mcp` |
+| **Docs** | [Figma MCP Server](https://developers.figma.com/docs/figma-mcp-server/) |
+| **Rate Limits** | 6 calls/month (Starter), per-minute (paid) |
+
+**Capabilities:**
+- Extract design context
+- Read design tokens (Variables)
+- List components
+- Read layout/structure data
+
+**Limitations:**
+- **READ-ONLY** - cannot create or modify designs
+- Requires Figma Professional/Organization for reasonable rate limits
+
+---
+
+### Figma Console MCP (Third-Party)
+
+| Attribute | Value |
+|-----------|-------|
+| **Status** | External MCP Server (WRITE) |
+| **Docs** | [Figma Console MCP](https://docs.figma-console-mcp.southleft.com) |
+| **Requirements** | Figma Desktop + Desktop Bridge |
+
+**Capabilities:**
+- Create frames, shapes, text
+- Apply auto-layout
+- Insert images
+- Execute Plugin API code
+
+**Critical Dependency:**
+- Desktop Bridge must be running
+- Requires Figma Desktop app open
+- Not available for headless/overnight runs
+
+**Validation Required (Phase 1):**
+- [ ] Desktop Bridge installs successfully
+- [ ] Can create test frame
+- [ ] Can add text to frame
+- [ ] Can insert image URL
+- [ ] Can apply auto-layout
+- [ ] Works with FigJam files
+
+---
+
+### Brand Prompt Templates
+
+| Template | Location | Purpose |
+|----------|----------|---------|
+| `illustrations.md` | `~/.claude/design-prompts/` | Product UI illustrations |
+| `marketing-assets.md` | `~/.claude/design-prompts/` | Marketing/landing pages |
+| `negative-guidance.md` | `~/.claude/design-prompts/` | What to avoid (anti-slop) |
+| `mood-keywords.md` | `~/.claude/design-prompts/` | Emotional tone guidance |
+| `asset-dimensions.md` | `~/.claude/design-prompts/` | Size reference by use case |
+
+---
+
+### Design Workflow Integration
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    DESIGN TEAM TOOL LAYER                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐     │
+│  │ Official Figma  │  │ Figma Console   │  │ StartupAI DALL-E│     │
+│  │   MCP Server    │  │   MCP Server    │  │   MCP Server    │     │
+│  │                 │  │                 │  │                 │     │
+│  │ READ: Extract   │  │ WRITE: Create   │  │ GENERATE:       │     │
+│  │ - Components    │  │ - Frames        │  │ - Illustrations │     │
+│  │ - Variables     │  │ - Shapes        │  │ - Backgrounds   │     │
+│  │ - Layouts       │  │ - Text          │  │ - Marketing     │     │
+│  │ - Styles        │  │ - Components    │  │                 │     │
+│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘     │
+│           │                    │                    │               │
+│           └────────────────────┼────────────────────┘               │
+│                                │                                     │
+│                    ┌───────────▼───────────┐                        │
+│                    │   DESIGN AGENTS       │                        │
+│                    │   (Claude Swarm)      │                        │
+│                    │                       │                        │
+│                    │ UI Designer (Lead)    │                        │
+│                    │ Visual Designer       │                        │
+│                    │ UX Designer           │                        │
+│                    │ Graphic Designer      │                        │
+│                    └───────────────────────┘                        │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Design → Development Handoff:**
+```
+Design Agent completes work
+         ↓
+Posts Figma URL to task
+         ↓
+Frontend Developer reads via Official Figma MCP
+         ↓
+Implements with shadcn/ui + Tailwind
+         ↓
+QA Engineer runs accessibility audit
+```
+
+---
+
 ## Change Log
 
 | Date | Change | Rationale |
 |------|--------|-----------|
+| 2026-01-30 | **Design Team Tools** added to tool specifications | Figma integration for AI Design Team |
+| 2026-01-30 | **StartupAI DALL-E MCP** documented | Custom MCP server with brand integration and cost controls |
+| 2026-01-30 | **Figma MCP Servers** documented | Official (read) + Console (write) integration |
+| 2026-01-30 | **Brand Prompt Templates** location documented | Standardized prompts for consistent generation |
 | 2026-01-10 | **Ad Platform Specifications Library** created | Canonical reference prevents agent hallucination of platform specs |
 | 2026-01-10 | AdCreativeGeneratorTool references spec library | Agents load specs from library, not hardcoded values |
 | 2026-01-10 | **Ad Creative Visuals** with Progressive Resolution | Ads need visuals, not just copy - same pattern as LP |
