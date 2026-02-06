@@ -197,7 +197,7 @@ def update_progress(
     try:
         supabase.table("validation_progress").insert({
             "run_id": run_id,
-            "phase": phase,
+            "validation_phase": phase,
             "crew": crew,
             "task": task,
             "agent": agent,
@@ -262,7 +262,7 @@ def create_hitl_request(
         result = supabase.table("hitl_requests").insert({
             "run_id": run_id,
             "checkpoint_name": checkpoint.checkpoint_name,
-            "phase": checkpoint.phase,
+            "validation_phase": checkpoint.phase,
             "title": checkpoint.title,
             "description": checkpoint.description,
             "context": checkpoint.context,

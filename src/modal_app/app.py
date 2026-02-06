@@ -235,6 +235,7 @@ async def kickoff(
     supabase = get_supabase()
     supabase.table("validation_runs").insert({
         "id": str(run_id),
+        "run_id": str(run_id),
         "project_id": str(request.project_id),
         "user_id": str(request.user_id),
         "status": "pending",
@@ -708,7 +709,7 @@ def run_validation(run_id: str):
                 supabase.table("hitl_requests").insert({
                     "run_id": run_id,
                     "checkpoint_name": checkpoint,
-                    "phase": phase_num,
+                    "validation_phase": phase_num,
                     "title": hitl_title,
                     "description": hitl_description,
                     "context": hitl_context,
