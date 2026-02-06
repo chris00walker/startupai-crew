@@ -18,45 +18,22 @@ from typing import Any
 # =============================================================================
 
 class TestPhase0Context:
-    """Test that Phase 0 receives and processes entrepreneur input correctly."""
+    """Test that Phase 0 (Quick Start pass-through) handles input correctly."""
 
-    @patch("src.crews.onboarding.run_onboarding_crew")
     @patch("src.modal_app.phases.phase_0.update_progress")
-    def test_onboarding_receives_entrepreneur_input(
-        self,
-        mock_progress,
-        mock_crew,
-    ):
-        """Onboarding crew should receive entrepreneur_input."""
-        mock_crew.return_value = MagicMock(
-            model_dump=lambda mode=None: {
-                "the_idea": {"one_liner": "Test"},
-                "problem_hypothesis": {},
-                "customer_hypothesis": {},
-                "solution_hypothesis": {},
-            },
-            qa_status=MagicMock(
-                legitimacy_check="PASS",
-                legitimacy_notes="",
-                intent_verification="PASS",
-                intent_notes="",
-                overall_status="APPROVED",
-            ),
-        )
-
+    def test_phase_0_passes_through_entrepreneur_input(self, mock_progress):
+        """Phase 0 should pass entrepreneur_input through to state."""
         state = {
             "entrepreneur_input": "A B2B SaaS for supply chain optimization",
         }
 
         from src.modal_app.phases import phase_0
 
-        phase_0.execute("test-run-id", state)
+        result = phase_0.execute("test-run-id", state)
 
-        # Verify crew was called with entrepreneur_input
-        mock_crew.assert_called_once()
-        call_kwargs = mock_crew.call_args
-        # The crew receives entrepreneur_input as parameter
-        assert call_kwargs is not None
+        assert result["state"]["entrepreneur_input"] == state["entrepreneur_input"]
+        # Phase 0 is a pass-through — no HITL checkpoint
+        assert "hitl_checkpoint" not in result
 
     def test_entrepreneur_input_not_empty(self):
         """Entrepreneur input should not be empty."""

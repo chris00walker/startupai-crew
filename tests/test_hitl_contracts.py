@@ -546,7 +546,7 @@ class TestCheckpointNameValidation:
 
         valid_checkpoints = [
             "approve_founders_brief",
-            "approve_vpc_completion",
+            "approve_discovery_output",
             "approve_desirability_gate",
             "approve_segment_pivot",
             "approve_value_pivot",
@@ -566,7 +566,7 @@ class TestCheckpointNameValidation:
         """Gate checkpoints should start with 'approve_'."""
         gate_checkpoints = [
             "approve_founders_brief",
-            "approve_vpc_completion",
+            "approve_discovery_output",
             "approve_desirability_gate",
             "approve_feasibility_gate",
             "approve_viability_gate",

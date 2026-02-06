@@ -244,46 +244,40 @@ def mock_viability_evidence() -> ViabilityEvidence:
 
 
 class TestPhase0Execution:
-    """Test Phase 0: Onboarding execution."""
+    """Test Phase 0: Quick Start pass-through."""
 
-    def test_phase_0_returns_hitl_checkpoint(
-        self, sample_entrepreneur_input, mock_founders_brief
+    def test_phase_0_passes_through_without_hitl(
+        self, sample_entrepreneur_input
     ):
-        """Phase 0 should return approve_founders_brief HITL checkpoint."""
+        """Phase 0 should pass through without HITL checkpoint."""
         from src.modal_app.phases import phase_0
 
-        with patch("src.crews.onboarding.run_onboarding_crew") as mock_crew:
-            with patch("src.modal_app.phases.phase_0.update_progress"):
-                mock_crew.return_value = mock_founders_brief
+        with patch("src.modal_app.phases.phase_0.update_progress"):
+            result = phase_0.execute(
+                run_id="test-run-001",
+                state={"entrepreneur_input": sample_entrepreneur_input},
+            )
 
-                result = phase_0.execute(
-                    run_id="test-run-001",
-                    state={"entrepreneur_input": sample_entrepreneur_input},
-                )
+        # Phase 0 is a pass-through — no HITL checkpoint
+        assert "hitl_checkpoint" not in result
+        assert "state" in result
+        assert result["state"]["entrepreneur_input"] == sample_entrepreneur_input
 
-        assert result["hitl_checkpoint"] == "approve_founders_brief"
-        assert "hitl_options" in result
-        assert len(result["hitl_options"]) >= 2
-        assert result["hitl_recommended"] == "approve"
-        assert "founders_brief" in result["state"]
-
-    def test_phase_0_propagates_founders_brief_to_state(
-        self, sample_entrepreneur_input, mock_founders_brief
-    ):
-        """Phase 0 should add founders_brief to output state."""
+    def test_phase_0_preserves_hints_in_state(self):
+        """Phase 0 should preserve hints in output state."""
         from src.modal_app.phases import phase_0
 
-        with patch("src.crews.onboarding.run_onboarding_crew") as mock_crew:
-            with patch("src.modal_app.phases.phase_0.update_progress"):
-                mock_crew.return_value = mock_founders_brief
+        hints = {"industry": "pet care", "target_user": "dog owners"}
+        with patch("src.modal_app.phases.phase_0.update_progress"):
+            result = phase_0.execute(
+                run_id="test-run-001",
+                state={
+                    "entrepreneur_input": "Dog walking subscription box",
+                    "hints": hints,
+                },
+            )
 
-                result = phase_0.execute(
-                    run_id="test-run-001",
-                    state={"entrepreneur_input": sample_entrepreneur_input},
-                )
-
-        brief = result["state"]["founders_brief"]
-        assert brief["the_idea"]["one_liner"] == mock_founders_brief.the_idea.one_liner
+        assert result["state"]["hints"] == hints
 
 
 class TestPhase1Execution:
@@ -292,7 +286,7 @@ class TestPhase1Execution:
     def test_phase_1_returns_hitl_checkpoint(
         self, mock_founders_brief, mock_customer_profile, mock_value_map, mock_fit_assessment, mock_wtp_results
     ):
-        """Phase 1 should return approve_vpc_completion HITL checkpoint."""
+        """Phase 1 should return approve_discovery_output HITL checkpoint."""
         from src.modal_app.phases import phase_1
 
         with patch("src.crews.discovery.run_discovery_crew") as mock_discovery:
@@ -312,7 +306,7 @@ class TestPhase1Execution:
                                     state={"founders_brief": mock_founders_brief.model_dump()},
                                 )
 
-        assert result["hitl_checkpoint"] == "approve_vpc_completion"
+        assert result["hitl_checkpoint"] == "approve_discovery_output"
         assert "customer_profile" in result["state"]
         assert "value_map" in result["state"]
         assert "fit_assessment" in result["state"]
@@ -605,16 +599,16 @@ class TestFullValidationFlow:
         run_id = "e2e-test-run-001"
         state = {"entrepreneur_input": sample_entrepreneur_input}
 
-        # Phase 0: Onboarding
-        with patch("src.crews.onboarding.run_onboarding_crew") as mock_crew:
-            with patch("src.modal_app.phases.phase_0.update_progress"):
-                mock_crew.return_value = mock_founders_brief
-                result_0 = phase_0.execute(run_id=run_id, state=state)
+        # Phase 0: Quick Start pass-through (no crew, no HITL)
+        with patch("src.modal_app.phases.phase_0.update_progress"):
+            result_0 = phase_0.execute(run_id=run_id, state=state)
 
-        assert result_0["hitl_checkpoint"] == "approve_founders_brief"
+        assert "hitl_checkpoint" not in result_0
+        # Inject founders_brief as if Phase 1 Stage A produced it
         state = result_0["state"]
+        state["founders_brief"] = mock_founders_brief.model_dump()
 
-        # Phase 1: VPC Discovery
+        # Phase 1: VPC Discovery (Stage B — brief already approved)
         with patch("src.crews.discovery.run_discovery_crew") as mock_discovery:
             with patch("src.crews.discovery.run_customer_profile_crew") as mock_profile:
                 with patch("src.crews.discovery.run_value_design_crew") as mock_value:
@@ -628,7 +622,7 @@ class TestFullValidationFlow:
                                 mock_fit.return_value = mock_fit_assessment
                                 result_1 = phase_1.execute(run_id=run_id, state=state)
 
-        assert result_1["hitl_checkpoint"] == "approve_vpc_completion"
+        assert result_1["hitl_checkpoint"] == "approve_discovery_output"
         assert result_1["hitl_context"]["fit_score"] >= 70
         state = result_1["state"]
 
@@ -689,17 +683,16 @@ class TestFullValidationFlow:
         run_id = "e2e-state-test"
         state = {"entrepreneur_input": sample_entrepreneur_input}
 
-        # Phase 0
-        with patch("src.crews.onboarding.run_onboarding_crew") as mock_crew:
-            with patch("src.modal_app.phases.phase_0.update_progress"):
-                mock_crew.return_value = mock_founders_brief
-                result_0 = phase_0.execute(run_id=run_id, state=state)
+        # Phase 0: Quick Start pass-through
+        with patch("src.modal_app.phases.phase_0.update_progress"):
+            result_0 = phase_0.execute(run_id=run_id, state=state)
 
         state_after_0 = result_0["state"]
         assert "entrepreneur_input" in state_after_0
-        assert "founders_brief" in state_after_0
+        # Inject founders_brief as if Phase 1 Stage A produced it
+        state_after_0["founders_brief"] = mock_founders_brief.model_dump()
 
-        # Phase 1
+        # Phase 1: VPC Discovery (Stage B)
         with patch("src.crews.discovery.run_discovery_crew") as mock_discovery:
             with patch("src.crews.discovery.run_customer_profile_crew") as mock_profile:
                 with patch("src.crews.discovery.run_value_design_crew") as mock_value:
@@ -730,21 +723,29 @@ class TestFullValidationFlow:
 
 
 class TestHITLCheckpointStructure:
-    """Test HITL checkpoint response structure."""
+    """Test HITL checkpoint response structure using Phase 1 (which produces HITL checkpoints)."""
 
     def test_hitl_checkpoint_has_required_fields(
-        self, sample_entrepreneur_input, mock_founders_brief
+        self, mock_founders_brief, mock_customer_profile, mock_value_map, mock_fit_assessment, mock_wtp_results
     ):
         """All HITL checkpoints should have required fields."""
-        from src.modal_app.phases import phase_0
+        from src.modal_app.phases import phase_1
 
-        with patch("src.crews.onboarding.run_onboarding_crew") as mock_crew:
-            with patch("src.modal_app.phases.phase_0.update_progress"):
-                mock_crew.return_value = mock_founders_brief
-                result = phase_0.execute(
-                    run_id="test-hitl-structure",
-                    state={"entrepreneur_input": sample_entrepreneur_input},
-                )
+        with patch("src.crews.discovery.run_discovery_crew") as mock_discovery:
+            with patch("src.crews.discovery.run_customer_profile_crew") as mock_profile:
+                with patch("src.crews.discovery.run_value_design_crew") as mock_value:
+                    with patch("src.crews.discovery.run_wtp_crew") as mock_wtp:
+                        with patch("src.crews.discovery.run_fit_assessment_crew") as mock_fit:
+                            with patch("src.modal_app.phases.phase_1.update_progress"):
+                                mock_discovery.return_value = {"segments": ["SMB"]}
+                                mock_profile.return_value = mock_customer_profile
+                                mock_value.return_value = mock_value_map
+                                mock_wtp.return_value = mock_wtp_results
+                                mock_fit.return_value = mock_fit_assessment
+                                result = phase_1.execute(
+                                    run_id="test-hitl-structure",
+                                    state={"founders_brief": mock_founders_brief.model_dump()},
+                                )
 
         # Required HITL fields
         assert "hitl_checkpoint" in result
@@ -756,18 +757,26 @@ class TestHITLCheckpointStructure:
         assert "state" in result
 
     def test_hitl_options_have_required_fields(
-        self, sample_entrepreneur_input, mock_founders_brief
+        self, mock_founders_brief, mock_customer_profile, mock_value_map, mock_fit_assessment, mock_wtp_results
     ):
         """Each HITL option should have id, label, and description."""
-        from src.modal_app.phases import phase_0
+        from src.modal_app.phases import phase_1
 
-        with patch("src.crews.onboarding.run_onboarding_crew") as mock_crew:
-            with patch("src.modal_app.phases.phase_0.update_progress"):
-                mock_crew.return_value = mock_founders_brief
-                result = phase_0.execute(
-                    run_id="test-hitl-options",
-                    state={"entrepreneur_input": sample_entrepreneur_input},
-                )
+        with patch("src.crews.discovery.run_discovery_crew") as mock_discovery:
+            with patch("src.crews.discovery.run_customer_profile_crew") as mock_profile:
+                with patch("src.crews.discovery.run_value_design_crew") as mock_value:
+                    with patch("src.crews.discovery.run_wtp_crew") as mock_wtp:
+                        with patch("src.crews.discovery.run_fit_assessment_crew") as mock_fit:
+                            with patch("src.modal_app.phases.phase_1.update_progress"):
+                                mock_discovery.return_value = {"segments": ["SMB"]}
+                                mock_profile.return_value = mock_customer_profile
+                                mock_value.return_value = mock_value_map
+                                mock_wtp.return_value = mock_wtp_results
+                                mock_fit.return_value = mock_fit_assessment
+                                result = phase_1.execute(
+                                    run_id="test-hitl-options",
+                                    state={"founders_brief": mock_founders_brief.model_dump()},
+                                )
 
         for option in result["hitl_options"]:
             assert "id" in option
@@ -775,18 +784,26 @@ class TestHITLCheckpointStructure:
             assert "description" in option
 
     def test_hitl_recommended_is_valid_option(
-        self, sample_entrepreneur_input, mock_founders_brief
+        self, mock_founders_brief, mock_customer_profile, mock_value_map, mock_fit_assessment, mock_wtp_results
     ):
         """hitl_recommended should be one of the option IDs."""
-        from src.modal_app.phases import phase_0
+        from src.modal_app.phases import phase_1
 
-        with patch("src.crews.onboarding.run_onboarding_crew") as mock_crew:
-            with patch("src.modal_app.phases.phase_0.update_progress"):
-                mock_crew.return_value = mock_founders_brief
-                result = phase_0.execute(
-                    run_id="test-hitl-recommendation",
-                    state={"entrepreneur_input": sample_entrepreneur_input},
-                )
+        with patch("src.crews.discovery.run_discovery_crew") as mock_discovery:
+            with patch("src.crews.discovery.run_customer_profile_crew") as mock_profile:
+                with patch("src.crews.discovery.run_value_design_crew") as mock_value:
+                    with patch("src.crews.discovery.run_wtp_crew") as mock_wtp:
+                        with patch("src.crews.discovery.run_fit_assessment_crew") as mock_fit:
+                            with patch("src.modal_app.phases.phase_1.update_progress"):
+                                mock_discovery.return_value = {"segments": ["SMB"]}
+                                mock_profile.return_value = mock_customer_profile
+                                mock_value.return_value = mock_value_map
+                                mock_wtp.return_value = mock_wtp_results
+                                mock_fit.return_value = mock_fit_assessment
+                                result = phase_1.execute(
+                                    run_id="test-hitl-recommendation",
+                                    state={"founders_brief": mock_founders_brief.model_dump()},
+                                )
 
         option_ids = [opt["id"] for opt in result["hitl_options"]]
         assert result["hitl_recommended"] in option_ids
@@ -800,19 +817,17 @@ class TestHITLCheckpointStructure:
 class TestPhaseErrorHandling:
     """Test error handling in phase execution."""
 
-    def test_phase_0_propagates_crew_errors(self, sample_entrepreneur_input):
-        """Phase 0 should propagate crew execution errors."""
+    def test_phase_0_handles_empty_input(self, sample_entrepreneur_input):
+        """Phase 0 should handle empty input gracefully (pass-through)."""
         from src.modal_app.phases import phase_0
 
-        with patch("src.crews.onboarding.run_onboarding_crew") as mock_crew:
-            with patch("src.modal_app.phases.phase_0.update_progress"):
-                mock_crew.side_effect = Exception("Crew execution failed")
+        with patch("src.modal_app.phases.phase_0.update_progress"):
+            result = phase_0.execute(
+                run_id="test-empty-input",
+                state={"entrepreneur_input": ""},
+            )
 
-                with pytest.raises(Exception, match="Crew execution failed"):
-                    phase_0.execute(
-                        run_id="test-error",
-                        state={"entrepreneur_input": sample_entrepreneur_input},
-                    )
+        assert result["state"]["entrepreneur_input"] == ""
 
     def test_phase_1_propagates_discovery_crew_errors(self, mock_founders_brief):
         """Phase 1 should propagate discovery crew errors."""

@@ -52,7 +52,7 @@ class TestPhaseIncrementOrdering:
         # Initial state
         current_phase = 1
         decision = "approved"
-        checkpoint = "approve_vpc_completion"
+        checkpoint = "approve_discovery_output"
 
         # Logic from app.py for standard approval
         if checkpoint not in ("approve_segment_pivot", "approve_value_pivot"):

@@ -147,7 +147,7 @@ def simulate_phase_1(state: dict, fit_score: int = 78) -> dict[str, Any]:
             "current_phase": 1,
             "fit_assessment": {"fit_score": fit_score, "gate_ready": gate_ready},
         },
-        "hitl_checkpoint": "approve_vpc_completion",
+        "hitl_checkpoint": "approve_discovery_output",
         "hitl_title": "VPC Discovery Complete",
         "hitl_description": f"VPC fit score: {fit_score}/100.",
         "hitl_recommended": "approve" if gate_ready else "iterate",
@@ -278,7 +278,7 @@ class TestHappyPath:
 
         # Phase 1: VPC Discovery (fit_score = 78 > 70)
         phase_1_result = simulate_phase_1(phase_0_result["state"], fit_score=78)
-        assert phase_1_result["hitl_checkpoint"] == "approve_vpc_completion"
+        assert phase_1_result["hitl_checkpoint"] == "approve_discovery_output"
         assert phase_1_result["hitl_recommended"] == "approve"
 
         # Phase 2: Desirability (strong commitment)
@@ -331,7 +331,7 @@ class TestHappyPath:
         # Verify checkpoints
         expected_checkpoints = [
             "approve_founders_brief",
-            "approve_vpc_completion",
+            "approve_discovery_output",
             "approve_desirability_gate",
             "approve_feasibility_gate",
             "request_human_decision",
@@ -543,7 +543,7 @@ class TestHITLRejection:
 
         # User chooses to iterate
         hitl_decision = {
-            "checkpoint": "approve_vpc_completion",
+            "checkpoint": "approve_discovery_output",
             "decision": "iterate",
             "feedback": "Need more customer interviews",
         }

@@ -452,7 +452,7 @@ class TestHITLCheckpoint:
     def test_checkpoint_creation(self):
         """Test creating a HITL checkpoint."""
         checkpoint = HITLCheckpoint(
-            checkpoint_name="approve_vpc_completion",
+            checkpoint_name="approve_discovery_output",
             phase=1,
             title="VPC Discovery Complete",
             description="Review the VPC fit score before proceeding.",
@@ -463,7 +463,7 @@ class TestHITLCheckpoint:
             ],
             recommended_option="approve",
         )
-        assert checkpoint.checkpoint_name == "approve_vpc_completion"
+        assert checkpoint.checkpoint_name == "approve_discovery_output"
         assert checkpoint.decision is None  # Not yet decided
 
     def test_checkpoint_decision(self):

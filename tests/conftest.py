@@ -277,7 +277,7 @@ def underwater_viability() -> ViabilityEvidence:
 def pending_hitl_checkpoint() -> HITLCheckpoint:
     """HITL checkpoint awaiting decision."""
     return HITLCheckpoint(
-        checkpoint_name="approve_vpc_completion",
+        checkpoint_name="approve_discovery_output",
         phase=1,
         title="VPC Discovery Complete",
         description="Review the VPC fit score before proceeding.",
@@ -335,16 +335,6 @@ def mock_openai():
 # ===========================================================================
 # CREW MOCK FIXTURES
 # ===========================================================================
-
-@pytest.fixture
-def mock_onboarding_crew():
-    """Mock OnboardingCrew for testing without execution."""
-    with patch("src.crews.onboarding.OnboardingCrew") as mock:
-        crew_instance = Mock()
-        crew_instance.kickoff.return_value = Mock(raw="mocked", json_dict={})
-        mock.return_value.crew.return_value = crew_instance
-        yield mock
-
 
 @pytest.fixture
 def mock_discovery_crews():
@@ -427,7 +417,6 @@ def mock_viability_crews():
 
 @pytest.fixture
 def mock_all_crews(
-    mock_onboarding_crew,
     mock_discovery_crews,
     mock_desirability_crews,
     mock_feasibility_crews,
@@ -442,7 +431,6 @@ def mock_all_crews(
             pass
     """
     return {
-        "onboarding": mock_onboarding_crew,
         "discovery": mock_discovery_crews,
         "desirability": mock_desirability_crews,
         "feasibility": mock_feasibility_crews,

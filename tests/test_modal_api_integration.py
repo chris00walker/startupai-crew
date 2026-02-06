@@ -105,7 +105,7 @@ def sample_hitl_state():
         "entrepreneur_input": "Test business idea",
         "current_phase": 1,
         "status": "paused",
-        "hitl_state": "approve_vpc_completion",
+        "hitl_state": "approve_discovery_output",
         "created_at": datetime.utcnow().isoformat(),
         "updated_at": datetime.utcnow().isoformat(),
     }
@@ -248,11 +248,11 @@ class TestStatusEndpoint:
     def test_status_includes_hitl_info_when_paused(self, sample_hitl_state):
         """Test status includes HITL info when paused."""
         assert sample_hitl_state["status"] == "paused"
-        assert sample_hitl_state["hitl_state"] == "approve_vpc_completion"
+        assert sample_hitl_state["hitl_state"] == "approve_discovery_output"
 
         # Expected HITL info structure
         expected_hitl = {
-            "checkpoint": "approve_vpc_completion",
+            "checkpoint": "approve_discovery_output",
             "title": "VPC Discovery Complete",
             "description": "Review the VPC fit score before proceeding.",
             "options": [
@@ -277,7 +277,7 @@ class TestHITLApproveEndpoint:
         """Test HITL approve validates required fields."""
         valid_request = {
             "run_id": str(uuid4()),
-            "checkpoint": "approve_vpc_completion",
+            "checkpoint": "approve_discovery_output",
             "decision": "approved",
             "feedback": "Looks good, proceed.",
         }
@@ -337,7 +337,7 @@ class TestHITLApproveEndpoint:
             "decision": "approved",
         }
 
-        # Current checkpoint is approve_vpc_completion
+        # Current checkpoint is approve_discovery_output
         assert wrong_checkpoint_request["checkpoint"] != sample_hitl_state["hitl_state"]
 
 
@@ -429,7 +429,7 @@ class TestWebhookPayloads:
         expected_payload = {
             "event": "hitl_required",
             "run_id": "uuid-string",
-            "checkpoint": "approve_vpc_completion",
+            "checkpoint": "approve_discovery_output",
             "phase": 1,
             "title": "VPC Discovery Complete",
             "description": "Review the VPC fit score before proceeding.",
@@ -506,7 +506,7 @@ class TestIdempotency:
         # Multiple approvals with same decision should not cause issues
         approval_request = {
             "run_id": sample_hitl_state["run_id"],
-            "checkpoint": "approve_vpc_completion",
+            "checkpoint": "approve_discovery_output",
             "decision": "approved",
         }
 

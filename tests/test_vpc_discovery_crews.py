@@ -301,7 +301,7 @@ class TestPhase1Flow:
             )
 
             assert "hitl_checkpoint" in result
-            assert result["hitl_checkpoint"] == "approve_vpc_completion"
+            assert result["hitl_checkpoint"] == "approve_discovery_output"
             assert "hitl_options" in result
 
     def test_phase_1_fit_score_gating(self, minimal_founders_brief):
