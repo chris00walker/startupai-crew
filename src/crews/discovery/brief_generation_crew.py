@@ -65,7 +65,7 @@ class BriefGenerationCrew:
             reasoning=True,  # Synthesizes research into structured brief
             inject_date=True,
             max_iter=25,  # More iterations for research + compilation
-            llm=LLM(model="openai/gpt-4o", temperature=0.5),
+            llm=LLM(model="openai/gpt-4o", temperature=0.3),
             verbose=True,
             allow_delegation=False,
         )

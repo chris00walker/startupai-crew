@@ -6,6 +6,8 @@ Phase 1: VPC Discovery Crews
 Includes BriefGenerationCrew for Quick Start flow (Phase 1 Stage A).
 """
 
+import json
+import logging
 from typing import Any, Optional
 
 from src.crews.discovery.brief_generation_crew import BriefGenerationCrew
@@ -33,6 +35,9 @@ def run_brief_generation_crew(
     Returns:
         FoundersBrief ready for HITL approval at approve_brief checkpoint
     """
+    if not raw_idea or len(raw_idea.strip()) < 3:
+        raise ValueError(f"raw_idea is empty or too short: '{raw_idea}'. Cannot generate brief.")
+
     crew = BriefGenerationCrew()
     result = crew.crew().kickoff(
         inputs={
@@ -40,6 +45,22 @@ def run_brief_generation_crew(
             "hints": hints or "",
         }
     )
+
+    # Validate the generated brief references the original input
+    brief_obj = result.pydantic if hasattr(result, "pydantic") and result.pydantic else result
+    if hasattr(brief_obj, "model_dump"):
+        brief_text = json.dumps(brief_obj.model_dump(), default=str).lower()
+    else:
+        brief_text = str(brief_obj).lower()
+    idea_words = [w for w in raw_idea.lower().split() if len(w) > 3]
+    match_count = sum(1 for w in idea_words if w in brief_text)
+    if idea_words and match_count / len(idea_words) < 0.1:
+        logger = logging.getLogger(__name__)
+        logger.warning(
+            "HALLUCINATION DETECTED: Brief has <10%% keyword overlap with input. "
+            "Input: '%s', Match: %d/%d", raw_idea, match_count, len(idea_words)
+        )
+
     return result.pydantic if hasattr(result, "pydantic") else result
 
 

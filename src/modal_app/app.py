@@ -20,7 +20,7 @@ import json
 import hmac
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Any, Optional
 from uuid import UUID, uuid4
 
 # Add src directory to Python path for Modal container
@@ -117,6 +117,8 @@ class KickoffRequest(BaseModel):
     session_id: Optional[UUID] = None
     conversation_transcript: Optional[str] = None  # Full conversation from Alex chat
     user_type: Optional[str] = "founder"  # "founder" or "consultant"
+    hints: Optional[dict[str, Any]] = None
+    additional_context: Optional[str] = None
 
 
 class KickoffResponse(BaseModel):
@@ -245,6 +247,8 @@ async def kickoff(
             "session_id": str(request.session_id) if request.session_id else None,
             "conversation_transcript": request.conversation_transcript,
             "user_type": request.user_type or "founder",
+            "hints": request.hints,
+            "additional_context": request.additional_context,
         },
         "started_at": datetime.now(timezone.utc).isoformat(),
     }).execute()

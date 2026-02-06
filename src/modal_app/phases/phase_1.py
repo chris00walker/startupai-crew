@@ -96,7 +96,13 @@ def _execute_stage_a(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
     }))
 
     raw_idea = state.get("entrepreneur_input", state.get("raw_idea", ""))
-    hints = state.get("hints", "")
+    hints_dict = state.get("hints", {})  # Raw dict from state (for UI via hitl_context)
+
+    # Convert dict to human-readable string for crew template interpolation
+    if isinstance(hints_dict, dict) and hints_dict:
+        hints_str = "\n".join(f"- {k.replace('_', ' ').title()}: {v}" for k, v in hints_dict.items())
+    else:
+        hints_str = str(hints_dict) if hints_dict else ""
 
     update_progress(
         run_id=run_id,
@@ -122,7 +128,7 @@ def _execute_stage_a(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
 
         founders_brief = run_brief_generation_crew(
             raw_idea=raw_idea,
-            hints=hints,
+            hints=hints_str,
         )
 
         # Convert to dict if it's a Pydantic model
@@ -184,6 +190,8 @@ def _execute_stage_a(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             "founders_brief": founders_brief_dict,
             "qa_status": founders_brief_dict.get("qa_status", {}),
             "editable": True,  # Signal to UI that this brief can be edited
+            "entrepreneur_input": raw_idea,  # Original input for UI comparison
+            "hints": hints_dict or None,  # Structured dict for UI rendering
         },
         "hitl_options": [
             {

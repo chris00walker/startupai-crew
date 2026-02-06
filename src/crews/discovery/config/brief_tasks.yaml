@@ -17,6 +17,11 @@ validate_concept_legitimacy:
     HINTS (optional context provided by founder):
     {hints}
 
+    ANTI-HALLUCINATION CONSTRAINT:
+    You MUST base your analysis EXCLUSIVELY on the provided {raw_idea} and {hints}.
+    Do NOT invent, assume, or hallucinate any business details not present in the input.
+    If the input is vague, note areas needing clarification rather than making up specifics.
+
     LEGAL CHECK:
     - Not involved in illegal goods/services (drugs, weapons, trafficking)
     - Not facilitating fraud or financial crimes
@@ -68,6 +73,15 @@ compile_founders_brief:
 
     HINTS:
     {hints}
+
+    CRITICAL ANTI-HALLUCINATION RULES:
+    1. You MUST base the brief EXCLUSIVELY on the provided {raw_idea} and {hints}.
+       Do NOT invent, assume, or hallucinate any business details not present in the input.
+    2. Begin your analysis by restating the founder's exact input verbatim in the_idea.one_liner field.
+    3. Use web research ONLY to validate and expand on the founder's specific idea.
+       Do NOT use web results to replace or reimagine the founder's input.
+       Every section of the brief must trace back to {raw_idea}.
+    4. If the input is vague, ask clarifying questions in the brief metadata rather than making up specifics.
 
     Use your web search tool (TavilySearchTool) to research:
     1. The market context and size for this type of business
