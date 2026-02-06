@@ -235,6 +235,11 @@ def _execute_stage_b(
         "run_id": run_id,
     }))
 
+    # Extract pivot context from state (these live in state, not function params)
+    pivot_type = state.get("pivot_type")
+    target_segment = state.get("target_segment_hypothesis")
+    failed_segment = state.get("failed_segment")
+
     # If this is a segment pivot, augment founder's brief with pivot context
     if pivot_type == "segment_pivot" and target_segment:
         pivot_context = {

@@ -34,7 +34,7 @@ CREW_INPUT_VARIABLES = {
     # Phase 0: Onboarding
     "onboarding": {"entrepreneur_input"},
     # Phase 1: VPC Discovery
-    "discovery": {"founders_brief", "entrepreneur_input"},
+    "discovery": {"founders_brief", "entrepreneur_input", "raw_idea", "hints"},
     "customer_profile": {"founders_brief", "entrepreneur_input", "discovery_results"},
     "value_design": {"founders_brief", "customer_profile"},
     "wtp": {"founders_brief", "customer_profile", "value_map"},
