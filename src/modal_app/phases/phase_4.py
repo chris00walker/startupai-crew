@@ -3,12 +3,13 @@ Phase 4: Viability Flow
 
 Validates unit economics and makes final decision.
 
-Crews (3):
+Crews (4):
     - FinanceCrew: CAC/LTV, pricing, market sizing
     - SynthesisCrew: Evidence synthesis, decision recommendation
     - ViabilityGovernanceCrew: Final gate, decision approval
+    - NarrativeSynthesisCrew: Pitch narrative generation (optional)
 
-Agents: 9 total
+Agents: 12 total
 
 HITL Checkpoints:
     - approve_viability_gate
@@ -17,7 +18,7 @@ HITL Checkpoints:
     - request_human_decision
 """
 
-# @story US-H08, US-H09, US-P04, US-AVB01, US-AH10, US-AVB03
+# @story US-H08, US-H09, US-P04, US-AVB01, US-AH10, US-AVB03, US-NL01
 
 import json
 import logging
@@ -70,6 +71,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         run_finance_crew,
         run_synthesis_crew,
         run_viability_governance_crew,
+        run_narrative_synthesis_crew,
     )
 
     try:
@@ -233,7 +235,7 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             phase=4,
             crew="ViabilityGovernanceCrew",
             status="completed",
-            progress_pct=100,
+            progress_pct=80,
         )
 
     except Exception as e:
@@ -250,6 +252,78 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
             error_message=str(e),
         )
         raise
+
+    # ==========================================================================
+    # Crew 4: NarrativeSynthesisCrew - Pitch narrative generation
+    # @story US-NL01
+    # ==========================================================================
+
+    narrative_result = None
+
+    update_progress(
+        run_id=run_id,
+        phase=4,
+        crew="NarrativeSynthesisCrew",
+        status="started",
+        progress_pct=80,
+    )
+
+    try:
+        # Gather experiment results from all phases
+        all_experiments = []
+        for phase_evidence in [desirability_evidence, feasibility_evidence, viability_dict]:
+            exps = phase_evidence.get("experiments", [])
+            if isinstance(exps, list):
+                all_experiments.extend(exps)
+
+        # Prepare competitor map from state
+        competitor_map = state.get("competitor_map", {})
+
+        # Prepare founder profile from state
+        founder_profile = state.get("founder_profile", {})
+
+        narrative_result = run_narrative_synthesis_crew(
+            founders_brief=founders_brief,
+            customer_profile=customer_profile,
+            value_map=value_map,
+            desirability_evidence=desirability_evidence,
+            feasibility_evidence=feasibility_evidence,
+            viability_evidence=viability_dict,
+            fit_assessment=state.get("fit_assessment", {}),
+            competitor_map=competitor_map,
+            experiment_results=all_experiments,
+            founder_profile=founder_profile,
+        )
+
+        update_progress(
+            run_id=run_id,
+            phase=4,
+            crew="NarrativeSynthesisCrew",
+            status="completed",
+            progress_pct=95,
+        )
+
+        logger.info(json.dumps({
+            "event": "phase_4_narrative_complete",
+            "run_id": run_id,
+            "has_content": "pitch_narrative_content" in narrative_result if isinstance(narrative_result, dict) else False,
+        }))
+
+    except Exception as e:
+        # Narrative generation is non-blocking — log and continue
+        logger.warning(json.dumps({
+            "event": "phase_4_narrative_error",
+            "run_id": run_id,
+            "error": str(e),
+        }))
+        update_progress(
+            run_id=run_id,
+            phase=4,
+            crew="NarrativeSynthesisCrew",
+            status="failed",
+            error_message=str(e),
+        )
+        # Do NOT raise — narrative is optional, viability flow continues
 
     # ==========================================================================
     # Determine Viability Signal and Final Decision with Configurable Gate Policy
@@ -343,7 +417,30 @@ def execute(run_id: str, state: dict[str, Any]) -> dict[str, Any]:
         "pivot_recommendation": pivot_recommendation,
         "final_decision": final_decision,
         "decision_rationale": decision_rationale,
+        "narrative_result": narrative_result,
     }
+
+    # Send narrative webhook to product app if narrative was generated
+    if narrative_result and isinstance(narrative_result, dict):
+        try:
+            from src.state.persistence import send_webhook
+            send_webhook(
+                run_id=run_id,
+                event_type="narrative_generated",
+                payload={
+                    "flow_type": "narrative_synthesis",
+                    "pitch_narrative_content": narrative_result.get("pitch_narrative_content"),
+                    "alignment_status": narrative_result.get("alignment_status", "verified"),
+                    "alignment_issues": narrative_result.get("alignment_issues", []),
+                    "evidence_gaps": narrative_result.get("evidence_gaps", {}),
+                },
+            )
+        except Exception as e:
+            logger.warning(json.dumps({
+                "event": "phase_4_narrative_webhook_error",
+                "run_id": run_id,
+                "error": str(e),
+            }))
 
     gate_ready = signal == "profitable" and len(gate_blockers) == 0
 

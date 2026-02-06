@@ -133,3 +133,27 @@ class SynthesisCrewOutput(CrewOutput):
     decision_rationale: str
     confidence_score: float
     pivot_recommendation: Optional[str] = None
+
+
+class NarrativeSynthesisCrewOutput(CrewOutput):
+    """Output from NarrativeSynthesisCrew (Phase 4).
+
+    Produces PitchNarrativeContent JSON for storage in
+    pitch_narratives.narrative_data JSONB column.
+
+    @story US-NL01
+    """
+
+    crew_name: str = "NarrativeSynthesisCrew"
+    phase: int = 4
+
+    # The full PitchNarrativeContent JSON (matches TypeScript interface)
+    pitch_narrative_content: dict[str, Any]
+
+    # Guardian alignment results
+    alignment_status: str = "verified"  # verified | flagged
+    alignment_issues: list[dict[str, Any]] = Field(default_factory=list)
+
+    # Evidence mapping metadata
+    evidence_gaps: dict[str, Any] = Field(default_factory=dict)
+    evidence_sources_used: list[str] = Field(default_factory=list)

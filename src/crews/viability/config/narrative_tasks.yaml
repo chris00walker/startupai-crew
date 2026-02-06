@@ -1,0 +1,169 @@
+# NarrativeSynthesisCrew Task Definitions
+# Phase 4: Viability - Pitch Narrative Generation
+# @story US-NL01
+
+map_evidence_to_slides:
+  description: >
+    Map all validation evidence to the Get Backed 10-slide framework fields.
+
+    Input data:
+    - Founders brief: {founders_brief}
+    - Customer profile: {customer_profile}
+    - Value map: {value_map}
+    - Desirability evidence: {desirability_evidence}
+    - Feasibility evidence: {feasibility_evidence}
+    - Viability evidence: {viability_evidence}
+    - Fit assessment: {fit_assessment}
+    - Competitor map: {competitor_map}
+    - Experiment results: {experiment_results}
+    - Founder profile: {founder_profile}
+
+    For each of the 10 slides, identify the source evidence from the
+    appropriate validation phase.
+
+    Classify all evidence items as:
+    - DO-direct: Observable behavior (signups, purchases, usage)
+    - DO-indirect: Inferred behavior (time-on-page, click-through)
+    - SAY: Self-reported (survey responses, interview quotes)
+
+    Mark evidence gaps where data is missing:
+    - gap_type: missing, weak, or stale
+    - blocking_publish: true if the gap prevents narrative publication
+
+    Generate contextual placeholder text for optional missing fields
+    such as sales_process, ask_amount, and ask_type.
+  expected_output: >
+    Complete evidence mapping with:
+    - Slide-by-slide field assignments (all 10 slides)
+    - DO/SAY classifications for all evidence items
+    - evidence_gaps object listing missing data with gap_type and
+      blocking_publish flag per gap
+  agent: n2_evidence_mapper
+
+compose_narrative:
+  description: >
+    Compose the complete PitchNarrativeContent JSON following the
+    Get Backed 10-slide framework.
+
+    Use the evidence mapping from the previous task to populate all
+    10 slides plus cover and metadata.
+
+    Evidence mapping: {evidence_mapping}
+    Fit Score: {fit_score}
+
+    Slide composition guidelines:
+
+    1. Cover: venture_name from founders_brief, tagline (max 10 words).
+
+    2. Overview: thesis as a 3-sentence narrative arc, one_liner
+       following "We do X for Y by Z" pattern, industry, novel_insight.
+
+    3. Opportunity: TAM/SAM/SOM from viability evidence,
+       growth_trajectory, why_now, market_tailwinds.
+
+    4. Problem: primary pain from VPC, pain narrative, customer story
+       if available from interview evidence.
+
+    5. Solution: value proposition from VPC value map, fit_score from
+       fit assessment.
+
+    6. Traction: evidence sorted into do_direct, do_indirect, and
+       say_evidence arrays, growth_metrics, assumptions_validated count.
+
+    7. Customer: segments from customer profile, persona_summary,
+       demographics.
+
+    8. Competition: competitive landscape from competitor map data.
+
+    9. Business Model: unit economics from viability evidence including
+       cac, ltv, ltv_cac_ratio.
+
+    10. Team: members array from founder_profile data.
+
+    11. Use of Funds: allocations tied to validation experiments.
+
+    12. Metadata: methodology set to "VPD", overall_fit_score,
+        validation_stage, pivot_count, evidence_gaps from mapping.
+
+    Use contextual placeholders (not generic) for missing optional
+    fields. Every placeholder should reflect the venture context.
+  expected_output: >
+    Complete PitchNarrativeContent JSON with:
+    - All 10 slides populated with evidence-backed content
+    - Cover section with venture_name and tagline
+    - Metadata section with evidence_gaps and methodology
+    - version field set to "1.0"
+  agent: n1_narrative_architect
+  context:
+    - map_evidence_to_slides
+
+validate_claims:
+  description: >
+    Validate every claim in the composed narrative against evidence
+    strength.
+
+    Composed narrative: {composed_narrative}
+    Fit Score: {fit_score}
+
+    Apply claim-language mapping rules based on Fit Score tiers:
+    - Below 0.3: Only "early exploration", "initial indicators",
+      "preliminary"
+    - 0.3 to 0.5: Allow "emerging evidence", "initial validation"
+    - 0.5 to 0.7: Allow "validated", "demonstrated", "confirmed"
+    - Above 0.7: Allow "strong validation", "proven", "established"
+
+    Check traction slide DO-direct evidence count to gate language
+    strength:
+    - 0 DO-direct items: Must use "reported" or "stated"
+      (SAY-only language)
+    - 1-2 DO-direct items: Can use "initial behavioral evidence"
+    - 3+ DO-direct items: Can use "demonstrated" or "validated"
+
+    Auto-correct any overstated language to the maximum permitted
+    level for the current Fit Score tier and DO-direct count.
+
+    Additional checks:
+    - Evidence freshness: flag any cited evidence older than 90 days
+    - Fit Score consistency: narrative claims must match current score
+    - Cross-slide consistency: no contradictions between slides
+
+    Return alignment_issues array for any remaining concerns after
+    auto-correction.
+  expected_output: >
+    Validated narrative with:
+    - All auto-corrected language adjustments applied
+    - alignment_issues array with entries containing field, issue,
+      severity, and suggested_language
+    - Final alignment_status set to "verified" or "flagged"
+  agent: n3_claim_guardian
+  context:
+    - compose_narrative
+    - map_evidence_to_slides
+
+finalize_narrative:
+  description: >
+    Finalize the pitch narrative after Guardian validation.
+
+    Take the validated narrative with any auto-corrections applied.
+
+    Validated narrative: {validated_narrative}
+    Alignment issues: {alignment_issues}
+
+    Finalization steps:
+    1. Apply all auto-corrections from the Guardian
+    2. Ensure all required fields are populated
+    3. Set final metadata fields:
+       - evidence_strength based on highest DO category present
+         (do_direct > do_indirect > say_only)
+       - validation_stage from current validation gate
+    4. Verify structural completeness of PitchNarrativeContent
+
+    Produce the final PitchNarrativeContent as structured output.
+  expected_output: >
+    Final PitchNarrativeContent JSON ready for storage in
+    pitch_narratives.narrative_data. This is the crew's
+    output_pydantic result.
+  agent: n1_narrative_architect
+  context:
+    - compose_narrative
+    - validate_claims
