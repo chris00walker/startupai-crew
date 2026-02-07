@@ -66,6 +66,12 @@ CREW_INPUT_VARIABLES = {
         "synthesis_report", "all_evidence", "validation_record",
         "validation_history", "learnings", "audit_trail",  # Required by tasks
     },
+    # Phase 4: Narrative (pitch narrative generation)
+    "narrative": {
+        "founders_brief", "customer_profile", "value_map",
+        "desirability_evidence", "feasibility_evidence", "viability_evidence",
+        "fit_assessment", "fit_score", "competitor_map", "experiment_results", "founder_profile",
+    },
 }
 
 # Map config file names to their crew input variable set
@@ -82,6 +88,7 @@ CONFIG_FILE_TO_CREW = {
     "governance_tasks.yaml": None,  # Exists in desirability, feasibility, viability - use directory logic
     "finance_tasks.yaml": "finance",
     "synthesis_tasks.yaml": "synthesis",
+    "narrative_tasks.yaml": "narrative",
 }
 
 
@@ -164,6 +171,8 @@ def get_crew_name_from_path(yaml_path: Path) -> str:
             return "finance"
         elif "synthesis" in filename:
             return "synthesis"
+        elif "narrative" in filename:
+            return "narrative"
 
     # Default to directory name
     return crew_dir
@@ -249,6 +258,9 @@ class TestTemplateVariables:
             "ltv", "cac", "all_calculations", "all_analyses",
             "viability_signal", "evidence_synthesis", "decision_document",
             "all_outputs", "scrubbed_outputs",
+            # Narrative outputs (from prior tasks in narrative crew)
+            "evidence_mapping", "composed_narrative", "validated_narrative",
+            "alignment_issues",
         }
 
         for task_name, vars_found in task_vars.items():

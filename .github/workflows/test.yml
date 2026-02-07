@@ -25,6 +25,8 @@ jobs:
         run: uv sync --group dev
 
       - name: Run pytest with coverage
+        env:
+          OPENAI_API_KEY: sk-test-dummy-key-for-ci
         run: uv run pytest tests/ --cov=src/startupai --cov-report=term-missing
 
   lint:
