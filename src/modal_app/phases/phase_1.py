@@ -621,5 +621,5 @@ def _execute_stage_b(
                 "description": "Target a different customer segment (feedback required)",
             },
         ],
-        "hitl_recommended": "approve" if gate_ready else "iterate",
+        "hitl_recommended": "approved" if gate_ready else "iterate",
     }
