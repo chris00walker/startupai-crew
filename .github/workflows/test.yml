@@ -72,7 +72,7 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync
-          pip install modal
+          uv pip install modal
 
       - name: Deploy to Modal
-        run: modal deploy src/modal_app/app.py
+        run: uv run modal deploy src/modal_app/app.py
