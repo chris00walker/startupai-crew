@@ -606,7 +606,7 @@ def _execute_stage_b(
         },
         "hitl_options": [
             {
-                "id": "approve",
+                "id": "approved",
                 "label": "Approve",
                 "description": "Proceed to Phase 2 Desirability validation",
             },
@@ -616,9 +616,9 @@ def _execute_stage_b(
                 "description": "Re-run discovery with refined hypotheses",
             },
             {
-                "id": "segment_pivot",
+                "id": "segment_pivot_intent",
                 "label": "Segment Pivot",
-                "description": "Target a different customer segment",
+                "description": "Target a different customer segment (feedback required)",
             },
         ],
         "hitl_recommended": "approve" if gate_ready else "iterate",

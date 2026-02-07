@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Optional, Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # -----------------------------------------------------------------------------
@@ -359,6 +359,22 @@ class PainReliever(BaseModel):
     validation_status: ValidationStatus = ValidationStatus.UNTESTED
     confidence_score: Optional[float] = Field(None, ge=0.0, le=1.0)
 
+    @field_validator("effectiveness", mode="before")
+    @classmethod
+    def normalize_effectiveness(cls, v: str) -> str:
+        if not isinstance(v, str):
+            return v
+        mapping = {
+            "mitigates": "reduces",
+            "alleviates": "reduces",
+            "partially_reduces": "reduces",
+            "partially_eliminates": "reduces",
+            "fully_eliminates": "eliminates",
+            "removes": "eliminates",
+            "significantly_reduces": "reduces",
+        }
+        return mapping.get(v.strip().lower(), v.strip().lower())
+
 
 class GainCreator(BaseModel):
     """A gain creator from the VPD Value Map."""
@@ -369,6 +385,20 @@ class GainCreator(BaseModel):
     effectiveness: str = Field(..., pattern="^(exceeds|meets|misses)$")
     validation_status: ValidationStatus = ValidationStatus.UNTESTED
     confidence_score: Optional[float] = Field(None, ge=0.0, le=1.0)
+
+    @field_validator("effectiveness", mode="before")
+    @classmethod
+    def normalize_effectiveness(cls, v: str) -> str:
+        if not isinstance(v, str):
+            return v
+        mapping = {
+            "partially_meets": "meets",
+            "significantly_meets": "meets",
+            "falls_short": "misses",
+            "surpasses": "exceeds",
+            "far_exceeds": "exceeds",
+        }
+        return mapping.get(v.strip().lower(), v.strip().lower())
 
 
 class ValueMap(BaseModel):

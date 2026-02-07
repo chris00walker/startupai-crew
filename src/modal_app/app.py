@@ -573,6 +573,38 @@ async def hitl_approve(
             "iteration_reason": request.feedback or "Additional experiments requested",
         }
 
+        # Parse segment pivot envelope from feedback if present
+        feedback_str = request.feedback or ""
+        if feedback_str.startswith("SEGMENT_PIVOT|"):
+            try:
+                pivot_json = json.loads(feedback_str[len("SEGMENT_PIVOT|"):])
+                target_segment = pivot_json.get("target_segment", "").strip()
+                rationale = pivot_json.get("rationale", "").strip()
+                if target_segment:
+                    updated_state["pivot_type"] = "segment_pivot"
+                    updated_state["pivot_reason"] = rationale or "Segment pivot requested by user"
+                    updated_state["pivot_from_phase"] = current_phase
+                    updated_state["target_segment_hypothesis"] = {
+                        "segment_name": target_segment,
+                        "segment_description": rationale or target_segment,
+                        "why_better_fit": rationale or "User-specified pivot",
+                    }
+                    # Track the failed segment from the current state
+                    current_segment = phase_state.get("customer_profile", {}).get("segment_name")
+                    if current_segment:
+                        updated_state["failed_segment"] = current_segment
+                    logger.info(json.dumps({
+                        "event": "segment_pivot_from_envelope",
+                        "run_id": str(request.run_id),
+                        "target_segment": target_segment,
+                    }))
+            except (json.JSONDecodeError, TypeError) as parse_err:
+                logger.warning(json.dumps({
+                    "event": "segment_pivot_envelope_parse_failed",
+                    "run_id": str(request.run_id),
+                    "error": str(parse_err),
+                }))
+
         supabase.table("validation_runs").update({
             "hitl_state": None,
             "status": "running",
@@ -770,10 +802,30 @@ def run_validation(run_id: str):
             "error": str(e),
         }))
 
-        supabase.table("validation_runs").update({
-            "status": "failed",
-            "error_message": str(e),
-        }).eq("id", run_id).execute()
+        # Wrap status update in its own try/except to prevent silent failure
+        try:
+            supabase.table("validation_runs").update({
+                "status": "failed",
+                "error_message": str(e)[:500],
+            }).eq("id", run_id).execute()
+        except Exception as db_err:
+            logger.error(json.dumps({
+                "event": "status_update_failed",
+                "run_id": run_id,
+                "error": str(db_err),
+            }))
+            try:
+                supabase.table("validation_runs").update({
+                    "status": "failed",
+                }).eq("id", run_id).execute()
+            except Exception:
+                pass  # DB unreachable — run stays stuck, needs manual cleanup
+
+        # Notify frontend of failure (best-effort)
+        try:
+            _send_failure_webhook(run_id, str(e))
+        except Exception:
+            pass  # Polling fallback will catch the status change
 
         raise
 
@@ -857,6 +909,43 @@ def _send_hitl_webhook(
             "event": "hitl_webhook_failed",
             "run_id": run_id,
             "checkpoint": checkpoint,
+            "error": str(e),
+        }))
+
+
+def _send_failure_webhook(run_id: str, error_message: str):
+    """Notify frontend that validation run has failed."""
+    import httpx
+
+    product_app_url = os.environ.get("PRODUCT_APP_URL", "https://app.startupai.site")
+    webhook_url = f"{product_app_url}/api/crewai/webhook"
+    bearer_token = os.environ.get("WEBHOOK_BEARER_TOKEN", "startupai-modal-secret-2026")
+
+    try:
+        response = httpx.post(
+            webhook_url,
+            json={
+                "flow_type": "validation_failed",
+                "run_id": run_id,
+                "error_message": error_message[:200],
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            },
+            headers={
+                "Authorization": f"Bearer {bearer_token}",
+                "Content-Type": "application/json",
+            },
+            timeout=10.0,
+        )
+        response.raise_for_status()
+        logger.info(json.dumps({
+            "event": "failure_webhook_sent",
+            "run_id": run_id,
+            "status_code": response.status_code,
+        }))
+    except Exception as e:
+        logger.error(json.dumps({
+            "event": "failure_webhook_failed",
+            "run_id": run_id,
             "error": str(e),
         }))
 
