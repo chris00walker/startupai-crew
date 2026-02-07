@@ -339,7 +339,7 @@ class TestPhase1Flow:
                 state={"founders_brief": minimal_founders_brief.model_dump()},
             )
 
-            assert result["hitl_recommended"] == "approve"
+            assert result["hitl_recommended"] == "approved"
 
     def test_phase_1_recommends_iterate_below_threshold(self, minimal_founders_brief):
         """Test that Phase 1 recommends iterate when fit < 70."""

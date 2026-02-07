@@ -150,7 +150,7 @@ def simulate_phase_1(state: dict, fit_score: int = 78) -> dict[str, Any]:
         "hitl_checkpoint": "approve_discovery_output",
         "hitl_title": "VPC Discovery Complete",
         "hitl_description": f"VPC fit score: {fit_score}/100.",
-        "hitl_recommended": "approve" if gate_ready else "iterate",
+        "hitl_recommended": "approved" if gate_ready else "iterate",
     }
 
 
@@ -279,7 +279,7 @@ class TestHappyPath:
         # Phase 1: VPC Discovery (fit_score = 78 > 70)
         phase_1_result = simulate_phase_1(phase_0_result["state"], fit_score=78)
         assert phase_1_result["hitl_checkpoint"] == "approve_discovery_output"
-        assert phase_1_result["hitl_recommended"] == "approve"
+        assert phase_1_result["hitl_recommended"] == "approved"
 
         # Phase 2: Desirability (strong commitment)
         phase_2_result = simulate_phase_2(
@@ -609,7 +609,7 @@ class TestEdgeCases:
         result = simulate_phase_1(result["state"], fit_score=70)
 
         # Score of exactly 70 should pass
-        assert result["hitl_recommended"] == "approve"
+        assert result["hitl_recommended"] == "approved"
 
     def test_boundary_fit_score_69(self, initial_state, mock_founders_brief):
         """Test boundary condition: fit_score = 69 (just failing)."""
